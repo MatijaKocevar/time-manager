@@ -51,6 +51,7 @@
         "@types/react": "^19",
         "@types/react-dom": "^19",
         "babel-plugin-react-compiler": "1.0.0",
+        "dotenv": "^17.2.3",
         "eslint": "^9",
         "eslint-config-next": "16.0.5",
         "eslint-config-prettier": "^10.1.8",
