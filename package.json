@@ -15,9 +15,6 @@
         "db:reset": "prisma migrate reset",
         "db:studio": "prisma studio",
         "dev:db": "npm run db:push && npm run db:seed && npm run dev",
-        "docker:build": "docker build -t time-management-app .",
-        "docker:dev": "docker-compose up --build",
-        "docker:prod": "docker-compose -f docker-compose.prod.yml up --build",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "postinstall": "prisma generate"
