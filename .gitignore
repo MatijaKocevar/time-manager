@@ -43,3 +43,9 @@ next-env.d.ts
 # prisma generated files
 /src/generated/prisma
 /prisma/generated/
+
+# database files
+/prisma/database/
+/prisma/prisma/database/
+*.db
+*.db-*
