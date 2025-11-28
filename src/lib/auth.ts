@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
-import { UserCredentialsSchema, ExtendedUser, ExtendedToken, ExtendedAuthSession } from "@/types"
+import { UserCredentialsSchema } from "@/types"
 
 declare module "next-auth" {
     interface Session {
@@ -56,23 +56,21 @@ export const authConfig = {
         strategy: "jwt" as const,
     },
     callbacks: {
-        jwt: ({ token, user }: { token: ExtendedToken; user: ExtendedUser | null }) => {
+        jwt: ({ token, user }) => {
             if (user) {
                 token.id = user.id
             }
             return token
         },
-        session: ({ session, token }: { session: ExtendedAuthSession; token: ExtendedToken }) => {
+        session: ({ session, token }) => {
             if (token?.id) {
-                session.user.id = token.id
+                session.user.id = token.id as string
             }
             return session
         },
     },
     pages: {
         signIn: "/login",
-        signUp: "/register",
     },
+    secret: process.env.NEXTAUTH_SECRET,
 }
-
-export default NextAuth(authConfig)
