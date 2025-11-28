@@ -1,4 +1,5 @@
-import NextAuth, { DefaultSession } from "next-auth"
+import type { DefaultSession, User, Session } from "next-auth"
+import type { JWT } from "next-auth/jwt"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "./prisma"
@@ -11,6 +12,16 @@ declare module "next-auth" {
             id: string
             role: UserRole
         } & DefaultSession["user"]
+    }
+    interface User {
+        role: UserRole
+    }
+}
+
+declare module "next-auth/jwt" {
+    interface JWT {
+        id: string
+        role: UserRole
     }
 }
 
@@ -58,19 +69,19 @@ export const authConfig = {
         strategy: "jwt" as const,
     },
     callbacks: {
-        jwt: ({ token, user }) => {
+        jwt: ({ token, user }: { token: JWT; user: User | undefined }) => {
             if (user) {
                 token.id = user.id
                 token.role = user.role
             }
             return token
         },
-        session: ({ session, token }) => {
+        session: ({ session, token }: { session: Session; token: JWT }) => {
             if (token?.id) {
-                session.user.id = token.id as string
+                session.user.id = token.id
             }
             if (token?.role) {
-                session.user.role = token.role as UserRole
+                session.user.role = token.role
             }
             return session
         },
