@@ -15,10 +15,24 @@ async function main() {
             email: "test@example.com",
             name: "Test User",
             password: hashedPassword,
+            role: "USER",
         },
     })
 
     console.log("✅ Created test user:", testUser.email)
+
+    const adminUser = await prisma.user.upsert({
+        where: { email: "admin@example.com" },
+        update: {},
+        create: {
+            email: "admin@example.com",
+            name: "Admin User",
+            password: hashedPassword,
+            role: "ADMIN",
+        },
+    })
+
+    console.log("✅ Created admin user:", adminUser.email)
 
     console.log("🌱 Database seeding completed!")
 }

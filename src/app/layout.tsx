@@ -4,10 +4,7 @@ import { cookies } from "next/headers"
 import "./globals.css"
 import SessionWrapper from "@/components/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
+import { ConditionalSidebar } from "@/components/ConditionalSidebar"
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -29,7 +26,6 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode
 }>) {
-    const session = await getServerSession(authConfig)
     const cookieStore = await cookies()
     const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
 
@@ -38,19 +34,9 @@ export default async function RootLayout({
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <QueryProvider>
                     <SessionWrapper>
-                        {session ? (
-                            <SidebarProvider defaultOpen={defaultOpen}>
-                                <AppSidebar />
-                                <main className="flex-1">
-                                    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-                                        <SidebarTrigger className="-ml-1" />
-                                    </header>
-                                    <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
-                                </main>
-                            </SidebarProvider>
-                        ) : (
-                            children
-                        )}
+                        <ConditionalSidebar defaultOpen={defaultOpen}>
+                            {children}
+                        </ConditionalSidebar>
                     </SessionWrapper>
                 </QueryProvider>
             </body>

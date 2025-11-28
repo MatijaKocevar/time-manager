@@ -3,12 +3,13 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
-import { UserCredentialsSchema } from "@/types"
+import { UserCredentialsSchema, UserRole } from "@/types"
 
 declare module "next-auth" {
     interface Session {
         user: {
             id: string
+            role: UserRole
         } & DefaultSession["user"]
     }
 }
@@ -45,6 +46,7 @@ export const authConfig = {
                         email: user.email,
                         name: user.name,
                         image: user.image,
+                        role: user.role,
                     }
                 } catch {
                     return null
@@ -59,12 +61,16 @@ export const authConfig = {
         jwt: ({ token, user }) => {
             if (user) {
                 token.id = user.id
+                token.role = user.role
             }
             return token
         },
         session: ({ session, token }) => {
             if (token?.id) {
                 session.user.id = token.id as string
+            }
+            if (token?.role) {
+                session.user.role = token.role as UserRole
             }
             return session
         },
