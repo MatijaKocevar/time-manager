@@ -1,6 +1,6 @@
 "use client"
 
-import { Users, User, LogOut } from "lucide-react"
+import { Users, LogOut } from "lucide-react"
 import { useSession, signOut } from "next-auth/react"
 
 import {
@@ -23,8 +23,9 @@ export function AppSidebar() {
     const userRole = session?.user?.role
 
     const filteredItems = navigationItems.filter((item) =>
-        userRole ? item.roles.includes(userRole as UserRole) : false
+        userRole ? item.roles.includes(userRole) : false
     )
+
     return (
         <Sidebar>
             <SidebarHeader>
@@ -35,8 +36,7 @@ export function AppSidebar() {
                                 <Users className="size-4" />
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-semibold">User Manager</span>
-                                <span className="truncate text-xs">Manage users</span>
+                                <span className="truncate font-semibold">Time Manager</span>
                             </div>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -63,12 +63,6 @@ export function AppSidebar() {
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton>
-                            <User />
-                            <span>Profile</span>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
                     <SidebarMenuItem>
                         <SidebarMenuButton onClick={() => signOut({ callbackUrl: "/login" })}>
                             <LogOut />
