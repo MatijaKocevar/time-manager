@@ -1,7 +1,7 @@
 "use client"
 
 import { Users, LogOut } from "lucide-react"
-import { useSession, signOut } from "next-auth/react"
+import { signOut } from "next-auth/react"
 
 import {
     Sidebar,
@@ -18,10 +18,11 @@ import {
 import { navigationItems } from "@/config/navigation"
 import { UserRole } from "@/types"
 
-export function AppSidebar() {
-    const { data: session } = useSession()
-    const userRole = session?.user?.role
+interface AppSidebarProps {
+    userRole?: UserRole
+}
 
+export function AppSidebar({ userRole }: AppSidebarProps) {
     const filteredItems = navigationItems.filter((item) =>
         userRole ? item.roles.includes(userRole) : false
     )

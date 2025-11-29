@@ -1,25 +1,26 @@
 "use client"
 
-import { useSession } from "next-auth/react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
+import { UserRole } from "@/types"
 
 interface ConditionalSidebarProps {
     children: React.ReactNode
     defaultOpen: boolean
+    hasSession: boolean
+    userRole?: UserRole
 }
 
-export function ConditionalSidebar({ children, defaultOpen }: ConditionalSidebarProps) {
-    const { data: session, status } = useSession()
-
-    if (status === "loading") {
-        return <>{children}</>
-    }
-
-    if (session) {
+export function ConditionalSidebar({
+    children,
+    defaultOpen,
+    hasSession,
+    userRole,
+}: ConditionalSidebarProps) {
+    if (hasSession) {
         return (
             <SidebarProvider defaultOpen={defaultOpen}>
-                <AppSidebar />
+                <AppSidebar userRole={userRole} />
                 <main className="flex-1">
                     <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
                         <SidebarTrigger className="-ml-1" />

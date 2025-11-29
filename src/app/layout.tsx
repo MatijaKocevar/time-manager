@@ -1,10 +1,12 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { cookies } from "next/headers"
+import { getServerSession } from "next-auth"
 import "./globals.css"
 import SessionWrapper from "@/components/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
 import { ConditionalSidebar } from "@/components/ConditionalSidebar"
+import { authConfig } from "@/lib/auth"
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -28,13 +30,18 @@ export default async function RootLayout({
 }>) {
     const cookieStore = await cookies()
     const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
+    const session = await getServerSession(authConfig)
 
     return (
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <QueryProvider>
                     <SessionWrapper>
-                        <ConditionalSidebar defaultOpen={defaultOpen}>
+                        <ConditionalSidebar
+                            defaultOpen={defaultOpen}
+                            hasSession={!!session}
+                            userRole={session?.user?.role}
+                        >
                             {children}
                         </ConditionalSidebar>
                     </SessionWrapper>
