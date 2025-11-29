@@ -1,6 +1,6 @@
 "use client"
 
-import { Users, LogOut } from "lucide-react"
+import { Users, LogOut, UserCircle, ChevronUp } from "lucide-react"
 import { signOut } from "next-auth/react"
 
 import {
@@ -15,14 +15,25 @@ import {
     SidebarMenuItem,
     SidebarHeader,
 } from "@/components/ui/sidebar"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { UserAvatar } from "@/components/user-avatar"
 import { navigationItems } from "@/config/navigation"
 import { UserRole } from "@/types"
 
 interface AppSidebarProps {
     userRole?: UserRole
+    userName?: string | null
+    userEmail?: string | null
 }
 
-export function AppSidebar({ userRole }: AppSidebarProps) {
+export function AppSidebar({ userRole, userName, userEmail }: AppSidebarProps) {
     const filteredItems = navigationItems.filter((item) =>
         userRole ? item.roles.includes(userRole) : false
     )
@@ -65,10 +76,41 @@ export function AppSidebar({ userRole }: AppSidebarProps) {
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton onClick={() => signOut({ callbackUrl: "/login" })}>
-                            <LogOut />
-                            <span>Logout</span>
-                        </SidebarMenuButton>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <SidebarMenuButton size="lg">
+                                    <UserAvatar role={userRole} className="h-8 w-8" />
+                                    <div className="grid flex-1 text-left text-sm leading-tight">
+                                        <span className="truncate font-semibold">{userName}</span>
+                                        <span className="truncate text-xs">{userEmail}</span>
+                                    </div>
+                                    <ChevronUp className="ml-auto size-4" />
+                                </SidebarMenuButton>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                side="top"
+                                align="end"
+                                className="w-[--radix-dropdown-menu-trigger-width] min-w-56"
+                            >
+                                <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                    {userEmail}
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild>
+                                    <a href="/profile">
+                                        <UserCircle className="mr-2 h-4 w-4" />
+                                        Profile
+                                    </a>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    onClick={() => signOut({ callbackUrl: "/login" })}
+                                >
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    Logout
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>

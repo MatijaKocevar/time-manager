@@ -35,8 +35,12 @@
 ### State Management
 
 - TanStack Query for server state management
-- Zustand for client-side UI state only
-- No custom hooks - use direct store access and queries
+- Zustand for client-side UI state (including loading, error, and form data)
+- No custom hooks - use direct store access with selector pattern
+- Always access store state with selectors: `useStore((state) => state.property)`
+- Never destructure directly from store: `const { prop } = useStore()` ❌
+- All loading states (`isLoading`) must be in Zustand stores, not in component `useState`
+- All error states (`error`) must be in Zustand stores, not in component `useState`
 - Feature-based folder organization
 
 ### Database and API
@@ -51,16 +55,19 @@
 ### Feature-Based Structure
 
 - Keep related files together in feature folders
-- Each feature should contain: components/, actions/, stores/, types/, query-keys.ts
+- Each feature should contain: components/, actions/, stores/, schemas/, query-keys.ts
 - Avoid scattered files across different directories
 - Co-locate tests with their corresponding files
 
 ### Type and Schema Organization
 
 - Use Zod schemas instead of TypeScript interfaces for validation + types
-- Feature-specific types/schemas go in feature folders (app/tasks/types/)
+- Feature-specific schemas go in `schemas/` folder (app/tasks/schemas/)
 - Only general/shared types go in src/types/
 - Derive TypeScript types from Zod schemas using z.infer
+- Exceptions: TypeScript interfaces are allowed ONLY for:
+  - Zustand store state and action definitions
+  - React component props
 - Each feature manages its own query keys in query-keys.ts
 
 ### Naming Conventions

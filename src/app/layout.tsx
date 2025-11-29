@@ -41,6 +41,8 @@ export default async function RootLayout({
                             defaultOpen={defaultOpen}
                             hasSession={!!session}
                             userRole={session?.user?.role}
+                            userName={session?.user?.name}
+                            userEmail={session?.user?.email}
                         >
                             {children}
                         </ConditionalSidebar>

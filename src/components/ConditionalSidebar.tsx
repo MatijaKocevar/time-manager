@@ -9,6 +9,8 @@ interface ConditionalSidebarProps {
     defaultOpen: boolean
     hasSession: boolean
     userRole?: UserRole
+    userName?: string | null
+    userEmail?: string | null
 }
 
 export function ConditionalSidebar({
@@ -16,11 +18,13 @@ export function ConditionalSidebar({
     defaultOpen,
     hasSession,
     userRole,
+    userName,
+    userEmail,
 }: ConditionalSidebarProps) {
     if (hasSession) {
         return (
             <SidebarProvider defaultOpen={defaultOpen}>
-                <AppSidebar userRole={userRole} />
+                <AppSidebar userRole={userRole} userName={userName} userEmail={userEmail} />
                 <main className="flex-1">
                     <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
                         <SidebarTrigger className="-ml-1" />
