@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { signIn, getSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -20,7 +19,6 @@ export default function LoginPage() {
     const [password, setPassword] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
-    const router = useRouter()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -28,23 +26,13 @@ export default function LoginPage() {
         setError("")
 
         try {
-            const result = await signIn("credentials", {
+            await signIn("credentials", {
                 email,
                 password,
-                redirect: false,
+                callbackUrl: "/",
             })
-
-            if (result?.error) {
-                setError("Invalid email or password")
-            } else {
-                const session = await getSession()
-                if (session) {
-                    router.push("/")
-                }
-            }
         } catch {
             setError("Something went wrong. Please try again.")
-        } finally {
             setIsLoading(false)
         }
     }
