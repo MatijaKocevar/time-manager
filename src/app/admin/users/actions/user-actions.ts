@@ -3,30 +3,17 @@
 import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
-import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
-import { CreateUserSchema, UserRoleSchema } from "@/types"
-
-const UpdateUserSchema = z.object({
-    id: z.string(),
-    name: z.string().min(1, "Name is required"),
-    role: UserRoleSchema,
-})
-
-const DeleteUserSchema = z.object({
-    id: z.string(),
-})
-
-const ChangeUserPasswordSchema = z.object({
-    id: z.string(),
-    newPassword: z.string().min(6, "Password must be at least 6 characters"),
-})
-
-type CreateUserInput = z.infer<typeof CreateUserSchema>
-type UpdateUserInput = z.infer<typeof UpdateUserSchema>
-type DeleteUserInput = z.infer<typeof DeleteUserSchema>
-type ChangeUserPasswordInput = z.infer<typeof ChangeUserPasswordSchema>
+import { CreateUserSchema, type CreateUserInput } from "@/types"
+import {
+    UpdateUserSchema,
+    DeleteUserSchema,
+    ChangeUserPasswordSchema,
+    type UpdateUserInput,
+    type DeleteUserInput,
+    type ChangeUserPasswordInput,
+} from "../schemas/user-action-schemas"
 
 async function requireAdmin() {
     const session = await getServerSession(authConfig)

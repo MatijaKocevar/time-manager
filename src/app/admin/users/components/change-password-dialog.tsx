@@ -28,13 +28,9 @@ export function ChangePasswordDialog({ userId, userName }: ChangePasswordDialogP
     const isLoading = useUserDialogStore((state) => state.changePasswordDialog.isLoading)
     const error = useUserDialogStore((state) => state.changePasswordDialog.error)
     const openChangePasswordDialog = useUserDialogStore((state) => state.openChangePasswordDialog)
-    const closeChangePasswordDialog = useUserDialogStore(
-        (state) => state.closeChangePasswordDialog
-    )
+    const closeChangePasswordDialog = useUserDialogStore((state) => state.closeChangePasswordDialog)
     const setChangePasswordData = useUserDialogStore((state) => state.setChangePasswordData)
-    const setChangePasswordLoading = useUserDialogStore(
-        (state) => state.setChangePasswordLoading
-    )
+    const setChangePasswordLoading = useUserDialogStore((state) => state.setChangePasswordLoading)
     const setChangePasswordError = useUserDialogStore((state) => state.setChangePasswordError)
 
     const handleSubmit = async (e: React.FormEvent) => {

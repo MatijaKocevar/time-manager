@@ -38,5 +38,6 @@ export const AuthUserSchema = z.object({
 export type UserRole = z.infer<typeof UserRoleSchema>
 export type User = z.infer<typeof UserSchema>
 export type CreateUser = z.infer<typeof CreateUserSchema>
+export type CreateUserInput = z.infer<typeof CreateUserSchema>
 export type UserCredentials = z.infer<typeof UserCredentialsSchema>
 export type AuthUser = z.infer<typeof AuthUserSchema>

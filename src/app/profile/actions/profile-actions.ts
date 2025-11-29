@@ -3,17 +3,9 @@
 import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
-import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
-
-export const UpdateProfileSchema = z.object({
-    name: z.string().min(1, "Name is required"),
-    currentPassword: z.string().optional(),
-    newPassword: z.string().min(6, "Password must be at least 6 characters").optional(),
-})
-
-export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>
+import { UpdateProfileSchema, type UpdateProfileInput } from "../schemas/profile-action-schemas"
 
 export async function updateProfile(input: UpdateProfileInput) {
     const session = await getServerSession(authConfig)
