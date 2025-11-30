@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import {
     Table,
@@ -10,19 +9,14 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { Edit, Trash2 } from "lucide-react"
-import { deleteHourEntry } from "../actions/hour-actions"
-import { useHoursStore } from "../stores/hours-store"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { HOUR_TYPES } from "../constants/hour-types"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
-import { EditHourDialog } from "./edit-hour-dialog"
 import { hourKeys } from "../query-keys"
+import { EditableHourCell } from "./editable-hour-cell"
 import {
     generateDateColumns,
     groupEntriesByType,
-    formatEntryDate,
     getTypeLabel,
     getTypeColor,
 } from "../utils/table-helpers"
@@ -36,30 +30,9 @@ interface HoursTableProps {
 
 export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
     const queryClient = useQueryClient()
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-    const initializeEditForm = useHoursStore((state) => state.initializeEditForm)
 
-    const handleEditClick = (entry: HourEntryDisplay) => {
-        const dateStr = formatEntryDate(entry.date)
-        initializeEditForm({
-            id: entry.id,
-            date: dateStr,
-            hours: entry.hours,
-            type: entry.type,
-            description: entry.description || "",
-        })
-        setIsEditDialogOpen(true)
-    }
-
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this entry?")) return
-
-        const result = await deleteHourEntry({ id })
-        if (result.error) {
-            alert(result.error)
-        } else {
-            queryClient.invalidateQueries({ queryKey: hourKeys.all })
-        }
+    const handleUpdate = () => {
+        queryClient.invalidateQueries({ queryKey: hourKeys.all })
     }
 
     const renderWeeklyOrMonthlyView = () => {
@@ -118,38 +91,12 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
                                             key={dateKey}
                                             className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
                                         >
-                                            {entry ? (
-                                                <div className="flex flex-col items-center group relative">
-                                                    <span className="font-semibold">
-                                                        {entry.hours}
-                                                    </span>
-                                                    {entry.description && (
-                                                        <span className="text-xs text-muted-foreground truncate max-w-[60px]">
-                                                            {entry.description}
-                                                        </span>
-                                                    )}
-                                                    <div className="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity space-x-1">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-6 w-6 p-0"
-                                                            onClick={() => handleEditClick(entry)}
-                                                        >
-                                                            <Edit className="h-3 w-3" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="h-6 w-6 p-0"
-                                                            onClick={() => handleDelete(entry.id)}
-                                                        >
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <span className="text-muted-foreground">-</span>
-                                            )}
+                                            <EditableHourCell
+                                                entry={entry}
+                                                dateKey={dateKey}
+                                                type={type}
+                                                onUpdate={handleUpdate}
+                                            />
                                         </TableCell>
                                     )
                                 })}
@@ -161,10 +108,5 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
         )
     }
 
-    return (
-        <>
-            {renderWeeklyOrMonthlyView()}
-            <EditHourDialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen} />
-        </>
-    )
+    return renderWeeklyOrMonthlyView()
 }

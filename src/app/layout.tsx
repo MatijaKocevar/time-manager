@@ -34,7 +34,7 @@ export default async function RootLayout({
 
     return (
         <html lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased `}>
                 <QueryProvider>
                     <SessionWrapper>
                         <ConditionalSidebar
