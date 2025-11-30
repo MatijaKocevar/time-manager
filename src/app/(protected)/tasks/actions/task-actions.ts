@@ -8,9 +8,11 @@ import {
     CreateTaskSchema,
     UpdateTaskSchema,
     DeleteTaskSchema,
+    ToggleExpandedSchema,
     type CreateTaskInput,
     type UpdateTaskInput,
     type DeleteTaskInput,
+    type ToggleExpandedInput,
 } from "../schemas/task-action-schemas"
 import type { TaskDisplay } from "../schemas/task-schemas"
 
@@ -29,9 +31,60 @@ export async function getTasks(): Promise<TaskDisplay[]> {
         const tasks = await prisma.task.findMany({
             where: { userId: session.user.id },
             orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+            include: {
+                timeEntries: {
+                    where: {
+                        endTime: { not: null },
+                    },
+                    select: {
+                        duration: true,
+                    },
+                },
+            },
         })
 
-        return tasks
+        const taskMap = new Map(
+            tasks.map((task) => {
+                const directTime = task.timeEntries.reduce(
+                    (sum, entry) => sum + (entry.duration ?? 0),
+                    0
+                )
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { timeEntries, ...taskData } = task
+                return [
+                    task.id,
+                    {
+                        ...taskData,
+                        totalTime: directTime,
+                        directTime,
+                    },
+                ]
+            })
+        )
+
+        const calculateTotalTime = (taskId: string): number => {
+            const task = taskMap.get(taskId)
+            if (!task) return 0
+
+            const subtasks = Array.from(taskMap.values()).filter((t) => t.parentId === taskId)
+            const subtaskTime = subtasks.reduce(
+                (sum, subtask) => sum + calculateTotalTime(subtask.id),
+                0
+            )
+
+            const total = task.directTime + subtaskTime
+            task.totalTime = total
+            return total
+        }
+
+        tasks.forEach((task) => {
+            if (!task.parentId) {
+                calculateTotalTime(task.id)
+            }
+        })
+
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        return Array.from(taskMap.values()).map(({ directTime, ...task }) => task)
     } catch (error) {
         if (error instanceof Error) {
             throw error
@@ -150,5 +203,39 @@ export async function deleteTask(input: DeleteTaskInput) {
             return { error: error.message }
         }
         return { error: "Failed to delete task" }
+    }
+}
+
+export async function toggleTaskExpanded(input: ToggleExpandedInput) {
+    try {
+        const session = await requireAuth()
+
+        const validation = ToggleExpandedSchema.safeParse(input)
+        if (!validation.success) {
+            return { error: validation.error.issues[0].message }
+        }
+
+        const { id, isExpanded } = validation.data
+
+        const existing = await prisma.task.findUnique({
+            where: { id },
+        })
+
+        if (!existing || existing.userId !== session.user.id) {
+            return { error: "Task not found" }
+        }
+
+        await prisma.task.update({
+            where: { id },
+            data: { isExpanded },
+        })
+
+        revalidatePath("/tasks")
+        return { success: true }
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error.message }
+        }
+        return { error: "Failed to toggle task expansion" }
     }
 }

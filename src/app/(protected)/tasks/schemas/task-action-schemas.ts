@@ -25,7 +25,13 @@ export const DeleteTaskSchema = z.object({
     id: z.string(),
 })
 
+export const ToggleExpandedSchema = z.object({
+    id: z.string(),
+    isExpanded: z.boolean(),
+})
+
 export type TaskStatus = z.infer<typeof TaskStatusSchema>
 export type CreateTaskInput = z.infer<typeof CreateTaskSchema>
 export type UpdateTaskInput = z.infer<typeof UpdateTaskSchema>
 export type DeleteTaskInput = z.infer<typeof DeleteTaskSchema>
+export type ToggleExpandedInput = z.infer<typeof ToggleExpandedSchema>

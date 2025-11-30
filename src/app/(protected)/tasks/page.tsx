@@ -1,3 +1,8 @@
-export default function TasksPage() {
-    return <div>Tasks - Coming Soon</div>
+import { getTasks } from "./actions/task-actions"
+import { TasksView } from "./components/tasks-view"
+
+export default async function TasksPage() {
+    const tasks = await getTasks()
+
+    return <TasksView initialTasks={tasks} />
 }

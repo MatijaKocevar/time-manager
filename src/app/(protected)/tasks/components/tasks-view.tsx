@@ -1,0 +1,87 @@
+"use client"
+
+import { useEffect } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { Button } from "@/components/ui/button"
+import { Plus } from "lucide-react"
+import { getTasks } from "../actions/task-actions"
+import { getActiveTimer } from "../actions/task-time-actions"
+import { useTasksStore } from "../stores/tasks-store"
+import { taskKeys } from "../query-keys"
+import { TasksTable } from "./tasks-table"
+import { CreateTaskDialog } from "./create-task-dialog"
+import { DeleteTaskDialog } from "./delete-task-dialog"
+import { TimeEntriesDialog } from "./time-entries-dialog"
+import { getElapsedSeconds } from "../utils/time-helpers"
+import type { TaskDisplay } from "../schemas"
+
+interface TasksViewProps {
+    initialTasks: TaskDisplay[]
+}
+
+export function TasksView({ initialTasks }: TasksViewProps) {
+    const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
+    const activeTimers = useTasksStore((state) => state.activeTimers)
+    const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
+    const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
+    const updateElapsedTime = useTasksStore((state) => state.updateElapsedTime)
+
+    const { data: tasks = initialTasks } = useQuery({
+        queryKey: taskKeys.list({}),
+        queryFn: getTasks,
+        initialData: initialTasks,
+    })
+
+    const { data: activeTimerData } = useQuery({
+        queryKey: taskKeys.activeTimer(),
+        queryFn: getActiveTimer,
+        refetchInterval: 5000,
+    })
+
+    useEffect(() => {
+        if (activeTimerData && activeTimerData.endTime === null) {
+            if (!activeTimers.has(activeTimerData.taskId)) {
+                setActiveTimer(
+                    activeTimerData.taskId,
+                    activeTimerData.id,
+                    activeTimerData.startTime
+                )
+            }
+        } else if (!activeTimerData && activeTimers.size > 0) {
+            Array.from(activeTimers.keys()).forEach((taskId) => {
+                clearActiveTimer(taskId)
+            })
+        }
+    }, [activeTimerData, activeTimers, setActiveTimer, clearActiveTimer])
+
+    useEffect(() => {
+        if (activeTimers.size === 0) return
+
+        const interval = setInterval(() => {
+            activeTimers.forEach((timer, taskId) => {
+                const elapsed = getElapsedSeconds(timer.startTime)
+                updateElapsedTime(taskId, elapsed)
+            })
+        }, 1000)
+
+        return () => clearInterval(interval)
+    }, [activeTimers, updateElapsedTime])
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <h1 className="text-3xl font-bold">Tasks</h1>
+                <Button onClick={() => openCreateDialog()}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Task
+                </Button>
+            </div>
+
+            <TasksTable tasks={tasks} />
+
+            <CreateTaskDialog />
+            <DeleteTaskDialog />
+            <TimeEntriesDialog />
+        </div>
+    )
+}

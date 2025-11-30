@@ -9,6 +9,7 @@ export const TaskDisplaySchema = z.object({
     status: TaskStatusSchema,
     parentId: z.string().nullable(),
     order: z.number(),
+    isExpanded: z.boolean(),
     createdAt: z.date(),
     updatedAt: z.date(),
 })
@@ -18,4 +19,5 @@ export type TaskDisplay = z.infer<typeof TaskDisplaySchema>
 export interface TaskTreeNode extends TaskDisplay {
     subtasks: TaskTreeNode[]
     depth: number
+    totalTime?: number
 }
