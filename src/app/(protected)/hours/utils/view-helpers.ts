@@ -2,14 +2,17 @@ import type { ViewMode } from "../schemas/hour-filter-schemas"
 
 export function getDateRange(mode: ViewMode, referenceDate: Date = new Date()) {
     const start = new Date(referenceDate)
+    start.setHours(0, 0, 0, 0)
     const end = new Date(referenceDate)
+    end.setHours(0, 0, 0, 0)
 
     switch (mode) {
         case "WEEKLY":
             const dayOfWeek = start.getDay()
             const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
             start.setDate(start.getDate() - daysToMonday)
-            end.setDate(start.getDate() + 6)
+            end.setTime(start.getTime())
+            end.setDate(end.getDate() + 6)
             break
         case "MONTHLY":
             start.setDate(1)
