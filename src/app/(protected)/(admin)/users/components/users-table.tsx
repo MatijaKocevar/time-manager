@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import {
     Table,
@@ -21,11 +22,16 @@ interface UsersTableProps {
 }
 
 export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
+    const router = useRouter()
     const [searchQuery, setSearchQuery] = useState("")
 
     const filteredUsers = users.filter((user) =>
         user.name?.toLowerCase().includes(searchQuery.toLowerCase())
     )
+
+    const handleRowDoubleClick = (userId: string) => {
+        router.push(`/users/${userId}`)
+    }
 
     return (
         <>
@@ -69,7 +75,11 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                             </TableRow>
                         ) : (
                             filteredUsers.map((user) => (
-                                <TableRow key={user.id}>
+                                <TableRow
+                                    key={user.id}
+                                    onDoubleClick={() => handleRowDoubleClick(user.id)}
+                                    className="cursor-pointer"
+                                >
                                     <TableCell className="font-medium">
                                         {user.name}
                                         {user.id === currentUserId && (

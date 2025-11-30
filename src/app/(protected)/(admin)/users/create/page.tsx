@@ -3,7 +3,7 @@ import { UserForm } from "../components/user-form"
 
 export default async function CreateUserPage() {
     return (
-        <div className="container max-w-2xl py-6">
+        <div className="py-4">
             <Card>
                 <CardHeader>
                     <CardTitle>Create User</CardTitle>
