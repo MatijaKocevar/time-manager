@@ -23,7 +23,7 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
     const handleBlur = async () => {
         const hours = parseFloat(value)
 
-        if (!value || isNaN(hours) || hours <= 0) {
+        if (!value || isNaN(hours) || hours < 0) {
             setValue(entry?.hours?.toString() || "")
             return
         }
@@ -78,7 +78,7 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
                 onKeyDown={handleKeyDown}
                 disabled={isSaving}
                 className="h-8 w-16 text-center font-semibold border-0"
-                placeholder="0"
+                placeholder="-"
             />
             {entry?.description && (
                 <span className="text-xs text-muted-foreground truncate max-w-[60px]">

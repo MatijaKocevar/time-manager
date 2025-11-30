@@ -4,7 +4,7 @@ export const HourTypeSchema = z.enum(["WORK", "VACATION", "SICK_LEAVE", "WORK_FR
 
 const CreateHourEntryInputSchema = z.object({
     date: z.string(),
-    hours: z.number().min(0.5, "Hours must be at least 0.5").max(24, "Hours cannot exceed 24"),
+    hours: z.number().max(24, "Hours cannot exceed 24"),
     type: HourTypeSchema,
     description: z.string().optional(),
 })
@@ -17,7 +17,7 @@ export const CreateHourEntrySchema = CreateHourEntryInputSchema.transform((data)
 const UpdateHourEntryInputSchema = z.object({
     id: z.string(),
     date: z.string(),
-    hours: z.number().min(0.5, "Hours must be at least 0.5").max(24, "Hours cannot exceed 24"),
+    hours: z.number().max(24, "Hours cannot exceed 24"),
     type: HourTypeSchema,
     description: z.string().optional(),
 })
@@ -34,7 +34,7 @@ export const DeleteHourEntrySchema = z.object({
 const BulkCreateHourEntriesInputSchema = z.object({
     startDate: z.string(),
     endDate: z.string(),
-    hours: z.number().min(0.5).max(24),
+    hours: z.number().max(24),
     type: HourTypeSchema,
     description: z.string().optional(),
     skipWeekends: z.boolean().default(true),
