@@ -125,10 +125,21 @@ export async function stopTimer(input: StopTimerInput) {
             },
         })
 
-        // Recalculate daily summary for the date this time was tracked
         const entryDate = new Date(entry.startTime)
         entryDate.setHours(0, 0, 0, 0)
-        await recalculateDailySummaryStandalone(session.user.id, entryDate, "WORK")
+
+        const approvedRemoteRequest = await prisma.request.findFirst({
+            where: {
+                userId: session.user.id,
+                status: "APPROVED",
+                affectsHourType: true,
+                startDate: { lte: entryDate },
+                endDate: { gte: entryDate },
+            },
+        })
+
+        const hourType = approvedRemoteRequest ? "WORK_FROM_HOME" : "WORK"
+        await recalculateDailySummaryStandalone(session.user.id, entryDate, hourType)
 
         revalidatePath("/tasks")
         revalidatePath("/hours")

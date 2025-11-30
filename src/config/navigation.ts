@@ -1,4 +1,4 @@
-import { Users, Clock, Calendar, Timer, LucideIcon } from "lucide-react"
+import { Users, Clock, Calendar, Timer, FileText, LucideIcon } from "lucide-react"
 import { UserRole } from "@/types"
 
 export interface NavigationItem {
@@ -6,6 +6,7 @@ export interface NavigationItem {
     url: string
     icon: LucideIcon
     roles: UserRole[]
+    children?: NavigationItem[]
 }
 
 export const navigationItems: NavigationItem[] = [
@@ -28,9 +29,23 @@ export const navigationItems: NavigationItem[] = [
         roles: ["USER", "ADMIN"],
     },
     {
+        title: "Requests",
+        url: "/requests",
+        icon: FileText,
+        roles: ["USER", "ADMIN"],
+    },
+    {
         title: "Users",
         url: "/users",
         icon: Users,
         roles: ["ADMIN"],
+        children: [
+            {
+                title: "Requests",
+                url: "/users/requests",
+                icon: FileText,
+                roles: ["ADMIN"],
+            },
+        ],
     },
 ]

@@ -59,6 +59,21 @@ enum TaskStatus {
   BLOCKED
 }
 
+enum RequestType {
+  VACATION
+  SICK_LEAVE
+  WORK_FROM_HOME
+  REMOTE_WORK
+  OTHER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -76,6 +91,9 @@ model User {
   tasks             Task[]
   taskTimeEntries   TaskTimeEntry[]
   dailyHourSummary  DailyHourSummary[]
+  requests          Request[]
+  approvedRequests  Request[]         @relation("ApprovedRequests")
+  rejectedRequests  Request[]         @relation("RejectedRequests")
 }
 
 model HourEntry {
@@ -156,6 +174,34 @@ model DailyHourSummary {
   @@index([userId])
   @@index([date])
   @@index([userId, date])
+}
+
+model Request {
+  id              String        @id @default(cuid())
+  userId          String
+  type            RequestType
+  status          RequestStatus @default(PENDING)
+  startDate       DateTime
+  endDate         DateTime
+  reason          String?
+  location        String?
+  affectsHourType Boolean       @default(false)
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectedBy      String?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  approver User? @relation("ApprovedRequests", fields: [approvedBy], references: [id], onDelete: SetNull)
+  rejector User? @relation("RejectedRequests", fields: [rejectedBy], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+  @@index([userId, status])
 }
 
 model VerificationToken {
