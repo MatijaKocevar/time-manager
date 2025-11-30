@@ -48,6 +48,26 @@ export async function getUsers() {
     return users
 }
 
+export async function getUserById(id: string) {
+    await requireAdmin()
+
+    const user = await prisma.user.findUnique({
+        where: { id },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+        },
+    })
+
+    if (!user) {
+        throw new Error("User not found")
+    }
+
+    return user
+}
+
 export async function createUser(input: CreateUserInput) {
     await requireAdmin()
 

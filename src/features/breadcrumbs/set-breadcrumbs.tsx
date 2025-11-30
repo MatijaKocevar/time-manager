@@ -1,7 +1,4 @@
-"use client"
-
-import { useEffect } from "react"
-import { useBreadcrumbStore } from "./breadcrumb-store"
+import { setBreadcrumbs } from "./breadcrumb-context"
 
 interface BreadcrumbItem {
     label: string
@@ -13,11 +10,6 @@ interface SetBreadcrumbsProps {
 }
 
 export function SetBreadcrumbs({ items }: SetBreadcrumbsProps) {
-    const setItems = useBreadcrumbStore((state) => state.setItems)
-
-    useEffect(() => {
-        setItems(items)
-    }, [items, setItems])
-
+    setBreadcrumbs(items)
     return null
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import {
     Table,
     TableBody,
@@ -8,21 +9,12 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { EditUserDialog } from "./edit-user-dialog"
-import { ChangePasswordDialog } from "./change-password-dialog"
-import { DeleteUserDialog } from "./delete-user-dialog"
-import type { UserRole } from "@/types"
-
-interface User {
-    id: string
-    name: string | null
-    email: string
-    role: UserRole
-    createdAt: Date
-}
+import { Button } from "@/components/ui/button"
+import { Edit } from "lucide-react"
+import type { UserTableItem } from "../schemas/user-table-schemas"
 
 interface UsersTableProps {
-    users: User[]
+    users: UserTableItem[]
     currentUserId: string
 }
 
@@ -73,18 +65,12 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                                     {new Date(user.createdAt).toLocaleDateString()}
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        <EditUserDialog user={user} />
-                                        <ChangePasswordDialog
-                                            userId={user.id}
-                                            userName={user.name}
-                                        />
-                                        <DeleteUserDialog
-                                            userId={user.id}
-                                            userName={user.name}
-                                            userEmail={user.email}
-                                        />
-                                    </div>
+                                    <Button variant="outline" size="sm" asChild>
+                                        <Link href={`/admin/users/${user.id}/edit`}>
+                                            <Edit className="h-4 w-4 mr-2" />
+                                            Edit
+                                        </Link>
+                                    </Button>
                                 </TableCell>
                             </TableRow>
                         ))
