@@ -22,22 +22,26 @@ export const CreateUserSchema = z.object({
     role: UserRoleSchema.optional(),
 })
 
-export const UserCredentialsSchema = z.object({
-    email: z.string().email(),
-    password: z.string().min(6),
+export const UpdateUserSchema = z.object({
+    id: z.string(),
+    name: z.string().min(1, "Name is required"),
+    role: UserRoleSchema,
 })
 
-export const AuthUserSchema = z.object({
+export const DeleteUserSchema = z.object({
     id: z.string(),
-    email: z.string().email(),
-    name: z.string().nullable(),
-    image: z.string().nullable(),
-    role: UserRoleSchema,
+})
+
+export const ChangeUserPasswordSchema = z.object({
+    id: z.string(),
+    newPassword: z.string().min(6, "Password must be at least 6 characters"),
 })
 
 export type UserRole = z.infer<typeof UserRoleSchema>
 export type User = z.infer<typeof UserSchema>
 export type CreateUser = z.infer<typeof CreateUserSchema>
 export type CreateUserInput = z.infer<typeof CreateUserSchema>
-export type UserCredentials = z.infer<typeof UserCredentialsSchema>
-export type AuthUser = z.infer<typeof AuthUserSchema>
+export type UpdateUserInput = z.infer<typeof UpdateUserSchema>
+export type DeleteUserInput = z.infer<typeof DeleteUserSchema>
+export type ChangeUserPasswordInput = z.infer<typeof ChangeUserPasswordSchema>
+export type UserPublicProfile = Pick<User, "id" | "name" | "email" | "role">

@@ -1,61 +1,71 @@
 import { create } from "zustand"
-import { UserRole } from "@/types"
+import type { UserRole } from "@/types"
 
-interface CreateFormData {
-    name: string
-    email: string
-    password: string
-    role: UserRole
-}
-
-interface EditFormData {
-    id: string
-    name: string | null
-    role: UserRole
-}
-
-interface ChangePasswordFormData {
-    id: string
-    newPassword: string
-}
-
-interface DeleteFormData {
-    id: string
-}
-
-interface UserFormStore {
+export const useUserFormStore = create<{
     createForm: {
-        data: CreateFormData
+        data: {
+            name: string
+            email: string
+            password: string
+            role: UserRole
+        }
         isLoading: boolean
         error: string
     }
     editForm: {
-        data: EditFormData | null
+        data: {
+            id: string
+            name: string | null
+            role: UserRole
+        } | null
         isLoading: boolean
         error: string
     }
     changePasswordForm: {
-        data: ChangePasswordFormData | null
+        data: {
+            id: string
+            newPassword: string
+        } | null
         isLoading: boolean
         error: string
     }
     deleteForm: {
-        data: DeleteFormData | null
+        data: {
+            id: string
+        } | null
         isLoading: boolean
         error: string
     }
-    setCreateFormData: (data: Partial<CreateFormData>) => void
+    setCreateFormData: (
+        data: Partial<{
+            name: string
+            email: string
+            password: string
+            role: UserRole
+        }>
+    ) => void
     resetCreateForm: () => void
     setCreateLoading: (isLoading: boolean) => void
     setCreateError: (error: string) => void
     clearCreateError: () => void
-    setEditFormData: (data: Partial<EditFormData>) => void
-    initializeEditForm: (user: EditFormData) => void
+    setEditFormData: (
+        data: Partial<{
+            id: string
+            name: string | null
+            role: UserRole
+        }>
+    ) => void
+    initializeEditForm: (user: { id: string; name: string | null; role: UserRole }) => void
     resetEditForm: () => void
     setEditLoading: (isLoading: boolean) => void
     setEditError: (error: string) => void
     clearEditError: () => void
-    setChangePasswordFormData: (data: Partial<ChangePasswordFormData>) => void
+    setChangePasswordFormData: (
+        data: Partial<{
+            id: string
+            newPassword: string
+        }>
+    ) => void
     initializeChangePasswordForm: (userId: string) => void
     resetChangePasswordForm: () => void
     setChangePasswordLoading: (isLoading: boolean) => void
@@ -66,9 +76,7 @@ interface UserFormStore {
     setDeleteLoading: (isLoading: boolean) => void
     setDeleteError: (error: string) => void
     clearDeleteError: () => void
-}
-
-export const useUserFormStore = create<UserFormStore>((set) => ({
+}>((set) => ({
     createForm: {
         data: {
             name: "",

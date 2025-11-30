@@ -5,11 +5,12 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
-import { CreateUserSchema, type CreateUserInput } from "@/types"
 import {
+    CreateUserSchema,
     UpdateUserSchema,
     DeleteUserSchema,
     ChangeUserPasswordSchema,
+    type CreateUserInput,
     type UpdateUserInput,
     type DeleteUserInput,
     type ChangeUserPasswordInput,
@@ -127,7 +128,7 @@ export async function updateUser(input: UpdateUserInput) {
             data: { name, role },
         })
 
-        revalidatePath("/admin/users")
+        revalidatePath("/users")
         return { success: true }
     } catch {
         return { error: "Failed to update user" }
@@ -172,7 +173,7 @@ export async function deleteUser(input: DeleteUserInput) {
             where: { id },
         })
 
-        revalidatePath("/admin/users")
+        revalidatePath("/users")
         return { success: true }
     } catch {
         return { error: "Failed to delete user" }
@@ -198,7 +199,7 @@ export async function changeUserPassword(input: ChangeUserPasswordInput) {
             data: { password: hashedPassword },
         })
 
-        revalidatePath("/admin/users")
+        revalidatePath("/users")
         return { success: true }
     } catch {
         return { error: "Failed to change password" }

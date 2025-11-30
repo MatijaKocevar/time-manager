@@ -1,3 +1,3 @@
 export { Breadcrumbs } from "./breadcrumbs"
-export { SetBreadcrumbs } from "./set-breadcrumbs"
-export { getBreadcrumbs } from "./breadcrumb-context"
+export { SetBreadcrumbData } from "./set-breadcrumb-data"
+export { useBreadcrumbStore } from "./breadcrumb-store"

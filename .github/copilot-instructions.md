@@ -5,6 +5,7 @@
 ### TypeScript Requirements
 
 - Never use `any` types - always provide explicit, strict typing
+- Never use non-null assertions (`!`) - handle null/undefined cases explicitly
 - Use proper TypeScript interfaces and type definitions
 - Prefer `unknown` over `any` when type is uncertain
 - Use generic types and constraints where appropriate
@@ -66,8 +67,8 @@
 - Only general/shared types go in src/types/
 - Derive TypeScript types from Zod schemas using z.infer
 - Exceptions: TypeScript interfaces are allowed ONLY for:
-  - Zustand store state and action definitions
-  - React component props
+    - Zustand store state and action definitions
+    - React component props
 - Each feature manages its own query keys in query-keys.ts
 
 ### Naming Conventions

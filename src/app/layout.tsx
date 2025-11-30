@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-    title: "Time Management App",
+    title: "Time Manager",
     description: "Manage your time and tasks efficiently",
 }
 

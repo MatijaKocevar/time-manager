@@ -29,7 +29,7 @@ export const navigationItems: NavigationItem[] = [
     },
     {
         title: "Users",
-        url: "/admin/users",
+        url: "/users",
         icon: Users,
         roles: ["ADMIN"],
     },

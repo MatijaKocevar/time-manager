@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { UserRoleSchema } from "@/types"
+import { UserRoleSchema } from "./user-action-schemas"
 
 export const UserTableItemSchema = z.object({
     id: z.string(),

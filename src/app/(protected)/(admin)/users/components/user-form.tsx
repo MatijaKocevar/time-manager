@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Trash2 } from "lucide-react"
-import { UserRole } from "@/types"
+import type { UserRole } from "@/types"
 
 interface UserFormProps {
     user?: {
@@ -23,12 +23,14 @@ interface UserFormProps {
 export function UserForm({ user }: UserFormProps) {
     const router = useRouter()
     const isEditMode = !!user
-    
+
     const name = useUserFormStore((state) => state.createForm.data.name)
     const email = useUserFormStore((state) => state.createForm.data.email)
     const password = useUserFormStore((state) => state.createForm.data.password)
     const role = useUserFormStore((state) => state.createForm.data.role)
-    const newPassword = useUserFormStore((state) => state.changePasswordForm.data?.newPassword || "")
+    const newPassword = useUserFormStore(
+        (state) => state.changePasswordForm.data?.newPassword || ""
+    )
     const isLoading = useUserFormStore((state) => state.createForm.isLoading)
     const isPasswordLoading = useUserFormStore((state) => state.changePasswordForm.isLoading)
     const isDeleteLoading = useUserFormStore((state) => state.deleteForm.isLoading)
@@ -105,7 +107,8 @@ export function UserForm({ user }: UserFormProps) {
     }
 
     const handleDelete = async () => {
-        if (!user || !confirm(`Are you sure you want to delete ${user.name || "this user"}?`)) return
+        if (!user || !confirm(`Are you sure you want to delete ${user.name || "this user"}?`))
+            return
 
         clearDeleteError()
         setDeleteLoading(true)
@@ -173,13 +176,19 @@ export function UserForm({ user }: UserFormProps) {
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => router.push("/admin/users")}
+                        onClick={() => router.push("/users")}
                         disabled={isLoading}
                     >
                         Cancel
                     </Button>
                     <Button type="submit" disabled={isLoading}>
-                        {isLoading ? (isEditMode ? "Saving..." : "Creating...") : (isEditMode ? "Save Changes" : "Create User")}
+                        {isLoading
+                            ? isEditMode
+                                ? "Saving..."
+                                : "Creating..."
+                            : isEditMode
+                              ? "Save Changes"
+                              : "Create User"}
                     </Button>
                 </div>
             </form>
@@ -212,7 +221,8 @@ export function UserForm({ user }: UserFormProps) {
                         <div>
                             <h3 className="text-lg font-medium">Delete User</h3>
                             <p className="text-sm text-muted-foreground">
-                                Permanently remove this user from the system. This action cannot be undone.
+                                Permanently remove this user from the system. This action cannot be
+                                undone.
                             </p>
                         </div>
                         {deleteError && <p className="text-sm text-red-500">{deleteError}</p>}

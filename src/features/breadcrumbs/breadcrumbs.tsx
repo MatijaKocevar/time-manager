@@ -1,36 +1,132 @@
-import { ChevronRight, Home } from "lucide-react"
-import Link from "next/link"
+"use client"
 
-interface BreadcrumbItem {
+import { ChevronRight, Home, MoreHorizontal } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import { useBreadcrumbStore } from "./breadcrumb-store"
+
+interface BreadcrumbSegment {
     label: string
-    href?: string
+    href: string
 }
 
 interface BreadcrumbsProps {
-    items: BreadcrumbItem[]
+    overrides?: Record<string, string>
 }
 
-export function Breadcrumbs({ items }: BreadcrumbsProps) {
+function generateBreadcrumbsFromPath(pathname: string): BreadcrumbSegment[] {
+    const segments = pathname.split("/").filter(Boolean)
+    const breadcrumbs: BreadcrumbSegment[] = []
+
+    let currentPath = ""
+    for (const segment of segments) {
+        currentPath += `/${segment}`
+        const label = segment
+            .split("-")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ")
+
+        breadcrumbs.push({
+            label,
+            href: currentPath,
+        })
+    }
+
+    return breadcrumbs
+}
+
+export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
+    const pathname = usePathname()
+    const dynamicOverrides = useBreadcrumbStore((state) => state.overrides)
+
+    const generated = generateBreadcrumbsFromPath(pathname)
+    const allOverrides = { ...overrides, ...dynamicOverrides }
+    const breadcrumbs = generated.map((crumb) => ({
+        ...crumb,
+        label: allOverrides[crumb.href] || crumb.label,
+    }))
+
+    if (breadcrumbs.length === 0) {
+        return null
+    }
+
+    if (breadcrumbs.length === 1) {
+        return (
+            <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
+                <Link
+                    href="/tracker"
+                    className="flex items-center hover:text-foreground transition-colors"
+                >
+                    <Home className="h-4 w-4" />
+                </Link>
+                <ChevronRight className="h-4 w-4 mx-1" />
+                <span className="font-medium text-foreground">{breadcrumbs[0].label}</span>
+            </nav>
+        )
+    }
+
+    if (breadcrumbs.length === 2) {
+        return (
+            <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
+                <Link
+                    href="/tracker"
+                    className="flex items-center hover:text-foreground transition-colors"
+                >
+                    <Home className="h-4 w-4" />
+                </Link>
+                <ChevronRight className="h-4 w-4 mx-1" />
+                <Link
+                    href={breadcrumbs[0].href}
+                    className="hover:text-foreground transition-colors"
+                >
+                    {breadcrumbs[0].label}
+                </Link>
+                <ChevronRight className="h-4 w-4 mx-1" />
+                <span className="font-medium text-foreground">{breadcrumbs[1].label}</span>
+            </nav>
+        )
+    }
+
+    const middleCrumbs = breadcrumbs.slice(0, -2)
+    const previousCrumb = breadcrumbs[breadcrumbs.length - 2]
+    const lastCrumb = breadcrumbs[breadcrumbs.length - 1]
+
     return (
         <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
             <Link
-                href="/"
+                href="/tracker"
                 className="flex items-center hover:text-foreground transition-colors"
             >
                 <Home className="h-4 w-4" />
             </Link>
-            {items.map((item, index) => (
-                <div key={index} className="flex items-center">
-                    <ChevronRight className="h-4 w-4 mx-1" />
-                    {item.href ? (
-                        <Link href={item.href} className="hover:text-foreground transition-colors">
-                            {item.label}
-                        </Link>
-                    ) : (
-                        <span className="font-medium text-foreground">{item.label}</span>
-                    )}
-                </div>
-            ))}
+            <ChevronRight className="h-4 w-4 mx-1" />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-auto p-0 hover:bg-transparent">
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                    {middleCrumbs.map((crumb, index) => (
+                        <DropdownMenuItem key={index} asChild>
+                            <Link href={crumb.href}>{crumb.label}</Link>
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <ChevronRight className="h-4 w-4 mx-1" />
+            <Link href={previousCrumb.href} className="hover:text-foreground transition-colors">
+                {previousCrumb.label}
+            </Link>
+            <ChevronRight className="h-4 w-4 mx-1" />
+            <span className="font-medium text-foreground">{lastCrumb.label}</span>
         </nav>
     )
 }
