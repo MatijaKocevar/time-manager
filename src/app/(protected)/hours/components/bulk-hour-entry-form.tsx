@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,21 +13,15 @@ import {
 } from "@/components/ui/select"
 import { useHoursStore } from "../stores/hours-store"
 import { bulkCreateHourEntries } from "../actions/hour-actions"
-
-const HOUR_TYPES = [
-    { value: "WORK", label: "Work" },
-    { value: "VACATION", label: "Vacation" },
-    { value: "SICK_LEAVE", label: "Sick Leave" },
-    { value: "WORK_FROM_HOME", label: "Work From Home" },
-    { value: "OTHER", label: "Other" },
-]
+import { HOUR_TYPES } from "../constants/hour-types"
+import { hourKeys } from "../query-keys"
 
 interface HourEntryFormProps {
     onSuccess?: () => void
 }
 
 export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
-    const router = useRouter()
+    const queryClient = useQueryClient()
     const bulkEntryForm = useHoursStore((state) => state.bulkEntryForm)
     const setBulkEntryFormData = useHoursStore((state) => state.setBulkEntryFormData)
     const setBulkEntryLoading = useHoursStore((state) => state.setBulkEntryLoading)
@@ -65,7 +59,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
         }
 
         resetBulkEntryForm()
-        router.refresh()
+        queryClient.invalidateQueries({ queryKey: hourKeys.all })
         onSuccess?.()
     }
 

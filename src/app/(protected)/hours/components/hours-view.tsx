@@ -16,44 +16,13 @@ import { HoursSummary } from "./hours-summary"
 import { HourEntryForm } from "./bulk-hour-entry-form"
 import { getHourEntries } from "../actions/hour-actions"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
-
-type ViewMode = "WEEKLY" | "MONTHLY"
+import type { ViewMode } from "../schemas/hour-filter-schemas"
+import { getDateRange, getViewTitle } from "../utils/view-helpers"
+import { hourKeys } from "../query-keys"
 
 interface HoursViewProps {
     initialEntries: HourEntryDisplay[]
     initialMode: ViewMode
-}
-
-function getDateRange(mode: ViewMode, referenceDate: Date = new Date()) {
-    const start = new Date(referenceDate)
-    const end = new Date(referenceDate)
-
-    switch (mode) {
-        case "WEEKLY":
-            const dayOfWeek = start.getDay()
-            const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-            start.setDate(start.getDate() - daysToMonday)
-            end.setDate(start.getDate() + 6)
-            break
-        case "MONTHLY":
-            start.setDate(1)
-            end.setMonth(end.getMonth() + 1, 0)
-            break
-    }
-
-    const formatDate = (date: Date) => {
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, "0")
-        const day = String(date.getDate()).padStart(2, "0")
-        return `${year}-${month}-${day}`
-    }
-
-    return {
-        start,
-        end,
-        startDate: formatDate(start),
-        endDate: formatDate(end),
-    }
 }
 
 export function HoursView({ initialEntries, initialMode }: HoursViewProps) {
@@ -65,7 +34,7 @@ export function HoursView({ initialEntries, initialMode }: HoursViewProps) {
     const monthRange = getDateRange("MONTHLY", new Date())
 
     const { data: entries = [], isLoading } = useQuery({
-        queryKey: ["hours", dateRange.startDate, dateRange.endDate],
+        queryKey: hourKeys.list({ startDate: dateRange.startDate, endDate: dateRange.endDate }),
         queryFn: () => getHourEntries(dateRange.startDate, dateRange.endDate),
         initialData: () => {
             const initial = getDateRange(initialMode, new Date())
@@ -80,7 +49,7 @@ export function HoursView({ initialEntries, initialMode }: HoursViewProps) {
     })
 
     const { data: monthlyEntries, isLoading: isLoadingMonthly } = useQuery({
-        queryKey: ["hours-monthly", monthRange.startDate, monthRange.endDate],
+        queryKey: hourKeys.monthlySummary(monthRange.startDate),
         queryFn: () => getHourEntries(monthRange.startDate, monthRange.endDate),
         initialData: () => {
             const currentMonth = getDateRange("MONTHLY", new Date())
@@ -112,16 +81,6 @@ export function HoursView({ initialEntries, initialMode }: HoursViewProps) {
         setCurrentDate(newDate)
     }
 
-    const getTitle = () => {
-        if (viewMode === "WEEKLY") {
-            const start = dateRange.start
-            const end = dateRange.end
-            return `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
-        } else {
-            return currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
-        }
-    }
-
     return (
         <>
             <HoursSummary entries={monthlyEntries || []} isLoading={isLoadingMonthly} />
@@ -137,7 +96,9 @@ export function HoursView({ initialEntries, initialMode }: HoursViewProps) {
                         >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <h2 className="text-xl font-semibold min-w-0 text-center">{getTitle()}</h2>
+                        <h2 className="text-xl font-semibold min-w-0 text-center">
+                            {getViewTitle(viewMode, dateRange, currentDate)}
+                        </h2>
                         <Button
                             variant="outline"
                             size="sm"
@@ -193,11 +154,6 @@ export function HoursView({ initialEntries, initialMode }: HoursViewProps) {
                     </div>
                 </div>
                 <div className="relative">
-                    {isLoading && (
-                        <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-20">
-                            <span className="text-muted-foreground">Loading...</span>
-                        </div>
-                    )}
                     <HoursTable
                         entries={entries || []}
                         viewMode={viewMode}
