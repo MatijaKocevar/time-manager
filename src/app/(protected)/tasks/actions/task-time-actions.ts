@@ -11,6 +11,7 @@ import {
     type StopTimerInput,
     type TaskTimeEntryDisplay,
 } from "../schemas/task-time-entry-schemas"
+import { recalculateDailySummaryStandalone } from "@/app/(protected)/hours/utils/summary-helpers"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -124,7 +125,13 @@ export async function stopTimer(input: StopTimerInput) {
             },
         })
 
+        // Recalculate daily summary for the date this time was tracked
+        const entryDate = new Date(entry.startTime)
+        entryDate.setHours(0, 0, 0, 0)
+        await recalculateDailySummaryStandalone(session.user.id, entryDate, "WORK")
+
         revalidatePath("/tasks")
+        revalidatePath("/hours")
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {

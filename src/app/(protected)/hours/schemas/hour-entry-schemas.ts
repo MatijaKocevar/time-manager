@@ -8,6 +8,7 @@ export const HourEntryDisplaySchema = z.object({
     hours: z.number(),
     type: HourTypeSchema,
     description: z.string().nullable(),
+    taskId: z.string().nullable(),
     createdAt: z.date(),
     updatedAt: z.date(),
 })

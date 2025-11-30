@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
+import { recalculateDailySummary } from "../utils/summary-helpers"
 import {
     CreateHourEntrySchema,
     UpdateHourEntrySchema,
@@ -34,14 +35,18 @@ export async function createHourEntry(input: CreateHourEntryInput) {
 
         const { date, hours, type, description } = validation.data
 
-        await prisma.hourEntry.create({
-            data: {
-                userId: session.user.id,
-                date,
-                hours,
-                type,
-                description,
-            },
+        await prisma.$transaction(async (tx) => {
+            await tx.hourEntry.create({
+                data: {
+                    userId: session.user.id,
+                    date,
+                    hours,
+                    type,
+                    description,
+                },
+            })
+
+            await recalculateDailySummary(tx, session.user.id, date, type)
         })
 
         revalidatePath("/hours")
@@ -73,14 +78,27 @@ export async function updateHourEntry(input: UpdateHourEntryInput) {
             return { error: "Hour entry not found" }
         }
 
-        await prisma.hourEntry.update({
-            where: { id },
-            data: {
-                date,
-                hours,
-                type,
-                description,
-            },
+        await prisma.$transaction(async (tx) => {
+            await tx.hourEntry.update({
+                where: { id },
+                data: {
+                    date,
+                    hours,
+                    type,
+                    description,
+                },
+            })
+
+            // Recalculate summary for old date/type
+            await recalculateDailySummary(tx, session.user.id, existing.date, existing.type)
+
+            // If date or type changed, also recalculate for new date/type
+            const dateChanged = date.getTime() !== existing.date.getTime()
+            const typeChanged = type !== existing.type
+
+            if (dateChanged || typeChanged) {
+                await recalculateDailySummary(tx, session.user.id, date, type)
+            }
         })
 
         revalidatePath("/hours")
@@ -112,8 +130,12 @@ export async function deleteHourEntry(input: DeleteHourEntryInput) {
             return { error: "Hour entry not found" }
         }
 
-        await prisma.hourEntry.delete({
-            where: { id },
+        await prisma.$transaction(async (tx) => {
+            await tx.hourEntry.delete({
+                where: { id },
+            })
+
+            await recalculateDailySummary(tx, session.user.id, existing.date, existing.type)
         })
 
         revalidatePath("/hours")
@@ -141,7 +163,13 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
             return { error: "Start date must be before end date" }
         }
 
-        const entries = []
+        const entries: Array<{
+            userId: string
+            date: Date
+            hours: number
+            type: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER"
+            description: string | null
+        }> = []
         const currentDate = new Date(startDate)
 
         while (currentDate <= endDate) {
@@ -165,7 +193,7 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
                         date: entryDate,
                         hours,
                         type,
-                        description,
+                        description: description ?? null,
                     })
                 }
             }
@@ -174,8 +202,23 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
         }
 
         if (entries.length > 0) {
-            await prisma.hourEntry.createMany({
-                data: entries,
+            await prisma.$transaction(async (tx) => {
+                await tx.hourEntry.createMany({
+                    data: entries,
+                })
+
+                // Recalculate summaries for all unique date/type combinations
+                const uniqueCombinations = new Map<string, { date: Date; type: typeof type }>()
+                for (const entry of entries) {
+                    const key = `${entry.date.toISOString()}-${entry.type}`
+                    if (!uniqueCombinations.has(key)) {
+                        uniqueCombinations.set(key, { date: entry.date, type: entry.type })
+                    }
+                }
+
+                for (const { date, type } of uniqueCombinations.values()) {
+                    await recalculateDailySummary(tx, session.user.id, date, type)
+                }
             })
         }
 
@@ -198,7 +241,7 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
             return new Date(year, month - 1, day)
         }
 
-        const entries = await prisma.hourEntry.findMany({
+        const summaries = await prisma.dailyHourSummary.findMany({
             where: {
                 userId: session.user.id,
                 ...(startDate && endDate
@@ -225,7 +268,97 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
             },
         })
 
-        return entries
+        const manualEntries = await prisma.hourEntry.findMany({
+            where: {
+                userId: session.user.id,
+                taskId: null,
+                ...(startDate && endDate
+                    ? {
+                          date: {
+                              gte: parseDate(startDate),
+                              lte: parseDate(endDate),
+                          },
+                      }
+                    : {}),
+                ...(type
+                    ? {
+                          type: type as
+                              | "WORK"
+                              | "VACATION"
+                              | "SICK_LEAVE"
+                              | "WORK_FROM_HOME"
+                              | "OTHER",
+                      }
+                    : {}),
+            },
+            orderBy: {
+                date: "desc",
+            },
+        })
+
+        const manualEntriesByDateAndType = new Map<string, (typeof manualEntries)[0]>()
+        for (const entry of manualEntries) {
+            const date = new Date(entry.date)
+            date.setHours(0, 0, 0, 0)
+            const key = `${date.toISOString()}-${entry.type}`
+            manualEntriesByDateAndType.set(key, entry)
+        }
+
+        const entries = summaries.flatMap((summary) => {
+            const baseDate = summary.date.toISOString()
+            const result = []
+
+            if (summary.totalHours > 0) {
+                result.push({
+                    id: `total-${summary.type}-${baseDate}`,
+                    userId: session.user.id,
+                    date: summary.date,
+                    hours: summary.totalHours,
+                    type: summary.type,
+                    description: null,
+                    taskId: "total",
+                    createdAt: summary.createdAt,
+                    updatedAt: summary.updatedAt,
+                })
+            }
+
+            if (summary.trackedHours > 0) {
+                result.push({
+                    id: `tracked-${summary.type}-${baseDate}`,
+                    userId: session.user.id,
+                    date: summary.date,
+                    hours: summary.trackedHours,
+                    type: summary.type,
+                    description: null,
+                    taskId: "tracked",
+                    createdAt: summary.createdAt,
+                    updatedAt: summary.updatedAt,
+                })
+            }
+
+            const summaryDate = new Date(summary.date)
+            summaryDate.setHours(0, 0, 0, 0)
+            const manualKey = `${summaryDate.toISOString()}-${summary.type}`
+            const manualEntry = manualEntriesByDateAndType.get(manualKey)
+
+            if (manualEntry) {
+                result.push({
+                    id: manualEntry.id,
+                    userId: manualEntry.userId,
+                    date: manualEntry.date,
+                    hours: manualEntry.hours,
+                    type: manualEntry.type,
+                    description: manualEntry.description,
+                    taskId: manualEntry.taskId,
+                    createdAt: manualEntry.createdAt,
+                    updatedAt: manualEntry.updatedAt,
+                })
+            }
+
+            return result
+        })
+
+        return entries.sort((a, b) => b.date.getTime() - a.date.getTime())
     } catch (error) {
         console.error("Error fetching hour entries:", error)
         throw new Error("Failed to fetch hour entries")

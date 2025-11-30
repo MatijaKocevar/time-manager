@@ -19,6 +19,7 @@ import {
     groupEntriesByType,
     getTypeLabel,
     getTypeColor,
+    getRowBgColor,
 } from "../utils/table-helpers"
 
 interface HoursTableProps {
@@ -38,7 +39,17 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
     const renderWeeklyOrMonthlyView = () => {
         const dates = generateDateColumns(startDate, endDate)
         const groupedEntries = groupEntriesByType(entries)
-        const allTypes = HOUR_TYPES.map((t) => t.value)
+
+        const allRowKeys: string[] = []
+        HOUR_TYPES.forEach((hourType) => {
+            const trackedKey = `${hourType.value}_TRACKED`
+            const manualKey = `${hourType.value}_MANUAL`
+            const totalKey = `${hourType.value}_TOTAL`
+
+            allRowKeys.push(totalKey)
+            allRowKeys.push(trackedKey)
+            allRowKeys.push(manualKey)
+        })
 
         return (
             <div className="rounded-md border overflow-x-auto">
@@ -69,39 +80,60 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {allTypes.map((type) => (
-                            <TableRow key={type}>
-                                <TableCell className="font-medium sticky left-0 bg-background z-10">
-                                    <span
-                                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(type)}`}
-                                    >
-                                        {getTypeLabel(type)}
-                                    </span>
-                                </TableCell>
-                                {dates.map((date) => {
-                                    const year = date.getFullYear()
-                                    const month = String(date.getMonth() + 1).padStart(2, "0")
-                                    const day = String(date.getDate()).padStart(2, "0")
-                                    const dateKey = `${year}-${month}-${day}`
-                                    const entry = groupedEntries[type]?.[dateKey]
-                                    const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                        {allRowKeys.map((rowKey) => {
+                            const baseType = rowKey
+                                .replace("_TRACKED", "")
+                                .replace("_MANUAL", "")
+                                .replace("_TOTAL", "")
+                            const isReadOnly = rowKey.includes("_TRACKED")
+                            const isTotal = rowKey.includes("_TOTAL")
 
-                                    return (
-                                        <TableCell
-                                            key={dateKey}
-                                            className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
+                            return (
+                                <TableRow key={rowKey} className={getRowBgColor(rowKey)}>
+                                    <TableCell
+                                        className={`font-medium sticky left-0 z-10 ${getRowBgColor(rowKey)}`}
+                                    >
+                                        <span
+                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(rowKey)}`}
                                         >
-                                            <EditableHourCell
-                                                entry={entry}
-                                                dateKey={dateKey}
-                                                type={type}
-                                                onUpdate={handleUpdate}
-                                            />
-                                        </TableCell>
-                                    )
-                                })}
-                            </TableRow>
-                        ))}
+                                            {getTypeLabel(rowKey)}
+                                        </span>
+                                    </TableCell>
+                                    {dates.map((date) => {
+                                        const year = date.getFullYear()
+                                        const month = String(date.getMonth() + 1).padStart(2, "0")
+                                        const day = String(date.getDate()).padStart(2, "0")
+                                        const dateKey = `${year}-${month}-${day}`
+
+                                        const entry = groupedEntries[rowKey]?.[dateKey]
+                                        const isWeekend = date.getDay() === 0 || date.getDay() === 6
+
+                                        return (
+                                            <TableCell
+                                                key={dateKey}
+                                                className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
+                                            >
+                                                <EditableHourCell
+                                                    entry={
+                                                        isReadOnly || isTotal
+                                                            ? {
+                                                                  ...entry,
+                                                                  taskId: isTotal
+                                                                      ? "total"
+                                                                      : "tracked",
+                                                              }
+                                                            : entry
+                                                    }
+                                                    dateKey={dateKey}
+                                                    type={baseType}
+                                                    onUpdate={handleUpdate}
+                                                />
+                                            </TableCell>
+                                        )
+                                    })}
+                                </TableRow>
+                            )
+                        })}
                     </TableBody>
                 </Table>
             </div>
