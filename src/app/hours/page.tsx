@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { SetBreadcrumbs } from "@/features/breadcrumbs"
 
 export default async function HoursPage() {
     const session = await getServerSession(authConfig)
@@ -9,12 +10,5 @@ export default async function HoursPage() {
         redirect("/login")
     }
 
-    return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Time Management</h1>
-                <p className="text-muted-foreground">Edit and manage your hours</p>
-            </div>
-        </div>
-    )
+    return <SetBreadcrumbs items={[{ label: "Hours" }]} />
 }

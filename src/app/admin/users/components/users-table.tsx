@@ -28,15 +28,15 @@ interface UsersTableProps {
 
 export function UsersTable({ users, currentUserId }: UsersTableProps) {
     return (
-        <div className="rounded-md border">
+        <div className="rounded-md border overflow-auto">
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Created</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead className="min-w-[150px]">Name</TableHead>
+                        <TableHead className="min-w-[200px]">Email</TableHead>
+                        <TableHead className="min-w-[100px]">Role</TableHead>
+                        <TableHead className="min-w-[120px]">Created</TableHead>
+                        <TableHead className="text-right min-w-[180px]">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -60,7 +60,7 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                                 <TableCell>{user.email}</TableCell>
                                 <TableCell>
                                     <span
-                                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
                                             user.role === "ADMIN"
                                                 ? "bg-purple-100 text-purple-800"
                                                 : "bg-blue-100 text-blue-800"
@@ -69,7 +69,7 @@ export function UsersTable({ users, currentUserId }: UsersTableProps) {
                                         {user.role}
                                     </span>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="whitespace-nowrap">
                                     {new Date(user.createdAt).toLocaleDateString()}
                                 </TableCell>
                                 <TableCell className="text-right">

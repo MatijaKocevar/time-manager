@@ -3,9 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { cookies } from "next/headers"
 import { getServerSession } from "next-auth"
 import "./globals.css"
-import SessionWrapper from "@/components/SessionWrapper"
+import SessionWrapper from "@/providers/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
-import { ConditionalSidebar } from "@/components/ConditionalSidebar"
+import { ConditionalSidebar } from "@/features/sidebar"
 import { authConfig } from "@/lib/auth"
 
 const geistSans = Geist({

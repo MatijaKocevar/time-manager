@@ -7,6 +7,26 @@ import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
 import { UpdateProfileSchema, type UpdateProfileInput } from "../schemas/profile-action-schemas"
 
+export async function getCurrentUser() {
+    const session = await getServerSession(authConfig)
+
+    if (!session?.user) {
+        return null
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+        },
+    })
+
+    return user
+}
+
 export async function updateProfile(input: UpdateProfileInput) {
     const session = await getServerSession(authConfig)
 

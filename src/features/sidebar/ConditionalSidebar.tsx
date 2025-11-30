@@ -1,7 +1,8 @@
 "use client"
 
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
+import { AppSidebar } from "./app-sidebar"
+import { AppHeader } from "./app-header"
 import { UserRole } from "@/types"
 
 interface ConditionalSidebarProps {
@@ -25,11 +26,9 @@ export function ConditionalSidebar({
         return (
             <SidebarProvider defaultOpen={defaultOpen}>
                 <AppSidebar userRole={userRole} userName={userName} userEmail={userEmail} />
-                <main className="flex-1">
-                    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-                        <SidebarTrigger className="-ml-1" />
-                    </header>
-                    <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+                <main className="flex flex-1 flex-col min-w-0 w-full">
+                    <AppHeader />
+                    <div className="flex-1 p-4 md:p-6 overflow-auto min-w-0">{children}</div>
                 </main>
             </SidebarProvider>
         )

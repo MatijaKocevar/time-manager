@@ -1,9 +1,10 @@
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
 import { UsersTable } from "./components/users-table"
 import { CreateUserDialog } from "./components/create-user-dialog"
+import { SetBreadcrumbs } from "@/features/breadcrumbs"
+import { getUsers } from "./actions/user-actions"
 
 export default async function AdminUsersPage() {
     const session = await getServerSession(authConfig)
@@ -16,29 +17,17 @@ export default async function AdminUsersPage() {
         redirect("/")
     }
 
-    const users = await prisma.user.findMany({
-        orderBy: {
-            createdAt: "desc",
-        },
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-            createdAt: true,
-        },
-    })
+    const users = await getUsers()
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-                    <p className="text-muted-foreground">Manage users and their permissions</p>
+        <>
+            <SetBreadcrumbs items={[{ label: "Admin", href: "/admin" }, { label: "Users" }]} />
+            <div className="flex flex-col gap-6 min-w-0">
+                <div className="flex justify-end">
+                    <CreateUserDialog />
                 </div>
-                <CreateUserDialog />
+                <UsersTable users={users} currentUserId={session.user.id} />
             </div>
-            <UsersTable users={users} currentUserId={session.user.id} />
-        </div>
+        </>
     )
 }

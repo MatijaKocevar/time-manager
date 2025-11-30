@@ -29,6 +29,25 @@ async function requireAdmin() {
     return session
 }
 
+export async function getUsers() {
+    await requireAdmin()
+
+    const users = await prisma.user.findMany({
+        orderBy: {
+            createdAt: "desc",
+        },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            createdAt: true,
+        },
+    })
+
+    return users
+}
+
 export async function createUser(input: CreateUserInput) {
     await requireAdmin()
 
