@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { Trash2 } from "lucide-react"
 import type { UserRole } from "@/types"
 
@@ -160,16 +167,19 @@ export function UserForm({ user }: UserFormProps) {
                 )}
                 <div className="space-y-2">
                     <Label htmlFor="role">Role</Label>
-                    <select
-                        id="role"
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    <Select
                         value={role}
-                        onChange={(e) => setFormData({ role: e.target.value as UserRole })}
+                        onValueChange={(value: string) => setFormData({ role: value as UserRole })}
                         disabled={isLoading}
                     >
-                        <option value="USER">User</option>
-                        <option value="ADMIN">Admin</option>
-                    </select>
+                        <SelectTrigger className="w-full">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="USER">User</SelectItem>
+                            <SelectItem value="ADMIN">Admin</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}
                 <div className="flex justify-end gap-2">
