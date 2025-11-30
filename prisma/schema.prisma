@@ -44,6 +44,14 @@ enum UserRole {
   ADMIN
 }
 
+enum HourType {
+  WORK
+  VACATION
+  SICK_LEAVE
+  WORK_FROM_HOME
+  OTHER
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -55,8 +63,26 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts Account[]
-  sessions Session[]
+  accounts    Account[]
+  sessions    Session[]
+  hourEntries HourEntry[]
+}
+
+model HourEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime
+  hours       Float
+  type        HourType @default(WORK)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+  @@unique([userId, date, type])
 }
 
 model VerificationToken {
