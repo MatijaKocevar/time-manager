@@ -96,7 +96,7 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
         const isTotal = entry.taskId === "total"
         return (
             <div
-                className={`h-8 w-16 text-center flex items-center justify-center text-muted-foreground bg-muted/30 rounded mx-auto ${isTotal ? "font-bold" : "font-normal"}`}
+                className={`h-8 w-16 text-center flex items-center justify-center text-foreground rounded mx-auto ${isTotal ? "font-bold" : "font-normal"}`}
             >
                 {entry?.hours ? formatHoursToTime(entry.hours) : "00:00"}
             </div>
@@ -109,7 +109,7 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
         <div className="flex flex-col items-center gap-1 mx-auto relative">
             <div
                 onClick={() => setShowPicker(true)}
-                className="h-8 w-16 text-center flex items-center justify-center cursor-pointer hover:bg-muted/50 rounded font-normal text-muted-foreground"
+                className="h-8 w-16 text-center flex items-center justify-center cursor-pointer hover:bg-muted/50 rounded font-normal text-foreground"
             >
                 {displayValue || "00:00"}
             </div>

@@ -14,12 +14,12 @@ import { HOUR_TYPES } from "../constants/hour-types"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { hourKeys } from "../query-keys"
 import { EditableHourCell } from "./editable-hour-cell"
+import { HourTypeRow } from "./hour-type-row"
 import {
     generateDateColumns,
     groupEntriesByType,
     getTypeLabel,
     getTypeColor,
-    getRowBgColor,
 } from "../utils/table-helpers"
 
 interface HoursTableProps {
@@ -40,23 +40,12 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
         const dates = generateDateColumns(startDate, endDate)
         const groupedEntries = groupEntriesByType(entries)
 
-        const allRowKeys: string[] = ["GRAND_TOTAL"]
-        HOUR_TYPES.forEach((hourType) => {
-            const trackedKey = `${hourType.value}_TRACKED`
-            const manualKey = `${hourType.value}_MANUAL`
-            const totalKey = `${hourType.value}_TOTAL`
-
-            allRowKeys.push(totalKey)
-            allRowKeys.push(trackedKey)
-            allRowKeys.push(manualKey)
-        })
-
         return (
             <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="min-w-[100px] sticky left-0 bg-background z-10">
+                            <TableHead className="min-w-[100px] sticky left-0 bg-background z-20">
                                 Type
                             </TableHead>
                             {dates.map((date) => {
@@ -80,65 +69,53 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {allRowKeys.map((rowKey) => {
-                            const isGrandTotal = rowKey === "GRAND_TOTAL"
-                            const baseType = isGrandTotal
-                                ? "WORK"
-                                : rowKey
-                                      .replace("_TRACKED", "")
-                                      .replace("_MANUAL", "")
-                                      .replace("_TOTAL", "")
-                            const isReadOnly = rowKey.includes("_TRACKED") || isGrandTotal
-                            const isTotal = rowKey.includes("_TOTAL") || isGrandTotal
+                        <TableRow>
+                            <TableCell
+                                className="font-medium sticky left-0 z-20 bg-background"
+                            >
+                                <span
+                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor("GRAND_TOTAL")}`}
+                                >
+                                    {getTypeLabel("GRAND_TOTAL")}
+                                </span>
+                            </TableCell>
+                            {dates.map((date) => {
+                                const year = date.getFullYear()
+                                const month = String(date.getMonth() + 1).padStart(2, "0")
+                                const day = String(date.getDate()).padStart(2, "0")
+                                const dateKey = `${year}-${month}-${day}`
 
-                            return (
-                                <TableRow key={rowKey} className={getRowBgColor(rowKey)}>
+                                const entry = groupedEntries["GRAND_TOTAL"]?.[dateKey]
+                                const isWeekend = date.getDay() === 0 || date.getDay() === 6
+
+                                return (
                                     <TableCell
-                                        className={`font-medium sticky left-0 z-10 ${getRowBgColor(rowKey)}`}
+                                        key={dateKey}
+                                        className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
                                     >
-                                        <span
-                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(rowKey)}`}
-                                        >
-                                            {getTypeLabel(rowKey)}
-                                        </span>
+                                        <EditableHourCell
+                                            entry={{
+                                                ...entry,
+                                                taskId: "grand_total",
+                                            }}
+                                            dateKey={dateKey}
+                                            type="WORK"
+                                            onUpdate={handleUpdate}
+                                        />
                                     </TableCell>
-                                    {dates.map((date) => {
-                                        const year = date.getFullYear()
-                                        const month = String(date.getMonth() + 1).padStart(2, "0")
-                                        const day = String(date.getDate()).padStart(2, "0")
-                                        const dateKey = `${year}-${month}-${day}`
+                                )
+                            })}
+                        </TableRow>
 
-                                        const entry = groupedEntries[rowKey]?.[dateKey]
-                                        const isWeekend = date.getDay() === 0 || date.getDay() === 6
-
-                                        return (
-                                            <TableCell
-                                                key={dateKey}
-                                                className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
-                                            >
-                                                <EditableHourCell
-                                                    entry={
-                                                        isReadOnly || isTotal
-                                                            ? {
-                                                                  ...entry,
-                                                                  taskId: isGrandTotal
-                                                                      ? "grand_total"
-                                                                      : isTotal
-                                                                        ? "total"
-                                                                        : "tracked",
-                                                              }
-                                                            : entry
-                                                    }
-                                                    dateKey={dateKey}
-                                                    type={baseType}
-                                                    onUpdate={handleUpdate}
-                                                />
-                                            </TableCell>
-                                        )
-                                    })}
-                                </TableRow>
-                            )
-                        })}
+                        {HOUR_TYPES.map((hourType) => (
+                            <HourTypeRow
+                                key={hourType.value}
+                                hourType={hourType.value}
+                                dates={dates}
+                                groupedEntries={groupedEntries}
+                                onUpdate={handleUpdate}
+                            />
+                        ))}
                     </TableBody>
                 </Table>
             </div>

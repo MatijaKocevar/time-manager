@@ -3,6 +3,10 @@ import type { HourType } from "../schemas/hour-action-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 
 export const useHoursStore = create<{
+    expandedTypes: Set<string>
+    toggleType: (type: string) => void
+    expandAll: () => void
+    collapseAll: () => void
     singleEntryForm: {
         data: {
             date: string
@@ -86,6 +90,22 @@ export const useHoursStore = create<{
     const today = new Date().toISOString().split("T")[0]
 
     return {
+        expandedTypes: new Set<string>(),
+        toggleType: (type) =>
+            set((state) => {
+                const newExpanded = new Set(state.expandedTypes)
+                if (newExpanded.has(type)) {
+                    newExpanded.delete(type)
+                } else {
+                    newExpanded.add(type)
+                }
+                return { expandedTypes: newExpanded }
+            }),
+        expandAll: () =>
+            set({
+                expandedTypes: new Set(["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE", "OTHER"]),
+            }),
+        collapseAll: () => set({ expandedTypes: new Set<string>() }),
         singleEntryForm: {
             data: {
                 date: today,

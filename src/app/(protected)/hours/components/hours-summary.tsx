@@ -22,22 +22,22 @@ export function HoursSummary({ entries, isLoading = false }: HoursSummaryProps) 
     )
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
             <Card>
-                <CardHeader className="pb-3">
-                    <CardDescription>Total Hours</CardDescription>
-                    <CardTitle className="text-3xl">
-                        {isLoading ? <Skeleton className="h-9 w-16" /> : totalHours.toFixed(1)}
+                <CardHeader className="p-4 pb-2">
+                    <CardDescription className="text-xs">Total Hours</CardDescription>
+                    <CardTitle className="text-2xl">
+                        {isLoading ? <Skeleton className="h-7 w-12" /> : totalHours.toFixed(1)}
                     </CardTitle>
                 </CardHeader>
             </Card>
             {HOUR_TYPES.map((hourType) => (
                 <Card key={hourType.value}>
-                    <CardHeader className="pb-3">
-                        <CardDescription>{hourType.label}</CardDescription>
-                        <CardTitle className="text-3xl">
+                    <CardHeader className="p-4 pb-2">
+                        <CardDescription className="text-xs">{hourType.label}</CardDescription>
+                        <CardTitle className="text-2xl">
                             {isLoading ? (
-                                <Skeleton className="h-9 w-16" />
+                                <Skeleton className="h-7 w-12" />
                             ) : (
                                 hoursByType[hourType.value].toFixed(1)
                             )}
