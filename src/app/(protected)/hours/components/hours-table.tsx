@@ -40,7 +40,7 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
         const dates = generateDateColumns(startDate, endDate)
         const groupedEntries = groupEntriesByType(entries)
 
-        const allRowKeys: string[] = []
+        const allRowKeys: string[] = ["GRAND_TOTAL"]
         HOUR_TYPES.forEach((hourType) => {
             const trackedKey = `${hourType.value}_TRACKED`
             const manualKey = `${hourType.value}_MANUAL`
@@ -81,12 +81,15 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
                     </TableHeader>
                     <TableBody>
                         {allRowKeys.map((rowKey) => {
-                            const baseType = rowKey
-                                .replace("_TRACKED", "")
-                                .replace("_MANUAL", "")
-                                .replace("_TOTAL", "")
-                            const isReadOnly = rowKey.includes("_TRACKED")
-                            const isTotal = rowKey.includes("_TOTAL")
+                            const isGrandTotal = rowKey === "GRAND_TOTAL"
+                            const baseType = isGrandTotal
+                                ? "WORK"
+                                : rowKey
+                                      .replace("_TRACKED", "")
+                                      .replace("_MANUAL", "")
+                                      .replace("_TOTAL", "")
+                            const isReadOnly = rowKey.includes("_TRACKED") || isGrandTotal
+                            const isTotal = rowKey.includes("_TOTAL") || isGrandTotal
 
                             return (
                                 <TableRow key={rowKey} className={getRowBgColor(rowKey)}>
@@ -118,9 +121,11 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
                                                         isReadOnly || isTotal
                                                             ? {
                                                                   ...entry,
-                                                                  taskId: isTotal
-                                                                      ? "total"
-                                                                      : "tracked",
+                                                                  taskId: isGrandTotal
+                                                                      ? "grand_total"
+                                                                      : isTotal
+                                                                        ? "total"
+                                                                        : "tracked",
                                                               }
                                                             : entry
                                                     }

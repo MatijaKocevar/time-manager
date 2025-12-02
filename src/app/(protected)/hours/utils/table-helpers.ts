@@ -35,7 +35,9 @@ export function groupEntriesByType(
         }
 
         let rowKey: string
-        if (entry.taskId === "total") {
+        if (entry.taskId === "grand_total") {
+            rowKey = "GRAND_TOTAL"
+        } else if (entry.taskId === "total") {
             rowKey = `${entry.type}_TOTAL`
         } else if (entry.taskId === "tracked") {
             rowKey = `${entry.type}_TRACKED`
@@ -71,6 +73,9 @@ export function formatEntryDate(date: Date | string): string {
 }
 
 export function getTypeLabel(type: string): string {
+    if (type === "GRAND_TOTAL") {
+        return "TOTAL (All Types)"
+    }
     if (type.endsWith("_TRACKED")) {
         const baseType = type.replace("_TRACKED", "")
         const baseLabel = HOUR_TYPES.find((t) => t.value === baseType)?.label || baseType
@@ -90,6 +95,7 @@ export function getTypeLabel(type: string): string {
 }
 
 const TYPE_COLORS: Record<string, string> = {
+    GRAND_TOTAL: "bg-slate-300 text-slate-950 dark:bg-slate-700 dark:text-slate-50",
     WORK: "bg-blue-100 text-blue-800",
     WORK_TRACKED: "bg-blue-100 text-blue-800",
     WORK_MANUAL: "bg-blue-50 text-blue-700",
@@ -117,6 +123,7 @@ export function getTypeColor(type: string): string {
 }
 
 const ROW_BG_COLORS: Record<string, string> = {
+    GRAND_TOTAL: "bg-slate-500/20 dark:bg-slate-500/25",
     WORK_TOTAL: "bg-blue-500/10 dark:bg-blue-500/15",
     WORK_TRACKED: "bg-blue-500/5 dark:bg-blue-500/10",
     WORK_MANUAL: "bg-blue-500/5 dark:bg-blue-500/10",

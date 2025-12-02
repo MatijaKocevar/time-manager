@@ -304,6 +304,34 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
             manualEntriesByDateAndType.set(key, entry)
         }
 
+        const grandTotalsMap = new Map<string, { date: Date; hours: number }>()
+        for (const summary of summaries) {
+            const dateKey = summary.date.toISOString()
+            const existing = grandTotalsMap.get(dateKey)
+            if (existing) {
+                existing.hours += summary.totalHours
+            } else {
+                grandTotalsMap.set(dateKey, {
+                    date: summary.date,
+                    hours: summary.totalHours,
+                })
+            }
+        }
+
+        const grandTotalEntries = Array.from(grandTotalsMap.entries())
+            .filter(([, data]) => data.hours > 0)
+            .map(([dateKey, data]) => ({
+                id: `grand-total-${dateKey}`,
+                userId: session.user.id,
+                date: data.date,
+                hours: data.hours,
+                type: "WORK" as const,
+                description: null,
+                taskId: "grand_total",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            }))
+
         const entries = summaries.flatMap((summary) => {
             const baseDate = summary.date.toISOString()
             const result = []
@@ -358,7 +386,8 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
             return result
         })
 
-        return entries.sort((a, b) => b.date.getTime() - a.date.getTime())
+        const allEntries = [...grandTotalEntries, ...entries]
+        return allEntries.sort((a, b) => b.date.getTime() - a.date.getTime())
     } catch (error) {
         console.error("Error fetching hour entries:", error)
         throw new Error("Failed to fetch hour entries")
