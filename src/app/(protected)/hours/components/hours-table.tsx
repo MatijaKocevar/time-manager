@@ -70,9 +70,7 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
                     </TableHeader>
                     <TableBody>
                         <TableRow>
-                            <TableCell
-                                className="font-medium sticky left-0 z-20 bg-background"
-                            >
+                            <TableCell className="font-medium sticky left-0 z-20 bg-background">
                                 <span
                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor("GRAND_TOTAL")}`}
                                 >

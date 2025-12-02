@@ -103,7 +103,13 @@ export const useHoursStore = create<{
             }),
         expandAll: () =>
             set({
-                expandedTypes: new Set(["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE", "OTHER"]),
+                expandedTypes: new Set([
+                    "WORK",
+                    "WORK_FROM_HOME",
+                    "VACATION",
+                    "SICK_LEAVE",
+                    "OTHER",
+                ]),
             }),
         collapseAll: () => set({ expandedTypes: new Set<string>() }),
         singleEntryForm: {

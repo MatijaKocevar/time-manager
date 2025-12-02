@@ -58,7 +58,7 @@ export function RequestsTable({ requests, showUser = false }: RequestsTableProps
         )
     })
 
-    const columnCount = showUser ? 7 : 6
+    const columnCount = showUser ? 8 : 7
 
     return (
         <>
@@ -88,6 +88,7 @@ export function RequestsTable({ requests, showUser = false }: RequestsTableProps
                             <TableHead className="min-w-[120px]">Start Date</TableHead>
                             <TableHead className="min-w-[120px]">End Date</TableHead>
                             <TableHead className="min-w-[100px]">Status</TableHead>
+                            <TableHead className="min-w-[150px]">Approved/Rejected By</TableHead>
                             <TableHead className="min-w-[200px]">Reason</TableHead>
                             <TableHead className="text-right min-w-[180px]">Actions</TableHead>
                         </TableRow>
@@ -131,6 +132,13 @@ export function RequestsTable({ requests, showUser = false }: RequestsTableProps
                                         >
                                             {request.status}
                                         </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        {request.status === "APPROVED" && request.approver
+                                            ? request.approver.name || request.approver.email
+                                            : request.status === "REJECTED" && request.rejector
+                                              ? request.rejector.name || request.rejector.email
+                                              : "-"}
                                     </TableCell>
                                     <TableCell className="max-w-xs truncate">
                                         {request.reason || "-"}

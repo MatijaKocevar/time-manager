@@ -34,10 +34,7 @@ export function HourTypeRow({ hourType, dates, groupedEntries, onUpdate }: HourT
             <TableRow>
                 <TableCell className="font-medium sticky left-0 z-20 bg-background">
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleToggle}
-                            className="p-1 hover:bg-muted rounded"
-                        >
+                        <button onClick={handleToggle} className="p-1 hover:bg-muted rounded">
                             {isExpanded ? (
                                 <ChevronDown className="h-4 w-4" />
                             ) : (
@@ -82,9 +79,7 @@ export function HourTypeRow({ hourType, dates, groupedEntries, onUpdate }: HourT
             {isExpanded && (
                 <>
                     <TableRow>
-                        <TableCell
-                            className="font-medium sticky left-0 z-20 bg-background"
-                        >
+                        <TableCell className="font-medium sticky left-0 z-20 bg-background">
                             <div className="pl-8">
                                 <span
                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(trackedKey)}`}
@@ -122,9 +117,7 @@ export function HourTypeRow({ hourType, dates, groupedEntries, onUpdate }: HourT
                     </TableRow>
 
                     <TableRow>
-                        <TableCell
-                            className="font-medium sticky left-0 z-20 bg-background"
-                        >
+                        <TableCell className="font-medium sticky left-0 z-20 bg-background">
                             <div className="pl-8">
                                 <span
                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(manualKey)}`}

@@ -286,6 +286,22 @@ export async function getUserRequests(): Promise<RequestDisplay[]> {
             where: {
                 userId: session.user.id,
             },
+            include: {
+                approver: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                rejector: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
             orderBy: {
                 createdAt: "desc",
             },
@@ -298,13 +314,37 @@ export async function getUserRequests(): Promise<RequestDisplay[]> {
     }
 }
 
-export async function getAllRequests(): Promise<RequestDisplay[]> {
+export async function getAllRequests(statusFilter?: string[]): Promise<RequestDisplay[]> {
     try {
         await requireAdmin()
 
         const requests = await prisma.request.findMany({
+            where:
+                statusFilter && statusFilter.length > 0
+                    ? {
+                          status: {
+                              in: statusFilter as Array<
+                                  "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"
+                              >,
+                          },
+                      }
+                    : undefined,
             include: {
                 user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                approver: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                rejector: {
                     select: {
                         id: true,
                         name: true,

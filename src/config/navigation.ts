@@ -1,4 +1,14 @@
-import { Users, Clock, Calendar, Timer, FileText, LucideIcon } from "lucide-react"
+import {
+    Users,
+    Clock,
+    Calendar,
+    Timer,
+    FileText,
+    Shield,
+    ClockAlert,
+    History,
+    LucideIcon,
+} from "lucide-react"
 import { UserRole } from "@/types"
 
 export interface NavigationItem {
@@ -35,15 +45,27 @@ export const navigationItems: NavigationItem[] = [
         roles: ["USER", "ADMIN"],
     },
     {
-        title: "Users",
-        url: "/users",
-        icon: Users,
+        title: "Admin",
+        url: "/admin",
+        icon: Shield,
         roles: ["ADMIN"],
         children: [
             {
-                title: "Requests",
-                url: "/users/requests",
-                icon: FileText,
+                title: "User Management",
+                url: "/admin/users",
+                icon: Users,
+                roles: ["ADMIN"],
+            },
+            {
+                title: "Pending Requests",
+                url: "/admin/pending-requests",
+                icon: ClockAlert,
+                roles: ["ADMIN"],
+            },
+            {
+                title: "Request History",
+                url: "/admin/request-history",
+                icon: History,
                 roles: ["ADMIN"],
             },
         ],

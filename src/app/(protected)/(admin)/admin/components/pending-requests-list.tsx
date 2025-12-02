@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
     Column,
@@ -34,8 +34,8 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { approveRequest, rejectRequest } from "../../../../requests/actions/request-actions"
-import { requestKeys } from "../../../../requests/query-keys"
+import { approveRequest, rejectRequest } from "../../../requests/actions/request-actions"
+import { requestKeys } from "../../../requests/query-keys"
 
 type RequestDisplay = {
     id: string
@@ -295,8 +295,8 @@ export function PendingRequestsList({ requests }: PendingRequestsListProps) {
                     <Table>
                         <TableHeader>
                             {table.getHeaderGroups().map((headerGroup) => (
-                                <>
-                                    <TableRow key={headerGroup.id}>
+                                <Fragment key={headerGroup.id}>
+                                    <TableRow>
                                         {headerGroup.headers.map((header) => (
                                             <TableHead key={header.id} className="font-semibold">
                                                 {header.isPlaceholder
@@ -308,7 +308,7 @@ export function PendingRequestsList({ requests }: PendingRequestsListProps) {
                                             </TableHead>
                                         ))}
                                     </TableRow>
-                                    <TableRow key={`${headerGroup.id}-filter`}>
+                                    <TableRow>
                                         {headerGroup.headers.map((header) => (
                                             <TableHead key={`${header.id}-filter`} className="py-2">
                                                 {header.column.getCanFilter() ? (
@@ -317,7 +317,7 @@ export function PendingRequestsList({ requests }: PendingRequestsListProps) {
                                             </TableHead>
                                         ))}
                                     </TableRow>
-                                </>
+                                </Fragment>
                             ))}
                         </TableHeader>
                         <TableBody>

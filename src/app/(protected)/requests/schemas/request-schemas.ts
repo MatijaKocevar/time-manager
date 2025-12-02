@@ -94,6 +94,22 @@ export const RequestDisplaySchema = z.object({
             email: z.string(),
         })
         .optional(),
+    approver: z
+        .object({
+            id: z.string(),
+            name: z.string().nullable(),
+            email: z.string(),
+        })
+        .nullable()
+        .optional(),
+    rejector: z
+        .object({
+            id: z.string(),
+            name: z.string().nullable(),
+            email: z.string(),
+        })
+        .nullable()
+        .optional(),
 })
 
 export type RequestType = z.infer<typeof RequestTypeSchema>
