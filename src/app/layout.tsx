@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { cookies } from "next/headers"
 import { getServerSession } from "next-auth"
@@ -20,7 +20,27 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
     title: "Time Manager",
-    description: "Manage your time and tasks efficiently",
+    description: "Manage your time, tasks, and hours efficiently",
+    manifest: "/manifest.json",
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "black-translucent",
+        title: "Time Manager",
+    },
+    formatDetection: {
+        telephone: false,
+    },
+}
+
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+    themeColor: [
+        { media: "(prefers-color-scheme: dark)", color: "#000000" },
+        { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    ],
 }
 
 export default async function RootLayout({
@@ -34,6 +54,10 @@ export default async function RootLayout({
 
     return (
         <html lang="en">
+            <head>
+                <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+                <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+            </head>
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}>
                 <QueryProvider>
                     <SessionWrapper>
