@@ -15,8 +15,18 @@ import {
     SortingState,
     useReactTable,
 } from "@tanstack/react-table"
+import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useIsMobile } from "@/hooks/use-mobile"
 import {
     Table,
     TableBody,
@@ -124,6 +134,71 @@ function DebouncedInput({
 function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
     const columnFilterValue = column.getFilterValue()
     const uniqueValues = column.getFacetedUniqueValues()
+    const isMobile = useIsMobile()
+    const [filterDialogOpen, setFilterDialogOpen] = useState(false)
+    const [filterValue, setFilterValue] = useState((columnFilterValue ?? "") as string)
+
+    const hasActiveFilter = columnFilterValue && String(columnFilterValue).length > 0
+
+    const handleApplyFilter = () => {
+        column.setFilterValue(filterValue)
+        setFilterDialogOpen(false)
+    }
+
+    const handleClearFilter = () => {
+        setFilterValue("")
+        column.setFilterValue("")
+        setFilterDialogOpen(false)
+    }
+
+    const handleDialogOpen = (open: boolean) => {
+        setFilterDialogOpen(open)
+        if (open) {
+            setFilterValue((columnFilterValue ?? "") as string)
+        }
+    }
+
+    if (isMobile) {
+        return (
+            <>
+                <button
+                    onClick={() => setFilterDialogOpen(true)}
+                    className="inline-flex items-center justify-center"
+                    aria-label="Filter column"
+                >
+                    <Search
+                        className={`h-4 w-4 ${
+                            hasActiveFilter ? "text-primary" : "text-muted-foreground"
+                        }`}
+                    />
+                </button>
+                <Dialog open={filterDialogOpen} onOpenChange={handleDialogOpen}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Filter Column</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="filter-input">Search</Label>
+                                <Input
+                                    id="filter-input"
+                                    value={filterValue}
+                                    onChange={(e) => setFilterValue(e.target.value)}
+                                    placeholder={`Search... (${uniqueValues.size})`}
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={handleClearFilter}>
+                                Clear
+                            </Button>
+                            <Button onClick={handleApplyFilter}>Apply</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </>
+        )
+    }
 
     return (
         <DebouncedInput
@@ -137,6 +212,7 @@ function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
 }
 
 export function RequestsHistoryList({ requests }: RequestsHistoryListProps) {
+    const isMobile = useIsMobile()
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
@@ -258,17 +334,9 @@ export function RequestsHistoryList({ requests }: RequestsHistoryListProps) {
         },
     })
 
-    if (requests.length === 0) {
-        return (
-            <div className="flex items-center justify-center h-full text-muted-foreground">
-                No request history
-            </div>
-        )
-    }
-
     return (
         <div className="flex flex-col gap-4 h-full min-w-0">
-            <div className="rounded-md border overflow-auto">
+            <div className="rounded-md border flex-1 min-h-0">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -276,24 +344,31 @@ export function RequestsHistoryList({ requests }: RequestsHistoryListProps) {
                                 <TableRow>
                                     {headerGroup.headers.map((header) => (
                                         <TableHead key={header.id} className="font-semibold">
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(
-                                                      header.column.columnDef.header,
-                                                      header.getContext()
-                                                  )}
+                                            <div className="flex items-center gap-2">
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                          header.column.columnDef.header,
+                                                          header.getContext()
+                                                      )}
+                                                {isMobile && header.column.getCanFilter() && (
+                                                    <Filter column={header.column} />
+                                                )}
+                                            </div>
                                         </TableHead>
                                     ))}
                                 </TableRow>
-                                <TableRow>
-                                    {headerGroup.headers.map((header) => (
-                                        <TableHead key={`${header.id}-filter`} className="py-2">
-                                            {header.column.getCanFilter() ? (
-                                                <Filter column={header.column} />
-                                            ) : null}
-                                        </TableHead>
-                                    ))}
-                                </TableRow>
+                                {!isMobile && (
+                                    <TableRow>
+                                        {headerGroup.headers.map((header) => (
+                                            <TableHead key={`${header.id}-filter`} className="py-2">
+                                                {header.column.getCanFilter() ? (
+                                                    <Filter column={header.column} />
+                                                ) : null}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
+                                )}
                             </Fragment>
                         ))}
                     </TableHeader>
@@ -313,8 +388,11 @@ export function RequestsHistoryList({ requests }: RequestsHistoryListProps) {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No results.
+                                <TableCell
+                                    colSpan={columns.length}
+                                    className="h-24 text-center text-muted-foreground"
+                                >
+                                    No request history found.
                                 </TableCell>
                             </TableRow>
                         )}

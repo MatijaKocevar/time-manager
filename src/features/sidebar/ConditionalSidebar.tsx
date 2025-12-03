@@ -26,7 +26,7 @@ export function ConditionalSidebar({
         return (
             <SidebarProvider defaultOpen={defaultOpen}>
                 <AppSidebar userRole={userRole} userName={userName} userEmail={userEmail} />
-                <main className="flex flex-1 flex-col min-w-0 w-full">
+                <main className="flex flex-1 flex-col min-w-0 w-full h-screen overflow-hidden">
                     <AppHeader />
                     <div className="flex-1 p-4 overflow-auto min-w-0">{children}</div>
                 </main>

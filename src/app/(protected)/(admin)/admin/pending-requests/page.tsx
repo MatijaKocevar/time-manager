@@ -11,18 +11,18 @@ export default async function PendingRequestsPage() {
         redirect("/")
     }
 
-    const pendingRequests = await getAllRequests(["PENDING"])
+    const requests = await getAllRequests(["PENDING"])
 
-    const pendingData = pendingRequests.map((r) => ({
+    const requestsData = requests.map((r) => ({
         ...r,
-        user: r.user ?? { id: "unknown", name: null, email: "Unknown" },
+        user: r.user ?? { name: null, email: "Unknown" },
     }))
 
     return (
         <div className="flex flex-col gap-4 h-full">
             <h1 className="text-2xl font-bold">Pending Requests</h1>
             <div className="flex-1 min-h-0">
-                <PendingRequestsList requests={pendingData} />
+                <PendingRequestsList requests={requestsData} />
             </div>
         </div>
     )
