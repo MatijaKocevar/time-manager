@@ -101,7 +101,11 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                         </span>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
-                                        {new Date(user.createdAt).toLocaleDateString()}
+                                        {new Date(user.createdAt).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "short",
+                                            day: "numeric",
+                                        })}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="outline" size="sm" asChild>
