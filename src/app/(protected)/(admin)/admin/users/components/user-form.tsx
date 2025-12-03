@@ -31,10 +31,15 @@ export function UserForm({ user }: UserFormProps) {
     const router = useRouter()
     const isEditMode = !!user
 
-    const name = useUserFormStore((state) => state.createForm.data.name)
-    const email = useUserFormStore((state) => state.createForm.data.email)
-    const password = useUserFormStore((state) => state.createForm.data.password)
-    const role = useUserFormStore((state) => state.createForm.data.role)
+    const storeName = useUserFormStore((state) => state.createForm.data.name)
+    const storeEmail = useUserFormStore((state) => state.createForm.data.email)
+    const storePassword = useUserFormStore((state) => state.createForm.data.password)
+    const storeRole = useUserFormStore((state) => state.createForm.data.role)
+
+    const name = isEditMode ? user.name || "" : storeName
+    const email = isEditMode ? user.email : storeEmail
+    const password = storePassword
+    const role = isEditMode ? user.role : storeRole
     const newPassword = useUserFormStore(
         (state) => state.changePasswordForm.data?.newPassword || ""
     )
@@ -60,11 +65,10 @@ export function UserForm({ user }: UserFormProps) {
 
     useEffect(() => {
         if (user) {
-            setFormData({ name: user.name || "", email: user.email, role: user.role })
             initializePasswordForm(user.id)
         }
         return () => resetForm()
-    }, [user, setFormData, initializePasswordForm, resetForm])
+    }, [user, initializePasswordForm, resetForm])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -168,12 +172,13 @@ export function UserForm({ user }: UserFormProps) {
                 <div className="space-y-2">
                     <Label htmlFor="role">Role</Label>
                     <Select
+                        key={user?.id || "new"}
                         value={role}
                         onValueChange={(value: string) => setFormData({ role: value as UserRole })}
                         disabled={isLoading}
                     >
                         <SelectTrigger className="w-full">
-                            <SelectValue />
+                            <SelectValue placeholder="Select a role" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="USER">User</SelectItem>
