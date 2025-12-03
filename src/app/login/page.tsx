@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { signIn } from "next-auth/react"
+import { useState, useEffect } from "react"
+import { signIn, useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,10 +16,22 @@ import {
 } from "@/components/ui/card"
 
 export default function LoginPage() {
+    const router = useRouter()
+    const { data: session, status } = useSession()
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
+
+    useEffect(() => {
+        if (status === "authenticated") {
+            router.push("/")
+        }
+    }, [status, router])
+
+    if (status === "loading" || status === "authenticated") {
+        return null
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()

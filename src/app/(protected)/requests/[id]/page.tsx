@@ -75,7 +75,7 @@ export default function RequestDetailPage() {
 
     const { data: requests } = useQuery({
         queryKey: isAdmin ? requestKeys.adminRequests() : requestKeys.userRequests(),
-        queryFn: isAdmin ? getAllRequests : getUserRequests,
+        queryFn: () => (isAdmin ? getAllRequests() : getUserRequests()),
     })
 
     const request = requests?.find((r) => r.id === requestId)

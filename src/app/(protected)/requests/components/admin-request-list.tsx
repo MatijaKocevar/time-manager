@@ -47,7 +47,7 @@ export function AdminRequestList() {
 
     const { data: requests, isLoading } = useQuery({
         queryKey: requestKeys.adminRequests(),
-        queryFn: getAllRequests,
+        queryFn: () => getAllRequests(),
     })
 
     const approveMutation = useMutation({

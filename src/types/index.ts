@@ -3,4 +3,4 @@ export * from "./auth-schema"
 export {
     UserRoleSchema,
     type UserRole,
-} from "@/app/(protected)/(admin)/users/schemas/user-action-schemas"
+} from "@/app/(protected)/(admin)/admin/users/schemas/user-action-schemas"

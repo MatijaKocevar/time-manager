@@ -34,7 +34,7 @@ export function RequestList() {
 
     const { data: requests, isLoading } = useQuery({
         queryKey: requestKeys.userRequests(),
-        queryFn: getUserRequests,
+        queryFn: () => getUserRequests(),
     })
 
     const cancelMutation = useMutation({
