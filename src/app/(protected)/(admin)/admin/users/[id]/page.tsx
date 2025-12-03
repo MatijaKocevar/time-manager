@@ -11,7 +11,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
         <>
             <SetBreadcrumbData
                 data={{
-                    [`/users/${id}`]: user.name || "User",
+                    [`/admin/users/${id}`]: user.name || "User",
                 }}
             />
             <Card>

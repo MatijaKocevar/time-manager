@@ -30,7 +30,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
     )
 
     const handleRowDoubleClick = (userId: string) => {
-        router.push(`/users/${userId}`)
+        router.push(`/admin/users/${userId}`)
     }
 
     return (
@@ -46,7 +46,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                     />
                 </div>
                 <Button asChild>
-                    <Link href="/users/create">
+                    <Link href="/admin/users/create">
                         <Plus className="h-4 w-4 mr-2" />
                         Create User
                     </Link>
@@ -109,7 +109,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="outline" size="sm" asChild>
-                                            <Link href={`/users/${user.id}`}>
+                                            <Link href={`/admin/users/${user.id}`}>
                                                 <Edit className="h-4 w-4 mr-2" />
                                                 Edit
                                             </Link>
