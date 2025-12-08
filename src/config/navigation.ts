@@ -7,6 +7,7 @@ import {
     Shield,
     ClockAlert,
     History,
+    CalendarDays,
     LucideIcon,
 } from "lucide-react"
 import { UserRole } from "@/types"
@@ -36,6 +37,12 @@ export const navigationItems: NavigationItem[] = [
         title: "Hours",
         url: "/hours",
         icon: Clock,
+        roles: ["USER", "ADMIN"],
+    },
+    {
+        title: "Shifts",
+        url: "/shifts",
+        icon: CalendarDays,
         roles: ["USER", "ADMIN"],
     },
     {
