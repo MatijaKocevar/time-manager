@@ -66,17 +66,21 @@ export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
             const days = Array.from({ length: 7 }, (_, i) => {
                 const date = new Date(start)
                 date.setDate(start.getDate() + i)
+                date.setHours(0, 0, 0, 0)
                 return date
             })
 
             return { startDate: start, endDate: end, days }
         } else {
             const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
+            start.setHours(0, 0, 0, 0)
             const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
+            end.setHours(0, 0, 0, 0)
 
             const days = Array.from({ length: end.getDate() }, (_, i) => {
                 const date = new Date(start)
                 date.setDate(i + 1)
+                date.setHours(0, 0, 0, 0)
                 return date
             })
 

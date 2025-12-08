@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
+import { mapRequestTypeToShiftLocation, isWeekday } from "../../shifts/utils/request-shift-mapping"
 import {
     CreateRequestSchema,
     UpdateRequestSchema,
@@ -222,10 +223,44 @@ export async function approveRequest(input: ApproveRequestInput) {
                     currentDate.setDate(currentDate.getDate() + 1)
                 }
             }
+
+            const shiftLocation = mapRequestTypeToShiftLocation(request.type)
+            const shiftDate = new Date(request.startDate)
+            shiftDate.setHours(0, 0, 0, 0)
+            const shiftEndDate = new Date(request.endDate)
+            shiftEndDate.setHours(0, 0, 0, 0)
+
+            while (shiftDate <= shiftEndDate) {
+                if (isWeekday(shiftDate)) {
+                    const normalizedDate = new Date(shiftDate)
+                    normalizedDate.setHours(0, 0, 0, 0)
+
+                    await tx.shift.upsert({
+                        where: {
+                            userId_date: {
+                                userId: request.userId,
+                                date: normalizedDate,
+                            },
+                        },
+                        update: {
+                            location: shiftLocation,
+                            notes: `Auto-generated from ${request.type.toLowerCase()} request`,
+                        },
+                        create: {
+                            userId: request.userId,
+                            date: normalizedDate,
+                            location: shiftLocation,
+                            notes: `Auto-generated from ${request.type.toLowerCase()} request`,
+                        },
+                    })
+                }
+                shiftDate.setDate(shiftDate.getDate() + 1)
+            }
         })
 
         revalidatePath("/requests")
         revalidatePath("/hours")
+        revalidatePath("/shifts")
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {
@@ -258,17 +293,33 @@ export async function rejectRequest(input: RejectRequestInput) {
             return { error: "Can only reject pending requests" }
         }
 
-        await prisma.request.update({
-            where: { id },
-            data: {
-                status: "REJECTED",
-                rejectedBy: session.user.id,
-                rejectedAt: new Date(),
-                rejectionReason,
-            },
+        await prisma.$transaction(async (tx) => {
+            await tx.request.update({
+                where: { id },
+                data: {
+                    status: "REJECTED",
+                    rejectedBy: session.user.id,
+                    rejectedAt: new Date(),
+                    rejectionReason,
+                },
+            })
+
+            await tx.shift.deleteMany({
+                where: {
+                    userId: request.userId,
+                    date: {
+                        gte: request.startDate,
+                        lte: request.endDate,
+                    },
+                    notes: {
+                        contains: "Auto-generated from",
+                    },
+                },
+            })
         })
 
         revalidatePath("/requests")
+        revalidatePath("/shifts")
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {

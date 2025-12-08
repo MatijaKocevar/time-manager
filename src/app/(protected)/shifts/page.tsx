@@ -4,8 +4,10 @@ import { ShiftLegend } from "./components/shift-legend"
 
 export default async function ShiftsPage() {
     const today = new Date()
+    today.setHours(0, 0, 0, 0)
     const startOfWeek = new Date(today)
-    startOfWeek.setDate(today.getDate() - today.getDay())
+    const dayOfWeek = today.getDay()
+    startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
     startOfWeek.setHours(0, 0, 0, 0)
 
     const endOfWeek = new Date(startOfWeek)

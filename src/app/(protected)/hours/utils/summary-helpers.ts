@@ -7,8 +7,8 @@ export async function recalculateDailySummary(
     date: Date,
     type: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER"
 ) {
-    const normalizedDate = new Date(date)
-    normalizedDate.setHours(0, 0, 0, 0)
+    const normalizedDate = new Date(date.getTime())
+    normalizedDate.setUTCHours(0, 0, 0, 0)
 
     const manualAggregate = await tx.hourEntry.aggregate({
         where: {

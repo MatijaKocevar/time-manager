@@ -1,8 +1,6 @@
 import { Badge } from "@/components/ui/badge"
 import type { ShiftLocation } from "../schemas/shift-schemas"
 
-interface ShiftLegendProps {}
-
 const locationColors: Record<ShiftLocation, { bg: string; text: string; label: string }> = {
     OFFICE: {
         bg: "bg-blue-100 dark:bg-blue-950",
@@ -31,7 +29,7 @@ const locationColors: Record<ShiftLocation, { bg: string; text: string; label: s
     },
 }
 
-export function ShiftLegend({}: ShiftLegendProps) {
+export function ShiftLegend() {
     return (
         <div className="flex flex-wrap gap-3 p-4 bg-muted/30 rounded-md">
             <span className="text-sm font-medium text-muted-foreground mr-2">Legend:</span>

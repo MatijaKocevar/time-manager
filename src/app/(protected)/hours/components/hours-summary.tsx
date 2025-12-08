@@ -9,11 +9,13 @@ interface HoursSummaryProps {
 }
 
 export function HoursSummary({ entries, isLoading = false }: HoursSummaryProps) {
-    const totalHours = entries.reduce((sum, entry) => sum + entry.hours, 0)
+    const grandTotalEntries = entries.filter((entry) => entry.taskId === "grand_total")
+    const totalHours = grandTotalEntries.reduce((sum, entry) => sum + entry.hours, 0)
 
+    const typeTotalEntries = entries.filter((entry) => entry.taskId === "total")
     const hoursByType = HOUR_TYPES.reduce(
         (acc, hourType) => {
-            acc[hourType.value] = entries
+            acc[hourType.value] = typeTotalEntries
                 .filter((entry) => entry.type === hourType.value)
                 .reduce((sum, entry) => sum + entry.hours, 0)
             return acc
