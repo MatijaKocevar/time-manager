@@ -15,7 +15,8 @@ import {
     SortingState,
     useReactTable,
 } from "@tanstack/react-table"
-import { Search } from "lucide-react"
+import { Search, X } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
     Table,
@@ -35,6 +37,8 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { cancelApprovedRequest } from "../../../requests/actions/request-actions"
+import { requestKeys } from "../../../requests/query-keys"
 
 type RequestDisplay = {
     id: string
@@ -58,7 +62,14 @@ type RequestDisplay = {
         name: string | null
         email: string
     } | null
+    canceller?: {
+        id: string
+        name: string | null
+        email: string
+    } | null
     rejectionReason?: string | null
+    cancellationReason?: string | null
+    cancelledAt?: Date | null
 }
 
 interface RequestsHistoryListProps {
@@ -215,6 +226,36 @@ export function RequestsHistoryList({ requests }: RequestsHistoryListProps) {
     const isMobile = useIsMobile()
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+    const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+    const [selectedRequest, setSelectedRequest] = useState<RequestDisplay | null>(null)
+    const [cancellationReason, setCancellationReason] = useState("")
+    const queryClient = useQueryClient()
+
+    const cancelMutation = useMutation({
+        mutationFn: (data: { id: string; cancellationReason: string }) =>
+            cancelApprovedRequest(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            setCancelDialogOpen(false)
+            setSelectedRequest(null)
+            setCancellationReason("")
+        },
+    })
+
+    const handleCancelClick = (request: RequestDisplay) => {
+        setSelectedRequest(request)
+        setCancellationReason("")
+        setCancelDialogOpen(true)
+    }
+
+    const handleCancelConfirm = () => {
+        if (selectedRequest && cancellationReason.trim()) {
+            cancelMutation.mutate({
+                id: selectedRequest.id,
+                cancellationReason: cancellationReason.trim(),
+            })
+        }
+    }
 
     const formatDate = (date: Date) => {
         return new Date(date).toLocaleDateString()
@@ -293,12 +334,13 @@ export function RequestsHistoryList({ requests }: RequestsHistoryListProps) {
         {
             id: "processedBy",
             accessorFn: (row) => {
-                const processor = row.approver || row.rejector
+                const processor = row.approver || row.rejector || row.canceller
                 return processor?.name || processor?.email || "-"
             },
             header: "Processed By",
             cell: ({ row }) => {
-                const processor = row.original.approver || row.original.rejector
+                const processor =
+                    row.original.approver || row.original.rejector || row.original.canceller
                 return <div className="text-sm">{processor?.name || processor?.email || "-"}</div>
             },
             enableColumnFilter: true,
@@ -309,11 +351,35 @@ export function RequestsHistoryList({ requests }: RequestsHistoryListProps) {
             header: "Reason",
             cell: ({ row }) => (
                 <div className="text-sm text-muted-foreground">
-                    {row.original.rejectionReason || row.original.reason || "-"}
+                    {row.original.cancellationReason ||
+                        row.original.rejectionReason ||
+                        row.original.reason ||
+                        "-"}
                 </div>
             ),
             enableColumnFilter: true,
             filterFn: "includesString",
+        },
+        {
+            id: "actions",
+            header: "Actions",
+            cell: ({ row }) => {
+                if (row.original.status === "APPROVED") {
+                    return (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCancelClick(row.original)}
+                            className="h-8 w-8 p-0"
+                            aria-label="Cancel request"
+                        >
+                            <X className="h-4 w-4 text-red-600" />
+                        </Button>
+                    )
+                }
+                return null
+            },
+            enableColumnFilter: false,
         },
     ]
 
@@ -335,88 +401,157 @@ export function RequestsHistoryList({ requests }: RequestsHistoryListProps) {
     })
 
     return (
-        <div className="flex flex-col gap-4 h-full min-w-0">
-            <div className="rounded-md border flex-1 min-h-0">
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <Fragment key={headerGroup.id}>
-                                <TableRow>
-                                    {headerGroup.headers.map((header) => (
-                                        <TableHead key={header.id} className="font-semibold">
-                                            <div className="flex items-center gap-2">
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(
-                                                          header.column.columnDef.header,
-                                                          header.getContext()
-                                                      )}
-                                                {isMobile && header.column.getCanFilter() && (
-                                                    <Filter column={header.column} />
-                                                )}
-                                            </div>
-                                        </TableHead>
-                                    ))}
-                                </TableRow>
-                                {!isMobile && (
+        <>
+            <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Cancel Approved Request</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <p className="text-sm text-muted-foreground">
+                                Are you sure you want to cancel this approved request? This will:
+                            </p>
+                            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
+                                <li>Mark the request as cancelled</li>
+                                <li>Remove auto-generated hour entries</li>
+                                <li>Recalculate daily summaries</li>
+                            </ul>
+                        </div>
+                        {selectedRequest && (
+                            <div className="space-y-2 p-3 bg-muted rounded-md">
+                                <div className="text-sm">
+                                    <span className="font-semibold">User: </span>
+                                    {selectedRequest.user.name || selectedRequest.user.email}
+                                </div>
+                                <div className="text-sm">
+                                    <span className="font-semibold">Type: </span>
+                                    {typeLabels[selectedRequest.type]}
+                                </div>
+                                <div className="text-sm">
+                                    <span className="font-semibold">Period: </span>
+                                    {formatDate(selectedRequest.startDate)} -{" "}
+                                    {formatDate(selectedRequest.endDate)}
+                                </div>
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <Label htmlFor="cancellation-reason">
+                                Cancellation Reason <span className="text-red-600">*</span>
+                            </Label>
+                            <Textarea
+                                id="cancellation-reason"
+                                value={cancellationReason}
+                                onChange={(e) => setCancellationReason(e.target.value)}
+                                placeholder="Explain why this request is being cancelled..."
+                                rows={3}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setCancelDialogOpen(false)}
+                            disabled={cancelMutation.isPending}
+                        >
+                            Close
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleCancelConfirm}
+                            disabled={!cancellationReason.trim() || cancelMutation.isPending}
+                        >
+                            {cancelMutation.isPending ? "Cancelling..." : "Cancel Request"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <div className="flex flex-col gap-4 h-full min-w-0">
+                <div className="rounded-md border flex-1 min-h-0">
+                    <Table>
+                        <TableHeader>
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <Fragment key={headerGroup.id}>
                                     <TableRow>
                                         {headerGroup.headers.map((header) => (
-                                            <TableHead key={`${header.id}-filter`} className="py-2">
-                                                {header.column.getCanFilter() ? (
-                                                    <Filter column={header.column} />
-                                                ) : null}
+                                            <TableHead key={header.id} className="font-semibold">
+                                                <div className="flex items-center gap-2">
+                                                    {header.isPlaceholder
+                                                        ? null
+                                                        : flexRender(
+                                                              header.column.columnDef.header,
+                                                              header.getContext()
+                                                          )}
+                                                    {isMobile && header.column.getCanFilter() && (
+                                                        <Filter column={header.column} />
+                                                    )}
+                                                </div>
                                             </TableHead>
                                         ))}
                                     </TableRow>
-                                )}
-                            </Fragment>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id}>
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id}>
-                                            {flexRender(
-                                                cell.column.columnDef.cell,
-                                                cell.getContext()
-                                            )}
-                                        </TableCell>
-                                    ))}
+                                    {!isMobile && (
+                                        <TableRow>
+                                            {headerGroup.headers.map((header) => (
+                                                <TableHead
+                                                    key={`${header.id}-filter`}
+                                                    className="py-2"
+                                                >
+                                                    {header.column.getCanFilter() ? (
+                                                        <Filter column={header.column} />
+                                                    ) : null}
+                                                </TableHead>
+                                            ))}
+                                        </TableRow>
+                                    )}
+                                </Fragment>
+                            ))}
+                        </TableHeader>
+                        <TableBody>
+                            {table.getRowModel().rows?.length ? (
+                                table.getRowModel().rows.map((row) => (
+                                    <TableRow key={row.id}>
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell key={cell.id}>
+                                                {flexRender(
+                                                    cell.column.columnDef.cell,
+                                                    cell.getContext()
+                                                )}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={columns.length}
+                                        className="h-24 text-center text-muted-foreground"
+                                    >
+                                        No request history found.
+                                    </TableCell>
                                 </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell
-                                    colSpan={columns.length}
-                                    className="h-24 text-center text-muted-foreground"
-                                >
-                                    No request history found.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+                <div className="flex items-center justify-end space-x-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.previousPage()}
+                        disabled={!table.getCanPreviousPage()}
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.nextPage()}
+                        disabled={!table.getCanNextPage()}
+                    >
+                        Next
+                    </Button>
+                </div>
             </div>
-            <div className="flex items-center justify-end space-x-2">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                >
-                    Next
-                </Button>
-            </div>
-        </div>
+        </>
     )
 }

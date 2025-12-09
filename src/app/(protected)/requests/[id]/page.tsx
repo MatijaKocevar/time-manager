@@ -303,6 +303,37 @@ export default function RequestDetailPage() {
                                 </div>
                             )}
 
+                            {request.status === "CANCELLED" && (
+                                <>
+                                    {request.cancellationReason && (
+                                        <div className="space-y-2">
+                                            <Label className="text-gray-600">
+                                                Cancellation Reason
+                                            </Label>
+                                            <div className="text-lg text-gray-600">
+                                                {request.cancellationReason}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {request.canceller && (
+                                        <div className="space-y-2">
+                                            <Label>Cancelled By</Label>
+                                            <div className="text-lg">
+                                                {request.canceller.name || request.canceller.email}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {request.cancelledAt && (
+                                        <div className="space-y-2">
+                                            <Label>Cancelled At</Label>
+                                            <div className="text-lg">
+                                                {new Date(request.cancelledAt).toLocaleString()}
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
                             {isEditable && (
                                 <div className="flex justify-end">
                                     <Button

@@ -70,6 +70,11 @@ export const RejectRequestSchema = z.object({
     rejectionReason: z.string().optional(),
 })
 
+export const CancelApprovedRequestSchema = z.object({
+    id: z.string(),
+    cancellationReason: z.string().min(1, "Cancellation reason is required"),
+})
+
 export const RequestDisplaySchema = z.object({
     id: z.string(),
     userId: z.string(),
@@ -85,6 +90,9 @@ export const RequestDisplaySchema = z.object({
     rejectedBy: z.string().nullable(),
     rejectedAt: z.date().nullable(),
     rejectionReason: z.string().nullable(),
+    cancelledBy: z.string().nullable(),
+    cancelledAt: z.date().nullable(),
+    cancellationReason: z.string().nullable(),
     createdAt: z.date(),
     updatedAt: z.date(),
     user: z
@@ -110,6 +118,14 @@ export const RequestDisplaySchema = z.object({
         })
         .nullable()
         .optional(),
+    canceller: z
+        .object({
+            id: z.string(),
+            name: z.string().nullable(),
+            email: z.string(),
+        })
+        .nullable()
+        .optional(),
 })
 
 export type RequestType = z.infer<typeof RequestTypeSchema>
@@ -119,4 +135,5 @@ export type UpdateRequestInput = z.input<typeof UpdateRequestSchema>
 export type CancelRequestInput = z.infer<typeof CancelRequestSchema>
 export type ApproveRequestInput = z.infer<typeof ApproveRequestSchema>
 export type RejectRequestInput = z.infer<typeof RejectRequestSchema>
+export type CancelApprovedRequestInput = z.infer<typeof CancelApprovedRequestSchema>
 export type RequestDisplay = z.infer<typeof RequestDisplaySchema>

@@ -138,10 +138,15 @@ export function RequestsTable({ requests, showUser = false }: RequestsTableProps
                                             ? request.approver.name || request.approver.email
                                             : request.status === "REJECTED" && request.rejector
                                               ? request.rejector.name || request.rejector.email
-                                              : "-"}
+                                              : request.status === "CANCELLED" && request.canceller
+                                                ? request.canceller.name || request.canceller.email
+                                                : "-"}
                                     </TableCell>
                                     <TableCell className="max-w-xs truncate">
-                                        {request.reason || "-"}
+                                        {request.cancellationReason ||
+                                            request.rejectionReason ||
+                                            request.reason ||
+                                            "-"}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="outline" size="sm" asChild>

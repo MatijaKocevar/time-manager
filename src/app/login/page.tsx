@@ -51,7 +51,7 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="flex min-h-screen items-center justify-center bg-background">
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle>Login</CardTitle>
@@ -93,7 +93,7 @@ export default function LoginPage() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button type="submit" className="w-full" disabled={isLoading}>
+                        <Button type="submit" className="w-full mt-4" disabled={isLoading}>
                             {isLoading ? "Signing in..." : "Sign in"}
                         </Button>
                     </CardFooter>

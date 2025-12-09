@@ -11,13 +11,16 @@ import {
     CancelRequestSchema,
     ApproveRequestSchema,
     RejectRequestSchema,
+    CancelApprovedRequestSchema,
     type CreateRequestInput,
     type UpdateRequestInput,
     type CancelRequestInput,
     type ApproveRequestInput,
     type RejectRequestInput,
+    type CancelApprovedRequestInput,
     type RequestDisplay,
 } from "../schemas/request-schemas"
+import { recalculateDailySummary } from "../../hours/utils/summary-helpers"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -152,7 +155,11 @@ export async function cancelRequest(input: CancelRequestInput) {
 
         await prisma.request.update({
             where: { id },
-            data: { status: "CANCELLED" },
+            data: {
+                status: "CANCELLED",
+                cancelledBy: session.user.id,
+                cancelledAt: new Date(),
+            },
         })
 
         revalidatePath("/requests")
@@ -162,6 +169,134 @@ export async function cancelRequest(input: CancelRequestInput) {
             return { error: error.message }
         }
         return { error: "Failed to cancel request" }
+    }
+}
+
+export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
+    try {
+        const session = await requireAdmin()
+
+        const validation = CancelApprovedRequestSchema.safeParse(input)
+        if (!validation.success) {
+            return { error: validation.error.issues[0].message }
+        }
+
+        const { id, cancellationReason } = validation.data
+
+        const request = await prisma.request.findUnique({
+            where: { id },
+        })
+
+        if (!request) {
+            return { error: "Request not found" }
+        }
+
+        if (request.status !== "APPROVED") {
+            return { error: "Can only cancel approved requests" }
+        }
+
+        await prisma.$transaction(async (tx) => {
+            await tx.request.update({
+                where: { id },
+                data: {
+                    status: "CANCELLED",
+                    cancelledBy: session.user.id,
+                    cancelledAt: new Date(),
+                    cancellationReason,
+                },
+            })
+
+            if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
+                const hourType = request.type === "VACATION" ? "VACATION" : "SICK_LEAVE"
+                const currentDate = new Date(request.startDate)
+                const endDate = new Date(request.endDate)
+                const datesToRecalculate: Date[] = []
+
+                while (currentDate <= endDate) {
+                    const dayOfWeek = currentDate.getDay()
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+
+                    if (!isWeekend) {
+                        const normalizedDate = new Date(currentDate)
+                        normalizedDate.setHours(0, 0, 0, 0)
+                        datesToRecalculate.push(new Date(normalizedDate))
+
+                        await tx.hourEntry.deleteMany({
+                            where: {
+                                userId: request.userId,
+                                date: normalizedDate,
+                                type: hourType,
+                                description: {
+                                    startsWith: "Auto-generated from",
+                                },
+                                taskId: null,
+                            },
+                        })
+                    }
+
+                    currentDate.setDate(currentDate.getDate() + 1)
+                }
+
+                for (const date of datesToRecalculate) {
+                    await recalculateDailySummary(tx, request.userId, date, hourType)
+                }
+            }
+
+            console.log(`Starting shift deletion for request type: ${request.type}`)
+            console.log(`Request date range: ${request.startDate} to ${request.endDate}`)
+
+            const shiftDeleteDate = new Date(request.startDate)
+            const shiftEndDate = new Date(request.endDate)
+
+            while (shiftDeleteDate <= shiftEndDate) {
+                const dayOfWeek = shiftDeleteDate.getDay()
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+
+                if (!isWeekend) {
+                    const normalizedDate = new Date(shiftDeleteDate)
+                    normalizedDate.setHours(0, 0, 0, 0)
+
+                    console.log(
+                        `Attempting to delete shifts for date: ${normalizedDate.toISOString()}`
+                    )
+
+                    const existingShifts = await tx.shift.findMany({
+                        where: {
+                            userId: request.userId,
+                            date: normalizedDate,
+                        },
+                    })
+                    console.log(
+                        `Found ${existingShifts.length} shifts for this date:`,
+                        existingShifts
+                    )
+
+                    const deleteResult = await tx.shift.deleteMany({
+                        where: {
+                            userId: request.userId,
+                            date: normalizedDate,
+                            notes: {
+                                contains: "Auto-generated from",
+                            },
+                        },
+                    })
+
+                    console.log(`Deleted ${deleteResult.count} shifts`)
+                }
+
+                shiftDeleteDate.setDate(shiftDeleteDate.getDate() + 1)
+            }
+        })
+
+        revalidatePath("/requests")
+        revalidatePath("/hours")
+        revalidatePath("/shifts")
+        return { success: true }
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error.message }
+        }
+        return { error: "Failed to cancel approved request" }
     }
 }
 
@@ -242,13 +377,13 @@ export async function approveRequest(input: ApproveRequestInput) {
                                 date: normalizedDate,
                             },
                         },
-                        update: {
-                            location: shiftLocation,
-                            notes: `Auto-generated from ${request.type.toLowerCase()} request`,
-                        },
                         create: {
                             userId: request.userId,
                             date: normalizedDate,
+                            location: shiftLocation,
+                            notes: `Auto-generated from ${request.type.toLowerCase()} request`,
+                        },
+                        update: {
                             location: shiftLocation,
                             notes: `Auto-generated from ${request.type.toLowerCase()} request`,
                         },
@@ -352,6 +487,13 @@ export async function getUserRequests(): Promise<RequestDisplay[]> {
                         email: true,
                     },
                 },
+                canceller: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
             },
             orderBy: {
                 createdAt: "desc",
@@ -396,6 +538,13 @@ export async function getAllRequests(statusFilter?: string[]): Promise<RequestDi
                     },
                 },
                 rejector: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                canceller: {
                     select: {
                         id: true,
                         name: true,
