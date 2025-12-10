@@ -1,6 +1,13 @@
 import { z } from "zod"
+import { SHIFT_LOCATION } from "../constants"
 
-export const ShiftLocationSchema = z.enum(["OFFICE", "HOME", "VACATION", "SICK_LEAVE", "OTHER"])
+export const ShiftLocationSchema = z.enum([
+    SHIFT_LOCATION.OFFICE,
+    SHIFT_LOCATION.HOME,
+    SHIFT_LOCATION.VACATION,
+    SHIFT_LOCATION.SICK_LEAVE,
+    SHIFT_LOCATION.OTHER,
+])
 
 export type ShiftLocation = z.infer<typeof ShiftLocationSchema>
 

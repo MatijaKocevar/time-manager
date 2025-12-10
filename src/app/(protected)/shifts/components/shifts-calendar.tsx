@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useMemo } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,7 +12,8 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { EditShiftDialog } from "./edit-shift-dialog"
-import { locationColors } from "./shift-legend"
+import { SHIFT_LOCATION_COLORS } from "../constants"
+import { useShiftCalendarStore } from "../stores"
 import type { ShiftLocation } from "../schemas/shift-schemas"
 
 interface User {
@@ -35,22 +36,16 @@ interface ShiftsCalendarProps {
     users: User[]
 }
 
-type ViewMode = "week" | "month"
-
 export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
-    const [viewMode, setViewMode] = useState<ViewMode>("week")
-    const [currentDate, setCurrentDate] = useState(new Date())
-    const [editDialog, setEditDialog] = useState<{
-        isOpen: boolean
-        date: Date
-        userId?: string
-        userName?: string
-        currentLocation?: ShiftLocation
-        currentNotes?: string
-    }>({
-        isOpen: false,
-        date: new Date(),
-    })
+    const viewMode = useShiftCalendarStore((state) => state.viewMode)
+    const currentDate = useShiftCalendarStore((state) => state.currentDate)
+    const editDialog = useShiftCalendarStore((state) => state.editDialog)
+    const setViewMode = useShiftCalendarStore((state) => state.setViewMode)
+    const openEditDialog = useShiftCalendarStore((state) => state.openEditDialog)
+    const closeEditDialog = useShiftCalendarStore((state) => state.closeEditDialog)
+    const handlePrevious = useShiftCalendarStore((state) => state.handlePrevious)
+    const handleNext = useShiftCalendarStore((state) => state.handleNext)
+    const handleToday = useShiftCalendarStore((state) => state.handleToday)
 
     const { startDate, days } = useMemo(() => {
         if (viewMode === "week") {
@@ -102,38 +97,9 @@ export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
         return shiftsByUserAndDate.get(key)
     }
 
-    const handlePrevious = () => {
-        setCurrentDate((prev) => {
-            const newDate = new Date(prev)
-            if (viewMode === "week") {
-                newDate.setDate(prev.getDate() - 7)
-            } else {
-                newDate.setMonth(prev.getMonth() - 1)
-            }
-            return newDate
-        })
-    }
-
-    const handleNext = () => {
-        setCurrentDate((prev) => {
-            const newDate = new Date(prev)
-            if (viewMode === "week") {
-                newDate.setDate(prev.getDate() + 7)
-            } else {
-                newDate.setMonth(prev.getMonth() + 1)
-            }
-            return newDate
-        })
-    }
-
-    const handleToday = () => {
-        setCurrentDate(new Date())
-    }
-
     const handleCellClick = (userId: string, userName: string | null, date: Date) => {
         const shift = getShift(userId, date)
-        setEditDialog({
-            isOpen: true,
+        openEditDialog({
             date,
             userId,
             userName: userName || undefined,
@@ -235,7 +201,7 @@ export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
                                 {days.map((date) => {
                                     const shift = getShift(user.id, date)
                                     const colors = shift
-                                        ? locationColors[shift.location]
+                                        ? SHIFT_LOCATION_COLORS[shift.location]
                                         : { bg: "bg-background", text: "text-muted-foreground" }
                                     const isWeekend = date.getDay() === 0 || date.getDay() === 6
 
@@ -253,8 +219,8 @@ export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
                                                 className={`rounded-md p-2 text-xs ${colors.bg} ${colors.text} min-h-10 flex items-center justify-center`}
                                             >
                                                 {shift
-                                                    ? locationColors[shift.location].label
-                                                    : "Office"}
+                                                    ? SHIFT_LOCATION_COLORS[shift.location].label
+                                                    : SHIFT_LOCATION_COLORS.OFFICE.label}
                                             </div>
                                         </TableCell>
                                     )
@@ -267,7 +233,7 @@ export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
 
             <EditShiftDialog
                 isOpen={editDialog.isOpen}
-                onClose={() => setEditDialog({ ...editDialog, isOpen: false })}
+                onClose={closeEditDialog}
                 date={editDialog.date}
                 userId={editDialog.userId}
                 userName={editDialog.userName}

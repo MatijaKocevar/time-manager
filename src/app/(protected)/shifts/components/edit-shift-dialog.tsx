@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { updateMyShift, updateUserShift } from "../actions/shift-actions"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { SHIFT_LOCATIONS } from "../constants"
+import { useShiftFormStore } from "../stores"
 import type { ShiftLocation } from "../schemas/shift-schemas"
 
 interface EditShiftDialogProps {
@@ -43,10 +45,22 @@ export function EditShiftDialog({
 }: EditShiftDialogProps) {
     const { data: session } = useSession()
     const isAdmin = session?.user?.role === "ADMIN"
-    const [location, setLocation] = useState<ShiftLocation>(currentLocation || "OFFICE")
-    const [notes, setNotes] = useState(currentNotes || "")
-    const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState("")
+
+    const location = useShiftFormStore((state) => state.location)
+    const notes = useShiftFormStore((state) => state.notes)
+    const isLoading = useShiftFormStore((state) => state.isLoading)
+    const error = useShiftFormStore((state) => state.error)
+    const setLocation = useShiftFormStore((state) => state.setLocation)
+    const setNotes = useShiftFormStore((state) => state.setNotes)
+    const setIsLoading = useShiftFormStore((state) => state.setIsLoading)
+    const setError = useShiftFormStore((state) => state.setError)
+    const resetForm = useShiftFormStore((state) => state.resetForm)
+
+    useEffect(() => {
+        if (isOpen) {
+            resetForm(currentLocation, currentNotes || "")
+        }
+    }, [isOpen, currentLocation, currentNotes, resetForm])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -96,11 +110,11 @@ export function EditShiftDialog({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="OFFICE">Office</SelectItem>
-                                <SelectItem value="HOME">Work from Home</SelectItem>
-                                <SelectItem value="VACATION">Vacation</SelectItem>
-                                <SelectItem value="SICK_LEAVE">Sick Leave</SelectItem>
-                                <SelectItem value="OTHER">Other</SelectItem>
+                                {SHIFT_LOCATIONS.map((option) => (
+                                    <SelectItem key={option.value} value={option.value}>
+                                        {option.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
