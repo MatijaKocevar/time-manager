@@ -16,7 +16,13 @@ export const TaskDisplaySchema = z.object({
 
 export type TaskDisplay = z.infer<typeof TaskDisplaySchema>
 
-export interface TaskTreeNode extends TaskDisplay {
+export const TaskTreeNodeSchema: z.ZodType<TaskTreeNode> = TaskDisplaySchema.extend({
+    subtasks: z.lazy(() => z.array(TaskTreeNodeSchema)),
+    depth: z.number(),
+    totalTime: z.number().optional(),
+})
+
+export type TaskTreeNode = TaskDisplay & {
     subtasks: TaskTreeNode[]
     depth: number
     totalTime?: number

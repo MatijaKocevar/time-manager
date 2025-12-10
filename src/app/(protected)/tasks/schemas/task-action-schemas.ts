@@ -1,11 +1,17 @@
 import { z } from "zod"
+import { TASK_STATUS } from "../constants/task-statuses"
 
-export const TaskStatusSchema = z.enum(["TODO", "IN_PROGRESS", "DONE", "BLOCKED"])
+export const TaskStatusSchema = z.enum([
+    TASK_STATUS.TODO,
+    TASK_STATUS.IN_PROGRESS,
+    TASK_STATUS.DONE,
+    TASK_STATUS.BLOCKED,
+])
 
 const CreateTaskInputSchema = z.object({
     title: z.string().min(1, "Title is required").max(255, "Title is too long"),
     description: z.string().optional(),
-    status: TaskStatusSchema.default("TODO"),
+    status: TaskStatusSchema.default(TASK_STATUS.TODO),
     parentId: z.string().optional(),
 })
 

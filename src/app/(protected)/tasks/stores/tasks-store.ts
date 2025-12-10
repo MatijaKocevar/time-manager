@@ -1,24 +1,22 @@
 import { create } from "zustand"
 import type { TaskStatus } from "../schemas"
+import { TASK_STATUS } from "../constants/task-statuses"
 
 interface ActiveTimer {
     entryId: string
     startTime: Date
 }
 
-interface TasksStore {
+interface CreateFormData {
+    title: string
+    description: string
+    status: TaskStatus
+}
+
+interface TasksStoreState {
     expandedRows: Set<string>
-    toggleRow: (taskId: string) => void
-    expandAll: (taskIds: string[]) => void
-    collapseAll: () => void
-
     activeTimers: Map<string, ActiveTimer>
-    setActiveTimer: (taskId: string, entryId: string, startTime: Date) => void
-    clearActiveTimer: (taskId: string) => void
-
     elapsedTimes: Map<string, number>
-    updateElapsedTime: (taskId: string, seconds: number) => void
-
     createDialog: {
         isOpen: boolean
         parentId: string | null
@@ -31,38 +29,40 @@ interface TasksStore {
         isOpen: boolean
         taskId: string | null
     }
-
     createForm: {
-        data: {
-            title: string
-            description: string
-            status: TaskStatus
-        }
+        data: CreateFormData
         isLoading: boolean
         error: string
     }
+}
 
+interface TasksStoreActions {
+    toggleRow: (taskId: string) => void
+    expandAll: (taskIds: string[]) => void
+    collapseAll: () => void
+    setActiveTimer: (taskId: string, entryId: string, startTime: Date) => void
+    clearActiveTimer: (taskId: string) => void
+    updateElapsedTime: (taskId: string, seconds: number) => void
     openCreateDialog: (parentId?: string) => void
     closeCreateDialog: () => void
     openTimeEntriesDialog: (taskId: string) => void
     closeTimeEntriesDialog: () => void
     openDeleteDialog: (taskId: string) => void
     closeDeleteDialog: () => void
-
-    setCreateFormData: (data: Partial<TasksStore["createForm"]["data"]>) => void
+    setCreateFormData: (data: Partial<CreateFormData>) => void
     resetCreateForm: () => void
     setCreateLoading: (isLoading: boolean) => void
     setCreateError: (error: string) => void
     clearCreateError: () => void
 }
 
-const initialFormData = {
+const initialFormData: CreateFormData = {
     title: "",
     description: "",
-    status: "TODO" as TaskStatus,
+    status: TASK_STATUS.TODO,
 }
 
-export const useTasksStore = create<TasksStore>((set) => ({
+export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) => ({
     expandedRows: new Set<string>(),
     toggleRow: (taskId) =>
         set((state) => {
