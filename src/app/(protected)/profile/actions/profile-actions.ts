@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
 import { UpdateProfileSchema, type UpdateProfileInput } from "../schemas/profile-action-schemas"
+import { BCRYPT_SALT_ROUNDS } from "../constants/profile-constants"
 
 export async function getCurrentUser() {
     const session = await getServerSession(authConfig)
@@ -61,7 +62,7 @@ export async function updateProfile(input: UpdateProfileInput) {
             return { error: "Current password is incorrect" }
         }
 
-        const hashedPassword = await bcrypt.hash(newPassword, 12)
+        const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS)
 
         try {
             await prisma.user.update({

@@ -1,11 +1,14 @@
 import { create } from "zustand"
-import { ProfileFormState } from "../schemas/profile-schemas"
+import { type ProfileFormState } from "../schemas/profile-schemas"
 
-interface ProfileStore {
+interface ProfileStoreState {
     formData: ProfileFormState
     isLoading: boolean
     error: string
     success: boolean
+}
+
+interface ProfileStoreActions {
     setFormData: (data: Partial<ProfileFormState>) => void
     resetFormData: (initialName: string) => void
     setLoading: (isLoading: boolean) => void
@@ -14,7 +17,7 @@ interface ProfileStore {
     setSuccess: (success: boolean) => void
 }
 
-export const useProfileStore = create<ProfileStore>((set) => ({
+export const useProfileStore = create<ProfileStoreState & ProfileStoreActions>((set) => ({
     formData: {
         name: "",
         currentPassword: "",

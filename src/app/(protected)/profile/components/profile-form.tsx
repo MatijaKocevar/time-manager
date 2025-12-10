@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { updateProfile } from "../actions/profile-actions"
 import { useProfileStore } from "../stores/profile-store"
+import { MIN_PASSWORD_LENGTH } from "../constants/profile-constants"
 import type { UserRole } from "@/types"
 
 interface ProfileFormProps {
@@ -117,7 +118,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                 type="password"
                                 value={formData.newPassword}
                                 onChange={(e) => setFormData({ newPassword: e.target.value })}
-                                minLength={6}
+                                minLength={MIN_PASSWORD_LENGTH}
                                 disabled={isLoading}
                             />
                         </div>

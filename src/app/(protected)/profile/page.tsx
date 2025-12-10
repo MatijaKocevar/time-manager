@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { ProfileForm } from "./components/profile-form"
 import { UserAvatar } from "@/components/user-avatar"
 import { getCurrentUser } from "./actions/profile-actions"
+import { ROLE_COLORS } from "./constants/profile-constants"
 
 export default async function ProfilePage() {
     const user = await getCurrentUser()
@@ -19,11 +20,7 @@ export default async function ProfilePage() {
                         <p className="font-semibold">{user.name}</p>
                         <p className="text-sm text-muted-foreground">{user.email}</p>
                         <span
-                            className={`mt-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                                user.role === "ADMIN"
-                                    ? "bg-purple-100 text-purple-800"
-                                    : "bg-blue-100 text-blue-800"
-                            }`}
+                            className={`mt-2 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${ROLE_COLORS[user.role]}`}
                         >
                             {user.role}
                         </span>
