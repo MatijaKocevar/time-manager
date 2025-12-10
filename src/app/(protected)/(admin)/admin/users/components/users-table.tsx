@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Edit, Search, Plus } from "lucide-react"
 import type { UserTableItem } from "../schemas/user-table-schemas"
+import { USER_ROLE_LABELS, USER_ROLE_COLORS } from "../constants/user-constants"
 
 interface UsersTableProps {
     users: UserTableItem[]
@@ -91,13 +92,9 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>
                                         <span
-                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
-                                                user.role === "ADMIN"
-                                                    ? "bg-purple-100 text-purple-800"
-                                                    : "bg-blue-100 text-blue-800"
-                                            }`}
+                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${USER_ROLE_COLORS[user.role]}`}
                                         >
-                                            {user.role}
+                                            {USER_ROLE_LABELS[user.role]}
                                         </span>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">

@@ -37,7 +37,11 @@ interface RequestsTableProps {
     showNewButton?: boolean
 }
 
-export function RequestsTable({ requests, showUser = false, showNewButton = true }: RequestsTableProps) {
+export function RequestsTable({
+    requests,
+    showUser = false,
+    showNewButton = true,
+}: RequestsTableProps) {
     const router = useRouter()
     const [searchQuery, setSearchQuery] = useState("")
 

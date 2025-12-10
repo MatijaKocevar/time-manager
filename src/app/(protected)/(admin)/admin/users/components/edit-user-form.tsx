@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { updateUser, deleteUser, changeUserPassword } from "../actions/user-actions"
+import { useUserFormStore } from "../stores/user-form-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,7 +16,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Trash2 } from "lucide-react"
-import type { UserRole } from "@/types"
+import { USER_ROLE_LABELS } from "../constants/user-constants"
+import { type UserRole } from "../schemas/user-action-schemas"
 
 interface EditUserFormProps {
     user: {
@@ -28,31 +30,73 @@ interface EditUserFormProps {
 
 export function EditUserForm({ user }: EditUserFormProps) {
     const router = useRouter()
-    const [name, setName] = useState(user.name || "")
-    const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
-    const [newPassword, setNewPassword] = useState("")
-    const [isLoading, setIsLoading] = useState(false)
-    const [isPasswordLoading, setIsPasswordLoading] = useState(false)
-    const [isDeleteLoading, setIsDeleteLoading] = useState(false)
-    const [error, setError] = useState("")
-    const [passwordError, setPasswordError] = useState("")
-    const [deleteError, setDeleteError] = useState("")
+
+    const editData = useUserFormStore((state) => state.editForm.data)
+    const name = editData?.name || ""
+    const role = editData?.role || user.role
+    const newPassword = useUserFormStore(
+        (state) => state.changePasswordForm.data?.newPassword || ""
+    )
+
+    const isLoading = useUserFormStore((state) => state.editForm.isLoading)
+    const isPasswordLoading = useUserFormStore((state) => state.changePasswordForm.isLoading)
+    const isDeleteLoading = useUserFormStore((state) => state.deleteForm.isLoading)
+
+    const error = useUserFormStore((state) => state.editForm.error)
+    const passwordError = useUserFormStore((state) => state.changePasswordForm.error)
+    const deleteError = useUserFormStore((state) => state.deleteForm.error)
+
+    const initializeEditForm = useUserFormStore((state) => state.initializeEditForm)
+    const initializeChangePasswordForm = useUserFormStore(
+        (state) => state.initializeChangePasswordForm
+    )
+    const setEditFormData = useUserFormStore((state) => state.setEditFormData)
+    const setChangePasswordFormData = useUserFormStore((state) => state.setChangePasswordFormData)
+    const setEditLoading = useUserFormStore((state) => state.setEditLoading)
+    const setChangePasswordLoading = useUserFormStore((state) => state.setChangePasswordLoading)
+    const setDeleteLoading = useUserFormStore((state) => state.setDeleteLoading)
+    const setEditError = useUserFormStore((state) => state.setEditError)
+    const setChangePasswordError = useUserFormStore((state) => state.setChangePasswordError)
+    const setDeleteError = useUserFormStore((state) => state.setDeleteError)
+    const clearEditError = useUserFormStore((state) => state.clearEditError)
+    const clearChangePasswordError = useUserFormStore((state) => state.clearChangePasswordError)
+    const clearDeleteError = useUserFormStore((state) => state.clearDeleteError)
+    const resetEditForm = useUserFormStore((state) => state.resetEditForm)
+    const resetChangePasswordForm = useUserFormStore((state) => state.resetChangePasswordForm)
+
+    useEffect(() => {
+        initializeEditForm({ id: user.id, name: user.name, role: user.role })
+        initializeChangePasswordForm(user.id)
+
+        return () => {
+            resetEditForm()
+            resetChangePasswordForm()
+        }
+    }, [
+        user.id,
+        user.name,
+        user.role,
+        initializeEditForm,
+        initializeChangePasswordForm,
+        resetEditForm,
+        resetChangePasswordForm,
+    ])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setError("")
-        setIsLoading(true)
+        clearEditError()
+        setEditLoading(true)
 
         const result = await updateUser({
             id: user.id,
             name,
-            role: selectedRole || user.role,
+            role,
         })
 
-        setIsLoading(false)
+        setEditLoading(false)
 
         if (result.error) {
-            setError(result.error)
+            setEditError(result.error)
         } else {
             router.push("/admin/users")
         }
@@ -60,32 +104,32 @@ export function EditUserForm({ user }: EditUserFormProps) {
 
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault()
-        setPasswordError("")
-        setIsPasswordLoading(true)
+        clearChangePasswordError()
+        setChangePasswordLoading(true)
 
         const result = await changeUserPassword({
             id: user.id,
             newPassword,
         })
 
-        setIsPasswordLoading(false)
+        setChangePasswordLoading(false)
 
         if (result.error) {
-            setPasswordError(result.error)
+            setChangePasswordError(result.error)
         } else {
-            setNewPassword("")
+            setChangePasswordFormData({ newPassword: "" })
         }
     }
 
     const handleDelete = async () => {
         if (!confirm(`Are you sure you want to delete ${user.name || "this user"}?`)) return
 
-        setDeleteError("")
-        setIsDeleteLoading(true)
+        clearDeleteError()
+        setDeleteLoading(true)
 
         const result = await deleteUser({ id: user.id })
 
-        setIsDeleteLoading(false)
+        setDeleteLoading(false)
 
         if (result.error) {
             setDeleteError(result.error)
@@ -102,7 +146,7 @@ export function EditUserForm({ user }: EditUserFormProps) {
                     <Input
                         id="name"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => setEditFormData({ name: e.target.value })}
                         disabled={isLoading}
                     />
                 </div>
@@ -114,16 +158,18 @@ export function EditUserForm({ user }: EditUserFormProps) {
                     <Label htmlFor="role">Role</Label>
                     <Select
                         key={user.id}
-                        defaultValue={user.role}
-                        onValueChange={(value: string) => setSelectedRole(value as UserRole)}
+                        value={role}
+                        onValueChange={(value: string) =>
+                            setEditFormData({ role: value as UserRole })
+                        }
                         disabled={isLoading}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="USER">User</SelectItem>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
+                            <SelectItem value="USER">{USER_ROLE_LABELS.USER}</SelectItem>
+                            <SelectItem value="ADMIN">{USER_ROLE_LABELS.ADMIN}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -152,7 +198,7 @@ export function EditUserForm({ user }: EditUserFormProps) {
                         type="password"
                         placeholder="Enter new password"
                         value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
+                        onChange={(e) => setChangePasswordFormData({ newPassword: e.target.value })}
                         disabled={isPasswordLoading}
                     />
                 </div>

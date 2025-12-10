@@ -1,41 +1,52 @@
 import { create } from "zustand"
-import type { UserRole } from "@/types"
+import { type UserRole } from "../schemas/user-action-schemas"
 
-export const useUserFormStore = create<{
-    createForm: {
-        data: {
-            name: string
-            email: string
-            password: string
-            role: UserRole
-        }
-        isLoading: boolean
-        error: string
+interface CreateFormState {
+    data: {
+        name: string
+        email: string
+        password: string
+        role: UserRole
     }
-    editForm: {
-        data: {
-            id: string
-            name: string | null
-            role: UserRole
-        } | null
-        isLoading: boolean
-        error: string
-    }
-    changePasswordForm: {
-        data: {
-            id: string
-            newPassword: string
-        } | null
-        isLoading: boolean
-        error: string
-    }
-    deleteForm: {
-        data: {
-            id: string
-        } | null
-        isLoading: boolean
-        error: string
-    }
+    isLoading: boolean
+    error: string
+}
+
+interface EditFormState {
+    data: {
+        id: string
+        name: string | null
+        role: UserRole
+    } | null
+    isLoading: boolean
+    error: string
+}
+
+interface ChangePasswordFormState {
+    data: {
+        id: string
+        newPassword: string
+    } | null
+    isLoading: boolean
+    error: string
+}
+
+interface DeleteFormState {
+    data: {
+        id: string
+    } | null
+    isLoading: boolean
+    error: string
+}
+
+interface UserFormStoreState {
+    createForm: CreateFormState
+    editForm: EditFormState
+    changePasswordForm: ChangePasswordFormState
+    deleteForm: DeleteFormState
+}
+
+interface UserFormStoreActions {
     setCreateFormData: (
         data: Partial<{
             name: string
@@ -76,7 +87,9 @@ export const useUserFormStore = create<{
     setDeleteLoading: (isLoading: boolean) => void
     setDeleteError: (error: string) => void
     clearDeleteError: () => void
-}>((set) => ({
+}
+
+export const useUserFormStore = create<UserFormStoreState & UserFormStoreActions>((set) => ({
     createForm: {
         data: {
             name: "",

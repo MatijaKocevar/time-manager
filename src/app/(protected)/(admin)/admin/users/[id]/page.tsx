@@ -70,7 +70,11 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
                         <CardDescription>User&apos;s leave and work requests</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <RequestsTable requests={userRequests} showUser={false} showNewButton={false} />
+                        <RequestsTable
+                            requests={userRequests}
+                            showUser={false}
+                            showNewButton={false}
+                        />
                     </CardContent>
                 </Card>
             </div>

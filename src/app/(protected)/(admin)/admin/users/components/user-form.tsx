@@ -16,7 +16,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Trash2 } from "lucide-react"
-import type { UserRole } from "@/types"
+import { USER_ROLE_LABELS } from "../constants/user-constants"
+import { type UserRole } from "../schemas/user-action-schemas"
 
 interface UserFormProps {
     user?: {
@@ -181,8 +182,8 @@ export function UserForm({ user }: UserFormProps) {
                             <SelectValue placeholder="Select a role" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="USER">User</SelectItem>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
+                            <SelectItem value="USER">{USER_ROLE_LABELS.USER}</SelectItem>
+                            <SelectItem value="ADMIN">{USER_ROLE_LABELS.ADMIN}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
