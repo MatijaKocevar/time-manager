@@ -20,7 +20,6 @@ export default async function PendingRequestsPage() {
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <h1 className="text-2xl font-bold">Pending Requests</h1>
             <div className="flex-1 min-h-0">
                 <PendingRequestsList requests={requestsData} />
             </div>
