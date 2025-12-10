@@ -19,15 +19,17 @@ import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { getDateRange, getViewTitle } from "../utils/view-helpers"
 import { hourKeys } from "../query-keys"
+import { useHoursStore } from "../stores/hours-store"
 
 interface HoursViewProps {
     initialEntries: HourEntryDisplay[]
-    initialMode: ViewMode
 }
 
-export function HoursView({ initialEntries, initialMode }: HoursViewProps) {
-    const [viewMode, setViewMode] = useState<ViewMode>(initialMode)
-    const [currentDate, setCurrentDate] = useState(new Date())
+export function HoursView({ initialEntries }: HoursViewProps) {
+    const viewMode = useHoursStore((state) => state.viewMode)
+    const currentDate = useHoursStore((state) => state.selectedDate)
+    const setViewMode = useHoursStore((state) => state.setViewMode)
+    const setSelectedDate = useHoursStore((state) => state.setSelectedDate)
     const [isFormOpen, setIsFormOpen] = useState(false)
 
     const dateRange = getDateRange(viewMode, currentDate)
@@ -36,37 +38,17 @@ export function HoursView({ initialEntries, initialMode }: HoursViewProps) {
     const { data: entries = [], isLoading } = useQuery({
         queryKey: hourKeys.list({ startDate: dateRange.startDate, endDate: dateRange.endDate }),
         queryFn: () => getHourEntries(dateRange.startDate, dateRange.endDate),
-        initialData: () => {
-            const initial = getDateRange(initialMode, new Date())
-            if (
-                initial.startDate === dateRange.startDate &&
-                initial.endDate === dateRange.endDate
-            ) {
-                return initialEntries
-            }
-            return undefined
-        },
+        initialData: initialEntries,
     })
 
     const { data: monthlyEntries, isLoading: isLoadingMonthly } = useQuery({
         queryKey: hourKeys.monthlySummary(monthRange.startDate),
         queryFn: () => getHourEntries(monthRange.startDate, monthRange.endDate),
-        initialData: () => {
-            const currentMonth = getDateRange("MONTHLY", new Date())
-            if (
-                initialMode === "MONTHLY" &&
-                currentMonth.startDate === monthRange.startDate &&
-                currentMonth.endDate === monthRange.endDate
-            ) {
-                return initialEntries
-            }
-            return undefined
-        },
     })
 
     const handleViewModeChange = (mode: ViewMode) => {
         setViewMode(mode)
-        setCurrentDate(new Date())
+        setSelectedDate(new Date())
     }
 
     const handleNavigate = (direction: "prev" | "next") => {
@@ -78,7 +60,7 @@ export function HoursView({ initialEntries, initialMode }: HoursViewProps) {
             newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : -1))
         }
 
-        setCurrentDate(newDate)
+        setSelectedDate(newDate)
     }
 
     return (

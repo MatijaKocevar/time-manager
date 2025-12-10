@@ -1,47 +1,57 @@
 import { create } from "zustand"
-import type { HourType } from "../schemas/hour-action-schemas"
-import type { ViewMode } from "../schemas/hour-filter-schemas"
+import { type HourType } from "../schemas/hour-action-schemas"
+import { type ViewMode } from "../schemas/hour-filter-schemas"
+import { DEFAULT_HOURS } from "../constants/hour-types"
 
-export const useHoursStore = create<{
+interface SingleEntryFormState {
+    data: {
+        date: string
+        hours: number
+        type: HourType
+        description: string
+    }
+    isLoading: boolean
+    error: string
+}
+
+interface BulkEntryFormState {
+    data: {
+        startDate: string
+        endDate: string
+        hours: number
+        type: HourType
+        description: string
+        skipWeekends: boolean
+    }
+    isLoading: boolean
+    error: string
+}
+
+interface EditFormState {
+    data: {
+        id: string
+        date: string
+        hours: number
+        type: HourType
+        description: string
+    } | null
+    isLoading: boolean
+    error: string
+}
+
+interface HoursStoreState {
     expandedTypes: Set<string>
+    singleEntryForm: SingleEntryFormState
+    bulkEntryForm: BulkEntryFormState
+    editForm: EditFormState
+    viewMode: ViewMode
+    selectedDate: Date
+}
+
+interface HoursStoreActions {
     toggleType: (type: string) => void
     expandAll: () => void
     collapseAll: () => void
-    singleEntryForm: {
-        data: {
-            date: string
-            hours: number
-            type: HourType
-            description: string
-        }
-        isLoading: boolean
-        error: string
-    }
-    bulkEntryForm: {
-        data: {
-            startDate: string
-            endDate: string
-            hours: number
-            type: HourType
-            description: string
-            skipWeekends: boolean
-        }
-        isLoading: boolean
-        error: string
-    }
-    editForm: {
-        data: {
-            id: string
-            date: string
-            hours: number
-            type: HourType
-            description: string
-        } | null
-        isLoading: boolean
-        error: string
-    }
-    viewMode: ViewMode
-    selectedDate: Date
     setSingleEntryFormData: (
         data: Partial<{
             date: string
@@ -86,7 +96,9 @@ export const useHoursStore = create<{
     setEditError: (error: string) => void
     setViewMode: (mode: ViewMode) => void
     setSelectedDate: (date: Date) => void
-}>((set) => {
+}
+
+export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) => {
     const today = new Date().toISOString().split("T")[0]
 
     return {
@@ -115,7 +127,7 @@ export const useHoursStore = create<{
         singleEntryForm: {
             data: {
                 date: today,
-                hours: 8,
+                hours: DEFAULT_HOURS,
                 type: "WORK",
                 description: "",
             },
@@ -126,7 +138,7 @@ export const useHoursStore = create<{
             data: {
                 startDate: today,
                 endDate: today,
-                hours: 8,
+                hours: DEFAULT_HOURS,
                 type: "WORK",
                 description: "",
                 skipWeekends: true,
@@ -154,7 +166,7 @@ export const useHoursStore = create<{
                 singleEntryForm: {
                     data: {
                         date: today,
-                        hours: 8,
+                        hours: DEFAULT_HOURS,
                         type: "WORK",
                         description: "",
                     },
@@ -185,7 +197,7 @@ export const useHoursStore = create<{
                     data: {
                         startDate: today,
                         endDate: today,
-                        hours: 8,
+                        hours: DEFAULT_HOURS,
                         type: "WORK",
                         description: "",
                         skipWeekends: true,

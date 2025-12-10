@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select"
 import { useHoursStore } from "../stores/hours-store"
 import { bulkCreateHourEntries } from "../actions/hour-actions"
-import { HOUR_TYPES } from "../constants/hour-types"
+import { HOUR_TYPES, MAX_HOURS_PER_DAY } from "../constants/hour-types"
 import { hourKeys } from "../query-keys"
 
 interface HourEntryFormProps {
@@ -96,7 +96,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
                     type="number"
                     step="0.5"
                     min="0.5"
-                    max="24"
+                    max={MAX_HOURS_PER_DAY}
                     value={bulkEntryForm.data.hours || ""}
                     onChange={(e) => setBulkEntryFormData({ hours: parseFloat(e.target.value) })}
                     required

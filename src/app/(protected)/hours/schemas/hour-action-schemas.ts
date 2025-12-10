@@ -1,10 +1,11 @@
 import { z } from "zod"
+import { MAX_HOURS_PER_DAY } from "../constants/hour-types"
 
 export const HourTypeSchema = z.enum(["WORK", "VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "OTHER"])
 
 const CreateHourEntryInputSchema = z.object({
     date: z.string(),
-    hours: z.number().max(24, "Hours cannot exceed 24"),
+    hours: z.number().max(MAX_HOURS_PER_DAY, `Hours cannot exceed ${MAX_HOURS_PER_DAY}`),
     type: HourTypeSchema,
     description: z.string().optional(),
 })
@@ -17,7 +18,7 @@ export const CreateHourEntrySchema = CreateHourEntryInputSchema.transform((data)
 const UpdateHourEntryInputSchema = z.object({
     id: z.string(),
     date: z.string(),
-    hours: z.number().max(24, "Hours cannot exceed 24"),
+    hours: z.number().max(MAX_HOURS_PER_DAY, `Hours cannot exceed ${MAX_HOURS_PER_DAY}`),
     type: HourTypeSchema,
     description: z.string().optional(),
 })
@@ -34,7 +35,7 @@ export const DeleteHourEntrySchema = z.object({
 const BulkCreateHourEntriesInputSchema = z.object({
     startDate: z.string(),
     endDate: z.string(),
-    hours: z.number().max(24),
+    hours: z.number().max(MAX_HOURS_PER_DAY, `Hours cannot exceed ${MAX_HOURS_PER_DAY}`),
     type: HourTypeSchema,
     description: z.string().optional(),
     skipWeekends: z.boolean().default(true),

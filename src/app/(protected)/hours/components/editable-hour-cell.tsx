@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { createHourEntry, updateHourEntry } from "../actions/hour-actions"
+import { useEditableCellStore } from "../stores/editable-cell-store"
 
 interface EditableHourCellProps {
     entry: HourEntryDisplay | undefined
@@ -13,35 +14,33 @@ interface EditableHourCellProps {
 }
 
 export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHourCellProps) {
-    const [value, setValue] = useState(entry?.hours?.toString() || "")
-    const [isSaving, setIsSaving] = useState(false)
-    const [showPicker, setShowPicker] = useState(false)
-    const [selectedHours, setSelectedHours] = useState(0)
-    const [selectedMinutes, setSelectedMinutes] = useState(0)
+    const cellKey = `${dateKey}-${type}`
+    const activeCellKey = useEditableCellStore((state) => state.activeCellKey)
+    const showPicker = useEditableCellStore((state) => state.showPicker)
+    const selectedHours = useEditableCellStore((state) => state.selectedHours)
+    const selectedMinutes = useEditableCellStore((state) => state.selectedMinutes)
+    const isLoading = useEditableCellStore((state) => state.isLoading)
+    const openPicker = useEditableCellStore((state) => state.openPicker)
+    const closePicker = useEditableCellStore((state) => state.closePicker)
+    const setSelectedHours = useEditableCellStore((state) => state.setSelectedHours)
+    const setSelectedMinutes = useEditableCellStore((state) => state.setSelectedMinutes)
+    const setLoading = useEditableCellStore((state) => state.setLoading)
     const pickerRef = useRef<HTMLDivElement>(null)
 
-    useEffect(() => {
-        setValue(entry?.hours?.toString() || "")
-        if (entry?.hours) {
-            const h = Math.floor(entry.hours)
-            const m = Math.round((entry.hours - h) * 60)
-            setSelectedHours(h)
-            setSelectedMinutes(m)
-        }
-    }, [entry?.hours])
+    const isThisCellActive = activeCellKey === cellKey && showPicker
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
-                setShowPicker(false)
+                closePicker()
             }
         }
 
-        if (showPicker) {
+        if (isThisCellActive) {
             document.addEventListener("mousedown", handleClickOutside)
             return () => document.removeEventListener("mousedown", handleClickOutside)
         }
-    }, [showPicker])
+    }, [isThisCellActive, closePicker])
 
     const saveHours = async (hours: number) => {
         if (isNaN(hours) || hours < 0) {
@@ -52,7 +51,7 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
             return
         }
 
-        setIsSaving(true)
+        setLoading(true)
 
         try {
             if (entry) {
@@ -72,18 +71,20 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
                 })
             }
             onUpdate()
-        } catch {
-            setValue(entry?.hours?.toString() || "")
         } finally {
-            setIsSaving(false)
+            setLoading(false)
         }
     }
 
     const handleConfirm = async () => {
         const totalHours = selectedHours + selectedMinutes / 60
-        setValue(totalHours.toString())
-        setShowPicker(false)
+        closePicker()
         await saveHours(totalHours)
+    }
+
+    const handleOpenPicker = () => {
+        const currentHours = entry?.hours || 0
+        openPicker(cellKey, currentHours)
     }
 
     const formatHoursToTime = (hours: number): string => {
@@ -103,12 +104,12 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
         )
     }
 
-    const displayValue = value ? formatHoursToTime(parseFloat(value)) : ""
+    const displayValue = entry?.hours ? formatHoursToTime(entry.hours) : ""
 
     return (
         <div className="flex flex-col items-center gap-1 mx-auto relative">
             <div
-                onClick={() => setShowPicker(true)}
+                onClick={handleOpenPicker}
                 className="h-8 w-16 text-center flex items-center justify-center cursor-pointer hover:bg-muted/50 rounded font-normal text-foreground"
             >
                 {displayValue || "00:00"}
@@ -119,7 +120,7 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
                 </span>
             )}
 
-            {showPicker && (
+            {isThisCellActive && (
                 <div
                     ref={pickerRef}
                     className="absolute top-full mt-1 z-50 bg-popover border rounded-md shadow-lg p-3 w-fit"
@@ -159,7 +160,7 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
                         <Button
                             size="sm"
                             onClick={handleConfirm}
-                            disabled={isSaving}
+                            disabled={isLoading}
                             className="flex-1"
                         >
                             OK
@@ -167,7 +168,7 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
                         <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => setShowPicker(false)}
+                            onClick={closePicker}
                             className="flex-1"
                         >
                             Cancel

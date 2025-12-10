@@ -97,10 +97,8 @@ export async function updateHourEntry(input: UpdateHourEntryInput) {
                 },
             })
 
-            // Recalculate summary for old date/type
             await recalculateDailySummary(tx, session.user.id, existing.date, existing.type)
 
-            // If date or type changed, also recalculate for new date/type
             const dateChanged = date.getTime() !== existing.date.getTime()
             const typeChanged = type !== existing.type
 
