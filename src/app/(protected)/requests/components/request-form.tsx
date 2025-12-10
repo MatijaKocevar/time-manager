@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createRequest } from "../actions/request-actions"
 import { requestKeys } from "../query-keys"
+import { useRequestStore } from "../stores/request-store"
+import { REQUEST_TYPES, REQUEST_TYPE } from "../constants"
+import { type RequestType } from "../schemas/request-schemas"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import {
@@ -16,50 +18,36 @@ import {
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 
-const requestTypes = [
-    { value: "VACATION", label: "Vacation" },
-    { value: "SICK_LEAVE", label: "Sick Leave" },
-    { value: "WORK_FROM_HOME", label: "Work From Home" },
-    { value: "REMOTE_WORK", label: "Remote Work" },
-    { value: "OTHER", label: "Other" },
-]
-
 export function RequestForm() {
     const queryClient = useQueryClient()
-    const [type, setType] = useState<string>("")
-    const [startDate, setStartDate] = useState<string>("")
-    const [endDate, setEndDate] = useState<string>("")
-    const [reason, setReason] = useState<string>("")
-    const [location, setLocation] = useState<string>("")
+    const formData = useRequestStore((state) => state.formData)
+    const setFormData = useRequestStore((state) => state.setFormData)
+    const resetForm = useRequestStore((state) => state.resetForm)
 
     const mutation = useMutation({
         mutationFn: createRequest,
         onSuccess: (result) => {
             if (result.success) {
                 queryClient.invalidateQueries({ queryKey: requestKeys.all })
-                setType("")
-                setStartDate("")
-                setEndDate("")
-                setReason("")
-                setLocation("")
+                resetForm()
             }
         },
     })
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        if (!type || !startDate || !endDate) return
+        if (!formData.type || !formData.startDate || !formData.endDate) return
 
         mutation.mutate({
-            type: type as "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "REMOTE_WORK" | "OTHER",
-            startDate,
-            endDate,
-            reason,
-            location: type === "REMOTE_WORK" ? location : undefined,
+            type: formData.type as RequestType,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            reason: formData.reason,
+            location: formData.type === REQUEST_TYPE.REMOTE_WORK ? formData.location : undefined,
         })
     }
 
-    const needsLocation = type === "REMOTE_WORK"
+    const needsLocation = formData.type === REQUEST_TYPE.REMOTE_WORK
 
     return (
         <Card>
@@ -67,12 +55,15 @@ export function RequestForm() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="type">Type</Label>
-                        <Select value={type} onValueChange={setType}>
+                        <Select
+                            value={formData.type}
+                            onValueChange={(value) => setFormData({ type: value as RequestType })}
+                        >
                             <SelectTrigger id="type">
                                 <SelectValue placeholder="Select request type" />
                             </SelectTrigger>
                             <SelectContent>
-                                {requestTypes.map((rt) => (
+                                {REQUEST_TYPES.map((rt) => (
                                     <SelectItem key={rt.value} value={rt.value}>
                                         {rt.label}
                                     </SelectItem>
@@ -87,8 +78,8 @@ export function RequestForm() {
                             <Input
                                 id="startDate"
                                 type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
+                                value={formData.startDate}
+                                onChange={(e) => setFormData({ startDate: e.target.value })}
                             />
                         </div>
                         <div className="space-y-2">
@@ -96,8 +87,8 @@ export function RequestForm() {
                             <Input
                                 id="endDate"
                                 type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
+                                value={formData.endDate}
+                                onChange={(e) => setFormData({ endDate: e.target.value })}
                             />
                         </div>
                     </div>
@@ -109,8 +100,8 @@ export function RequestForm() {
                                 id="location"
                                 type="text"
                                 placeholder="Enter location"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
+                                value={formData.location}
+                                onChange={(e) => setFormData({ location: e.target.value })}
                             />
                         </div>
                     )}
@@ -121,8 +112,8 @@ export function RequestForm() {
                             id="reason"
                             type="text"
                             placeholder="Enter reason"
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
+                            value={formData.reason}
+                            onChange={(e) => setFormData({ reason: e.target.value })}
                         />
                     </div>
 

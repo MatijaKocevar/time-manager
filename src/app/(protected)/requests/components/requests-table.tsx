@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import {
     Table,
@@ -15,34 +14,21 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Edit, Search, Plus } from "lucide-react"
 import type { RequestDisplay } from "../schemas/request-schemas"
-
-const statusColors = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    APPROVED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
-    CANCELLED: "bg-gray-100 text-gray-800",
-}
-
-const typeLabels: Record<string, string> = {
-    VACATION: "Vacation",
-    SICK_LEAVE: "Sick Leave",
-    WORK_FROM_HOME: "Work From Home",
-    REMOTE_WORK: "Remote Work",
-    OTHER: "Other",
-}
+import { REQUEST_TYPE_LABELS, REQUEST_STATUS_COLORS, REQUEST_STATUS } from "../constants"
 
 interface RequestsTableProps {
     requests: RequestDisplay[]
     showUser?: boolean
     showNewButton?: boolean
+    onRequestClick?: (request: RequestDisplay) => void
 }
 
 export function RequestsTable({
     requests,
     showUser = false,
     showNewButton = true,
+    onRequestClick,
 }: RequestsTableProps) {
-    const router = useRouter()
     const [searchQuery, setSearchQuery] = useState("")
 
     const formatDate = (date: Date) => {
@@ -50,13 +36,13 @@ export function RequestsTable({
     }
 
     const handleRowDoubleClick = (request: RequestDisplay) => {
-        router.push(`/requests/${request.id}`)
+        onRequestClick?.(request)
     }
 
     const filteredRequests = requests.filter((request) => {
         const searchLower = searchQuery.toLowerCase()
         return (
-            typeLabels[request.type].toLowerCase().includes(searchLower) ||
+            REQUEST_TYPE_LABELS[request.type].toLowerCase().includes(searchLower) ||
             request.user?.name?.toLowerCase().includes(searchLower) ||
             request.user?.email?.toLowerCase().includes(searchLower) ||
             request.reason?.toLowerCase().includes(searchLower)
@@ -124,7 +110,7 @@ export function RequestsTable({
                                             {request.user?.name || request.user?.email || "Unknown"}
                                         </TableCell>
                                     )}
-                                    <TableCell>{typeLabels[request.type]}</TableCell>
+                                    <TableCell>{REQUEST_TYPE_LABELS[request.type]}</TableCell>
                                     <TableCell className="whitespace-nowrap">
                                         {formatDate(request.startDate)}
                                     </TableCell>
@@ -134,18 +120,21 @@ export function RequestsTable({
                                     <TableCell>
                                         <span
                                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
-                                                statusColors[request.status]
+                                                REQUEST_STATUS_COLORS[request.status]
                                             }`}
                                         >
                                             {request.status}
                                         </span>
                                     </TableCell>
                                     <TableCell>
-                                        {request.status === "APPROVED" && request.approver
+                                        {request.status === REQUEST_STATUS.APPROVED &&
+                                        request.approver
                                             ? request.approver.name || request.approver.email
-                                            : request.status === "REJECTED" && request.rejector
+                                            : request.status === REQUEST_STATUS.REJECTED &&
+                                                request.rejector
                                               ? request.rejector.name || request.rejector.email
-                                              : request.status === "CANCELLED" && request.canceller
+                                              : request.status === REQUEST_STATUS.CANCELLED &&
+                                                  request.canceller
                                                 ? request.canceller.name || request.canceller.email
                                                 : "-"}
                                     </TableCell>
@@ -156,13 +145,15 @@ export function RequestsTable({
                                             "-"}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button variant="outline" size="sm" asChild>
-                                            <Link
-                                                href={`/requests/${request.id}${request.status === "PENDING" ? "/edit" : ""}`}
-                                            >
-                                                <Edit className="h-4 w-4 mr-2" />
-                                                {request.status === "PENDING" ? "Edit" : "View"}
-                                            </Link>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => onRequestClick?.(request)}
+                                        >
+                                            <Edit className="h-4 w-4 mr-2" />
+                                            {request.status === REQUEST_STATUS.PENDING
+                                                ? "Edit"
+                                                : "View"}
                                         </Button>
                                     </TableCell>
                                 </TableRow>

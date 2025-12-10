@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { getUserRequests, cancelRequest } from "../actions/request-actions"
 import { requestKeys } from "../query-keys"
+import { REQUEST_STATUS_COLORS, REQUEST_TYPE_LABELS, REQUEST_STATUS } from "../constants"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -13,21 +14,6 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
-
-const statusColors = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    APPROVED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
-    CANCELLED: "bg-gray-100 text-gray-800",
-}
-
-const typeLabels: Record<string, string> = {
-    VACATION: "Vacation",
-    SICK_LEAVE: "Sick Leave",
-    WORK_FROM_HOME: "Work From Home",
-    REMOTE_WORK: "Remote Work",
-    OTHER: "Other",
-}
 
 export function RequestList() {
     const queryClient = useQueryClient()
@@ -72,13 +58,13 @@ export function RequestList() {
                         <TableBody>
                             {requests.map((request) => (
                                 <TableRow key={request.id}>
-                                    <TableCell>{typeLabels[request.type]}</TableCell>
+                                    <TableCell>{REQUEST_TYPE_LABELS[request.type]}</TableCell>
                                     <TableCell>{formatDate(request.startDate)}</TableCell>
                                     <TableCell>{formatDate(request.endDate)}</TableCell>
                                     <TableCell>
                                         <span
                                             className={`px-2 py-1 rounded text-xs font-medium ${
-                                                statusColors[request.status]
+                                                REQUEST_STATUS_COLORS[request.status]
                                             }`}
                                         >
                                             {request.status}
@@ -88,7 +74,7 @@ export function RequestList() {
                                         {request.reason || "-"}
                                     </TableCell>
                                     <TableCell>
-                                        {request.status === "PENDING" && (
+                                        {request.status === REQUEST_STATUS.PENDING && (
                                             <Button
                                                 size="sm"
                                                 variant="outline"
