@@ -24,6 +24,14 @@ async function requireAuth() {
     return session
 }
 
+async function requireAdmin() {
+    const session = await getServerSession(authConfig)
+    if (!session?.user || session.user.role !== "ADMIN") {
+        throw new Error("Unauthorized - Admin access required")
+    }
+    return session
+}
+
 export async function createHourEntry(input: CreateHourEntryInput) {
     try {
         const session = await requireAuth()
@@ -229,6 +237,173 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
             return { error: error.message }
         }
         return { error: "Failed to create hour entries" }
+    }
+}
+
+export async function getHourEntriesForUser(
+    userId: string,
+    startDate?: string,
+    endDate?: string,
+    type?: string
+) {
+    try {
+        await requireAdmin()
+
+        const parseDate = (dateStr: string) => {
+            const [year, month, day] = dateStr.split("-").map(Number)
+            return new Date(year, month - 1, day)
+        }
+
+        const summaries = await prisma.dailyHourSummary.findMany({
+            where: {
+                userId,
+                ...(startDate && endDate
+                    ? {
+                          date: {
+                              gte: parseDate(startDate),
+                              lte: parseDate(endDate),
+                          },
+                      }
+                    : {}),
+                ...(type
+                    ? {
+                          type: type as
+                              | "WORK"
+                              | "VACATION"
+                              | "SICK_LEAVE"
+                              | "WORK_FROM_HOME"
+                              | "OTHER",
+                      }
+                    : {}),
+            },
+            orderBy: {
+                date: "desc",
+            },
+        })
+
+        const manualEntries = await prisma.hourEntry.findMany({
+            where: {
+                userId,
+                taskId: null,
+                ...(startDate && endDate
+                    ? {
+                          date: {
+                              gte: parseDate(startDate),
+                              lte: parseDate(endDate),
+                          },
+                      }
+                    : {}),
+                ...(type
+                    ? {
+                          type: type as
+                              | "WORK"
+                              | "VACATION"
+                              | "SICK_LEAVE"
+                              | "WORK_FROM_HOME"
+                              | "OTHER",
+                      }
+                    : {}),
+            },
+            orderBy: {
+                date: "desc",
+            },
+        })
+
+        const manualEntriesByDateAndType = new Map<string, (typeof manualEntries)[0]>()
+        for (const entry of manualEntries) {
+            const date = new Date(entry.date)
+            date.setHours(0, 0, 0, 0)
+            const key = `${date.toISOString()}-${entry.type}`
+            manualEntriesByDateAndType.set(key, entry)
+        }
+
+        const grandTotalsMap = new Map<string, { date: Date; hours: number }>()
+        for (const summary of summaries) {
+            const dateKey = summary.date.toISOString()
+            const existing = grandTotalsMap.get(dateKey)
+            if (existing) {
+                existing.hours += summary.totalHours
+            } else {
+                grandTotalsMap.set(dateKey, {
+                    date: summary.date,
+                    hours: summary.totalHours,
+                })
+            }
+        }
+
+        const grandTotalEntries = Array.from(grandTotalsMap.entries())
+            .filter(([, data]) => data.hours > 0)
+            .map(([dateKey, data]) => ({
+                id: `grand-total-${dateKey}`,
+                userId,
+                date: data.date,
+                hours: data.hours,
+                type: "WORK" as const,
+                description: null,
+                taskId: "grand_total",
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            }))
+
+        const entries = summaries.flatMap((summary) => {
+            const baseDate = summary.date.toISOString()
+            const result = []
+
+            if (summary.totalHours > 0) {
+                result.push({
+                    id: `total-${summary.type}-${baseDate}`,
+                    userId,
+                    date: summary.date,
+                    hours: summary.totalHours,
+                    type: summary.type,
+                    description: null,
+                    taskId: "total",
+                    createdAt: summary.createdAt,
+                    updatedAt: summary.updatedAt,
+                })
+            }
+
+            if (summary.trackedHours > 0) {
+                result.push({
+                    id: `tracked-${summary.type}-${baseDate}`,
+                    userId,
+                    date: summary.date,
+                    hours: summary.trackedHours,
+                    type: summary.type,
+                    description: null,
+                    taskId: "tracked",
+                    createdAt: summary.createdAt,
+                    updatedAt: summary.updatedAt,
+                })
+            }
+
+            const summaryDate = new Date(summary.date)
+            summaryDate.setHours(0, 0, 0, 0)
+            const manualKey = `${summaryDate.toISOString()}-${summary.type}`
+            const manualEntry = manualEntriesByDateAndType.get(manualKey)
+
+            if (manualEntry) {
+                result.push({
+                    id: manualEntry.id,
+                    userId: manualEntry.userId,
+                    date: manualEntry.date,
+                    hours: manualEntry.hours,
+                    type: manualEntry.type,
+                    description: manualEntry.description,
+                    taskId: manualEntry.taskId,
+                    createdAt: manualEntry.createdAt,
+                    updatedAt: manualEntry.updatedAt,
+                })
+            }
+
+            return result
+        })
+
+        const allEntries = [...grandTotalEntries, ...entries]
+        return allEntries.sort((a, b) => b.date.getTime() - a.date.getTime())
+    } catch (error) {
+        console.error("Error fetching hour entries:", error)
+        throw new Error("Failed to fetch hour entries")
     }
 }
 

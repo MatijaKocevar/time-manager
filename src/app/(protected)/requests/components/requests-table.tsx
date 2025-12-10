@@ -34,9 +34,10 @@ const typeLabels: Record<string, string> = {
 interface RequestsTableProps {
     requests: RequestDisplay[]
     showUser?: boolean
+    showNewButton?: boolean
 }
 
-export function RequestsTable({ requests, showUser = false }: RequestsTableProps) {
+export function RequestsTable({ requests, showUser = false, showNewButton = true }: RequestsTableProps) {
     const router = useRouter()
     const [searchQuery, setSearchQuery] = useState("")
 
@@ -72,12 +73,14 @@ export function RequestsTable({ requests, showUser = false }: RequestsTableProps
                         className="pl-9"
                     />
                 </div>
-                <Button asChild>
-                    <Link href="/requests/new">
-                        <Plus className="h-4 w-4 mr-2" />
-                        New Request
-                    </Link>
-                </Button>
+                {showNewButton && (
+                    <Button asChild>
+                        <Link href="/requests/new">
+                            <Plus className="h-4 w-4 mr-2" />
+                            New Request
+                        </Link>
+                    </Button>
+                )}
             </div>
             <div className="rounded-md border overflow-auto flex-1 min-h-0">
                 <Table>

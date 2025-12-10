@@ -507,6 +507,68 @@ export async function getUserRequests(): Promise<RequestDisplay[]> {
     }
 }
 
+export async function getUserRequestsForAdmin(
+    userId: string,
+    statusFilter?: string[]
+): Promise<RequestDisplay[]> {
+    try {
+        await requireAdmin()
+
+        const requests = await prisma.request.findMany({
+            where: {
+                userId,
+                ...(statusFilter && statusFilter.length > 0
+                    ? {
+                          status: {
+                              in: statusFilter as Array<
+                                  "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"
+                              >,
+                          },
+                      }
+                    : {}),
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                approver: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                rejector: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                canceller: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+        })
+
+        return requests
+    } catch (error) {
+        console.error("Error fetching user requests:", error)
+        throw new Error("Failed to fetch requests")
+    }
+}
+
 export async function getAllRequests(statusFilter?: string[]): Promise<RequestDisplay[]> {
     try {
         await requireAdmin()

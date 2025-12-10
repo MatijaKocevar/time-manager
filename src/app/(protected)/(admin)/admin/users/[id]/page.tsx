@@ -1,11 +1,40 @@
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { getUserById } from "../actions/user-actions"
 import { EditUserForm } from "../components/edit-user-form"
 import { SetBreadcrumbData } from "@/features/breadcrumbs"
+import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
+import { getUserRequestsForAdmin } from "@/app/(protected)/requests/actions/request-actions"
+import { HoursSummary } from "@/app/(protected)/hours/components/hours-summary"
+import { RequestsTable } from "@/app/(protected)/requests/components/requests-table"
+
+function getCurrentMonthDates() {
+    const now = new Date()
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+
+    const formatDate = (date: Date) => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        return `${year}-${month}-${day}`
+    }
+
+    return {
+        startDate: formatDate(firstDay),
+        endDate: formatDate(lastDay),
+    }
+}
 
 export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
-    const user = await getUserById(id)
+    const { startDate, endDate } = getCurrentMonthDates()
+
+    const [user, userHours, userRequests] = await Promise.all([
+        getUserById(id),
+        getHourEntriesForUser(id, startDate, endDate),
+        getUserRequestsForAdmin(id),
+    ])
 
     return (
         <>
@@ -14,11 +43,37 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
                     [`/admin/users/${id}`]: user.name || "User",
                 }}
             />
-            <Card>
-                <CardContent>
-                    <EditUserForm user={user} />
-                </CardContent>
-            </Card>
+            <div className="flex flex-col gap-6">
+                <Card>
+                    <CardContent>
+                        <EditUserForm user={user} />
+                    </CardContent>
+                </Card>
+
+                <Separator />
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Hours Summary (Current Month)</CardTitle>
+                        <CardDescription>Overview of user&apos;s tracked hours</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <HoursSummary entries={userHours} />
+                    </CardContent>
+                </Card>
+
+                <Separator />
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Requests</CardTitle>
+                        <CardDescription>User&apos;s leave and work requests</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <RequestsTable requests={userRequests} showUser={false} showNewButton={false} />
+                    </CardContent>
+                </Card>
+            </div>
         </>
     )
 }
