@@ -17,6 +17,7 @@ interface TasksStoreState {
     expandedRows: Set<string>
     activeTimers: Map<string, ActiveTimer>
     elapsedTimes: Map<string, number>
+    selectedListId: string | null
     createDialog: {
         isOpen: boolean
         parentId: string | null
@@ -29,8 +30,25 @@ interface TasksStoreState {
         isOpen: boolean
         taskId: string | null
     }
+    listDialog: {
+        isOpen: boolean
+        listId: string | null
+    }
+    moveTaskDialog: {
+        isOpen: boolean
+        taskId: string | null
+    }
     createForm: {
         data: CreateFormData
+        isLoading: boolean
+        error: string
+    }
+    listForm: {
+        data: {
+            name: string
+            description: string
+            color: string
+        }
         isLoading: boolean
         error: string
     }
@@ -43,23 +61,39 @@ interface TasksStoreActions {
     setActiveTimer: (taskId: string, entryId: string, startTime: Date) => void
     clearActiveTimer: (taskId: string) => void
     updateElapsedTime: (taskId: string, seconds: number) => void
+    setSelectedListId: (listId: string | null) => void
     openCreateDialog: (parentId?: string) => void
     closeCreateDialog: () => void
     openTimeEntriesDialog: (taskId: string) => void
     closeTimeEntriesDialog: () => void
     openDeleteDialog: (taskId: string) => void
     closeDeleteDialog: () => void
+    openListDialog: (listId?: string) => void
+    closeListDialog: () => void
+    openMoveTaskDialog: (taskId: string) => void
+    closeMoveTaskDialog: () => void
     setCreateFormData: (data: Partial<CreateFormData>) => void
     resetCreateForm: () => void
     setCreateLoading: (isLoading: boolean) => void
     setCreateError: (error: string) => void
     clearCreateError: () => void
+    setListFormData: (data: Partial<{ name: string; description: string; color: string }>) => void
+    resetListForm: () => void
+    setListLoading: (isLoading: boolean) => void
+    setListError: (error: string) => void
+    clearListError: () => void
 }
 
 const initialFormData: CreateFormData = {
     title: "",
     description: "",
     status: TASK_STATUS.TODO,
+}
+
+const initialListFormData = {
+    name: "",
+    description: "",
+    color: "",
 }
 
 export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) => ({
@@ -107,6 +141,9 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
             return { elapsedTimes: newElapsed }
         }),
 
+    selectedListId: null,
+    setSelectedListId: (listId) => set(() => ({ selectedListId: listId })),
+
     createDialog: {
         isOpen: false,
         parentId: null,
@@ -119,9 +156,22 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
         isOpen: false,
         taskId: null,
     },
+    listDialog: {
+        isOpen: false,
+        listId: null,
+    },
+    moveTaskDialog: {
+        isOpen: false,
+        taskId: null,
+    },
 
     createForm: {
         data: initialFormData,
+        isLoading: false,
+        error: "",
+    },
+    listForm: {
+        data: initialListFormData,
         isLoading: false,
         error: "",
     },
@@ -158,6 +208,29 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
             deleteDialog: { isOpen: false, taskId: null },
         })),
 
+    openListDialog: (listId) =>
+        set(() => ({
+            listDialog: { isOpen: true, listId: listId || null },
+            listForm: {
+                data: initialListFormData,
+                isLoading: false,
+                error: "",
+            },
+        })),
+    closeListDialog: () =>
+        set(() => ({
+            listDialog: { isOpen: false, listId: null },
+        })),
+
+    openMoveTaskDialog: (taskId) =>
+        set(() => ({
+            moveTaskDialog: { isOpen: true, taskId },
+        })),
+    closeMoveTaskDialog: () =>
+        set(() => ({
+            moveTaskDialog: { isOpen: false, taskId: null },
+        })),
+
     setCreateFormData: (data) =>
         set((state) => ({
             createForm: {
@@ -191,6 +264,43 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
         set((state) => ({
             createForm: {
                 ...state.createForm,
+                error: "",
+            },
+        })),
+
+    setListFormData: (data) =>
+        set((state) => ({
+            listForm: {
+                ...state.listForm,
+                data: { ...state.listForm.data, ...data },
+            },
+        })),
+    resetListForm: () =>
+        set((state) => ({
+            listForm: {
+                ...state.listForm,
+                data: initialListFormData,
+                error: "",
+            },
+        })),
+    setListLoading: (isLoading) =>
+        set((state) => ({
+            listForm: {
+                ...state.listForm,
+                isLoading,
+            },
+        })),
+    setListError: (error) =>
+        set((state) => ({
+            listForm: {
+                ...state.listForm,
+                error,
+            },
+        })),
+    clearListError: () =>
+        set((state) => ({
+            listForm: {
+                ...state.listForm,
                 error: "",
             },
         })),

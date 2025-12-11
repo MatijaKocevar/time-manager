@@ -61,28 +61,57 @@ export async function startTimer(input: StartTimerInput) {
             return { error: "Task not found" }
         }
 
-        const existingTimer = await prisma.taskTimeEntry.findFirst({
-            where: {
-                taskId,
-                userId: session.user.id,
-                endTime: null,
-            },
-        })
+        await prisma.$transaction(async (tx) => {
+            const existingActiveTimer = await tx.taskTimeEntry.findFirst({
+                where: {
+                    userId: session.user.id,
+                    endTime: null,
+                },
+            })
 
-        if (existingTimer) {
-            return { error: "Timer already running for this task" }
-        }
+            if (existingActiveTimer) {
+                const endTime = new Date()
+                const duration = Math.floor(
+                    (endTime.getTime() - existingActiveTimer.startTime.getTime()) / 1000
+                )
 
-        const entry = await prisma.taskTimeEntry.create({
-            data: {
-                taskId,
-                userId: session.user.id,
-                startTime: new Date(),
-            },
+                await tx.taskTimeEntry.update({
+                    where: { id: existingActiveTimer.id },
+                    data: {
+                        endTime,
+                        duration,
+                    },
+                })
+
+                const entryDate = new Date(existingActiveTimer.startTime)
+                entryDate.setHours(0, 0, 0, 0)
+
+                const approvedRemoteRequest = await tx.request.findFirst({
+                    where: {
+                        userId: session.user.id,
+                        status: "APPROVED",
+                        affectsHourType: true,
+                        startDate: { lte: entryDate },
+                        endDate: { gte: entryDate },
+                    },
+                })
+
+                const hourType = approvedRemoteRequest ? "WORK_FROM_HOME" : "WORK"
+                await recalculateDailySummaryStandalone(session.user.id, entryDate, hourType)
+            }
+
+            await tx.taskTimeEntry.create({
+                data: {
+                    taskId,
+                    userId: session.user.id,
+                    startTime: new Date(),
+                },
+            })
         })
 
         revalidatePath("/tasks")
-        return { success: true, entryId: entry.id }
+        revalidatePath("/hours")
+        return { success: true }
     } catch (error) {
         if (error instanceof Error) {
             return { error: error.message }

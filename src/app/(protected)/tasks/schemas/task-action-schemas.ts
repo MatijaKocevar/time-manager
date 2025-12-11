@@ -13,6 +13,7 @@ const CreateTaskInputSchema = z.object({
     description: z.string().optional(),
     status: TaskStatusSchema.default(TASK_STATUS.TODO),
     parentId: z.string().optional(),
+    listId: z.string().nullable().optional(),
 })
 
 export const CreateTaskSchema = CreateTaskInputSchema

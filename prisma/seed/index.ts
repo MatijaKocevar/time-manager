@@ -24,6 +24,26 @@ async function main() {
 
     console.log("✅ Created test user:", testUser.email)
 
+    await prisma.list.upsert({
+        where: {
+            userId_name: {
+                userId: testUser.id,
+                name: "Personal",
+            },
+        },
+        update: {},
+        create: {
+            userId: testUser.id,
+            name: "Personal",
+            description: "Personal tasks and projects",
+            color: "#3b82f6",
+            isDefault: true,
+            order: 0,
+        },
+    })
+
+    console.log("✅ Created default list for test user")
+
     const adminUser = await prisma.user.upsert({
         where: { email: "admin@example.com" },
         update: {
@@ -39,6 +59,26 @@ async function main() {
     })
 
     console.log("✅ Created admin user:", adminUser.email)
+
+    await prisma.list.upsert({
+        where: {
+            userId_name: {
+                userId: adminUser.id,
+                name: "Personal",
+            },
+        },
+        update: {},
+        create: {
+            userId: adminUser.id,
+            name: "Personal",
+            description: "Personal tasks and projects",
+            color: "#3b82f6",
+            isDefault: true,
+            order: 0,
+        },
+    })
+
+    console.log("✅ Created default list for admin user")
 
     console.log("🌱 Database seeding completed!")
 }

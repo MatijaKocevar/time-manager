@@ -24,12 +24,15 @@ async function requireAuth() {
     return session
 }
 
-export async function getTasks(): Promise<TaskDisplay[]> {
+export async function getTasks(listId?: string | null): Promise<TaskDisplay[]> {
     try {
         const session = await requireAuth()
 
+        const whereClause =
+            listId !== undefined ? { userId: session.user.id, listId } : { userId: session.user.id }
+
         const tasks = await prisma.task.findMany({
-            where: { userId: session.user.id },
+            where: whereClause,
             orderBy: [{ order: "asc" }, { createdAt: "asc" }],
             include: {
                 timeEntries: {
@@ -102,7 +105,7 @@ export async function createTask(input: CreateTaskInput) {
             return { error: validation.error.issues[0].message }
         }
 
-        const { title, description, status, parentId } = validation.data
+        const { title, description, status, parentId, listId } = validation.data
 
         if (parentId) {
             const parentTask = await prisma.task.findUnique({
@@ -114,6 +117,16 @@ export async function createTask(input: CreateTaskInput) {
             }
         }
 
+        if (listId) {
+            const list = await prisma.list.findUnique({
+                where: { id: listId },
+            })
+
+            if (!list || list.userId !== session.user.id) {
+                return { error: "List not found" }
+            }
+        }
+
         await prisma.task.create({
             data: {
                 userId: session.user.id,
@@ -121,6 +134,7 @@ export async function createTask(input: CreateTaskInput) {
                 description,
                 status,
                 parentId,
+                listId,
             },
         })
 

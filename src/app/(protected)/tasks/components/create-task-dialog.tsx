@@ -28,6 +28,7 @@ import { TASK_STATUSES } from "../constants/task-statuses"
 export function CreateTaskDialog() {
     const queryClient = useQueryClient()
     const createDialog = useTasksStore((state) => state.createDialog)
+    const selectedListId = useTasksStore((state) => state.selectedListId)
     const createForm = useTasksStore((state) => state.createForm)
     const closeCreateDialog = useTasksStore((state) => state.closeCreateDialog)
     const setCreateFormData = useTasksStore((state) => state.setCreateFormData)
@@ -58,6 +59,7 @@ export function CreateTaskDialog() {
                 description: createForm.data.description || undefined,
                 status: createForm.data.status,
                 parentId: createDialog.parentId || undefined,
+                listId: selectedListId,
             })
 
             if (result.success) {

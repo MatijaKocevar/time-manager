@@ -27,6 +27,7 @@ import {
 import { UserAvatar } from "@/components/user-avatar"
 import { navigationItems } from "@/config/navigation"
 import { UserRole } from "@/types"
+import { DynamicListItems } from "./dynamic-list-items"
 
 interface AppSidebarProps {
     userRole?: UserRole
@@ -62,7 +63,9 @@ export function AppSidebar({ userRole, userName, userEmail }: AppSidebarProps) {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {filteredItems.map((item) => {
-                                const isActive = pathname === item.url || pathname.startsWith(item.url + "/")
+                                const isActive =
+                                    pathname === item.url || pathname.startsWith(item.url + "/")
+                                const isTasksItem = item.url === "/tasks"
                                 return (
                                     <div key={item.title}>
                                         <SidebarMenuItem>
@@ -73,13 +76,20 @@ export function AppSidebar({ userRole, userName, userEmail }: AppSidebarProps) {
                                                 </a>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
+                                        {isTasksItem && <DynamicListItems />}
                                         {item.children && item.children.length > 0 && (
                                             <div className="ml-4 mt-1">
                                                 {item.children.map((child) => {
-                                                    const isChildActive = pathname === child.url || pathname.startsWith(child.url + "/")
+                                                    const isChildActive =
+                                                        pathname === child.url ||
+                                                        pathname.startsWith(child.url + "/")
                                                     return (
                                                         <SidebarMenuItem key={child.title}>
-                                                            <SidebarMenuButton asChild size="sm" isActive={isChildActive}>
+                                                            <SidebarMenuButton
+                                                                asChild
+                                                                size="sm"
+                                                                isActive={isChildActive}
+                                                            >
                                                                 <a href={child.url}>
                                                                     <child.icon className="h-3 w-3" />
                                                                     <span className="text-sm">
