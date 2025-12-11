@@ -61,7 +61,7 @@ export async function startTimer(input: StartTimerInput) {
             return { error: "Task not found" }
         }
 
-        await prisma.$transaction(async (tx) => {
+        const newEntry = await prisma.$transaction(async (tx) => {
             const existingActiveTimer = await tx.taskTimeEntry.findFirst({
                 where: {
                     userId: session.user.id,
@@ -100,7 +100,7 @@ export async function startTimer(input: StartTimerInput) {
                 await recalculateDailySummaryStandalone(session.user.id, entryDate, hourType)
             }
 
-            await tx.taskTimeEntry.create({
+            return await tx.taskTimeEntry.create({
                 data: {
                     taskId,
                     userId: session.user.id,
@@ -111,7 +111,7 @@ export async function startTimer(input: StartTimerInput) {
 
         revalidatePath("/tasks")
         revalidatePath("/hours")
-        return { success: true }
+        return { success: true, entryId: newEntry.id }
     } catch (error) {
         if (error instanceof Error) {
             return { error: error.message }

@@ -16,11 +16,7 @@ export function LoadingSpinner({ className, size = "md" }: LoadingSpinnerProps) 
     return (
         <div className="flex items-center justify-center h-full w-full">
             <Loader2
-                className={cn(
-                    "animate-spin text-muted-foreground",
-                    sizeClasses[size],
-                    className
-                )}
+                className={cn("animate-spin text-muted-foreground", sizeClasses[size], className)}
             />
         </div>
     )
