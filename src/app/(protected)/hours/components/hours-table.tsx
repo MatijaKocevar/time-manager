@@ -43,17 +43,23 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
         return (
             <div className="rounded-md border overflow-x-auto">
                 <Table>
+                    <colgroup>
+                        <col style={{ width: "300px", minWidth: "300px", maxWidth: "300px" }} />
+                        {dates.map((date) => (
+                            <col
+                                key={date.toISOString()}
+                            />
+                        ))}
+                    </colgroup>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="min-w-[100px] sticky left-0 bg-background z-20">
-                                Type
-                            </TableHead>
+                            <TableHead className="sticky left-0 bg-background z-20">Type</TableHead>
                             {dates.map((date) => {
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
                                 return (
                                     <TableHead
                                         key={date.toISOString()}
-                                        className={`text-center min-w-20 ${isWeekend ? "bg-muted/50" : ""}`}
+                                        className={`text-center ${isWeekend ? "bg-muted/50" : ""}`}
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-normal text-muted-foreground">

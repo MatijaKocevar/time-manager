@@ -12,6 +12,7 @@ interface EditableCellState {
 interface EditableCellActions {
     openPicker: (cellKey: string, currentHours: number) => void
     closePicker: () => void
+    setActiveCellKey: (cellKey: string | null) => void
     setSelectedHours: (hours: number) => void
     setSelectedMinutes: (minutes: number) => void
     setLoading: (isLoading: boolean) => void
@@ -43,6 +44,7 @@ export const useEditableCellStore = create<EditableCellState & EditableCellActio
             showPicker: false,
             error: null,
         }),
+    setActiveCellKey: (cellKey) => set({ activeCellKey: cellKey }),
     setSelectedHours: (hours) => set({ selectedHours: hours }),
     setSelectedMinutes: (minutes) => set({ selectedMinutes: minutes }),
     setLoading: (isLoading) => set({ isLoading }),
