@@ -1,40 +1,51 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import type { HourType } from "@/../../prisma/generated/client"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
-import { createHourEntry, updateHourEntry } from "../actions/hour-actions"
 import { useEditableCellStore } from "../stores/editable-cell-store"
+import { useHoursBatchStore } from "../stores/hours-batch-store"
 
 interface EditableHourCellProps {
-    entry: HourEntryDisplay | undefined
-    dateKey: string
-    type: string
-    onUpdate: () => void
+    date: Date
+    type: HourType
+    entry: HourEntryDisplay | null
+    userId: string
 }
 
-export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHourCellProps) {
+export function EditableHourCell({ date, type, entry, userId }: EditableHourCellProps) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    const dateKey = `${year}-${month}-${day}`
     const cellKey = `${dateKey}-${type}`
     const activeCellKey = useEditableCellStore((state) => state.activeCellKey)
     const isLoading = useEditableCellStore((state) => state.isLoading)
     const setActiveCellKey = useEditableCellStore((state) => state.setActiveCellKey)
-    const setLoading = useEditableCellStore((state) => state.setLoading)
+    const getPendingChange = useHoursBatchStore((state) => state.getPendingChange)
     const inputRef = useRef<HTMLInputElement>(null)
 
-    const [timeInput, setTimeInput] = useState("")
+    const currentHours = entry?.hours || 0
+    const h = Math.floor(currentHours)
+    const m = Math.round((currentHours - h) * 60)
+    const initialTimeValue = `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`
+
+    const [timeInput, setTimeInput] = useState(initialTimeValue)
 
     const isEditing = activeCellKey === cellKey
+    const hasPendingChange = getPendingChange(cellKey) !== undefined
 
     useEffect(() => {
         if (isEditing) {
-            const currentHours = entry?.hours || 0
-            const h = Math.floor(currentHours)
-            const m = Math.round((currentHours - h) * 60)
-            setTimeInput(`${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`)
             setTimeout(() => inputRef.current?.focus(), 50)
         }
-    }, [isEditing, entry?.hours])
+    }, [isEditing])
 
-    const saveHours = async (hours: number) => {
+    useEffect(() => {
+        setTimeInput(initialTimeValue)
+    }, [initialTimeValue])
+
+    const saveHours = (hours: number) => {
         if (isNaN(hours) || hours < 0) {
             return
         }
@@ -44,30 +55,19 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
             return
         }
 
-        setLoading(true)
+        const addChange = useHoursBatchStore.getState().addChange
 
-        try {
-            if (entry) {
-                await updateHourEntry({
-                    id: entry.id,
-                    date: dateKey,
-                    hours,
-                    type: entry.type,
-                    description: entry.description || undefined,
-                })
-            } else {
-                await createHourEntry({
-                    date: dateKey,
-                    hours,
-                    type: type as "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER",
-                    description: undefined,
-                })
-            }
-            onUpdate()
-            setActiveCellKey(null)
-        } finally {
-            setLoading(false)
-        }
+        addChange({
+            entryId: entry?.id || null,
+            date: dateKey,
+            type,
+            hours,
+            originalHours: entry?.hours || null,
+            action: entry ? "update" : "create",
+            userId,
+        })
+
+        setActiveCellKey(null)
     }
 
     const parseTimeInput = (input: string): { hours: number; minutes: number } | null => {
@@ -158,7 +158,9 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
                     onBlur={handleBlur}
                     onKeyDown={handleKeyDown}
                     disabled={isLoading}
-                    className="h-8 w-full px-1 text-sm text-center border rounded"
+                    className={`h-8 w-full px-1 text-sm text-center border rounded ${
+                        hasPendingChange ? "bg-amber-50/30" : ""
+                    }`}
                 />
                 {entry?.description && (
                     <span className="text-xs text-muted-foreground truncate max-w-[60px]">
@@ -175,7 +177,7 @@ export function EditableHourCell({ entry, dateKey, type, onUpdate }: EditableHou
                 onClick={handleClick}
                 className={`h-8 w-16 text-center flex items-center justify-center cursor-pointer hover:bg-accent hover:text-accent-foreground rounded font-normal border border-transparent hover:border-border transition-colors ${
                     hours === 0 ? "text-muted-foreground" : "text-foreground"
-                }`}
+                } ${hasPendingChange ? "bg-amber-50/30" : ""}`}
             >
                 {displayValue}
             </div>

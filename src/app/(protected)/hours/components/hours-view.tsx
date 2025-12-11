@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useState, useEffect } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
@@ -10,27 +10,106 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronLeft, ChevronRight, Plus, MoreVertical } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, MoreVertical, Save, X } from "lucide-react"
 import { HoursTable } from "./hours-table"
 import { HoursSummary } from "./hours-summary"
 import { HourEntryForm } from "./bulk-hour-entry-form"
-import { getHourEntries } from "../actions/hour-actions"
+import { getHourEntries, batchUpdateHourEntries } from "../actions/hour-actions"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { getDateRange, getViewTitle } from "../utils/view-helpers"
 import { hourKeys } from "../query-keys"
 import { useHoursStore } from "../stores/hours-store"
+import { useHoursBatchStore } from "../stores/hours-batch-store"
 
 interface HoursViewProps {
     initialEntries: HourEntryDisplay[]
+    userId: string
 }
 
-export function HoursView({ initialEntries }: HoursViewProps) {
+export function HoursView({ initialEntries, userId }: HoursViewProps) {
+    const queryClient = useQueryClient()
     const viewMode = useHoursStore((state) => state.viewMode)
     const currentDate = useHoursStore((state) => state.selectedDate)
     const setViewMode = useHoursStore((state) => state.setViewMode)
     const setSelectedDate = useHoursStore((state) => state.setSelectedDate)
     const [isFormOpen, setIsFormOpen] = useState(false)
+
+    const isDirty = useHoursBatchStore((state) => state.isDirty)
+    const isSaving = useHoursBatchStore((state) => state.isSaving)
+    const changeCount = useHoursBatchStore((state) => state.pendingChanges.size)
+    const clearChanges = useHoursBatchStore((state) => state.clearChanges)
+    const setIsSaving = useHoursBatchStore((state) => state.setIsSaving)
+    const setError = useHoursBatchStore((state) => state.setError)
+    const getAllChanges = useHoursBatchStore((state) => state.getAllChanges)
+
+    const handleSave = async () => {
+        setIsSaving(true)
+        setError(null)
+
+        try {
+            const pendingChanges = getAllChanges()
+
+            const result = await batchUpdateHourEntries({
+                changes: pendingChanges.map((c) => ({
+                    entryId: c.entryId,
+                    date: c.date,
+                    type: c.type,
+                    hours: c.hours,
+                    action: c.action,
+                })),
+            })
+
+            if (result.error) {
+                setError(result.error)
+            } else {
+                clearChanges()
+                queryClient.invalidateQueries({ queryKey: hourKeys.all })
+            }
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "Failed to save changes")
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const handleCancel = () => {
+        if (confirm("Discard all unsaved changes?")) {
+            clearChanges()
+        }
+    }
+
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isDirty) {
+                e.preventDefault()
+                e.returnValue = ""
+            }
+        }
+
+        window.addEventListener("beforeunload", handleBeforeUnload)
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload)
+    }, [isDirty])
+
+    useEffect(() => {
+        const handleRouteChange = (e: MouseEvent) => {
+            const target = e.target as HTMLElement
+            const link = target.closest("a")
+
+            if (link && isDirty && !isSaving) {
+                const href = link.getAttribute("href")
+                if (href && !href.startsWith("#") && href !== window.location.pathname) {
+                    if (!confirm("You have unsaved changes. Are you sure you want to leave?")) {
+                        e.preventDefault()
+                        e.stopPropagation()
+                    }
+                }
+            }
+        }
+
+        document.addEventListener("click", handleRouteChange, true)
+        return () => document.removeEventListener("click", handleRouteChange, true)
+    }, [isDirty, isSaving])
 
     const dateRange = getDateRange(viewMode, currentDate)
     const monthRange = getDateRange("MONTHLY", new Date())
@@ -91,11 +170,34 @@ export function HoursView({ initialEntries }: HoursViewProps) {
                         </Button>
                     </div>
                     <div className="hidden md:flex items-center gap-2">
+                        {isDirty && (
+                            <>
+                                <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={handleSave}
+                                    disabled={isSaving}
+                                >
+                                    <Save className="h-4 w-4 mr-1" />
+                                    Save ({changeCount})
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleCancel}
+                                    disabled={isSaving}
+                                >
+                                    <X className="h-4 w-4 mr-1" />
+                                    Cancel
+                                </Button>
+                                <div className="w-px h-6 bg-border mx-1" />
+                            </>
+                        )}
                         <Button
                             variant={viewMode === "WEEKLY" ? "default" : "outline"}
                             size="sm"
                             onClick={() => handleViewModeChange("WEEKLY")}
-                            disabled={isLoading}
+                            disabled={isLoading || isDirty}
                         >
                             Week
                         </Button>
@@ -103,12 +205,17 @@ export function HoursView({ initialEntries }: HoursViewProps) {
                             variant={viewMode === "MONTHLY" ? "default" : "outline"}
                             size="sm"
                             onClick={() => handleViewModeChange("MONTHLY")}
-                            disabled={isLoading}
+                            disabled={isLoading || isDirty}
                         >
                             Month
                         </Button>
                         <div className="w-px h-6 bg-border mx-1" />
-                        <Button variant="default" size="sm" onClick={() => setIsFormOpen(true)}>
+                        <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => setIsFormOpen(true)}
+                            disabled={isDirty}
+                        >
                             <Plus className="h-4 w-4 mr-1" />
                             Add New Entry
                         </Button>
@@ -141,6 +248,7 @@ export function HoursView({ initialEntries }: HoursViewProps) {
                         viewMode={viewMode}
                         startDate={dateRange.startDate}
                         endDate={dateRange.endDate}
+                        userId={userId}
                     />
                 </div>
             </div>

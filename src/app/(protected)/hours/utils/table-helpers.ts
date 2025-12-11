@@ -11,7 +11,7 @@ export function generateDateColumns(startDate: string, endDate: string): Date[] 
     const current = new Date(start)
 
     while (current <= end) {
-        dates.push(new Date(current))
+        dates.push(new Date(current.getTime()))
         current.setDate(current.getDate() + 1)
     }
 

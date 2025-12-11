@@ -32,6 +32,18 @@ export const DeleteHourEntrySchema = z.object({
     id: z.string(),
 })
 
+const BatchChangeSchema = z.object({
+    entryId: z.string().nullable(),
+    date: z.string(),
+    type: HourTypeSchema,
+    hours: z.number().max(MAX_HOURS_PER_DAY, `Hours cannot exceed ${MAX_HOURS_PER_DAY}`),
+    action: z.enum(["create", "update", "delete"]),
+})
+
+export const BatchUpdateHourEntriesSchema = z.object({
+    changes: z.array(BatchChangeSchema),
+})
+
 const BulkCreateHourEntriesInputSchema = z.object({
     startDate: z.string(),
     endDate: z.string(),
@@ -51,4 +63,5 @@ export type HourType = z.infer<typeof HourTypeSchema>
 export type CreateHourEntryInput = z.input<typeof CreateHourEntrySchema>
 export type UpdateHourEntryInput = z.input<typeof UpdateHourEntrySchema>
 export type DeleteHourEntryInput = z.infer<typeof DeleteHourEntrySchema>
+export type BatchUpdateHourEntriesInput = z.infer<typeof BatchUpdateHourEntriesSchema>
 export type BulkCreateHourEntriesInput = z.input<typeof BulkCreateHourEntriesSchema>

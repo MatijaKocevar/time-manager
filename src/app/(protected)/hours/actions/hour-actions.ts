@@ -14,10 +14,12 @@ import {
     UpdateHourEntrySchema,
     DeleteHourEntrySchema,
     BulkCreateHourEntriesSchema,
+    BatchUpdateHourEntriesSchema,
     type CreateHourEntryInput,
     type UpdateHourEntryInput,
     type DeleteHourEntryInput,
     type BulkCreateHourEntriesInput,
+    type BatchUpdateHourEntriesInput,
 } from "../schemas/hour-action-schemas"
 
 async function requireAuth() {
@@ -34,6 +36,13 @@ async function requireAdmin() {
         throw new Error("Unauthorized - Admin access required")
     }
     return session
+}
+
+function formatLocalDateKey(date: Date): string {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
 }
 
 export async function createHourEntry(input: CreateHourEntryInput) {
@@ -292,9 +301,7 @@ export async function getHourEntriesForUser(
 
         const manualEntriesByDateAndType = new Map<string, (typeof manualEntries)[0]>()
         for (const entry of manualEntries) {
-            const date = new Date(entry.date)
-            date.setHours(0, 0, 0, 0)
-            const key = `${date.toISOString()}-${entry.type}`
+            const key = `${formatLocalDateKey(entry.date)}-${entry.type}`
             manualEntriesByDateAndType.set(key, entry)
         }
 
@@ -358,9 +365,8 @@ export async function getHourEntriesForUser(
                 })
             }
 
-            const summaryDate = new Date(summary.date)
-            summaryDate.setHours(0, 0, 0, 0)
-            const manualKey = `${summaryDate.toISOString()}-${summary.type}`
+            const summaryDateKey = formatLocalDateKey(summary.date)
+            const manualKey = `${summaryDateKey}-${summary.type}`
             const manualEntry = manualEntriesByDateAndType.get(manualKey)
 
             if (manualEntry) {
@@ -436,15 +442,14 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
 
         const manualEntriesByDateAndType = new Map<string, (typeof manualEntries)[0]>()
         for (const entry of manualEntries) {
-            const date = new Date(entry.date)
-            date.setHours(0, 0, 0, 0)
-            const key = `${date.toISOString()}-${entry.type}`
+            const key = `${formatLocalDateKey(entry.date)}-${entry.type}`
+
             manualEntriesByDateAndType.set(key, entry)
         }
 
         const grandTotalsMap = new Map<string, { date: Date; hours: number }>()
         for (const summary of summaries) {
-            const dateKey = summary.date.toISOString()
+            const dateKey = formatLocalDateKey(summary.date)
             const existing = grandTotalsMap.get(dateKey)
             if (existing) {
                 existing.hours += summary.totalHours
@@ -502,9 +507,8 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                 })
             }
 
-            const summaryDate = new Date(summary.date)
-            summaryDate.setHours(0, 0, 0, 0)
-            const manualKey = `${summaryDate.toISOString()}-${summary.type}`
+            const summaryDateKey = formatLocalDateKey(summary.date)
+            const manualKey = `${summaryDateKey}-${summary.type}`
             const manualEntry = manualEntriesByDateAndType.get(manualKey)
 
             if (manualEntry) {
@@ -529,5 +533,87 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
     } catch (error) {
         console.error("Error fetching hour entries:", error)
         throw new Error("Failed to fetch hour entries")
+    }
+}
+
+export async function batchUpdateHourEntries(input: BatchUpdateHourEntriesInput) {
+    try {
+        const session = await requireAuth()
+
+        const validation = BatchUpdateHourEntriesSchema.safeParse(input)
+        if (!validation.success) {
+            return { error: validation.error.issues[0].message }
+        }
+
+        const { changes } = validation.data
+
+        const parseDateString = (dateStr: string): Date => {
+            const [year, month, day] = dateStr.split("-").map(Number)
+            return new Date(year, month - 1, day)
+        }
+
+        await prisma.$transaction(async (tx) => {
+            const affectedDates = new Set<string>()
+
+            for (const change of changes) {
+                affectedDates.add(`${change.date}-${change.type}`)
+
+                if (change.action === "create") {
+                    await tx.hourEntry.create({
+                        data: {
+                            userId: session.user.id,
+                            date: parseDateString(change.date),
+                            hours: change.hours,
+                            type: change.type,
+                            description: null,
+                        },
+                    })
+                } else if (change.action === "update" && change.entryId) {
+                    const existingEntry = await tx.hourEntry.findUnique({
+                        where: { id: change.entryId },
+                    })
+
+                    if (existingEntry) {
+                        const existingDateKey = formatLocalDateKey(existingEntry.date)
+                        if (existingDateKey !== change.date || existingEntry.type !== change.type) {
+                            affectedDates.add(`${existingDateKey}-${existingEntry.type}`)
+                        }
+
+                        await tx.hourEntry.update({
+                            where: { id: change.entryId },
+                            data: {
+                                date: parseDateString(change.date),
+                                hours: change.hours,
+                                type: change.type,
+                            },
+                        })
+                    }
+                } else if (change.action === "delete" && change.entryId) {
+                    await tx.hourEntry.delete({
+                        where: { id: change.entryId },
+                    })
+                }
+            }
+
+            for (const key of affectedDates) {
+                const lastDashIndex = key.lastIndexOf("-")
+                const dateStr = key.substring(0, lastDashIndex)
+                const type = key.substring(lastDashIndex + 1)
+                await recalculateDailySummary(
+                    tx,
+                    session.user.id,
+                    parseDateString(dateStr),
+                    type as HourType
+                )
+            }
+        })
+
+        revalidatePath("/hours")
+        return { success: true }
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error.message }
+        }
+        return { error: "Failed to batch update hour entries" }
     }
 }

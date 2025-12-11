@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { Fragment } from "react"
+import type { HourType } from "@/../../prisma/generated/client"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { useHoursStore } from "../stores/hours-store"
 import { EditableHourCell } from "./editable-hour-cell"
@@ -9,13 +10,13 @@ import { getTypeLabel, getTypeColor } from "../utils/table-helpers"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 
 interface HourTypeRowProps {
-    hourType: string
+    hourType: HourType
     dates: Date[]
     groupedEntries: Record<string, Record<string, HourEntryDisplay>>
-    onUpdate: () => void
+    userId: string
 }
 
-export function HourTypeRow({ hourType, dates, groupedEntries, onUpdate }: HourTypeRowProps) {
+export function HourTypeRow({ hourType, dates, groupedEntries, userId }: HourTypeRowProps) {
     const expandedTypes = useHoursStore((state) => state.expandedTypes)
     const toggleType = useHoursStore((state) => state.toggleType)
 
@@ -63,13 +64,13 @@ export function HourTypeRow({ hourType, dates, groupedEntries, onUpdate }: HourT
                             className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
                         >
                             <EditableHourCell
+                                date={new Date(dateKey)}
+                                type={hourType}
                                 entry={{
                                     ...entry,
-                                    taskId: "total",
+                                    taskId: trackedKey,
                                 }}
-                                dateKey={dateKey}
-                                type={hourType}
-                                onUpdate={onUpdate}
+                                userId={userId}
                             />
                         </TableCell>
                     )
@@ -103,13 +104,13 @@ export function HourTypeRow({ hourType, dates, groupedEntries, onUpdate }: HourT
                                     className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
                                 >
                                     <EditableHourCell
+                                        date={date}
+                                        type={hourType}
                                         entry={{
                                             ...entry,
                                             taskId: "tracked",
                                         }}
-                                        dateKey={dateKey}
-                                        type={hourType}
-                                        onUpdate={onUpdate}
+                                        userId={userId}
                                     />
                                 </TableCell>
                             )
@@ -141,10 +142,10 @@ export function HourTypeRow({ hourType, dates, groupedEntries, onUpdate }: HourT
                                     className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
                                 >
                                     <EditableHourCell
-                                        entry={entry}
-                                        dateKey={dateKey}
+                                        date={date}
                                         type={hourType}
-                                        onUpdate={onUpdate}
+                                        entry={entry}
+                                        userId={userId}
                                     />
                                 </TableCell>
                             )

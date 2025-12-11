@@ -1,6 +1,5 @@
 "use client"
 
-import { useQueryClient } from "@tanstack/react-query"
 import {
     Table,
     TableBody,
@@ -12,9 +11,9 @@ import {
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { HOUR_TYPES } from "../constants/hour-types"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
-import { hourKeys } from "../query-keys"
 import { EditableHourCell } from "./editable-hour-cell"
 import { HourTypeRow } from "./hour-type-row"
+import { useHoursBatchStore } from "../stores/hours-batch-store"
 import {
     generateDateColumns,
     groupEntriesByType,
@@ -27,18 +26,61 @@ interface HoursTableProps {
     viewMode: ViewMode
     startDate: string
     endDate: string
+    userId: string
 }
 
-export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
-    const queryClient = useQueryClient()
+export function HoursTable({ entries, startDate, endDate, userId }: HoursTableProps) {
+    const pendingChanges = useHoursBatchStore((state) => state.pendingChanges)
 
-    const handleUpdate = () => {
-        queryClient.invalidateQueries({ queryKey: hourKeys.all })
+    const formatDateKey = (date: Date): string => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        return `${year}-${month}-${day}`
     }
+
+    const mergedEntries = entries.map((entry) => {
+        const cellKey = `${formatDateKey(entry.date)}-${entry.type}`
+        const pendingChange = pendingChanges.get(cellKey)
+
+        if (pendingChange && entry.taskId === null) {
+            return {
+                ...entry,
+                hours: pendingChange.hours,
+            }
+        }
+
+        return entry
+    })
+
+    Array.from(pendingChanges.values()).forEach((change) => {
+        if (change.action === "create") {
+            const entryExists = mergedEntries.some(
+                (e) =>
+                    formatDateKey(e.date) === change.date &&
+                    e.type === change.type &&
+                    e.taskId === null
+            )
+
+            if (!entryExists) {
+                mergedEntries.push({
+                    id: `pending-${change.cellKey}`,
+                    userId,
+                    date: new Date(change.date),
+                    hours: change.hours,
+                    type: change.type,
+                    description: null,
+                    taskId: null,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                })
+            }
+        }
+    })
 
     const renderWeeklyOrMonthlyView = () => {
         const dates = generateDateColumns(startDate, endDate)
-        const groupedEntries = groupEntriesByType(entries)
+        const groupedEntries = groupEntriesByType(mergedEntries)
 
         return (
             <div className="rounded-md border overflow-x-auto">
@@ -46,9 +88,7 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
                     <colgroup>
                         <col style={{ width: "300px", minWidth: "300px", maxWidth: "300px" }} />
                         {dates.map((date) => (
-                            <col
-                                key={date.toISOString()}
-                            />
+                            <col key={date.toISOString()} />
                         ))}
                     </colgroup>
                     <TableHeader>
@@ -98,13 +138,13 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
                                         className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
                                     >
                                         <EditableHourCell
+                                            date={date}
+                                            type="WORK"
                                             entry={{
                                                 ...entry,
                                                 taskId: "grand_total",
                                             }}
-                                            dateKey={dateKey}
-                                            type="WORK"
-                                            onUpdate={handleUpdate}
+                                            userId={userId}
                                         />
                                     </TableCell>
                                 )
@@ -117,7 +157,7 @@ export function HoursTable({ entries, startDate, endDate }: HoursTableProps) {
                                 hourType={hourType.value}
                                 dates={dates}
                                 groupedEntries={groupedEntries}
-                                onUpdate={handleUpdate}
+                                userId={userId}
                             />
                         ))}
                     </TableBody>
