@@ -208,24 +208,21 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
         }
 
         if (entries.length > 0) {
-            await prisma.$transaction(async (tx) => {
-                await tx.hourEntry.createMany({
-                    data: entries,
-                })
-
-                // Recalculate summaries for all unique date/type combinations
-                const uniqueCombinations = new Map<string, { date: Date; type: typeof type }>()
-                for (const entry of entries) {
-                    const key = `${entry.date.toISOString()}-${entry.type}`
-                    if (!uniqueCombinations.has(key)) {
-                        uniqueCombinations.set(key, { date: entry.date, type: entry.type })
-                    }
-                }
-
-                for (const { date, type } of uniqueCombinations.values()) {
-                    await recalculateDailySummary(tx, session.user.id, date, type)
-                }
+            await prisma.hourEntry.createMany({
+                data: entries,
             })
+
+            const uniqueCombinations = new Map<string, { date: Date; type: typeof type }>()
+            for (const entry of entries) {
+                const key = `${entry.date.toISOString()}-${entry.type}`
+                if (!uniqueCombinations.has(key)) {
+                    uniqueCombinations.set(key, { date: entry.date, type: entry.type })
+                }
+            }
+
+            for (const { date, type } of uniqueCombinations.values()) {
+                await recalculateDailySummaryStandalone(session.user.id, date, type)
+            }
         }
 
         revalidatePath("/hours")
