@@ -24,10 +24,17 @@ import { useHoursBatchStore } from "../stores/hours-batch-store"
 
 interface HoursViewProps {
     initialEntries: HourEntryDisplay[]
+    initialWeeklyEntries: HourEntryDisplay[]
+    initialMonthlyEntries: HourEntryDisplay[]
     userId: string
 }
 
-export function HoursView({ initialEntries, userId }: HoursViewProps) {
+export function HoursView({
+    initialEntries,
+    initialWeeklyEntries,
+    initialMonthlyEntries,
+    userId,
+}: HoursViewProps) {
     const queryClient = useQueryClient()
     const viewMode = useHoursStore((state) => state.viewMode)
     const currentDate = useHoursStore((state) => state.selectedDate)
@@ -112,7 +119,8 @@ export function HoursView({ initialEntries, userId }: HoursViewProps) {
     }, [isDirty, isSaving])
 
     const dateRange = getDateRange(viewMode, currentDate)
-    const monthRange = getDateRange("MONTHLY", new Date())
+    const weekRange = getDateRange("WEEKLY", currentDate)
+    const monthRange = getDateRange("MONTHLY", currentDate)
 
     const { data: entries = [], isLoading } = useQuery({
         queryKey: hourKeys.list({ startDate: dateRange.startDate, endDate: dateRange.endDate }),
@@ -120,9 +128,18 @@ export function HoursView({ initialEntries, userId }: HoursViewProps) {
         initialData: initialEntries,
     })
 
-    const { data: monthlyEntries, isLoading: isLoadingMonthly } = useQuery({
-        queryKey: hourKeys.monthlySummary(monthRange.startDate),
+    const { data: weeklyEntries = [] } = useQuery({
+        queryKey: hourKeys.list({ startDate: weekRange.startDate, endDate: weekRange.endDate }),
+        queryFn: () => getHourEntries(weekRange.startDate, weekRange.endDate),
+        initialData: initialWeeklyEntries,
+        staleTime: Infinity,
+    })
+
+    const { data: monthlyEntries = [] } = useQuery({
+        queryKey: hourKeys.list({ startDate: monthRange.startDate, endDate: monthRange.endDate }),
         queryFn: () => getHourEntries(monthRange.startDate, monthRange.endDate),
+        initialData: initialMonthlyEntries,
+        staleTime: Infinity,
     })
 
     const handleViewModeChange = (mode: ViewMode) => {
@@ -144,7 +161,13 @@ export function HoursView({ initialEntries, userId }: HoursViewProps) {
 
     return (
         <>
-            <HoursSummary entries={monthlyEntries || []} isLoading={isLoadingMonthly} />
+            <HoursSummary
+                entries={entries}
+                isLoading={isLoading}
+                viewMode={viewMode}
+                weeklyEntries={weeklyEntries}
+                monthlyEntries={monthlyEntries}
+            />
 
             <div className="space-y-4 pt-4">
                 <div className="flex items-center justify-between gap-2">

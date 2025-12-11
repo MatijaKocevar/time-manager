@@ -11,9 +11,16 @@ interface EditableHourCellProps {
     type: HourType
     entry: HourEntryDisplay | null
     userId: string
+    showProgressBar?: boolean
 }
 
-export function EditableHourCell({ date, type, entry, userId }: EditableHourCellProps) {
+export function EditableHourCell({
+    date,
+    type,
+    entry,
+    userId,
+    showProgressBar = false,
+}: EditableHourCellProps) {
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, "0")
     const day = String(date.getDate()).padStart(2, "0")
@@ -132,13 +139,28 @@ export function EditableHourCell({ date, type, entry, userId }: EditableHourCell
         const isGrandTotal = entry.taskId === "grand_total"
         const hours = entry?.hours || 0
 
+        // Calculate progress bar percentages for grand total
+        const standardHours = 8
+        const blueWidth = Math.min((hours / standardHours) * 100, 100)
+        const redWidth = hours > standardHours ? ((hours - standardHours) / standardHours) * 100 : 0
+
         return (
-            <div
-                className={`h-8 w-16 text-center flex items-center justify-center rounded mx-auto ${
-                    isTotal || isGrandTotal ? "font-bold" : "font-normal"
-                } ${hours === 0 ? "text-muted-foreground" : "text-foreground"}`}
-            >
-                {hours === 0 ? "-" : formatHoursToTime(hours)}
+            <div className="relative">
+                {showProgressBar && isGrandTotal && hours > 0 && (
+                    <div className="absolute -top-0.5 left-0 right-0 h-0.5 flex">
+                        <div className="bg-blue-500" style={{ width: `${blueWidth}%` }} />
+                        {redWidth > 0 && (
+                            <div className="bg-red-500" style={{ width: `${redWidth}%` }} />
+                        )}
+                    </div>
+                )}
+                <div
+                    className={`h-8 w-16 text-center flex items-center justify-center rounded mx-auto ${
+                        isTotal || isGrandTotal ? "font-bold" : "font-normal"
+                    } ${hours === 0 ? "text-muted-foreground" : "text-foreground"}`}
+                >
+                    {hours === 0 ? "-" : formatHoursToTime(hours)}
+                </div>
             </div>
         )
     }

@@ -135,8 +135,26 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
                                 return (
                                     <TableCell
                                         key={dateKey}
-                                        className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
+                                        className={`text-center p-2 relative ${isWeekend ? "bg-muted/50" : ""}`}
                                     >
+                                        {entry && entry.hours > 0 && (
+                                            <div className="absolute top-0 left-0 right-0 h-0.5 flex">
+                                                <div
+                                                    className="bg-blue-500"
+                                                    style={{
+                                                        width: `${Math.min((entry.hours / 8) * 100, 100)}%`,
+                                                    }}
+                                                />
+                                                {entry.hours > 8 && (
+                                                    <div
+                                                        className="bg-red-500"
+                                                        style={{
+                                                            width: `${((entry.hours - 8) / 8) * 100}%`,
+                                                        }}
+                                                    />
+                                                )}
+                                            </div>
+                                        )}
                                         <EditableHourCell
                                             date={date}
                                             type="WORK"
@@ -145,6 +163,7 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
                                                 taskId: "grand_total",
                                             }}
                                             userId={userId}
+                                            showProgressBar={false}
                                         />
                                     </TableCell>
                                 )

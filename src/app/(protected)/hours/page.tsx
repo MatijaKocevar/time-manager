@@ -14,12 +14,24 @@ export default async function HoursPage() {
     }
 
     const dateRange = getDateRange("WEEKLY", new Date())
-    const entries = await getHourEntries(dateRange.startDate, dateRange.endDate)
+    const weekRange = getDateRange("WEEKLY", new Date())
+    const monthRange = getDateRange("MONTHLY", new Date())
+
+    const [entries, weeklyEntries, monthlyEntries] = await Promise.all([
+        getHourEntries(dateRange.startDate, dateRange.endDate),
+        getHourEntries(weekRange.startDate, weekRange.endDate),
+        getHourEntries(monthRange.startDate, monthRange.endDate),
+    ])
 
     return (
         <>
             <SetBreadcrumbData data={{ "/hours": "Hours" }} />
-            <HoursView initialEntries={entries} userId={session.user.id} />
+            <HoursView
+                initialEntries={entries}
+                initialWeeklyEntries={weeklyEntries}
+                initialMonthlyEntries={monthlyEntries}
+                userId={session.user.id}
+            />
         </>
     )
 }
