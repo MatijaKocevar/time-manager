@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
+import type { HourType } from "@/../../prisma/generated/client"
 import {
     recalculateDailySummary,
     recalculateDailySummaryStandalone,
@@ -176,7 +177,7 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
             userId: string
             date: Date
             hours: number
-            type: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER"
+            type: HourType
             description: string | null
         }> = []
         const currentDate = new Date(startDate)
@@ -263,16 +264,7 @@ export async function getHourEntriesForUser(
                           },
                       }
                     : {}),
-                ...(type
-                    ? {
-                          type: type as
-                              | "WORK"
-                              | "VACATION"
-                              | "SICK_LEAVE"
-                              | "WORK_FROM_HOME"
-                              | "OTHER",
-                      }
-                    : {}),
+                ...(type ? { type: type as HourType } : {}),
             },
             orderBy: {
                 date: "desc",
@@ -291,16 +283,7 @@ export async function getHourEntriesForUser(
                           },
                       }
                     : {}),
-                ...(type
-                    ? {
-                          type: type as
-                              | "WORK"
-                              | "VACATION"
-                              | "SICK_LEAVE"
-                              | "WORK_FROM_HOME"
-                              | "OTHER",
-                      }
-                    : {}),
+                ...(type ? { type: type as HourType } : {}),
             },
             orderBy: {
                 date: "desc",
@@ -425,16 +408,7 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                           },
                       }
                     : {}),
-                ...(type
-                    ? {
-                          type: type as
-                              | "WORK"
-                              | "VACATION"
-                              | "SICK_LEAVE"
-                              | "WORK_FROM_HOME"
-                              | "OTHER",
-                      }
-                    : {}),
+                ...(type ? { type: type as HourType } : {}),
             },
             orderBy: {
                 date: "desc",
@@ -453,16 +427,7 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                           },
                       }
                     : {}),
-                ...(type
-                    ? {
-                          type: type as
-                              | "WORK"
-                              | "VACATION"
-                              | "SICK_LEAVE"
-                              | "WORK_FROM_HOME"
-                              | "OTHER",
-                      }
-                    : {}),
+                ...(type ? { type: type as HourType } : {}),
             },
             orderBy: {
                 date: "desc",
