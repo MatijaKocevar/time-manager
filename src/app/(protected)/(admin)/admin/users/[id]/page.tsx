@@ -30,8 +30,9 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     const { id } = await params
     const { startDate, endDate } = getCurrentMonthDates()
 
-    const [user, userHours, userRequests] = await Promise.all([
+    const [user, userHours, monthlyEntries, userRequests] = await Promise.all([
         getUserById(id),
+        getHourEntriesForUser(id, startDate, endDate),
         getHourEntriesForUser(id, startDate, endDate),
         getUserRequestsForAdmin(id),
     ])
@@ -58,7 +59,12 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
                         <CardDescription>Overview of user&apos;s tracked hours</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <HoursSummary entries={userHours} />
+                        <HoursSummary 
+                            entries={userHours} 
+                            viewMode="MONTHLY"
+                            weeklyEntries={[]}
+                            monthlyEntries={monthlyEntries}
+                        />
                     </CardContent>
                 </Card>
 

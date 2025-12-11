@@ -2,6 +2,7 @@
 
 import { Users, LogOut, UserCircle, ChevronUp } from "lucide-react"
 import { signOut } from "next-auth/react"
+import { usePathname } from "next/navigation"
 
 import {
     Sidebar,
@@ -34,6 +35,7 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ userRole, userName, userEmail }: AppSidebarProps) {
+    const pathname = usePathname()
     const filteredItems = navigationItems.filter((item) =>
         userRole ? item.roles.includes(userRole) : false
     )
@@ -59,34 +61,40 @@ export function AppSidebar({ userRole, userName, userEmail }: AppSidebarProps) {
                     <SidebarGroupLabel>Management</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {filteredItems.map((item) => (
-                                <div key={item.title}>
-                                    <SidebarMenuItem>
-                                        <SidebarMenuButton asChild>
-                                            <a href={item.url}>
-                                                <item.icon />
-                                                <span>{item.title}</span>
-                                            </a>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                    {item.children && item.children.length > 0 && (
-                                        <div className="ml-4 mt-1">
-                                            {item.children.map((child) => (
-                                                <SidebarMenuItem key={child.title}>
-                                                    <SidebarMenuButton asChild size="sm">
-                                                        <a href={child.url}>
-                                                            <child.icon className="h-3 w-3" />
-                                                            <span className="text-sm">
-                                                                {child.title}
-                                                            </span>
-                                                        </a>
-                                                    </SidebarMenuButton>
-                                                </SidebarMenuItem>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
+                            {filteredItems.map((item) => {
+                                const isActive = pathname === item.url || pathname.startsWith(item.url + "/")
+                                return (
+                                    <div key={item.title}>
+                                        <SidebarMenuItem>
+                                            <SidebarMenuButton asChild isActive={isActive}>
+                                                <a href={item.url}>
+                                                    <item.icon />
+                                                    <span>{item.title}</span>
+                                                </a>
+                                            </SidebarMenuButton>
+                                        </SidebarMenuItem>
+                                        {item.children && item.children.length > 0 && (
+                                            <div className="ml-4 mt-1">
+                                                {item.children.map((child) => {
+                                                    const isChildActive = pathname === child.url || pathname.startsWith(child.url + "/")
+                                                    return (
+                                                        <SidebarMenuItem key={child.title}>
+                                                            <SidebarMenuButton asChild size="sm" isActive={isChildActive}>
+                                                                <a href={child.url}>
+                                                                    <child.icon className="h-3 w-3" />
+                                                                    <span className="text-sm">
+                                                                        {child.title}
+                                                                    </span>
+                                                                </a>
+                                                            </SidebarMenuButton>
+                                                        </SidebarMenuItem>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            })}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
