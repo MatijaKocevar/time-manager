@@ -59,8 +59,8 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
                         <CardDescription>Overview of user&apos;s tracked hours</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <HoursSummary 
-                            entries={userHours} 
+                        <HoursSummary
+                            entries={userHours}
                             viewMode="MONTHLY"
                             weeklyEntries={[]}
                             monthlyEntries={monthlyEntries}

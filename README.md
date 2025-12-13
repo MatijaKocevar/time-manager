@@ -5,12 +5,14 @@ A comprehensive time management system built with Next.js 14+ that enables teams
 ## Features
 
 ### 📊 Hours Tracking
+
 - Manual hour entry by date and type (Work, Vacation, Sick Leave, Work From Home, Other)
 - Automatic sync from task time tracking
 - Weekly and monthly calendar views with editable cells
 - Separate tracking of manual vs tracked hours with combined totals
 
 ### ✅ Task Management
+
 - Hierarchical task structure with unlimited subtask nesting
 - Drag & drop ordering with visual feedback
 - Status tracking (Todo, In Progress, Done, Blocked)
@@ -18,11 +20,13 @@ A comprehensive time management system built with Next.js 14+ that enables teams
 - Time tracked on tasks syncs to Hours view
 
 ### 📅 Shift Management
+
 - Daily work location tracking (Office, Home, Vacation, Sick Leave, Other)
 - Visual monthly calendar with shift indicators
 - Quick entry with notes support
 
 ### 📝 Request Management
+
 - Multiple request types (Vacation, Sick Leave, Work From Home, Remote Work, Other)
 - Approval workflow with pending, approved, rejected, and cancelled states
 - Admin interface for managing requests and viewing history
@@ -30,6 +34,7 @@ A comprehensive time management system built with Next.js 14+ that enables teams
 - Support for multi-day requests
 
 ### 👥 User Management (Admin)
+
 - Role-based access control (USER and ADMIN roles)
 - User account creation and management
 - Organization-wide request oversight
@@ -40,9 +45,9 @@ A comprehensive time management system built with Next.js 14+ that enables teams
 - **Language**: [TypeScript](https://www.typescriptlang.org) (strict mode)
 - **Database**: [PostgreSQL](https://www.postgresql.org) with [Prisma ORM](https://www.prisma.io)
 - **Authentication**: [NextAuth.js v4](https://next-auth.js.org) with credentials provider
-- **State Management**: 
-  - [TanStack Query v5](https://tanstack.com/query) for server state
-  - [Zustand](https://zustand-demo.pmnd.rs) for client UI state
+- **State Management**:
+    - [TanStack Query v5](https://tanstack.com/query) for server state
+    - [Zustand](https://zustand-demo.pmnd.rs) for client UI state
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com)
 - **Validation**: [Zod](https://zod.dev) schemas for runtime validation
 - **UI Components**: [Radix UI](https://www.radix-ui.com) primitives
@@ -50,7 +55,7 @@ A comprehensive time management system built with Next.js 14+ that enables teams
 
 ## Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - PostgreSQL database
 - npm or yarn package manager
 
@@ -78,6 +83,7 @@ NEXTAUTH_URL="http://localhost:3000"
 ```
 
 Generate a secure `NEXTAUTH_SECRET`:
+
 ```bash
 openssl rand -base64 32
 ```
@@ -96,6 +102,7 @@ npm run db:seed
 ```
 
 **Default Admin Credentials** (after seeding):
+
 - Email: `admin@example.com`
 - Password: `admin123` (change after first login)
 
@@ -113,21 +120,21 @@ Open [http://localhost:3000](http://localhost:3000) and log in with the admin cr
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server (HTTP) |
-| `npm run dev:https` | Start development server with HTTPS |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run db:generate` | Generate Prisma client |
-| `npm run db:push` | Push schema changes without migration |
-| `npm run db:migrate` | Create and run new migration |
-| `npm run db:migrate:deploy` | Deploy migrations (production) |
-| `npm run db:seed` | Seed database with initial data |
-| `npm run db:reset` | Reset database (⚠️ destructive) |
-| `npm run db:studio` | Open Prisma Studio (visual DB browser) |
-| `npm run dev:db` | Push schema, seed, and start dev server |
+| Script                      | Description                             |
+| --------------------------- | --------------------------------------- |
+| `npm run dev`               | Start development server (HTTP)         |
+| `npm run dev:https`         | Start development server with HTTPS     |
+| `npm run build`             | Build for production                    |
+| `npm run start`             | Start production server                 |
+| `npm run lint`              | Run ESLint                              |
+| `npm run db:generate`       | Generate Prisma client                  |
+| `npm run db:push`           | Push schema changes without migration   |
+| `npm run db:migrate`        | Create and run new migration            |
+| `npm run db:migrate:deploy` | Deploy migrations (production)          |
+| `npm run db:seed`           | Seed database with initial data         |
+| `npm run db:reset`          | Reset database (⚠️ destructive)         |
+| `npm run db:studio`         | Open Prisma Studio (visual DB browser)  |
+| `npm run dev:db`            | Push schema, seed, and start dev server |
 
 ## Project Structure
 
@@ -181,6 +188,7 @@ prisma/
 For detailed development standards and patterns, see `.github/copilot-instructions.md`.
 
 Key principles:
+
 - Strict TypeScript with no `any` types
 - Zod validation for all external input
 - Server Components by default
@@ -189,38 +197,44 @@ Key principles:
 ## Authentication & Authorization
 
 ### Role-Based Access
+
 - **USER**: Access hours, tasks, tracker, shifts, and own requests
 - **ADMIN**: All USER features + user management + request approvals
 
 ### Session Management
+
 NextAuth.js with JWT-based sessions:
+
 - Credentials provider with bcrypt password hashing
 - Session verification via `requireAuth()` helper
 - Protected routes under `(protected)/` layout
 
-
-
 ## Deployment
 
 ### Environment Variables
+
 Ensure these are set in your production environment:
+
 - `DATABASE_URL`: PostgreSQL connection string
 - `NEXTAUTH_SECRET`: Cryptographically secure random string
 - `NEXTAUTH_URL`: Your production domain (e.g., `https://yourdomain.com`)
 
 ### Migration Workflow
+
 ```bash
 # Production migration deployment
 npm run db:migrate:deploy
 ```
 
 ### Build & Deploy
+
 ```bash
 npm run build
 npm run start
 ```
 
 Platform-specific deployment guides:
+
 - [Vercel](https://vercel.com/docs)
 - [Railway](https://docs.railway.app)
 - [Docker](https://docs.docker.com)
@@ -228,25 +242,33 @@ Platform-specific deployment guides:
 ## Troubleshooting
 
 ### Database Connection Issues
+
 Check your `DATABASE_URL` format:
+
 ```env
 DATABASE_URL="postgresql://user:password@host:port/database?schema=public"
 ```
 
 ### Migration Conflicts
+
 Reset and reseed (⚠️ development only):
+
 ```bash
 npm run db:reset
 ```
 
 ### Prisma Client Out of Sync
+
 Regenerate the client:
+
 ```bash
 npm run db:generate
 ```
 
 ### View Database
+
 Open Prisma Studio for visual inspection:
+
 ```bash
 npm run db:studio
 ```
