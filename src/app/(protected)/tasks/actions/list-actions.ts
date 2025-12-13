@@ -228,6 +228,22 @@ export async function deleteList(input: DeleteListInput) {
     }
 }
 
+async function getAllDescendantIds(taskId: string): Promise<string[]> {
+    const descendants: string[] = []
+    const children = await prisma.task.findMany({
+        where: { parentId: taskId },
+        select: { id: true },
+    })
+
+    for (const child of children) {
+        descendants.push(child.id)
+        const childDescendants = await getAllDescendantIds(child.id)
+        descendants.push(...childDescendants)
+    }
+
+    return descendants
+}
+
 export async function moveTaskToList(input: MoveTaskToListInput) {
     try {
         const session = await requireAuth()
@@ -265,8 +281,11 @@ export async function moveTaskToList(input: MoveTaskToListInput) {
             }
         }
 
-        await prisma.task.update({
-            where: { id: taskId },
+        const descendantIds = await getAllDescendantIds(taskId)
+        const allTaskIds = [taskId, ...descendantIds]
+
+        await prisma.task.updateMany({
+            where: { id: { in: allTaskIds } },
             data: { listId },
         })
 

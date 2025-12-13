@@ -35,6 +35,8 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
             const result = await startTimer({ taskId: task.id })
 
             if (result.success && result.entryId) {
+                const clearAllActiveTimers = useTasksStore.getState().clearAllActiveTimers
+                clearAllActiveTimers()
                 setActiveTimer(task.id, result.entryId, new Date())
                 await queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
             } else {

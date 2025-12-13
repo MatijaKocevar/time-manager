@@ -71,6 +71,7 @@ interface TasksStoreActions {
     collapseAll: () => void
     setActiveTimer: (taskId: string, entryId: string, startTime: Date) => void
     clearActiveTimer: (taskId: string) => void
+    clearAllActiveTimers: () => void
     updateElapsedTime: (taskId: string, seconds: number) => void
     setSelectedListId: (listId: string | null) => void
     openCreateDialog: (parentId?: string, listId?: string | null) => void
@@ -153,6 +154,11 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
             newElapsed.delete(taskId)
             return { activeTimers: newTimers, elapsedTimes: newElapsed }
         }),
+    clearAllActiveTimers: () =>
+        set(() => ({
+            activeTimers: new Map(),
+            elapsedTimes: new Map(),
+        })),
 
     elapsedTimes: new Map(),
     updateElapsedTime: (taskId, seconds) =>
