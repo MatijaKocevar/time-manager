@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -27,6 +28,8 @@ interface HoursViewProps {
     initialWeeklyEntries: HourEntryDisplay[]
     initialMonthlyEntries: HourEntryDisplay[]
     userId: string
+    initialViewMode: ViewMode
+    initialSelectedDate: Date
 }
 
 export function HoursView({
@@ -34,12 +37,13 @@ export function HoursView({
     initialWeeklyEntries,
     initialMonthlyEntries,
     userId,
+    initialViewMode,
+    initialSelectedDate,
 }: HoursViewProps) {
+    const router = useRouter()
     const queryClient = useQueryClient()
-    const viewMode = useHoursStore((state) => state.viewMode)
-    const currentDate = useHoursStore((state) => state.selectedDate)
-    const setViewMode = useHoursStore((state) => state.setViewMode)
-    const setSelectedDate = useHoursStore((state) => state.setSelectedDate)
+    const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode)
+    const [currentDate, setCurrentDate] = useState<Date>(initialSelectedDate)
     const [isFormOpen, setIsFormOpen] = useState(false)
 
     const isDirty = useHoursBatchStore((state) => state.isDirty)
@@ -144,7 +148,8 @@ export function HoursView({
 
     const handleViewModeChange = (mode: ViewMode) => {
         setViewMode(mode)
-        setSelectedDate(new Date())
+        setCurrentDate(new Date())
+        router.push(`/hours?view=${mode.toLowerCase()}`)
     }
 
     const handleNavigate = (direction: "prev" | "next") => {
@@ -156,7 +161,9 @@ export function HoursView({
             newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : -1))
         }
 
-        setSelectedDate(newDate)
+        setCurrentDate(newDate)
+        const dateStr = newDate.toISOString().split("T")[0]
+        router.push(`/hours?view=${viewMode.toLowerCase()}&date=${dateStr}`)
     }
 
     return (

@@ -4,18 +4,27 @@ import { HoursView } from "./components/hours-view"
 import { getHourEntries } from "./actions/hour-actions"
 import { getDateRange } from "./utils/view-helpers"
 import { SetBreadcrumbData } from "@/features/breadcrumbs/set-breadcrumb-data"
+import type { ViewMode } from "./schemas/hour-filter-schemas"
 
 export const dynamic = "force-dynamic"
 
-export default async function HoursPage() {
+interface HoursPageProps {
+    searchParams: Promise<{ view?: string; date?: string }>
+}
+
+export default async function HoursPage({ searchParams }: HoursPageProps) {
     const session = await getServerSession(authConfig)
     if (!session?.user?.id) {
         throw new Error("Unauthorized")
     }
 
-    const dateRange = getDateRange("WEEKLY", new Date())
-    const weekRange = getDateRange("WEEKLY", new Date())
-    const monthRange = getDateRange("MONTHLY", new Date())
+    const params = await searchParams
+    const viewMode = (params.view?.toUpperCase() as ViewMode) || "WEEKLY"
+    const selectedDate = params.date ? new Date(params.date) : new Date()
+
+    const dateRange = getDateRange(viewMode, selectedDate)
+    const weekRange = getDateRange("WEEKLY", selectedDate)
+    const monthRange = getDateRange("MONTHLY", selectedDate)
 
     const [entries, weeklyEntries, monthlyEntries] = await Promise.all([
         getHourEntries(dateRange.startDate, dateRange.endDate),
@@ -31,6 +40,8 @@ export default async function HoursPage() {
                 initialWeeklyEntries={weeklyEntries}
                 initialMonthlyEntries={monthlyEntries}
                 userId={session.user.id}
+                initialViewMode={viewMode}
+                initialSelectedDate={selectedDate}
             />
         </>
     )

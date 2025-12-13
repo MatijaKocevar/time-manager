@@ -28,26 +28,6 @@ async function main() {
         where: {
             userId_name: {
                 userId: testUser.id,
-                name: "No List",
-            },
-        },
-        update: {},
-        create: {
-            userId: testUser.id,
-            name: "No List",
-            description: "Tasks without a specific list",
-            color: "#6b7280",
-            isDefault: true,
-            order: 0,
-        },
-    })
-
-    console.log("✅ Created 'No List' for test user")
-
-    await prisma.list.upsert({
-        where: {
-            userId_name: {
-                userId: testUser.id,
                 name: "Personal",
             },
         },
@@ -79,26 +59,6 @@ async function main() {
     })
 
     console.log("✅ Created admin user:", adminUser.email)
-
-    await prisma.list.upsert({
-        where: {
-            userId_name: {
-                userId: adminUser.id,
-                name: "No List",
-            },
-        },
-        update: {},
-        create: {
-            userId: adminUser.id,
-            name: "No List",
-            description: "Tasks without a specific list",
-            color: "#6b7280",
-            isDefault: true,
-            order: 0,
-        },
-    })
-
-    console.log("✅ Created 'No List' for admin user")
 
     await prisma.list.upsert({
         where: {

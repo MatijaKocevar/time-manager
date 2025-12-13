@@ -8,7 +8,7 @@ export async function recalculateDailySummary(
     type: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER"
 ) {
     const normalizedDate = new Date(date)
-    normalizedDate.setHours(0, 0, 0, 0)
+    normalizedDate.setUTCHours(0, 0, 0, 0)
 
     const manualAggregate = await tx.hourEntry.aggregate({
         where: {
@@ -24,7 +24,7 @@ export async function recalculateDailySummary(
 
     const startOfDay = new Date(normalizedDate)
     const endOfDay = new Date(normalizedDate)
-    endOfDay.setDate(endOfDay.getDate() + 1)
+    endOfDay.setUTCDate(endOfDay.getUTCDate() + 1)
 
     const trackedAggregate = await tx.taskTimeEntry.aggregate({
         where: {

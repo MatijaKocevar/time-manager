@@ -88,7 +88,7 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
                     <colgroup>
                         <col style={{ width: "300px", minWidth: "300px", maxWidth: "300px" }} />
                         {dates.map((date) => (
-                            <col key={date.toISOString()} />
+                            <col key={date.toISOString()} style={{ width: "100px", minWidth: "100px" }} />
                         ))}
                     </colgroup>
                     <TableHeader>
