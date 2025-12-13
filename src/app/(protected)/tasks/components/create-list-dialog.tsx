@@ -48,18 +48,19 @@ export function CreateListDialog() {
         setListError("")
 
         try {
-            const result = isEditing
-                ? await updateList({
-                      id: listDialog.listId!,
-                      name: listForm.data.name,
-                      description: listForm.data.description || undefined,
-                      color: listForm.data.color || undefined,
-                  })
-                : await createList({
-                      name: listForm.data.name,
-                      description: listForm.data.description || undefined,
-                      color: listForm.data.color || undefined,
-                  })
+            const result =
+                isEditing && listDialog.listId
+                    ? await updateList({
+                          id: listDialog.listId,
+                          name: listForm.data.name,
+                          description: listForm.data.description || undefined,
+                          color: listForm.data.color || undefined,
+                      })
+                    : await createList({
+                          name: listForm.data.name,
+                          description: listForm.data.description || undefined,
+                          color: listForm.data.color || undefined,
+                      })
 
             if (result.success) {
                 await queryClient.invalidateQueries({ queryKey: listKeys.all })

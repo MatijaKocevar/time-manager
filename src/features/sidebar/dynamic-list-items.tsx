@@ -19,14 +19,6 @@ export function DynamicListItems() {
 
     return (
         <div className="ml-4 mt-1">
-            <SidebarMenuItem>
-                <SidebarMenuButton asChild size="sm" isActive={pathname === "/tasks"}>
-                    <a href="/tasks">
-                        <List className="h-3 w-3" />
-                        <span className="text-sm">All Tasks</span>
-                    </a>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
             {lists.map((list) => {
                 const listUrl = `/tasks/${list.id}`
                 const isActive = pathname === listUrl

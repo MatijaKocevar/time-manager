@@ -5,7 +5,8 @@ export const TaskStatusSchema = z.enum([
     TASK_STATUS.TODO,
     TASK_STATUS.IN_PROGRESS,
     TASK_STATUS.DONE,
-    TASK_STATUS.BLOCKED,
+    TASK_STATUS.ON_HOLD,
+    TASK_STATUS.CANCELED,
 ])
 
 const CreateTaskInputSchema = z.object({

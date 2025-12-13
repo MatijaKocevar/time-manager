@@ -34,11 +34,6 @@ export function ListSelector({ lists, selectedListId, onSelectList }: ListSelect
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
-                <DropdownMenuItem onClick={() => onSelectList(null)}>
-                    <Folder className="mr-2 h-4 w-4" />
-                    All Tasks
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 {lists.map((list) => (
                     <DropdownMenuItem
                         key={list.id}

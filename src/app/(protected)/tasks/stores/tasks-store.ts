@@ -21,6 +21,7 @@ interface TasksStoreState {
     createDialog: {
         isOpen: boolean
         parentId: string | null
+        listId: string | null
     }
     timeEntriesDialog: {
         isOpen: boolean
@@ -52,6 +53,16 @@ interface TasksStoreState {
         isLoading: boolean
         error: string
     }
+    deleteTaskForm: {
+        isLoading: boolean
+        error: string
+    }
+    moveTaskForm: {
+        selectedListId: string
+        isLoading: boolean
+        error: string
+    }
+    taskOperations: Map<string, { isLoading: boolean }>
 }
 
 interface TasksStoreActions {
@@ -62,7 +73,7 @@ interface TasksStoreActions {
     clearActiveTimer: (taskId: string) => void
     updateElapsedTime: (taskId: string, seconds: number) => void
     setSelectedListId: (listId: string | null) => void
-    openCreateDialog: (parentId?: string) => void
+    openCreateDialog: (parentId?: string, listId?: string | null) => void
     closeCreateDialog: () => void
     openTimeEntriesDialog: (taskId: string) => void
     closeTimeEntriesDialog: () => void
@@ -82,6 +93,16 @@ interface TasksStoreActions {
     setListLoading: (isLoading: boolean) => void
     setListError: (error: string) => void
     clearListError: () => void
+    setDeleteTaskLoading: (isLoading: boolean) => void
+    setDeleteTaskError: (error: string) => void
+    clearDeleteTaskError: () => void
+    setMoveTaskSelectedListId: (listId: string) => void
+    setMoveTaskLoading: (isLoading: boolean) => void
+    setMoveTaskError: (error: string) => void
+    clearMoveTaskError: () => void
+    resetMoveTaskForm: () => void
+    setTaskOperationLoading: (taskId: string, isLoading: boolean) => void
+    clearTaskOperationLoading: (taskId: string) => void
 }
 
 const initialFormData: CreateFormData = {
@@ -147,6 +168,7 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
     createDialog: {
         isOpen: false,
         parentId: null,
+        listId: null,
     },
     timeEntriesDialog: {
         isOpen: false,
@@ -175,10 +197,20 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
         isLoading: false,
         error: "",
     },
+    deleteTaskForm: {
+        isLoading: false,
+        error: "",
+    },
+    moveTaskForm: {
+        selectedListId: "",
+        isLoading: false,
+        error: "",
+    },
+    taskOperations: new Map(),
 
-    openCreateDialog: (parentId) =>
+    openCreateDialog: (parentId, listId) =>
         set(() => ({
-            createDialog: { isOpen: true, parentId: parentId || null },
+            createDialog: { isOpen: true, parentId: parentId || null, listId: listId ?? null },
             createForm: {
                 data: initialFormData,
                 isLoading: false,
@@ -187,7 +219,7 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
         })),
     closeCreateDialog: () =>
         set(() => ({
-            createDialog: { isOpen: false, parentId: null },
+            createDialog: { isOpen: false, parentId: null, listId: null },
         })),
 
     openTimeEntriesDialog: (taskId) =>
@@ -304,4 +336,80 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
                 error: "",
             },
         })),
+
+    setDeleteTaskLoading: (isLoading) =>
+        set((state) => ({
+            deleteTaskForm: {
+                ...state.deleteTaskForm,
+                isLoading,
+            },
+        })),
+    setDeleteTaskError: (error) =>
+        set((state) => ({
+            deleteTaskForm: {
+                ...state.deleteTaskForm,
+                error,
+            },
+        })),
+    clearDeleteTaskError: () =>
+        set((state) => ({
+            deleteTaskForm: {
+                ...state.deleteTaskForm,
+                error: "",
+            },
+        })),
+
+    setMoveTaskSelectedListId: (listId) =>
+        set((state) => ({
+            moveTaskForm: {
+                ...state.moveTaskForm,
+                selectedListId: listId,
+            },
+        })),
+    setMoveTaskLoading: (isLoading) =>
+        set((state) => ({
+            moveTaskForm: {
+                ...state.moveTaskForm,
+                isLoading,
+            },
+        })),
+    setMoveTaskError: (error) =>
+        set((state) => ({
+            moveTaskForm: {
+                ...state.moveTaskForm,
+                error,
+            },
+        })),
+    clearMoveTaskError: () =>
+        set((state) => ({
+            moveTaskForm: {
+                ...state.moveTaskForm,
+                error: "",
+            },
+        })),
+    resetMoveTaskForm: () =>
+        set(() => ({
+            moveTaskForm: {
+                selectedListId: "",
+                isLoading: false,
+                error: "",
+            },
+        })),
+
+    setTaskOperationLoading: (taskId, isLoading) =>
+        set((state) => {
+            const newOperations = new Map(state.taskOperations)
+            if (isLoading) {
+                newOperations.set(taskId, { isLoading: true })
+            } else {
+                newOperations.delete(taskId)
+            }
+            return { taskOperations: newOperations }
+        }),
+    clearTaskOperationLoading: (taskId) =>
+        set((state) => {
+            const newOperations = new Map(state.taskOperations)
+            newOperations.delete(taskId)
+            return { taskOperations: newOperations }
+        }),
 }))

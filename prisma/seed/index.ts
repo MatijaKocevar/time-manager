@@ -28,6 +28,26 @@ async function main() {
         where: {
             userId_name: {
                 userId: testUser.id,
+                name: "No List",
+            },
+        },
+        update: {},
+        create: {
+            userId: testUser.id,
+            name: "No List",
+            description: "Tasks without a specific list",
+            color: "#6b7280",
+            isDefault: true,
+            order: 0,
+        },
+    })
+
+    console.log("✅ Created 'No List' for test user")
+
+    await prisma.list.upsert({
+        where: {
+            userId_name: {
+                userId: testUser.id,
                 name: "Personal",
             },
         },
@@ -37,12 +57,12 @@ async function main() {
             name: "Personal",
             description: "Personal tasks and projects",
             color: "#3b82f6",
-            isDefault: true,
-            order: 0,
+            isDefault: false,
+            order: 1,
         },
     })
 
-    console.log("✅ Created default list for test user")
+    console.log("✅ Created 'Personal' list for test user")
 
     const adminUser = await prisma.user.upsert({
         where: { email: "admin@example.com" },
@@ -64,6 +84,26 @@ async function main() {
         where: {
             userId_name: {
                 userId: adminUser.id,
+                name: "No List",
+            },
+        },
+        update: {},
+        create: {
+            userId: adminUser.id,
+            name: "No List",
+            description: "Tasks without a specific list",
+            color: "#6b7280",
+            isDefault: true,
+            order: 0,
+        },
+    })
+
+    console.log("✅ Created 'No List' for admin user")
+
+    await prisma.list.upsert({
+        where: {
+            userId_name: {
+                userId: adminUser.id,
                 name: "Personal",
             },
         },
@@ -73,12 +113,12 @@ async function main() {
             name: "Personal",
             description: "Personal tasks and projects",
             color: "#3b82f6",
-            isDefault: true,
-            order: 0,
+            isDefault: false,
+            order: 1,
         },
     })
 
-    console.log("✅ Created default list for admin user")
+    console.log("✅ Created 'Personal' list for admin user")
 
     console.log("🌱 Database seeding completed!")
 }

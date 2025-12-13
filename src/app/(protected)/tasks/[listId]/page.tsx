@@ -9,7 +9,8 @@ interface ListPageProps {
 
 export default async function ListPage({ params }: ListPageProps) {
     const { listId } = await params
-    const tasks = await getTasks(listId)
+    const actualListId = listId === "no-list" ? null : listId
+    const tasks = await getTasks({ listId: actualListId })
 
-    return <TasksView initialTasks={tasks} listId={listId} />
+    return <TasksView initialTasks={tasks} listId={actualListId} />
 }

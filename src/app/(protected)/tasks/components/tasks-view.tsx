@@ -46,7 +46,7 @@ export function TasksView({ initialTasks, listId }: TasksViewProps) {
 
     const { data: tasks = initialTasks } = useQuery({
         queryKey: taskKeys.byList(selectedListId ?? null),
-        queryFn: () => getTasks(selectedListId ?? null),
+        queryFn: () => getTasks({ listId: selectedListId ?? null }),
         initialData: initialTasks,
     })
 
@@ -87,14 +87,7 @@ export function TasksView({ initialTasks, listId }: TasksViewProps) {
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between w-full gap-4">
-                <div className="w-64">
-                    <ListSelector
-                        lists={lists}
-                        selectedListId={selectedListId}
-                        onSelectList={setSelectedListId}
-                    />
-                </div>
+            <div className="flex items-center justify-end w-full">
                 <Button onClick={() => openCreateDialog()}>
                     <Plus className="h-4 w-4 mr-2" />
                     New Task

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { updateTask } from "../actions/task-actions"
 import { useQueryClient } from "@tanstack/react-query"
 import { taskKeys } from "../query-keys"
+import { useTasksStore } from "../stores/tasks-store"
 import type { TaskTreeNode } from "../schemas"
 
 interface EditableTaskTitleProps {
@@ -13,9 +14,12 @@ interface EditableTaskTitleProps {
 
 export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
     const [value, setValue] = useState(task.title)
-    const [isLoading, setIsLoading] = useState(false)
     const queryClient = useQueryClient()
     const inputRef = useRef<HTMLInputElement>(null)
+    const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
+    const isLoading = useTasksStore(
+        (state) => state.taskOperations.get(task.id)?.isLoading ?? false
+    )
 
     useEffect(() => {
         setValue(task.title)
@@ -29,7 +33,7 @@ export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
             return
         }
 
-        setIsLoading(true)
+        setTaskOperationLoading(task.id, true)
         try {
             const result = await updateTask({
                 id: task.id,
@@ -46,7 +50,7 @@ export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
             console.error("Failed to update task:", error)
             setValue(task.title)
         } finally {
-            setIsLoading(false)
+            setTaskOperationLoading(task.id, false)
         }
     }
 

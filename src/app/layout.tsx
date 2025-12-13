@@ -7,6 +7,7 @@ import SessionWrapper from "@/providers/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
 import { ConditionalSidebar } from "@/features/sidebar"
 import { authConfig } from "@/lib/auth"
+import { getLists } from "./(protected)/tasks/actions/list-actions"
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -51,6 +52,7 @@ export default async function RootLayout({
     const cookieStore = await cookies()
     const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
     const session = await getServerSession(authConfig)
+    const lists = session ? await getLists().catch(() => []) : []
 
     return (
         <html lang="en">
@@ -67,6 +69,7 @@ export default async function RootLayout({
                             userRole={session?.user?.role}
                             userName={session?.user?.name}
                             userEmail={session?.user?.email}
+                            lists={lists}
                         >
                             {children}
                         </ConditionalSidebar>

@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { Play, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useQueryClient } from "@tanstack/react-query"
@@ -15,20 +14,23 @@ interface TaskTimeTrackerProps {
 }
 
 export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
-    const [isLoading, setIsLoading] = useState(false)
     const queryClient = useQueryClient()
     const activeTimers = useTasksStore((state) => state.activeTimers)
     const elapsedTimes = useTasksStore((state) => state.elapsedTimes)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
     const openTimeEntriesDialog = useTasksStore((state) => state.openTimeEntriesDialog)
+    const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
+    const isLoading = useTasksStore(
+        (state) => state.taskOperations.get(task.id)?.isLoading ?? false
+    )
 
     const activeTimer = activeTimers.get(task.id)
     const elapsedSeconds = elapsedTimes.get(task.id) ?? 0
     const isRunning = !!activeTimer
 
     const handleStart = async () => {
-        setIsLoading(true)
+        setTaskOperationLoading(task.id, true)
         try {
             const result = await startTimer({ taskId: task.id })
 
@@ -41,14 +43,14 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
         } catch (error) {
             console.error("Failed to start timer:", error)
         } finally {
-            setIsLoading(false)
+            setTaskOperationLoading(task.id, false)
         }
     }
 
     const handleStop = async () => {
         if (!activeTimer) return
 
-        setIsLoading(true)
+        setTaskOperationLoading(task.id, true)
         try {
             const result = await stopTimer({ id: activeTimer.entryId })
 
@@ -61,7 +63,7 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
         } catch (error) {
             console.error("Failed to stop timer:", error)
         } finally {
-            setIsLoading(false)
+            setTaskOperationLoading(task.id, false)
         }
     }
 

@@ -1,8 +1,9 @@
 "use client"
 
-import { Users, LogOut, UserCircle, ChevronUp } from "lucide-react"
+import { Users, LogOut, UserCircle, ChevronUp, MoreHorizontal, Edit, Trash } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 
 import {
     Sidebar,
@@ -27,19 +28,60 @@ import {
 import { UserAvatar } from "@/components/user-avatar"
 import { navigationItems } from "@/config/navigation"
 import { UserRole } from "@/types"
-import { DynamicListItems } from "./dynamic-list-items"
+import type { ListDisplay } from "@/app/(protected)/tasks/schemas/list-schemas"
+import { Folder } from "lucide-react"
+import { NewListButton } from "./new-list-button"
+import { Button } from "@/components/ui/button"
+import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
+import { deleteList } from "@/app/(protected)/tasks/actions/list-actions"
+import { useQueryClient } from "@tanstack/react-query"
+import { listKeys } from "@/app/(protected)/tasks/query-keys"
 
 interface AppSidebarProps {
     userRole?: UserRole
     userName?: string | null
     userEmail?: string | null
+    lists?: ListDisplay[]
 }
 
-export function AppSidebar({ userRole, userName, userEmail }: AppSidebarProps) {
+export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSidebarProps) {
     const pathname = usePathname()
+    const queryClient = useQueryClient()
+    const openListDialog = useTasksStore((state) => state.openListDialog)
+    const [deletingListId, setDeletingListId] = useState<string | null>(null)
+
     const filteredItems = navigationItems.filter((item) =>
         userRole ? item.roles.includes(userRole) : false
     )
+
+    const handleEditList = (listId: string) => {
+        openListDialog(listId)
+    }
+
+    const handleDeleteList = async (listId: string) => {
+        if (
+            !confirm("Are you sure you want to delete this list? Tasks will be moved to No List.")
+        ) {
+            return
+        }
+        setDeletingListId(listId)
+        try {
+            const result = await deleteList({ id: listId })
+            if (result.success) {
+                await queryClient.invalidateQueries({ queryKey: listKeys.all })
+                if (pathname.includes(listId)) {
+                    window.location.href = "/tasks"
+                }
+            } else {
+                alert(result.error || "Failed to delete list")
+            }
+        } catch (error) {
+            console.error("Failed to delete list:", error)
+            alert("Failed to delete list")
+        } finally {
+            setDeletingListId(null)
+        }
+    }
 
     return (
         <Sidebar>
@@ -76,7 +118,95 @@ export function AppSidebar({ userRole, userName, userEmail }: AppSidebarProps) {
                                                 </a>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
-                                        {isTasksItem && <DynamicListItems />}
+                                        {isTasksItem && (
+                                            <div className="ml-4 mt-1">
+                                                <SidebarMenuItem>
+                                                    <SidebarMenuButton
+                                                        asChild
+                                                        size="sm"
+                                                        isActive={pathname === "/tasks/no-list"}
+                                                    >
+                                                        <a href="/tasks/no-list">
+                                                            <Folder className="h-3 w-3 text-muted-foreground" />
+                                                            <span className="text-sm">No List</span>
+                                                        </a>
+                                                    </SidebarMenuButton>
+                                                </SidebarMenuItem>
+                                                {lists.map((list) => {
+                                                    const listUrl = `/tasks/${list.id}`
+                                                    const isListActive = pathname === listUrl
+                                                    const isDeleting = deletingListId === list.id
+                                                    return (
+                                                        <SidebarMenuItem key={list.id}>
+                                                            <div className="flex items-center gap-1 w-full">
+                                                                <SidebarMenuButton
+                                                                    asChild
+                                                                    size="sm"
+                                                                    isActive={isListActive}
+                                                                    className="flex-1"
+                                                                    disabled={isDeleting}
+                                                                >
+                                                                    <a href={listUrl}>
+                                                                        <Folder className="h-3 w-3" />
+                                                                        <span className="text-sm flex items-center gap-1">
+                                                                            {list.color && (
+                                                                                <span
+                                                                                    className="h-2 w-2 rounded-full"
+                                                                                    style={{
+                                                                                        backgroundColor:
+                                                                                            list.color,
+                                                                                    }}
+                                                                                />
+                                                                            )}
+                                                                            {list.name}
+                                                                        </span>
+                                                                    </a>
+                                                                </SidebarMenuButton>
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="sm"
+                                                                            className="h-6 w-6 p-0"
+                                                                            disabled={isDeleting}
+                                                                        >
+                                                                            <MoreHorizontal className="h-3 w-3" />
+                                                                            <span className="sr-only">
+                                                                                List options
+                                                                            </span>
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end">
+                                                                        <DropdownMenuItem
+                                                                            onClick={() =>
+                                                                                handleEditList(
+                                                                                    list.id
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <Edit className="mr-2 h-3 w-3" />
+                                                                            Rename
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem
+                                                                            onClick={() =>
+                                                                                handleDeleteList(
+                                                                                    list.id
+                                                                                )
+                                                                            }
+                                                                            className="text-destructive"
+                                                                        >
+                                                                            <Trash className="mr-2 h-3 w-3" />
+                                                                            Delete
+                                                                        </DropdownMenuItem>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </div>
+                                                        </SidebarMenuItem>
+                                                    )
+                                                })}
+                                                <NewListButton />
+                                            </div>
+                                        )}
                                         {item.children && item.children.length > 0 && (
                                             <div className="ml-4 mt-1">
                                                 {item.children.map((child) => {

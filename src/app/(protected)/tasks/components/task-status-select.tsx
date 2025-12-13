@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import {
     Select,
     SelectContent,
@@ -12,6 +11,7 @@ import { updateTask } from "../actions/task-actions"
 import { useQueryClient } from "@tanstack/react-query"
 import { taskKeys } from "../query-keys"
 import { TASK_STATUSES } from "../constants/task-statuses"
+import { useTasksStore } from "../stores/tasks-store"
 import type { TaskTreeNode } from "../schemas"
 import type { TaskStatus } from "../schemas/task-action-schemas"
 
@@ -20,15 +20,18 @@ interface TaskStatusSelectProps {
 }
 
 export function TaskStatusSelect({ task }: TaskStatusSelectProps) {
-    const [isLoading, setIsLoading] = useState(false)
     const queryClient = useQueryClient()
+    const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
+    const isLoading = useTasksStore(
+        (state) => state.taskOperations.get(task.id)?.isLoading ?? false
+    )
 
     const currentStatus = TASK_STATUSES.find((s) => s.value === task.status)
 
     const handleStatusChange = async (newStatus: TaskStatus) => {
         if (newStatus === task.status) return
 
-        setIsLoading(true)
+        setTaskOperationLoading(task.id, true)
         try {
             const result = await updateTask({
                 id: task.id,
@@ -43,7 +46,7 @@ export function TaskStatusSelect({ task }: TaskStatusSelectProps) {
         } catch (error) {
             console.error("Failed to update task status:", error)
         } finally {
-            setIsLoading(false)
+            setTaskOperationLoading(task.id, false)
         }
     }
 

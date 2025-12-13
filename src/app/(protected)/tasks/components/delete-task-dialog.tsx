@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import {
     Dialog,
@@ -16,17 +15,20 @@ import { deleteTask } from "../actions/task-actions"
 import { taskKeys } from "../query-keys"
 
 export function DeleteTaskDialog() {
-    const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
     const queryClient = useQueryClient()
     const deleteDialog = useTasksStore((state) => state.deleteDialog)
     const closeDeleteDialog = useTasksStore((state) => state.closeDeleteDialog)
+    const isLoading = useTasksStore((state) => state.deleteTaskForm.isLoading)
+    const error = useTasksStore((state) => state.deleteTaskForm.error)
+    const setDeleteTaskLoading = useTasksStore((state) => state.setDeleteTaskLoading)
+    const setDeleteTaskError = useTasksStore((state) => state.setDeleteTaskError)
+    const clearDeleteTaskError = useTasksStore((state) => state.clearDeleteTaskError)
 
     const handleDelete = async () => {
         if (!deleteDialog.taskId) return
 
-        setIsLoading(true)
-        setError(null)
+        setDeleteTaskLoading(true)
+        clearDeleteTaskError()
 
         try {
             const result = await deleteTask({ id: deleteDialog.taskId })
@@ -35,12 +37,12 @@ export function DeleteTaskDialog() {
                 await queryClient.invalidateQueries({ queryKey: taskKeys.all })
                 closeDeleteDialog()
             } else {
-                setError(result.error ?? "Failed to delete task")
+                setDeleteTaskError(result.error ?? "Failed to delete task")
             }
-        } catch (error) {
-            setError(error instanceof Error ? error.message : "Failed to delete task")
+        } catch (err) {
+            setDeleteTaskError(err instanceof Error ? err.message : "Failed to delete task")
         } finally {
-            setIsLoading(false)
+            setDeleteTaskLoading(false)
         }
     }
 

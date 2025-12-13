@@ -4,7 +4,8 @@ export const TASK_STATUS = {
     TODO: "TODO",
     IN_PROGRESS: "IN_PROGRESS",
     DONE: "DONE",
-    BLOCKED: "BLOCKED",
+    ON_HOLD: "ON_HOLD",
+    CANCELED: "CANCELED",
 } as const
 
 export const TASK_STATUSES = [
@@ -24,8 +25,13 @@ export const TASK_STATUSES = [
         color: "bg-green-100 text-green-800 border-green-300",
     },
     {
-        value: TASK_STATUS.BLOCKED as TaskStatus,
-        label: "Blocked",
+        value: TASK_STATUS.ON_HOLD as TaskStatus,
+        label: "On Hold",
+        color: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    },
+    {
+        value: TASK_STATUS.CANCELED as TaskStatus,
+        label: "Canceled",
         color: "bg-red-100 text-red-800 border-red-300",
     },
 ] as const

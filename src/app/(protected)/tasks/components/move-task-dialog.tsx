@@ -21,7 +21,6 @@ import {
 import { useTasksStore } from "../stores/tasks-store"
 import { moveTaskToList } from "../actions/list-actions"
 import { taskKeys, listKeys } from "../query-keys"
-import { useState } from "react"
 import type { ListDisplay } from "../schemas/list-schemas"
 
 interface MoveTaskDialogProps {
@@ -32,17 +31,22 @@ export function MoveTaskDialog({ lists }: MoveTaskDialogProps) {
     const queryClient = useQueryClient()
     const moveTaskDialog = useTasksStore((state) => state.moveTaskDialog)
     const closeMoveTaskDialog = useTasksStore((state) => state.closeMoveTaskDialog)
-    const [selectedListId, setSelectedListId] = useState<string>("")
-    const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState("")
+    const selectedListId = useTasksStore((state) => state.moveTaskForm.selectedListId)
+    const isLoading = useTasksStore((state) => state.moveTaskForm.isLoading)
+    const error = useTasksStore((state) => state.moveTaskForm.error)
+    const setMoveTaskSelectedListId = useTasksStore((state) => state.setMoveTaskSelectedListId)
+    const setMoveTaskLoading = useTasksStore((state) => state.setMoveTaskLoading)
+    const setMoveTaskError = useTasksStore((state) => state.setMoveTaskError)
+    const clearMoveTaskError = useTasksStore((state) => state.clearMoveTaskError)
+    const resetMoveTaskForm = useTasksStore((state) => state.resetMoveTaskForm)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
         if (!moveTaskDialog.taskId) return
 
-        setIsLoading(true)
-        setError("")
+        setMoveTaskLoading(true)
+        clearMoveTaskError()
 
         try {
             const result = await moveTaskToList({
@@ -53,14 +57,15 @@ export function MoveTaskDialog({ lists }: MoveTaskDialogProps) {
             if (result.success) {
                 await queryClient.invalidateQueries({ queryKey: taskKeys.all })
                 await queryClient.invalidateQueries({ queryKey: listKeys.all })
+                resetMoveTaskForm()
                 closeMoveTaskDialog()
             } else {
-                setError(result.error ?? "Failed to move task")
+                setMoveTaskError(result.error ?? "Failed to move task")
             }
-        } catch (error) {
-            setError(error instanceof Error ? error.message : "Failed to move task")
+        } catch (err) {
+            setMoveTaskError(err instanceof Error ? err.message : "Failed to move task")
         } finally {
-            setIsLoading(false)
+            setMoveTaskLoading(false)
         }
     }
 
@@ -79,7 +84,10 @@ export function MoveTaskDialog({ lists }: MoveTaskDialogProps) {
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
                             <Label htmlFor="list-select">Destination List</Label>
-                            <Select value={selectedListId} onValueChange={setSelectedListId}>
+                            <Select
+                                value={selectedListId}
+                                onValueChange={setMoveTaskSelectedListId}
+                            >
                                 <SelectTrigger id="list-select">
                                     <SelectValue placeholder="Select a list" />
                                 </SelectTrigger>

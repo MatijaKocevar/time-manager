@@ -14,7 +14,8 @@ import {
     type DeleteTaskInput,
     type ToggleExpandedInput,
 } from "../schemas/task-action-schemas"
-import type { TaskDisplay } from "../schemas/task-schemas"
+import type { TaskDisplay, TasksFilter } from "../schemas/task-schemas"
+import { TASK_STATUS } from "../constants/task-statuses"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -24,12 +25,27 @@ async function requireAuth() {
     return session
 }
 
-export async function getTasks(listId?: string | null): Promise<TaskDisplay[]> {
+export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
     try {
         const session = await requireAuth()
 
-        const whereClause =
-            listId !== undefined ? { userId: session.user.id, listId } : { userId: session.user.id }
+        type WhereClause = {
+            userId: string
+            listId?: string | null
+            status?: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
+        }
+
+        const whereClause: WhereClause = {
+            userId: session.user.id,
+        }
+
+        if (filters?.listId !== undefined) {
+            whereClause.listId = filters.listId
+        }
+
+        if (filters?.status) {
+            whereClause.status = filters.status
+        }
 
         const tasks = await prisma.task.findMany({
             where: whereClause,
@@ -46,14 +62,20 @@ export async function getTasks(listId?: string | null): Promise<TaskDisplay[]> {
             },
         })
 
-        const taskMap = new Map(
+        type TaskWithTime = Omit<(typeof tasks)[number], "timeEntries"> & {
+            totalTime: number
+            directTime: number
+        }
+
+        const taskMap = new Map<string, TaskWithTime>(
             tasks.map((task) => {
                 const directTime = task.timeEntries.reduce(
-                    (sum, entry) => sum + (entry.duration ?? 0),
+                    (sum: number, entry: { duration: number | null }) =>
+                        sum + (entry.duration ?? 0),
                     0
                 )
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { timeEntries, ...taskData } = task
+                void timeEntries
                 return [
                     task.id,
                     {
@@ -71,7 +93,7 @@ export async function getTasks(listId?: string | null): Promise<TaskDisplay[]> {
 
             const subtasks = Array.from(taskMap.values()).filter((t) => t.parentId === taskId)
             const subtaskTime = subtasks.reduce(
-                (sum, subtask) => sum + calculateTotalTime(subtask.id),
+                (sum: number, subtask) => sum + calculateTotalTime(subtask.id),
                 0
             )
 
@@ -86,8 +108,10 @@ export async function getTasks(listId?: string | null): Promise<TaskDisplay[]> {
             }
         })
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        return Array.from(taskMap.values()).map(({ directTime, ...task }) => task)
+        return Array.from(taskMap.values()).map(({ directTime, ...task }) => {
+            void directTime
+            return task
+        })
     } catch (error) {
         if (error instanceof Error) {
             throw error
@@ -107,6 +131,8 @@ export async function createTask(input: CreateTaskInput) {
 
         const { title, description, status, parentId, listId } = validation.data
 
+        let finalListId = listId
+
         if (parentId) {
             const parentTask = await prisma.task.findUnique({
                 where: { id: parentId },
@@ -115,11 +141,15 @@ export async function createTask(input: CreateTaskInput) {
             if (!parentTask || parentTask.userId !== session.user.id) {
                 return { error: "Parent task not found" }
             }
+
+            if (finalListId === undefined) {
+                finalListId = parentTask.listId
+            }
         }
 
-        if (listId) {
+        if (finalListId) {
             const list = await prisma.list.findUnique({
-                where: { id: listId },
+                where: { id: finalListId },
             })
 
             if (!list || list.userId !== session.user.id) {
@@ -134,7 +164,7 @@ export async function createTask(input: CreateTaskInput) {
                 description,
                 status,
                 parentId,
-                listId,
+                listId: finalListId,
             },
         })
 
@@ -251,5 +281,123 @@ export async function toggleTaskExpanded(input: ToggleExpandedInput) {
             return { error: error.message }
         }
         return { error: "Failed to toggle task expansion" }
+    }
+}
+export type TasksByList = {
+    listId: string | null
+    listName: string
+    listColor: string | null
+    listIcon: string | null
+    tasks: TaskDisplay[]
+}
+
+export async function getInProgressTasksByLists(): Promise<TasksByList[]> {
+    try {
+        const session = await requireAuth()
+
+        const tasks = await prisma.task.findMany({
+            where: {
+                userId: session.user.id,
+                status: {
+                    in: [TASK_STATUS.TODO, TASK_STATUS.IN_PROGRESS],
+                },
+            },
+            orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+            include: {
+                list: {
+                    select: {
+                        id: true,
+                        name: true,
+                        color: true,
+                        icon: true,
+                        order: true,
+                    },
+                },
+                timeEntries: {
+                    where: {
+                        endTime: { not: null },
+                    },
+                    select: {
+                        duration: true,
+                    },
+                },
+            },
+        })
+
+        const taskMap = new Map(
+            tasks.map((task) => {
+                const directTime = task.timeEntries.reduce(
+                    (sum, entry) => sum + (entry.duration ?? 0),
+                    0
+                )
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { timeEntries, list, ...taskData } = task
+                return [
+                    task.id,
+                    {
+                        ...taskData,
+                        totalTime: directTime,
+                        directTime,
+                        listId: task.listId,
+                        list,
+                    },
+                ]
+            })
+        )
+
+        const calculateTotalTime = (taskId: string): number => {
+            const task = taskMap.get(taskId)
+            if (!task) return 0
+
+            const subtasks = Array.from(taskMap.values()).filter((t) => t.parentId === taskId)
+            const subtaskTime = subtasks.reduce(
+                (sum, subtask) => sum + calculateTotalTime(subtask.id),
+                0
+            )
+
+            const total = task.directTime + subtaskTime
+            task.totalTime = total
+            return total
+        }
+
+        tasks.forEach((task) => {
+            if (!task.parentId) {
+                calculateTotalTime(task.id)
+            }
+        })
+
+        const groupedByList = new Map<string | null, TasksByList>()
+
+        Array.from(taskMap.values()).forEach((task) => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { directTime, list, ...taskData } = task
+            const listId = task.listId
+
+            if (!groupedByList.has(listId)) {
+                groupedByList.set(listId, {
+                    listId,
+                    listName: list?.name ?? "No List",
+                    listColor: list?.color ?? null,
+                    listIcon: list?.icon ?? null,
+                    tasks: [],
+                })
+            }
+
+            groupedByList.get(listId)!.tasks.push(taskData)
+        })
+
+        const result = Array.from(groupedByList.values())
+        result.sort((a, b) => {
+            if (a.listId === null) return 1
+            if (b.listId === null) return -1
+            return a.listName.localeCompare(b.listName)
+        })
+
+        return result
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error
+        }
+        throw new Error("Failed to fetch in-progress tasks by lists")
     }
 }

@@ -32,16 +32,18 @@ export type UpdateListInput = z.infer<typeof UpdateListSchema>
 export type DeleteListInput = z.infer<typeof DeleteListSchema>
 export type MoveTaskToListInput = z.infer<typeof MoveTaskToListSchema>
 
-export interface ListDisplay {
-    id: string
-    userId: string
-    name: string
-    description: string | null
-    color: string | null
-    icon: string | null
-    order: number
-    isDefault: boolean
-    createdAt: Date
-    updatedAt: Date
-    taskCount?: number
-}
+export const ListDisplaySchema = z.object({
+    id: z.string(),
+    userId: z.string(),
+    name: z.string(),
+    description: z.string().nullable(),
+    color: z.string().nullable(),
+    icon: z.string().nullable(),
+    order: z.number(),
+    isDefault: z.boolean(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    taskCount: z.number().optional(),
+})
+
+export type ListDisplay = z.infer<typeof ListDisplaySchema>

@@ -59,7 +59,7 @@ export function CreateTaskDialog() {
                 description: createForm.data.description || undefined,
                 status: createForm.data.status,
                 parentId: createDialog.parentId || undefined,
-                listId: selectedListId,
+                listId: createDialog.parentId ? undefined : (createDialog.listId ?? selectedListId),
             })
 
             if (result.success) {

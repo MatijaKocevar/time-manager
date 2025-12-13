@@ -28,6 +28,7 @@ export function TasksTable({ tasks }: TasksTableProps) {
                         <TableHead className="w-12"></TableHead>
                         <TableHead className="min-w-[300px]">Title</TableHead>
                         <TableHead className="w-[150px]">Status</TableHead>
+                        <TableHead className="w-[180px]">List</TableHead>
                         <TableHead className="w-[200px]">Time Tracker</TableHead>
                         <TableHead className="w-[100px] text-right">Actions</TableHead>
                     </TableRow>
