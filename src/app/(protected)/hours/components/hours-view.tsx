@@ -77,12 +77,7 @@ export function HoursView({
                 setError(result.error)
             } else {
                 clearChanges()
-                queryClient.removeQueries({ queryKey: hourKeys.all })
-                
-                // Force a hard refresh with a small delay to ensure server processing completes
-                setTimeout(() => {
-                    window.location.reload()
-                }, 100)
+                await queryClient.invalidateQueries({ queryKey: hourKeys.all })
             }
         } catch (error) {
             console.error("Save error:", error)
