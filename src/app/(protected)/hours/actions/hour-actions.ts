@@ -555,7 +555,7 @@ export async function batchUpdateHourEntries(input: BatchUpdateHourEntriesInput)
 
         const parseDateString = (dateStr: string): Date => {
             const [year, month, day] = dateStr.split("-").map(Number)
-            return new Date(year, month - 1, day)
+            return new Date(Date.UTC(year, month - 1, day))
         }
 
         await prisma.$transaction(async (tx) => {

@@ -11,6 +11,7 @@ import {
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { HOUR_TYPES } from "../constants/hour-types"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
+import type { HourType } from "@/../../prisma/generated/client"
 import { EditableHourCell } from "./editable-hour-cell"
 import { HourTypeRow } from "./hour-type-row"
 import { useHoursBatchStore } from "../stores/hours-batch-store"
@@ -39,7 +40,7 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
         return `${year}-${month}-${day}`
     }
 
-    const mergedEntries = entries.map((entry) => {
+    const displayEntries = entries.map((entry) => {
         const cellKey = `${formatDateKey(entry.date)}-${entry.type}`
         const pendingChange = pendingChanges.get(cellKey)
 
@@ -55,7 +56,7 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
 
     Array.from(pendingChanges.values()).forEach((change) => {
         if (change.action === "create") {
-            const entryExists = mergedEntries.some(
+            const entryExists = displayEntries.some(
                 (e) =>
                     formatDateKey(e.date) === change.date &&
                     e.type === change.type &&
@@ -63,7 +64,7 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
             )
 
             if (!entryExists) {
-                mergedEntries.push({
+                displayEntries.push({
                     id: `pending-${change.cellKey}`,
                     userId,
                     date: new Date(change.date),
@@ -80,7 +81,22 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
 
     const renderWeeklyOrMonthlyView = () => {
         const dates = generateDateColumns(startDate, endDate)
-        const groupedEntries = groupEntriesByType(mergedEntries)
+        const groupedEntries = groupEntriesByType(entries)
+        const displayGroupedEntries = { ...groupedEntries }
+
+        HOUR_TYPES.forEach((hourType) => {
+            const manualKey = `${hourType.value}_MANUAL`
+            const manualDisplayEntries = displayEntries.filter(
+                (e) => e.type === hourType.value && e.taskId === null
+            )
+            if (manualDisplayEntries.length > 0) {
+                displayGroupedEntries[manualKey] = {}
+                manualDisplayEntries.forEach((entry) => {
+                    const dateKey = formatDateKey(entry.date)
+                    displayGroupedEntries[manualKey][dateKey] = entry
+                })
+            }
+        })
 
         return (
             <div className="rounded-md border overflow-x-auto">
@@ -178,7 +194,7 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
                                 key={hourType.value}
                                 hourType={hourType.value}
                                 dates={dates}
-                                groupedEntries={groupedEntries}
+                                groupedEntries={displayGroupedEntries}
                                 userId={userId}
                             />
                         ))}

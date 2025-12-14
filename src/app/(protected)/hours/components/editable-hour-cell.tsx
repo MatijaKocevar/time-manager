@@ -60,6 +60,7 @@ export function EditableHourCell({
 
     const isEditing = activeCellKey === cellKey
     const hasPendingChange = getPendingChange(cellKey) !== undefined
+    const open = isEditing
 
     const saveHours = (hours: number) => {
         if (isNaN(hours) || hours < 0) {
@@ -151,12 +152,11 @@ export function EditableHourCell({
 
     const hours = entry?.hours || 0
     const displayValue = hours === 0 ? "-" : formatHoursToTime(hours)
-    const [open, setOpen] = useState(false)
 
     if (isEditing) {
         return (
             <div className="flex flex-col items-center gap-1 mx-auto w-20">
-                <Popover open={open} onOpenChange={setOpen}>
+                <Popover open={open} onOpenChange={(isOpen) => !isOpen && setActiveCellKey(null)}>
                     <PopoverTrigger asChild>
                         <Button
                             variant="outline"
@@ -179,11 +179,10 @@ export function EditableHourCell({
                                         const totalHours = parseDuration(durationInput)
                                         if (totalHours !== null) {
                                             saveHours(totalHours)
-                                            setOpen(false)
+                                            setActiveCellKey(null)
                                         }
                                     } else if (e.key === "Escape") {
                                         setActiveCellKey(null)
-                                        setOpen(false)
                                     }
                                 }}
                             />
@@ -197,7 +196,7 @@ export function EditableHourCell({
                                             onSelect={(value) => {
                                                 setDurationInput(value)
                                                 handleSelectOption(value)
-                                                setOpen(false)
+                                                setActiveCellKey(null)
                                             }}
                                         >
                                             {option}

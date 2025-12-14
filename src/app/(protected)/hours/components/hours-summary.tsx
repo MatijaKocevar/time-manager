@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardHeader } from "@/components/ui/card"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
@@ -20,11 +22,11 @@ interface HoursSummaryProps {
 
 export function HoursSummary({ weeklyEntries, monthlyEntries, viewMode }: HoursSummaryProps) {
     const weeklyGrandTotal = weeklyEntries
-        .filter((entry) => entry.taskId === "grand_total")
+        .filter((entry) => entry.taskId === "total")
         .reduce((sum, entry) => sum + entry.hours, 0)
 
     const monthlyGrandTotal = monthlyEntries
-        .filter((entry) => entry.taskId === "grand_total")
+        .filter((entry) => entry.taskId === "total")
         .reduce((sum, entry) => sum + entry.hours, 0)
 
     const weeklyTypeTotals = weeklyEntries.filter((entry) => entry.taskId === "total")

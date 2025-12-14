@@ -60,6 +60,7 @@ export function HoursView({
 
         try {
             const pendingChanges = getAllChanges()
+            console.log("Saving changes:", pendingChanges)
 
             const result = await batchUpdateHourEntries({
                 changes: pendingChanges.map((c) => ({
@@ -71,13 +72,21 @@ export function HoursView({
                 })),
             })
 
+            console.log("Save result:", result)
+
             if (result.error) {
                 setError(result.error)
             } else {
                 clearChanges()
-                queryClient.invalidateQueries({ queryKey: hourKeys.all })
+                queryClient.removeQueries({ queryKey: hourKeys.all })
+                
+                // Force a hard refresh with a small delay to ensure server processing completes
+                setTimeout(() => {
+                    window.location.reload()
+                }, 100)
             }
         } catch (error) {
+            console.error("Save error:", error)
             setError(error instanceof Error ? error.message : "Failed to save changes")
         } finally {
             setIsSaving(false)
@@ -130,20 +139,21 @@ export function HoursView({
         queryKey: hourKeys.list({ startDate: dateRange.startDate, endDate: dateRange.endDate }),
         queryFn: () => getHourEntries(dateRange.startDate, dateRange.endDate),
         initialData: initialEntries,
+        staleTime: 0,
     })
 
     const { data: weeklyEntries = [] } = useQuery({
         queryKey: hourKeys.list({ startDate: weekRange.startDate, endDate: weekRange.endDate }),
         queryFn: () => getHourEntries(weekRange.startDate, weekRange.endDate),
         initialData: initialWeeklyEntries,
-        staleTime: Infinity,
+        staleTime: 0,
     })
 
     const { data: monthlyEntries = [] } = useQuery({
         queryKey: hourKeys.list({ startDate: monthRange.startDate, endDate: monthRange.endDate }),
         queryFn: () => getHourEntries(monthRange.startDate, monthRange.endDate),
         initialData: initialMonthlyEntries,
-        staleTime: Infinity,
+        staleTime: 0,
     })
 
     const handleViewModeChange = (mode: ViewMode) => {
