@@ -28,19 +28,21 @@ export function ConditionalSidebar({
     if (hasSession) {
         return (
             <SidebarProvider defaultOpen={defaultOpen}>
-                <AppSidebar
-                    userRole={userRole}
-                    userName={userName}
-                    userEmail={userEmail}
-                    lists={lists}
-                />
-                <main className="flex flex-1 flex-col min-w-0 w-full h-screen overflow-hidden">
-                    <AppHeader />
-                    <div className="flex-1 p-4 overflow-auto min-w-0">{children}</div>
-                </main>
+                <div className="flex h-full w-full">
+                    <AppSidebar
+                        userRole={userRole}
+                        userName={userName}
+                        userEmail={userEmail}
+                        lists={lists}
+                    />
+                    <main className="flex flex-1 flex-col min-w-0 w-full overflow-hidden">
+                        <AppHeader />
+                        <div className="flex-1 p-4 overflow-auto min-w-0">{children}</div>
+                    </main>
+                </div>
             </SidebarProvider>
         )
     }
 
-    return <>{children}</>
+    return <div className="h-full overflow-auto">{children}</div>
 }
