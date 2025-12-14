@@ -3,6 +3,13 @@ import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { HOUR_TYPES, HOUR_TYPE_COLORS } from "../constants/hour-types"
 
+function formatHoursMinutes(hours: number): string {
+    const h = Math.floor(hours)
+    const m = Math.round((hours - h) * 60)
+    if (m === 0) return `${h}h`
+    return `${h}h ${m}m`
+}
+
 interface HoursSummaryProps {
     entries: HourEntryDisplay[]
     isLoading?: boolean
@@ -58,19 +65,19 @@ export function HoursSummary({ weeklyEntries, monthlyEntries, viewMode }: HoursS
                             <div>
                                 <div className="text-xs text-muted-foreground">Week</div>
                                 <div className="text-xl font-bold">
-                                    {weeklyGrandTotal.toFixed(1)}
+                                    {formatHoursMinutes(weeklyGrandTotal)}
                                 </div>
                             </div>
                             <div>
                                 <div className="text-xs text-muted-foreground">Month</div>
                                 <div className="text-xl font-bold">
-                                    {monthlyGrandTotal.toFixed(1)}
+                                    {formatHoursMinutes(monthlyGrandTotal)}
                                 </div>
                             </div>
                         </div>
                     ) : (
                         <div className="text-2xl font-bold mt-2">
-                            {monthlyGrandTotal.toFixed(1)}
+                            {formatHoursMinutes(monthlyGrandTotal)}
                         </div>
                     )}
                 </CardHeader>
@@ -88,19 +95,19 @@ export function HoursSummary({ weeklyEntries, monthlyEntries, viewMode }: HoursS
                                 <div>
                                     <div className="text-xs text-muted-foreground">Week</div>
                                     <div className="text-lg font-semibold">
-                                        {weeklyHoursByType[hourType.value].toFixed(1)}h
+                                        {formatHoursMinutes(weeklyHoursByType[hourType.value])}
                                     </div>
                                 </div>
                                 <div>
                                     <div className="text-xs text-muted-foreground">Month</div>
                                     <div className="text-lg font-semibold">
-                                        {monthlyHoursByType[hourType.value].toFixed(1)}h
+                                        {formatHoursMinutes(monthlyHoursByType[hourType.value])}
                                     </div>
                                 </div>
                             </div>
                         ) : (
                             <div className="text-xl font-semibold mt-2">
-                                {monthlyHoursByType[hourType.value].toFixed(1)}h
+                                {formatHoursMinutes(monthlyHoursByType[hourType.value])}
                             </div>
                         )}
                     </CardHeader>

@@ -107,7 +107,7 @@ const saveExpandedTypes = (types: Set<string>) => {
     }
 }
 
-export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set, get) => {
+export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) => {
     const today = new Date().toISOString().split("T")[0]
 
     if (typeof window !== "undefined") {
@@ -115,7 +115,7 @@ export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set, g
             try {
                 const stored = localStorage.getItem("hours-expanded-types")
                 if (stored) {
-                    const expandedTypes = new Set(JSON.parse(stored))
+                    const expandedTypes = new Set<string>(JSON.parse(stored) as string[])
                     set({ expandedTypes })
                 }
             } catch {

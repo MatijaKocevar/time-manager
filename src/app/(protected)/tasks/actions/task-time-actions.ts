@@ -84,7 +84,7 @@ export async function startTimer(input: StartTimerInput) {
                 })
 
                 const entryDate = new Date(existingActiveTimer.startTime)
-                entryDate.setHours(0, 0, 0, 0)
+                entryDate.setUTCHours(0, 0, 0, 0)
 
                 const approvedRemoteRequest = await tx.request.findFirst({
                     where: {
@@ -155,7 +155,7 @@ export async function stopTimer(input: StopTimerInput) {
         })
 
         const entryDate = new Date(entry.startTime)
-        entryDate.setHours(0, 0, 0, 0)
+        entryDate.setUTCHours(0, 0, 0, 0)
 
         const approvedRemoteRequest = await prisma.request.findFirst({
             where: {

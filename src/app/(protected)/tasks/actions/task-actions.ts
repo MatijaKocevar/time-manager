@@ -51,6 +51,7 @@ export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
             where: whereClause,
             orderBy: [{ order: "asc" }, { createdAt: "asc" }],
             include: {
+                list: true,
                 timeEntries: {
                     where: {
                         endTime: { not: null },
@@ -62,7 +63,10 @@ export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
             },
         })
 
-        type TaskWithTime = Omit<(typeof tasks)[number], "timeEntries"> & {
+        type TaskWithTime = Omit<(typeof tasks)[number], "timeEntries" | "list"> & {
+            listName: string | null
+            listColor: string | null
+            listIcon: string | null
             totalTime: number
             directTime: number
         }
@@ -74,12 +78,15 @@ export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
                         sum + (entry.duration ?? 0),
                     0
                 )
-                const { timeEntries, ...taskData } = task
+                const { timeEntries, list, ...taskData } = task
                 void timeEntries
                 return [
                     task.id,
                     {
                         ...taskData,
+                        listName: list?.name ?? null,
+                        listColor: list?.color ?? null,
+                        listIcon: list?.icon ?? null,
                         totalTime: directTime,
                         directTime,
                     },
@@ -399,5 +406,67 @@ export async function getInProgressTasksByLists(): Promise<TasksByList[]> {
             throw error
         }
         throw new Error("Failed to fetch in-progress tasks by lists")
+    }
+}
+
+export async function getRecentTasks(): Promise<TaskDisplay[]> {
+    try {
+        const session = await requireAuth()
+
+        const recentTasks = await prisma.task.findMany({
+            where: {
+                userId: session.user.id,
+                status: {
+                    in: [TASK_STATUS.IN_PROGRESS, TASK_STATUS.TODO],
+                },
+            },
+            include: {
+                list: true,
+                timeEntries: {
+                    where: {
+                        userId: session.user.id,
+                    },
+                    orderBy: {
+                        startTime: "desc",
+                    },
+                    take: 1,
+                },
+            },
+            orderBy: [
+                {
+                    updatedAt: "desc",
+                },
+            ],
+            take: 20,
+        })
+
+        const tasksWithTime = recentTasks.filter((task) => task.timeEntries.length > 0)
+        const tasksWithoutTime = recentTasks.filter((task) => task.timeEntries.length === 0)
+
+        const sortedTasks = [...tasksWithTime, ...tasksWithoutTime].slice(0, 10)
+
+        const tasks: TaskDisplay[] = sortedTasks.map((task) => ({
+            id: task.id,
+            userId: task.userId,
+            listId: task.listId,
+            listName: task.list?.name ?? null,
+            listColor: task.list?.color ?? null,
+            listIcon: task.list?.icon ?? null,
+            title: task.title,
+            description: task.description,
+            status: task.status,
+            parentId: task.parentId,
+            order: task.order,
+            isExpanded: task.isExpanded,
+            createdAt: task.createdAt,
+            updatedAt: task.updatedAt,
+        }))
+
+        return tasks
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error
+        }
+        throw new Error("Failed to fetch recent tasks")
     }
 }

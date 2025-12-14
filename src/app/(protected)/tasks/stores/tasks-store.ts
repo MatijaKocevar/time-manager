@@ -15,6 +15,7 @@ interface CreateFormData {
 
 interface TasksStoreState {
     expandedRows: Set<string>
+    expandedTasks: Set<string>
     activeTimers: Map<string, ActiveTimer>
     elapsedTimes: Map<string, number>
     selectedListId: string | null
@@ -67,6 +68,8 @@ interface TasksStoreState {
 
 interface TasksStoreActions {
     toggleRow: (taskId: string) => void
+    toggleTaskExpanded: (taskId: string) => void
+    hydrateExpandedTasks: () => void
     expandAll: (taskIds: string[]) => void
     collapseAll: () => void
     setActiveTimer: (taskId: string, entryId: string, startTime: Date) => void
@@ -118,6 +121,15 @@ const initialListFormData = {
     color: "",
 }
 
+const saveExpandedTasks = (expandedTasks: Set<string>) => {
+    if (typeof window === "undefined") return
+    try {
+        localStorage.setItem("expandedTasks", JSON.stringify(Array.from(expandedTasks)))
+    } catch {
+        return
+    }
+}
+
 export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) => ({
     expandedRows: new Set<string>(),
     toggleRow: (taskId) =>
@@ -138,6 +150,32 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
         set(() => ({
             expandedRows: new Set(),
         })),
+
+    expandedTasks: new Set<string>(),
+    toggleTaskExpanded: (taskId) =>
+        set((state) => {
+            const newExpanded = new Set(state.expandedTasks)
+            if (newExpanded.has(taskId)) {
+                newExpanded.delete(taskId)
+            } else {
+                newExpanded.add(taskId)
+            }
+            saveExpandedTasks(newExpanded)
+            return { expandedTasks: newExpanded }
+        }),
+    hydrateExpandedTasks: () =>
+        set(() => {
+            if (typeof window === "undefined") return {}
+            try {
+                const stored = localStorage.getItem("expandedTasks")
+                if (stored) {
+                    return { expandedTasks: new Set(JSON.parse(stored)) }
+                }
+            } catch {
+                return {}
+            }
+            return {}
+        }),
 
     activeTimers: new Map(),
     setActiveTimer: (taskId, entryId, startTime) =>

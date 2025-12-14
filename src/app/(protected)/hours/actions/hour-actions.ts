@@ -263,7 +263,8 @@ export async function getHourEntriesForUser(
 
         const parseDate = (dateStr: string) => {
             const [year, month, day] = dateStr.split("-").map(Number)
-            return new Date(year, month - 1, day)
+            const date = new Date(Date.UTC(year, month - 1, day))
+            return date
         }
 
         const summaries = await prisma.dailyHourSummary.findMany({
@@ -404,7 +405,8 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
 
         const parseDate = (dateStr: string) => {
             const [year, month, day] = dateStr.split("-").map(Number)
-            return new Date(year, month - 1, day)
+            const date = new Date(Date.UTC(year, month - 1, day))
+            return date
         }
 
         const summaries = await prisma.dailyHourSummary.findMany({
