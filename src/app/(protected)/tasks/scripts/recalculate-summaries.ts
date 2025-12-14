@@ -44,7 +44,7 @@ async function recalculateSummaries() {
     console.log(`Processing ${dateTypeUserMap.size} unique date/type/user combinations\n`)
 
     let processed = 0
-    for (const [key, { userId, date, type }] of dateTypeUserMap.entries()) {
+    for (const [, { userId, date, type }] of dateTypeUserMap.entries()) {
         await prisma.$transaction(async (tx) => {
             const normalizedDate = new Date(date)
             normalizedDate.setUTCHours(0, 0, 0, 0)

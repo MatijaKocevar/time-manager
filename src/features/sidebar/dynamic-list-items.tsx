@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
-import { Folder, List, Plus } from "lucide-react"
+import { Folder, Plus } from "lucide-react"
 import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
 import { getLists } from "@/app/(protected)/tasks/actions/list-actions"
 import { listKeys } from "@/app/(protected)/tasks/query-keys"

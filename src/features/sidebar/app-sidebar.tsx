@@ -3,6 +3,7 @@
 import { Users, LogOut, UserCircle, ChevronUp, MoreHorizontal, Edit, Trash } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
 import { useState } from "react"
 
 import {
@@ -126,10 +127,10 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                                         size="sm"
                                                         isActive={pathname === "/tasks/no-list"}
                                                     >
-                                                        <a href="/tasks/no-list">
+                                                        <Link href="/tasks/no-list">
                                                             <Folder className="h-3 w-3 text-muted-foreground" />
                                                             <span className="text-sm">No List</span>
-                                                        </a>
+                                                        </Link>
                                                     </SidebarMenuButton>
                                                 </SidebarMenuItem>
                                                 {lists.map((list) => {

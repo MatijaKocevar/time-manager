@@ -5,10 +5,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
 import type { HourType } from "@/../../prisma/generated/client"
-import {
-    recalculateDailySummary,
-    recalculateDailySummaryStandalone,
-} from "../utils/summary-helpers"
+import { recalculateDailySummary } from "../utils/summary-helpers"
 import {
     CreateHourEntrySchema,
     UpdateHourEntrySchema,

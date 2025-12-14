@@ -20,7 +20,6 @@ import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { getDateRange, getViewTitle } from "../utils/view-helpers"
 import { hourKeys } from "../query-keys"
-import { useHoursStore } from "../stores/hours-store"
 import { useHoursBatchStore } from "../stores/hours-batch-store"
 
 interface HoursViewProps {

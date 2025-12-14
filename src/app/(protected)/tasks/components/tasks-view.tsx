@@ -15,7 +15,6 @@ import { DeleteTaskDialog } from "./delete-task-dialog"
 import { TimeEntriesDialog } from "./time-entries-dialog"
 import { CreateListDialog } from "./create-list-dialog"
 import { MoveTaskDialog } from "./move-task-dialog"
-import { ListSelector } from "./list-selector"
 import { getElapsedSeconds } from "../utils/time-helpers"
 import type { TaskDisplay } from "../schemas"
 

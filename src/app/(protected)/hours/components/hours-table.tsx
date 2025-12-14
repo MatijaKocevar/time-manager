@@ -11,7 +11,6 @@ import {
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { HOUR_TYPES } from "../constants/hour-types"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
-import type { HourType } from "@/../../prisma/generated/client"
 import { EditableHourCell } from "./editable-hour-cell"
 import { HourTypeRow } from "./hour-type-row"
 import { useHoursBatchStore } from "../stores/hours-batch-store"
