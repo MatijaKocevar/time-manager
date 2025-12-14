@@ -35,7 +35,7 @@ export function ConditionalSidebar({
                         userEmail={userEmail}
                         lists={lists}
                     />
-                    <main className="flex flex-1 flex-col min-w-0 w-full">
+                    <main className="flex flex-1 flex-col min-w-0 w-full h-full overflow-hidden">
                         <AppHeader />
                         <div className="flex-1 p-4 overflow-auto min-w-0">{children}</div>
                     </main>
