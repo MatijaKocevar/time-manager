@@ -54,6 +54,12 @@ export async function getLists(): Promise<ListDisplay[]> {
             taskCount: list._count.tasks,
         }))
     } catch (error) {
+        if (
+            error instanceof Error &&
+            (error.message.includes("Dynamic server usage") || error.message.includes("headers"))
+        ) {
+            throw error
+        }
         console.error("Error fetching lists:", error)
         throw error
     }

@@ -15,6 +15,6 @@ interface TasksOverviewProps {
     lists: ListDisplay[]
 }
 
-export function TasksOverview({ groups }: TasksOverviewProps) {
-    return <TasksOverviewClient groups={groups} />
+export function TasksOverview({ groups, lists }: TasksOverviewProps) {
+    return <TasksOverviewClient groups={groups} lists={lists} />
 }

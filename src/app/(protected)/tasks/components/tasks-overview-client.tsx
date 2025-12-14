@@ -15,6 +15,7 @@ import { CreateListDialog } from "./create-list-dialog"
 import { MoveTaskDialog } from "./move-task-dialog"
 import { OverviewNewTaskButton } from "./overview-new-task-button"
 import type { TaskDisplay } from "../schemas"
+import type { ListDisplay } from "../schemas/list-schemas"
 
 interface TaskGroup {
     listId: string | null
@@ -26,17 +27,19 @@ interface TaskGroup {
 
 interface TasksOverviewClientProps {
     groups: TaskGroup[]
+    lists: ListDisplay[]
 }
 
-export function TasksOverviewClient({ groups }: TasksOverviewClientProps) {
+export function TasksOverviewClient({ groups, lists: initialLists }: TasksOverviewClientProps) {
     const activeTimers = useTasksStore((state) => state.activeTimers)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
     const updateElapsedTime = useTasksStore((state) => state.updateElapsedTime)
 
-    const { data: lists = [] } = useQuery({
+    const { data: lists = initialLists } = useQuery({
         queryKey: listKeys.all,
         queryFn: getLists,
+        initialData: initialLists,
     })
 
     const { data: activeTimerData } = useQuery({
