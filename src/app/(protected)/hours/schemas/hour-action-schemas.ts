@@ -51,6 +51,7 @@ const BulkCreateHourEntriesInputSchema = z.object({
     type: HourTypeSchema,
     description: z.string().optional(),
     skipWeekends: z.boolean().default(true),
+    skipHolidays: z.boolean().default(true),
 })
 
 export const BulkCreateHourEntriesSchema = BulkCreateHourEntriesInputSchema.transform((data) => ({

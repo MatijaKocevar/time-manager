@@ -8,6 +8,7 @@ import {
     ClockAlert,
     History,
     CalendarDays,
+    CalendarX2,
     LucideIcon,
 } from "lucide-react"
 import { UserRole } from "@/types"
@@ -73,6 +74,12 @@ export const navigationItems: NavigationItem[] = [
                 title: "Request History",
                 url: "/admin/request-history",
                 icon: History,
+                roles: ["ADMIN"],
+            },
+            {
+                title: "Holidays",
+                url: "/admin/holidays",
+                icon: CalendarX2,
                 roles: ["ADMIN"],
             },
         ],

@@ -34,9 +34,14 @@ interface Shift {
 interface ShiftsCalendarProps {
     initialShifts: Shift[]
     users: User[]
+    initialHolidays?: Array<{ date: Date; name: string }>
 }
 
-export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
+export function ShiftsCalendar({
+    initialShifts,
+    users,
+    initialHolidays = [],
+}: ShiftsCalendarProps) {
     const viewMode = useShiftCalendarStore((state) => state.viewMode)
     const currentDate = useShiftCalendarStore((state) => state.currentDate)
     const editDialog = useShiftCalendarStore((state) => state.editDialog)
@@ -91,6 +96,22 @@ export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
         })
         return map
     }, [initialShifts])
+
+    const holidaysByDate = useMemo(() => {
+        const map = new Map<string, { name: string }>()
+        initialHolidays.forEach((holiday) => {
+            const holidayDate = new Date(holiday.date)
+            holidayDate.setHours(0, 0, 0, 0)
+            const key = holidayDate.toISOString().split("T")[0]
+            map.set(key, { name: holiday.name })
+        })
+        return map
+    }, [initialHolidays])
+
+    const isHoliday = (date: Date) => {
+        const key = date.toISOString().split("T")[0]
+        return holidaysByDate.get(key)
+    }
 
     const getShift = (userId: string, date: Date) => {
         const key = `${userId}-${date.toISOString().split("T")[0]}`
@@ -166,10 +187,11 @@ export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
                             </TableHead>
                             {days.map((date) => {
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                                const holiday = isHoliday(date)
                                 return (
                                     <TableHead
                                         key={date.toISOString()}
-                                        className={`text-center min-w-[120px] ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/10" : ""}`}
+                                        className={`text-center min-w-[120px] ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/10" : ""}`}
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-normal text-muted-foreground">
@@ -183,6 +205,11 @@ export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
                                                     day: "numeric",
                                                 })}
                                             </span>
+                                            {holiday && (
+                                                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 mt-1">
+                                                    {holiday.name}
+                                                </span>
+                                            )}
                                         </div>
                                     </TableHead>
                                 )
@@ -204,13 +231,14 @@ export function ShiftsCalendar({ initialShifts, users }: ShiftsCalendarProps) {
                                         ? SHIFT_LOCATION_COLORS[shift.location]
                                         : { bg: "bg-background", text: "text-muted-foreground" }
                                     const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                                    const holiday = isHoliday(date)
 
                                     return (
                                         <TableCell
                                             key={date.toISOString()}
                                             className={`text-center p-2 cursor-pointer ${
                                                 isWeekend ? "bg-muted/50" : ""
-                                            } ${isToday(date) ? "bg-primary/5" : ""}`}
+                                            } ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                             onClick={() =>
                                                 handleCellClick(user.id, user.name, date)
                                             }

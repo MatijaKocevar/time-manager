@@ -18,9 +18,17 @@ interface HoursSummaryProps {
     viewMode: ViewMode
     weeklyEntries: HourEntryDisplay[]
     monthlyEntries: HourEntryDisplay[]
+    dateRange?: { start: Date; end: Date }
+    holidays?: Array<{ date: Date }>
 }
 
-export function HoursSummary({ weeklyEntries, monthlyEntries, viewMode }: HoursSummaryProps) {
+export function HoursSummary({
+    weeklyEntries,
+    monthlyEntries,
+    viewMode,
+    dateRange,
+    holidays = [],
+}: HoursSummaryProps) {
     const weeklyGrandTotal = weeklyEntries
         .filter((entry) => entry.taskId === "total")
         .reduce((sum, entry) => sum + entry.hours, 0)
@@ -28,6 +36,44 @@ export function HoursSummary({ weeklyEntries, monthlyEntries, viewMode }: HoursS
     const monthlyGrandTotal = monthlyEntries
         .filter((entry) => entry.taskId === "total")
         .reduce((sum, entry) => sum + entry.hours, 0)
+
+    const workHoursOnly = monthlyEntries
+        .filter((entry) => entry.taskId === "total" && entry.type === "WORK")
+        .reduce((sum, entry) => sum + entry.hours, 0)
+
+    let expectedHours = 0
+    let overtime = 0
+    let workingDays = 0
+
+    if (viewMode === "MONTHLY" && dateRange) {
+        const start = new Date(dateRange.start)
+        const end = new Date(dateRange.end)
+        const current = new Date(start)
+
+        while (current <= end) {
+            const dayOfWeek = current.getDay()
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+
+            if (!isWeekend) {
+                const isHol = holidays.some((h) => {
+                    const holidayDate = new Date(h.date)
+                    holidayDate.setHours(0, 0, 0, 0)
+                    const checkDate = new Date(current)
+                    checkDate.setHours(0, 0, 0, 0)
+                    return holidayDate.getTime() === checkDate.getTime()
+                })
+
+                if (!isHol) {
+                    workingDays++
+                }
+            }
+
+            current.setDate(current.getDate() + 1)
+        }
+
+        expectedHours = workingDays * 8
+        overtime = workHoursOnly - expectedHours
+    }
 
     const weeklyTypeTotals = weeklyEntries.filter((entry) => entry.taskId === "total")
     const weeklyHoursByType = HOUR_TYPES.reduce(
@@ -52,69 +98,115 @@ export function HoursSummary({ weeklyEntries, monthlyEntries, viewMode }: HoursS
     )
 
     const showWeekly = viewMode === "WEEKLY"
+    const showOvertime = viewMode === "MONTHLY" && workingDays > 0
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            <Card>
-                <CardHeader className="p-4 pb-2">
-                    <div
-                        className={`inline-block px-2 py-1 rounded text-xs font-medium mb-2 ${HOUR_TYPE_COLORS.GRAND_TOTAL}`}
-                    >
-                        Total Hours
-                    </div>
-                    {showWeekly ? (
-                        <div className="flex flex-col gap-1 mt-2">
-                            <div>
-                                <div className="text-xs text-muted-foreground">Week</div>
-                                <div className="text-xl font-bold">
-                                    {formatHoursMinutes(weeklyGrandTotal)}
+        <div className="space-y-4">
+            {showOvertime && (
+                <Card>
+                    <CardHeader className="p-4">
+                        <div className="flex items-center justify-between gap-6">
+                            <div className="flex items-center gap-6 text-sm">
+                                <div>
+                                    <span className="text-muted-foreground">Working Days: </span>
+                                    <span className="font-semibold">{workingDays}</span>
+                                </div>
+                                <div className="h-4 w-px bg-border" />
+                                <div>
+                                    <span className="text-muted-foreground">Expected: </span>
+                                    <span className="font-semibold">
+                                        {formatHoursMinutes(expectedHours)}
+                                    </span>
+                                </div>
+                                <div className="h-4 w-px bg-border" />
+                                <div>
+                                    <span className="text-muted-foreground">Actual: </span>
+                                    <span className="font-semibold">
+                                        {formatHoursMinutes(workHoursOnly)}
+                                    </span>
                                 </div>
                             </div>
-                            <div>
-                                <div className="text-xs text-muted-foreground">Month</div>
-                                <div className="text-xl font-bold">
-                                    {formatHoursMinutes(monthlyGrandTotal)}
-                                </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">Overtime:</span>
+                                <span
+                                    className={`text-lg font-bold ${
+                                        overtime > 0
+                                            ? "text-red-600 dark:text-red-500"
+                                            : overtime < 0
+                                              ? "text-orange-600 dark:text-orange-500"
+                                              : "text-green-600 dark:text-green-500"
+                                    }`}
+                                >
+                                    {overtime > 0 && "+"}
+                                    {formatHoursMinutes(overtime)}
+                                </span>
                             </div>
                         </div>
-                    ) : (
-                        <div className="text-2xl font-bold mt-2">
-                            {formatHoursMinutes(monthlyGrandTotal)}
-                        </div>
-                    )}
-                </CardHeader>
-            </Card>
-            {HOUR_TYPES.map((hourType) => (
-                <Card key={hourType.value}>
+                    </CardHeader>
+                </Card>
+            )}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <Card>
                     <CardHeader className="p-4 pb-2">
                         <div
-                            className={`inline-block px-2 py-1 rounded text-xs font-medium mb-2 ${HOUR_TYPE_COLORS[hourType.value]}`}
+                            className={`inline-block px-2 py-1 rounded text-xs font-medium mb-2 ${HOUR_TYPE_COLORS.GRAND_TOTAL}`}
                         >
-                            {hourType.label}
+                            Total Hours
                         </div>
                         {showWeekly ? (
                             <div className="flex flex-col gap-1 mt-2">
                                 <div>
                                     <div className="text-xs text-muted-foreground">Week</div>
-                                    <div className="text-lg font-semibold">
-                                        {formatHoursMinutes(weeklyHoursByType[hourType.value])}
+                                    <div className="text-xl font-bold">
+                                        {formatHoursMinutes(weeklyGrandTotal)}
                                     </div>
                                 </div>
                                 <div>
                                     <div className="text-xs text-muted-foreground">Month</div>
-                                    <div className="text-lg font-semibold">
-                                        {formatHoursMinutes(monthlyHoursByType[hourType.value])}
+                                    <div className="text-xl font-bold">
+                                        {formatHoursMinutes(monthlyGrandTotal)}
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-xl font-semibold mt-2">
-                                {formatHoursMinutes(monthlyHoursByType[hourType.value])}
+                            <div className="text-2xl font-bold mt-2">
+                                {formatHoursMinutes(monthlyGrandTotal)}
                             </div>
                         )}
                     </CardHeader>
                 </Card>
-            ))}
+                {HOUR_TYPES.map((hourType) => (
+                    <Card key={hourType.value}>
+                        <CardHeader className="p-4 pb-2">
+                            <div
+                                className={`inline-block px-2 py-1 rounded text-xs font-medium mb-2 ${HOUR_TYPE_COLORS[hourType.value]}`}
+                            >
+                                {hourType.label}
+                            </div>
+                            {showWeekly ? (
+                                <div className="flex flex-col gap-1 mt-2">
+                                    <div>
+                                        <div className="text-xs text-muted-foreground">Week</div>
+                                        <div className="text-lg font-semibold">
+                                            {formatHoursMinutes(weeklyHoursByType[hourType.value])}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-xs text-muted-foreground">Month</div>
+                                        <div className="text-lg font-semibold">
+                                            {formatHoursMinutes(monthlyHoursByType[hourType.value])}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-xl font-semibold mt-2">
+                                    {formatHoursMinutes(monthlyHoursByType[hourType.value])}
+                                </div>
+                            )}
+                        </CardHeader>
+                    </Card>
+                ))}
+            </div>
         </div>
     )
 }

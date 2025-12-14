@@ -22,6 +22,7 @@ interface BulkEntryFormState {
         type: HourType
         description: string
         skipWeekends: boolean
+        skipHolidays: boolean
     }
     isLoading: boolean
     error: string
@@ -71,6 +72,7 @@ interface HoursStoreActions {
             type: HourType
             description: string
             skipWeekends: boolean
+            skipHolidays: boolean
         }>
     ) => void
     resetBulkEntryForm: () => void
@@ -165,6 +167,7 @@ export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) =
                 type: "WORK",
                 description: "",
                 skipWeekends: true,
+                skipHolidays: true,
             },
             isLoading: false,
             error: "",
@@ -224,6 +227,7 @@ export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) =
                         type: "WORK",
                         description: "",
                         skipWeekends: true,
+                        skipHolidays: true,
                     },
                     isLoading: false,
                     error: "",

@@ -155,6 +155,19 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
                 </Label>
             </div>
 
+            <div className="flex items-center space-x-2">
+                <input
+                    id="skip-holidays"
+                    type="checkbox"
+                    checked={bulkEntryForm.data.skipHolidays ?? true}
+                    onChange={(e) => setBulkEntryFormData({ skipHolidays: e.target.checked })}
+                    className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="skip-holidays" className="cursor-pointer">
+                    Skip holidays
+                </Label>
+            </div>
+
             {bulkEntryForm.error && (
                 <div className="text-sm text-red-500">{bulkEntryForm.error}</div>
             )}

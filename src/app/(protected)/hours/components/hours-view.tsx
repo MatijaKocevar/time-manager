@@ -29,6 +29,8 @@ interface HoursViewProps {
     userId: string
     initialViewMode: ViewMode
     initialSelectedDate: Date
+    initialHolidays?: Array<{ date: Date }>
+    initialDateRange?: { start: Date; end: Date }
 }
 
 export function HoursView({
@@ -38,6 +40,8 @@ export function HoursView({
     userId,
     initialViewMode,
     initialSelectedDate,
+    initialHolidays = [],
+    initialDateRange,
 }: HoursViewProps) {
     const router = useRouter()
     const queryClient = useQueryClient()
@@ -150,6 +154,17 @@ export function HoursView({
         staleTime: 0,
     })
 
+    const { data: holidays = initialHolidays } = useQuery({
+        queryKey: ["holidays", monthRange.startDate, monthRange.endDate],
+        queryFn: async () => {
+            const { getHolidaysInRange } =
+                await import("../../(admin)/admin/holidays/actions/holiday-actions")
+            return getHolidaysInRange(monthRange.startDate, monthRange.endDate)
+        },
+        initialData: initialHolidays,
+        staleTime: 300000,
+    })
+
     const handleViewModeChange = (mode: ViewMode) => {
         setViewMode(mode)
         setCurrentDate(new Date())
@@ -178,6 +193,8 @@ export function HoursView({
                 viewMode={viewMode}
                 weeklyEntries={weeklyEntries}
                 monthlyEntries={monthlyEntries}
+                dateRange={monthRange}
+                holidays={holidays}
             />
 
             <div className="space-y-4 pt-4">

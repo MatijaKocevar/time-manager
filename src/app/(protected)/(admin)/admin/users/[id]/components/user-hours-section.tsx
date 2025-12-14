@@ -8,14 +8,20 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { HoursSummary } from "@/app/(protected)/hours/components/hours-summary"
 import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
 import { getDateRange, getViewTitle } from "@/app/(protected)/hours/utils/view-helpers"
+import { getHolidaysInRange } from "@/app/(protected)/(admin)/admin/holidays/actions/holiday-actions"
 import { userHourKeys } from "../../query-keys"
 
 interface UserHoursSectionProps {
     userId: string
     initialEntries: Awaited<ReturnType<typeof getHourEntriesForUser>>
+    initialHolidays?: Array<{ date: Date }>
 }
 
-export function UserHoursSection({ userId, initialEntries }: UserHoursSectionProps) {
+export function UserHoursSection({
+    userId,
+    initialEntries,
+    initialHolidays = [],
+}: UserHoursSectionProps) {
     const [currentDate, setCurrentDate] = useState(new Date())
 
     const { startDate, endDate, start, end } = getDateRange("MONTHLY", currentDate)
@@ -25,6 +31,12 @@ export function UserHoursSection({ userId, initialEntries }: UserHoursSectionPro
         queryKey: userHourKeys.detail(userId, startDate),
         queryFn: () => getHourEntriesForUser(userId, startDate, endDate),
         initialData: initialEntries,
+    })
+
+    const { data: holidays = initialHolidays } = useQuery({
+        queryKey: ["holidays", startDate, endDate],
+        queryFn: () => getHolidaysInRange(startDate, endDate),
+        initialData: initialHolidays,
     })
 
     const handleNavigate = (direction: "prev" | "next") => {
@@ -69,6 +81,8 @@ export function UserHoursSection({ userId, initialEntries }: UserHoursSectionPro
                     weeklyEntries={[]}
                     monthlyEntries={entries}
                     isLoading={isLoading}
+                    dateRange={{ start, end }}
+                    holidays={holidays}
                 />
             </CardContent>
         </Card>

@@ -4,6 +4,7 @@ import { getUserById } from "../actions/user-actions"
 import { EditUserForm } from "../components/edit-user-form"
 import { SetBreadcrumbData } from "@/features/breadcrumbs"
 import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
+import { getHolidaysInRange } from "../../holidays/actions/holiday-actions"
 import { getUserRequestsForAdmin } from "@/app/(protected)/requests/actions/request-actions"
 import { RequestsTable } from "@/app/(protected)/requests/components/requests-table"
 import { UserHoursSection } from "./components/user-hours-section"
@@ -23,17 +24,20 @@ function getCurrentMonthDates() {
     return {
         startDate: formatDate(firstDay),
         endDate: formatDate(lastDay),
+        firstDay,
+        lastDay,
     }
 }
 
 export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
-    const { startDate, endDate } = getCurrentMonthDates()
+    const { startDate, endDate, firstDay, lastDay } = getCurrentMonthDates()
 
-    const [user, userHours, userRequests] = await Promise.all([
+    const [user, userHours, userRequests, holidays] = await Promise.all([
         getUserById(id),
         getHourEntriesForUser(id, startDate, endDate),
         getUserRequestsForAdmin(id),
+        getHolidaysInRange(startDate, endDate),
     ])
 
     return (
@@ -52,7 +56,11 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
 
                 <Separator />
 
-                <UserHoursSection userId={id} initialEntries={userHours} />
+                <UserHoursSection
+                    userId={id}
+                    initialEntries={userHours}
+                    initialHolidays={holidays}
+                />
 
                 <Separator />
 

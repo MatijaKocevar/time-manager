@@ -173,11 +173,23 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
             return { error: validation.error.issues[0].message }
         }
 
-        const { startDate, endDate, hours, type, description, skipWeekends } = validation.data
+        const { startDate, endDate, hours, type, description, skipWeekends, skipHolidays } =
+            validation.data
 
         if (startDate > endDate) {
             return { error: "Start date must be before end date" }
         }
+
+        const holidays = skipHolidays
+            ? await prisma.holiday.findMany({
+                  where: {
+                      date: {
+                          gte: startDate,
+                          lte: endDate,
+                      },
+                  },
+              })
+            : []
 
         const entries: Array<{
             userId: string
@@ -191,8 +203,17 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
         while (currentDate <= endDate) {
             const dayOfWeek = currentDate.getDay()
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+            const isHol =
+                skipHolidays &&
+                holidays.some((h) => {
+                    const holidayDate = new Date(h.date)
+                    holidayDate.setHours(0, 0, 0, 0)
+                    const checkDate = new Date(currentDate)
+                    checkDate.setHours(0, 0, 0, 0)
+                    return holidayDate.getTime() === checkDate.getTime()
+                })
 
-            if (!skipWeekends || !isWeekend) {
+            if ((!skipWeekends || !isWeekend) && !isHol) {
                 const entryDate = new Date(currentDate)
 
                 const existing = await prisma.hourEntry.findFirst({

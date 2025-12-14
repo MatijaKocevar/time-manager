@@ -260,6 +260,18 @@ model List {
   @@index([userId, order])
 }
 
+model Holiday {
+  id          String   @id @default(cuid())
+  date        DateTime @unique
+  name        String
+  description String?
+  isRecurring Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+}
+
 model VerificationToken {
   identifier String
   token      String   @unique

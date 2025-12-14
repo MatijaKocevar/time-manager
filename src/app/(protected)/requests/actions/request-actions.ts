@@ -333,6 +333,15 @@ export async function approveRequest(input: ApproveRequestInput) {
                 },
             })
 
+            const holidays = await tx.holiday.findMany({
+                where: {
+                    date: {
+                        gte: request.startDate,
+                        lte: request.endDate,
+                    },
+                },
+            })
+
             if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
                 const hourType = request.type === "VACATION" ? "VACATION" : "SICK_LEAVE"
                 const currentDate = new Date(request.startDate)
@@ -341,8 +350,15 @@ export async function approveRequest(input: ApproveRequestInput) {
                 while (currentDate <= endDate) {
                     const dayOfWeek = currentDate.getDay()
                     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+                    const isHol = holidays.some((h) => {
+                        const holidayDate = new Date(h.date)
+                        holidayDate.setHours(0, 0, 0, 0)
+                        const checkDate = new Date(currentDate)
+                        checkDate.setHours(0, 0, 0, 0)
+                        return holidayDate.getTime() === checkDate.getTime()
+                    })
 
-                    if (!isWeekend) {
+                    if (!isWeekend && !isHol) {
                         await tx.hourEntry.create({
                             data: {
                                 userId: request.userId,
@@ -366,7 +382,15 @@ export async function approveRequest(input: ApproveRequestInput) {
             shiftEndDate.setHours(0, 0, 0, 0)
 
             while (shiftDate <= shiftEndDate) {
-                if (isWeekday(shiftDate)) {
+                const isHol = holidays.some((h) => {
+                    const holidayDate = new Date(h.date)
+                    holidayDate.setHours(0, 0, 0, 0)
+                    const checkDate = new Date(shiftDate)
+                    checkDate.setHours(0, 0, 0, 0)
+                    return holidayDate.getTime() === checkDate.getTime()
+                })
+
+                if (isWeekday(shiftDate) && !isHol) {
                     const normalizedDate = new Date(shiftDate)
                     normalizedDate.setHours(0, 0, 0, 0)
 
