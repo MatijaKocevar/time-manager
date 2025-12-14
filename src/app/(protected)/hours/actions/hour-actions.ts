@@ -54,27 +54,34 @@ export async function createHourEntry(input: CreateHourEntryInput) {
         const { date, hours, type, description } = validation.data
 
         await prisma.$transaction(async (tx) => {
-            await tx.hourEntry.upsert({
+            const existing = await tx.hourEntry.findFirst({
                 where: {
-                    userId_date_type_taskId: {
-                        userId: session.user.id,
-                        date,
-                        type,
-                        taskId: null,
-                    },
-                },
-                update: {
-                    hours,
-                    description,
-                },
-                create: {
                     userId: session.user.id,
                     date,
-                    hours,
                     type,
-                    description,
+                    taskId: null,
                 },
             })
+
+            if (existing) {
+                await tx.hourEntry.update({
+                    where: { id: existing.id },
+                    data: {
+                        hours,
+                        description,
+                    },
+                })
+            } else {
+                await tx.hourEntry.create({
+                    data: {
+                        userId: session.user.id,
+                        date,
+                        hours,
+                        type,
+                        description,
+                    },
+                })
+            }
 
             await recalculateDailySummary(tx, session.user.id, date, type)
         })
@@ -605,26 +612,33 @@ export async function batchUpdateHourEntries(input: BatchUpdateHourEntriesInput)
                 affectedDates.add(`${change.date}-${change.type}`)
 
                 if (change.action === "create") {
-                    await tx.hourEntry.upsert({
+                    const existing = await tx.hourEntry.findFirst({
                         where: {
-                            userId_date_type_taskId: {
-                                userId: session.user.id,
-                                date: parseDateString(change.date),
-                                type: change.type,
-                                taskId: null,
-                            },
-                        },
-                        update: {
-                            hours: change.hours,
-                        },
-                        create: {
                             userId: session.user.id,
                             date: parseDateString(change.date),
-                            hours: change.hours,
                             type: change.type,
-                            description: null,
+                            taskId: null,
                         },
                     })
+
+                    if (existing) {
+                        await tx.hourEntry.update({
+                            where: { id: existing.id },
+                            data: {
+                                hours: change.hours,
+                            },
+                        })
+                    } else {
+                        await tx.hourEntry.create({
+                            data: {
+                                userId: session.user.id,
+                                date: parseDateString(change.date),
+                                hours: change.hours,
+                                type: change.type,
+                                description: null,
+                            },
+                        })
+                    }
                 } else if (change.action === "update" && change.entryId) {
                     const existingEntry = await tx.hourEntry.findUnique({
                         where: { id: change.entryId },

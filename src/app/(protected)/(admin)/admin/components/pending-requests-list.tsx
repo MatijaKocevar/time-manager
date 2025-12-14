@@ -97,7 +97,7 @@ const calculateWorkdays = (
         const currentTime = new Date(current)
         currentTime.setHours(0, 0, 0, 0)
         const isHoliday = holidayDates.has(currentTime.getTime())
-        
+
         if (day !== 0 && day !== 6 && !isHoliday) {
             count++
         }
@@ -312,11 +312,15 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
             id: "hours",
             header: "Hours",
             cell: ({ row }) => {
-                const workdays = calculateWorkdays(row.original.startDate, row.original.endDate, holidays)
+                const workdays = calculateWorkdays(
+                    row.original.startDate,
+                    row.original.endDate,
+                    holidays
+                )
                 return `${workdays * 8}h`
             },
             enableColumnFilter: false,
-        },,
+        },
         {
             accessorKey: "reason",
             header: "Reason",

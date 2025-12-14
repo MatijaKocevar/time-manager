@@ -22,7 +22,7 @@ export default async function RequestHistoryPage() {
         user: r.user ?? { id: "unknown", name: null, email: "Unknown" },
     }))
 
-    const holidays = holidaysResult.holidays || []
+    const holidays = (holidaysResult.success ? holidaysResult.data : []) ?? []
 
     return (
         <div className="flex flex-col gap-4 h-full">

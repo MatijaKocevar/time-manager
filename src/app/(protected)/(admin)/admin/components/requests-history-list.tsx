@@ -122,7 +122,7 @@ const calculateWorkdays = (
         const currentTime = new Date(current)
         currentTime.setHours(0, 0, 0, 0)
         const isHoliday = holidayDates.has(currentTime.getTime())
-        
+
         if (day !== 0 && day !== 6 && !isHoliday) {
             count++
         }
@@ -323,7 +323,11 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
             id: "hours",
             header: "Hours",
             cell: ({ row }) => {
-                const workdays = calculateWorkdays(row.original.startDate, row.original.endDate, holidays)
+                const workdays = calculateWorkdays(
+                    row.original.startDate,
+                    row.original.endDate,
+                    holidays
+                )
                 const hours = workdays * 8
                 return (
                     <div className="font-semibold">
