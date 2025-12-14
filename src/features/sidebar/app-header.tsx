@@ -1,5 +1,8 @@
+"use client"
+
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Breadcrumbs } from "@/features/breadcrumbs"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const staticOverrides = {
     "/users": "Users",
@@ -12,6 +15,7 @@ export function AppHeader() {
             <div className="flex-1 min-w-0">
                 <Breadcrumbs overrides={staticOverrides} />
             </div>
+            <ThemeToggle />
         </header>
     )
 }

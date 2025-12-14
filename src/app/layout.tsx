@@ -8,6 +8,7 @@ import { QueryProvider } from "@/providers/QueryProvider"
 import { ConditionalSidebar } from "@/features/sidebar"
 import { authConfig } from "@/lib/auth"
 import { getLists } from "./(protected)/tasks/actions/list-actions"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -55,26 +56,45 @@ export default async function RootLayout({
     const lists = session ? await getLists().catch(() => []) : []
 
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
             <head>
                 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
                 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
+                            try {
+                                const stored = localStorage.getItem('theme-storage');
+                                if (stored) {
+                                    const theme = JSON.parse(stored).state.theme;
+                                    if (theme === 'dark') {
+                                        document.documentElement.classList.add('dark');
+                                    }
+                                }
+                            } catch (e) {}
+                        `,
+                    }}
+                />
             </head>
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col`}>
-                <QueryProvider>
-                    <SessionWrapper>
-                        <ConditionalSidebar
-                            defaultOpen={defaultOpen}
-                            hasSession={!!session}
-                            userRole={session?.user?.role}
-                            userName={session?.user?.name}
-                            userEmail={session?.user?.email}
-                            lists={lists}
-                        >
-                            {children}
-                        </ConditionalSidebar>
-                    </SessionWrapper>
-                </QueryProvider>
+            <body
+                className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col`}
+            >
+                <ThemeProvider>
+                    <QueryProvider>
+                        <SessionWrapper>
+                            <ConditionalSidebar
+                                defaultOpen={defaultOpen}
+                                hasSession={!!session}
+                                userRole={session?.user?.role}
+                                userName={session?.user?.name}
+                                userEmail={session?.user?.email}
+                                lists={lists}
+                            >
+                                {children}
+                            </ConditionalSidebar>
+                        </SessionWrapper>
+                    </QueryProvider>
+                </ThemeProvider>
             </body>
         </html>
     )
