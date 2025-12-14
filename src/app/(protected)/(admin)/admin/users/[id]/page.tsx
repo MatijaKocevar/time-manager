@@ -5,8 +5,8 @@ import { EditUserForm } from "../components/edit-user-form"
 import { SetBreadcrumbData } from "@/features/breadcrumbs"
 import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
 import { getUserRequestsForAdmin } from "@/app/(protected)/requests/actions/request-actions"
-import { HoursSummary } from "@/app/(protected)/hours/components/hours-summary"
 import { RequestsTable } from "@/app/(protected)/requests/components/requests-table"
+import { UserHoursSection } from "./components/user-hours-section"
 
 function getCurrentMonthDates() {
     const now = new Date()
@@ -30,9 +30,8 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     const { id } = await params
     const { startDate, endDate } = getCurrentMonthDates()
 
-    const [user, userHours, monthlyEntries, userRequests] = await Promise.all([
+    const [user, userHours, userRequests] = await Promise.all([
         getUserById(id),
-        getHourEntriesForUser(id, startDate, endDate),
         getHourEntriesForUser(id, startDate, endDate),
         getUserRequestsForAdmin(id),
     ])
@@ -53,20 +52,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
 
                 <Separator />
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Hours Summary (Current Month)</CardTitle>
-                        <CardDescription>Overview of user&apos;s tracked hours</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <HoursSummary
-                            entries={userHours}
-                            viewMode="MONTHLY"
-                            weeklyEntries={[]}
-                            monthlyEntries={monthlyEntries}
-                        />
-                    </CardContent>
-                </Card>
+                <UserHoursSection userId={id} initialEntries={userHours} />
 
                 <Separator />
 
