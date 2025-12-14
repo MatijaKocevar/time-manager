@@ -4,28 +4,23 @@ import { useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import { getTasks } from "../actions/task-actions"
 import { getActiveTimer } from "../actions/task-time-actions"
 import { getLists } from "../actions/list-actions"
 import { useTasksStore } from "../stores/tasks-store"
 import { taskKeys, listKeys } from "../query-keys"
-import { TasksTable } from "./tasks-table"
 import { CreateTaskDialog } from "./create-task-dialog"
 import { DeleteTaskDialog } from "./delete-task-dialog"
 import { TimeEntriesDialog } from "./time-entries-dialog"
 import { CreateListDialog } from "./create-list-dialog"
 import { MoveTaskDialog } from "./move-task-dialog"
 import { getElapsedSeconds } from "../utils/time-helpers"
-import type { TaskDisplay } from "../schemas"
 
-interface TasksViewProps {
-    initialTasks: TaskDisplay[]
+interface TasksViewClientProps {
     listId: string | null
 }
 
-export function TasksView({ initialTasks, listId }: TasksViewProps) {
+export function TasksViewClient({ listId }: TasksViewClientProps) {
     const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
-    const selectedListId = useTasksStore((state) => state.selectedListId)
     const setSelectedListId = useTasksStore((state) => state.setSelectedListId)
     const activeTimers = useTasksStore((state) => state.activeTimers)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
@@ -33,20 +28,12 @@ export function TasksView({ initialTasks, listId }: TasksViewProps) {
     const updateElapsedTime = useTasksStore((state) => state.updateElapsedTime)
 
     useEffect(() => {
-        if (listId !== undefined) {
-            setSelectedListId(listId)
-        }
+        setSelectedListId(listId)
     }, [listId, setSelectedListId])
 
     const { data: lists = [] } = useQuery({
         queryKey: listKeys.all,
         queryFn: getLists,
-    })
-
-    const { data: tasks = initialTasks } = useQuery({
-        queryKey: taskKeys.byList(selectedListId ?? null),
-        queryFn: () => getTasks({ listId: selectedListId ?? null }),
-        initialData: initialTasks,
     })
 
     const { data: activeTimerData } = useQuery({
@@ -89,19 +76,18 @@ export function TasksView({ initialTasks, listId }: TasksViewProps) {
     }, [activeTimers, updateElapsedTime])
 
     return (
-        <div className="space-y-4">
+        <>
             <div className="flex items-center justify-end w-full">
                 <Button onClick={() => openCreateDialog()}>
                     <Plus className="h-4 w-4 mr-2" />
                     New Task
                 </Button>
             </div>
-            <TasksTable tasks={tasks} listId={listId} />
             <CreateTaskDialog />
             <DeleteTaskDialog />
             <TimeEntriesDialog />
             <CreateListDialog />
             <MoveTaskDialog lists={lists} />
-        </div>
+        </>
     )
 }

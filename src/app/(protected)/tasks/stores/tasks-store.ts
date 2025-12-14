@@ -16,6 +16,7 @@ interface CreateFormData {
 interface TasksStoreState {
     expandedRows: Set<string>
     expandedTasks: Set<string>
+    expandedStatusSections: Map<string, Set<TaskStatus>>
     activeTimers: Map<string, ActiveTimer>
     elapsedTimes: Map<string, number>
     selectedListId: string | null
@@ -69,6 +70,7 @@ interface TasksStoreState {
 interface TasksStoreActions {
     toggleRow: (taskId: string) => void
     toggleTaskExpanded: (taskId: string) => void
+    toggleStatusSection: (listId: string | null, status: TaskStatus) => void
     hydrateExpandedTasks: () => void
     expandAll: (taskIds: string[]) => void
     collapseAll: () => void
@@ -130,6 +132,35 @@ const saveExpandedTasks = (expandedTasks: Set<string>) => {
     }
 }
 
+const saveExpandedStatusSections = (expandedSections: Map<string, Set<TaskStatus>>) => {
+    if (typeof window === "undefined") return
+    try {
+        const serialized = Array.from(expandedSections.entries()).map(([listId, statuses]) => [
+            listId,
+            Array.from(statuses),
+        ])
+        localStorage.setItem("expandedStatusSections", JSON.stringify(serialized))
+    } catch {
+        return
+    }
+}
+
+const loadExpandedStatusSections = (): Map<string, Set<TaskStatus>> => {
+    if (typeof window === "undefined") {
+        return new Map()
+    }
+    try {
+        const stored = localStorage.getItem("expandedStatusSections")
+        if (stored) {
+            const parsed = JSON.parse(stored) as [string, TaskStatus[]][]
+            return new Map(parsed.map(([listId, statuses]) => [listId, new Set(statuses)]))
+        }
+    } catch {
+        return new Map()
+    }
+    return new Map()
+}
+
 export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) => ({
     expandedRows: new Set<string>(),
     toggleRow: (taskId) =>
@@ -163,6 +194,27 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
             saveExpandedTasks(newExpanded)
             return { expandedTasks: newExpanded }
         }),
+
+    expandedStatusSections: loadExpandedStatusSections(),
+    toggleStatusSection: (listId, status) =>
+        set((state) => {
+            const key = listId || "no-list"
+            const newExpanded = new Map(state.expandedStatusSections)
+            const currentStatuses =
+                newExpanded.get(key) || new Set([TASK_STATUS.IN_PROGRESS, TASK_STATUS.TODO])
+            const newStatuses = new Set(currentStatuses)
+
+            if (newStatuses.has(status)) {
+                newStatuses.delete(status)
+            } else {
+                newStatuses.add(status)
+            }
+
+            newExpanded.set(key, newStatuses)
+            saveExpandedStatusSections(newExpanded)
+            return { expandedStatusSections: newExpanded }
+        }),
+
     hydrateExpandedTasks: () =>
         set(() => {
             if (typeof window === "undefined") return {}

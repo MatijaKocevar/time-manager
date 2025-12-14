@@ -7,7 +7,7 @@ import { getActiveTimer } from "../actions/task-time-actions"
 import { getLists } from "../actions/list-actions"
 import { taskKeys, listKeys } from "../query-keys"
 import { getElapsedSeconds } from "../utils/time-helpers"
-import { TasksTable } from "./tasks-table"
+import { TasksFlatTable } from "./tasks-flat-table"
 import { CreateTaskDialog } from "./create-task-dialog"
 import { DeleteTaskDialog } from "./delete-task-dialog"
 import { TimeEntriesDialog } from "./time-entries-dialog"
@@ -105,7 +105,7 @@ export function TasksOverviewClient({ groups, lists: initialLists }: TasksOvervi
                             </div>
                             <OverviewNewTaskButton listId={group.listId} />
                         </div>
-                        <TasksTable tasks={group.tasks} />
+                        <TasksFlatTable tasks={group.tasks} />
                     </div>
                 )
             })}

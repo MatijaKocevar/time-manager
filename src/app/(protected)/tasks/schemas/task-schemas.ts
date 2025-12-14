@@ -38,3 +38,10 @@ export type TaskTreeNode = TaskDisplay & {
     depth: number
     totalTime?: number
 }
+
+export type GroupedTaskTree = {
+    status: z.infer<typeof TaskStatusSchema>
+    label: string
+    tasks: TaskTreeNode[]
+    count: number
+}

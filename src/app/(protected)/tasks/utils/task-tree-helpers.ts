@@ -1,4 +1,6 @@
-import type { TaskDisplay, TaskTreeNode } from "../schemas/task-schemas"
+import type { TaskDisplay, TaskTreeNode, GroupedTaskTree } from "../schemas/task-schemas"
+import { TASK_STATUSES } from "../constants/task-statuses"
+import type { TaskStatus } from "../schemas"
 
 export function buildTaskTree(tasks: TaskDisplay[]): TaskTreeNode[] {
     const taskMap = new Map<string, TaskTreeNode>()
@@ -71,4 +73,43 @@ export function findTaskInTree(tree: TaskTreeNode[], taskId: string): TaskTreeNo
         }
     }
     return null
+}
+
+export function buildGroupedTaskTree(tasks: TaskDisplay[]): GroupedTaskTree[] {
+    const taskMap = new Map<string, TaskTreeNode>()
+    const rootTasksByStatus = new Map<TaskStatus, TaskTreeNode[]>()
+
+    tasks.forEach((task) => {
+        taskMap.set(task.id, { ...task, subtasks: [], depth: 0 })
+    })
+
+    tasks.forEach((task) => {
+        const node = taskMap.get(task.id)
+        if (!node) return
+
+        if (task.parentId) {
+            const parent = taskMap.get(task.parentId)
+            if (parent) {
+                node.depth = parent.depth + 1
+                parent.subtasks.push(node)
+            } else {
+                if (!rootTasksByStatus.has(task.status)) {
+                    rootTasksByStatus.set(task.status, [])
+                }
+                rootTasksByStatus.get(task.status)?.push(node)
+            }
+        } else {
+            if (!rootTasksByStatus.has(task.status)) {
+                rootTasksByStatus.set(task.status, [])
+            }
+            rootTasksByStatus.get(task.status)?.push(node)
+        }
+    })
+
+    return TASK_STATUSES.map((statusConfig) => ({
+        status: statusConfig.value,
+        label: statusConfig.label,
+        tasks: rootTasksByStatus.get(statusConfig.value) || [],
+        count: (rootTasksByStatus.get(statusConfig.value) || []).length,
+    }))
 }

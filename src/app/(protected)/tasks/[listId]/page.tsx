@@ -1,5 +1,6 @@
 import { getTasks } from "../actions/task-actions"
-import { TasksView } from "../components/tasks-view"
+import { TasksTable } from "../components/tasks-table"
+import { TasksViewClient } from "../components/tasks-view-client"
 
 interface ListPageProps {
     params: Promise<{
@@ -12,5 +13,10 @@ export default async function ListPage({ params }: ListPageProps) {
     const actualListId = listId === "no-list" ? null : listId
     const tasks = await getTasks({ listId: actualListId })
 
-    return <TasksView initialTasks={tasks} listId={actualListId} />
+    return (
+        <div className="space-y-4">
+            <TasksViewClient listId={actualListId} />
+            <TasksTable tasks={tasks} listId={actualListId} />
+        </div>
+    )
 }

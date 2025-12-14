@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import {
     Table,
     TableBody,
@@ -13,7 +12,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ChevronRight, ChevronDown } from "lucide-react"
 import { buildTaskTree } from "@/app/(protected)/tasks/utils/task-tree-helpers"
-import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
+import { toggleTaskExpanded } from "@/app/(protected)/tasks/actions/task-actions"
+import { useQueryClient } from "@tanstack/react-query"
+import { taskKeys } from "@/app/(protected)/tasks/query-keys"
 import { TaskTimeTracker } from "@/app/(protected)/tasks/components/task-time-tracker"
 import type { TaskDisplay, TaskTreeNode } from "@/app/(protected)/tasks/schemas/task-schemas"
 
@@ -22,15 +23,21 @@ interface TrackerTasksTableProps {
 }
 
 function TaskTreeRow({ task }: { task: TaskTreeNode }) {
-    const expandedTasks = useTasksStore((state) => state.expandedTasks)
-    const toggleTaskExpanded = useTasksStore((state) => state.toggleTaskExpanded)
-
-    const isExpanded = expandedTasks.has(task.id)
+    const queryClient = useQueryClient()
+    const isExpanded = task.isExpanded
     const hasSubtasks = task.subtasks.length > 0
 
-    const handleToggleExpand = () => {
-        if (hasSubtasks) {
-            toggleTaskExpanded(task.id)
+    const handleToggleExpand = async () => {
+        if (!hasSubtasks) return
+
+        try {
+            const result = await toggleTaskExpanded({ id: task.id, isExpanded: !isExpanded })
+
+            if (result.success) {
+                await queryClient.invalidateQueries({ queryKey: taskKeys.all })
+            }
+        } catch (error) {
+            console.error("Failed to toggle task expansion:", error)
         }
     }
 
@@ -89,12 +96,7 @@ function TaskTreeRow({ task }: { task: TaskTreeNode }) {
 }
 
 export function TrackerTasksTable({ tasks }: TrackerTasksTableProps) {
-    const hydrateExpandedTasks = useTasksStore((state) => state.hydrateExpandedTasks)
     const taskTree = buildTaskTree(tasks)
-
-    useEffect(() => {
-        hydrateExpandedTasks()
-    }, [hydrateExpandedTasks])
 
     if (tasks.length === 0) {
         return (
