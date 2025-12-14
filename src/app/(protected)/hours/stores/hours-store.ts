@@ -98,8 +98,31 @@ interface HoursStoreActions {
     setSelectedDate: (date: Date) => void
 }
 
-export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) => {
+const saveExpandedTypes = (types: Set<string>) => {
+    if (typeof window === "undefined") return
+    try {
+        localStorage.setItem("hours-expanded-types", JSON.stringify(Array.from(types)))
+    } catch {
+        // Ignore localStorage errors
+    }
+}
+
+export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set, get) => {
     const today = new Date().toISOString().split("T")[0]
+
+    if (typeof window !== "undefined") {
+        setTimeout(() => {
+            try {
+                const stored = localStorage.getItem("hours-expanded-types")
+                if (stored) {
+                    const expandedTypes = new Set(JSON.parse(stored))
+                    set({ expandedTypes })
+                }
+            } catch {
+                // Ignore localStorage errors
+            }
+        }, 0)
+    }
 
     return {
         expandedTypes: new Set<string>(),
@@ -111,19 +134,19 @@ export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) =
                 } else {
                     newExpanded.add(type)
                 }
+                saveExpandedTypes(newExpanded)
                 return { expandedTypes: newExpanded }
             }),
-        expandAll: () =>
-            set({
-                expandedTypes: new Set([
-                    "WORK",
-                    "WORK_FROM_HOME",
-                    "VACATION",
-                    "SICK_LEAVE",
-                    "OTHER",
-                ]),
-            }),
-        collapseAll: () => set({ expandedTypes: new Set<string>() }),
+        expandAll: () => {
+            const allTypes = new Set(["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE", "OTHER"])
+            saveExpandedTypes(allTypes)
+            set({ expandedTypes: allTypes })
+        },
+        collapseAll: () => {
+            const emptySet = new Set<string>()
+            saveExpandedTypes(emptySet)
+            set({ expandedTypes: emptySet })
+        },
         singleEntryForm: {
             data: {
                 date: today,
