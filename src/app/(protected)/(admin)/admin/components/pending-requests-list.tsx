@@ -55,6 +55,7 @@ type RequestDisplay = {
 
 interface PendingRequestsListProps {
     requests: RequestDisplay[]
+    holidays: Array<{ date: Date; name: string }>
 }
 
 const typeLabels: Record<string, string> = {
@@ -73,15 +74,31 @@ const typeColors: Record<string, string> = {
     OTHER: "bg-gray-100 text-gray-800",
 }
 
-const calculateWorkdays = (startDate: Date, endDate: Date): number => {
+const calculateWorkdays = (
+    startDate: Date,
+    endDate: Date,
+    holidays: Array<{ date: Date; name: string }>
+): number => {
     const start = new Date(startDate)
     const end = new Date(endDate)
     let count = 0
 
+    const holidayDates = new Set(
+        holidays.map((h) => {
+            const d = new Date(h.date)
+            d.setHours(0, 0, 0, 0)
+            return d.getTime()
+        })
+    )
+
     const current = new Date(start)
     while (current <= end) {
         const day = current.getDay()
-        if (day !== 0 && day !== 6) {
+        const currentTime = new Date(current)
+        currentTime.setHours(0, 0, 0, 0)
+        const isHoliday = holidayDates.has(currentTime.getTime())
+        
+        if (day !== 0 && day !== 6 && !isHoliday) {
             count++
         }
         current.setDate(current.getDate() + 1)
@@ -197,7 +214,7 @@ function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
     )
 }
 
-export function PendingRequestsList({ requests }: PendingRequestsListProps) {
+export function PendingRequestsList({ requests, holidays }: PendingRequestsListProps) {
     const queryClient = useQueryClient()
     const isMobile = useIsMobile()
     const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
@@ -295,16 +312,11 @@ export function PendingRequestsList({ requests }: PendingRequestsListProps) {
             id: "hours",
             header: "Hours",
             cell: ({ row }) => {
-                const workdays = calculateWorkdays(row.original.startDate, row.original.endDate)
-                const hours = workdays * 8
-                return (
-                    <div className="font-semibold">
-                        {hours}h ({workdays}d)
-                    </div>
-                )
+                const workdays = calculateWorkdays(row.original.startDate, row.original.endDate, holidays)
+                return `${workdays * 8}h`
             },
             enableColumnFilter: false,
-        },
+        },,
         {
             accessorKey: "reason",
             header: "Reason",

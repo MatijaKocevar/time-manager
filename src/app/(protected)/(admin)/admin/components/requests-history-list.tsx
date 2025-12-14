@@ -74,6 +74,7 @@ type RequestDisplay = {
 
 interface RequestsHistoryListProps {
     requests: RequestDisplay[]
+    holidays: Array<{ date: Date; name: string }>
 }
 
 const typeLabels: Record<string, string> = {
@@ -98,15 +99,31 @@ const statusColors: Record<string, string> = {
     CANCELLED: "bg-gray-100 text-gray-800",
 }
 
-const calculateWorkdays = (startDate: Date, endDate: Date): number => {
+const calculateWorkdays = (
+    startDate: Date,
+    endDate: Date,
+    holidays: Array<{ date: Date; name: string }>
+): number => {
     const start = new Date(startDate)
     const end = new Date(endDate)
     let count = 0
 
+    const holidayDates = new Set(
+        holidays.map((h) => {
+            const d = new Date(h.date)
+            d.setHours(0, 0, 0, 0)
+            return d.getTime()
+        })
+    )
+
     const current = new Date(start)
     while (current <= end) {
         const day = current.getDay()
-        if (day !== 0 && day !== 6) {
+        const currentTime = new Date(current)
+        currentTime.setHours(0, 0, 0, 0)
+        const isHoliday = holidayDates.has(currentTime.getTime())
+        
+        if (day !== 0 && day !== 6 && !isHoliday) {
             count++
         }
         current.setDate(current.getDate() + 1)
@@ -222,7 +239,7 @@ function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
     )
 }
 
-export function RequestsHistoryList({ requests }: RequestsHistoryListProps) {
+export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListProps) {
     const isMobile = useIsMobile()
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -306,7 +323,7 @@ export function RequestsHistoryList({ requests }: RequestsHistoryListProps) {
             id: "hours",
             header: "Hours",
             cell: ({ row }) => {
-                const workdays = calculateWorkdays(row.original.startDate, row.original.endDate)
+                const workdays = calculateWorkdays(row.original.startDate, row.original.endDate, holidays)
                 const hours = workdays * 8
                 return (
                     <div className="font-semibold">
