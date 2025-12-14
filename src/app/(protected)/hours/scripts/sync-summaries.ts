@@ -34,8 +34,22 @@ async function syncDailySummaries() {
 
         for (const entry of taskTimeEntries) {
             const date = new Date(entry.startTime)
-            date.setHours(0, 0, 0, 0)
-            const key = `${date.toISOString()}-WORK`
+            const dateLocal = new Date(date)
+            dateLocal.setHours(0, 0, 0, 0)
+            const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+
+            const approvedRemoteRequest = await prisma.request.findFirst({
+                where: {
+                    userId: user.id,
+                    status: "APPROVED",
+                    affectsHourType: true,
+                    startDate: { lte: dateUTC },
+                    endDate: { gte: dateUTC },
+                },
+            })
+
+            const hourType = approvedRemoteRequest ? "WORK_FROM_HOME" : "WORK"
+            const key = `${dateLocal.toISOString()}-${hourType}`
             uniqueCombinations.add(key)
         }
 

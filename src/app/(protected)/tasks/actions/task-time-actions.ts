@@ -84,20 +84,24 @@ export async function startTimer(input: StartTimerInput) {
                 })
 
                 const entryDate = new Date(existingActiveTimer.startTime)
-                entryDate.setUTCHours(0, 0, 0, 0)
+                const entryDateLocal = new Date(entryDate)
+                entryDateLocal.setHours(0, 0, 0, 0)
+                const entryDateUTC = new Date(
+                    Date.UTC(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate())
+                )
 
                 const approvedRemoteRequest = await tx.request.findFirst({
                     where: {
                         userId: session.user.id,
                         status: "APPROVED",
                         affectsHourType: true,
-                        startDate: { lte: entryDate },
-                        endDate: { gte: entryDate },
+                        startDate: { lte: entryDateUTC },
+                        endDate: { gte: entryDateUTC },
                     },
                 })
 
                 const hourType = approvedRemoteRequest ? "WORK_FROM_HOME" : "WORK"
-                await recalculateDailySummaryStandalone(session.user.id, entryDate, hourType)
+                await recalculateDailySummaryStandalone(session.user.id, entryDateLocal, hourType)
             }
 
             return await tx.taskTimeEntry.create({
@@ -155,20 +159,24 @@ export async function stopTimer(input: StopTimerInput) {
         })
 
         const entryDate = new Date(entry.startTime)
-        entryDate.setUTCHours(0, 0, 0, 0)
+        const entryDateLocal = new Date(entryDate)
+        entryDateLocal.setHours(0, 0, 0, 0)
+        const entryDateUTC = new Date(
+            Date.UTC(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate())
+        )
 
         const approvedRemoteRequest = await prisma.request.findFirst({
             where: {
                 userId: session.user.id,
                 status: "APPROVED",
                 affectsHourType: true,
-                startDate: { lte: entryDate },
-                endDate: { gte: entryDate },
+                startDate: { lte: entryDateUTC },
+                endDate: { gte: entryDateUTC },
             },
         })
 
         const hourType = approvedRemoteRequest ? "WORK_FROM_HOME" : "WORK"
-        await recalculateDailySummaryStandalone(session.user.id, entryDate, hourType)
+        await recalculateDailySummaryStandalone(session.user.id, entryDateLocal, hourType)
 
         revalidatePath("/tasks")
         revalidatePath("/hours")
