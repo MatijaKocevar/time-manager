@@ -90,7 +90,7 @@ export async function startTimer(input: StartTimerInput) {
                     Date.UTC(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate())
                 )
 
-                const approvedRemoteRequest = await tx.request.findFirst({
+                const approvedRequest = await tx.request.findFirst({
                     where: {
                         userId: session.user.id,
                         status: "APPROVED",
@@ -100,7 +100,24 @@ export async function startTimer(input: StartTimerInput) {
                     },
                 })
 
-                const hourType = approvedRemoteRequest ? "WORK_FROM_HOME" : "WORK"
+                let hourType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" = "WORK"
+                if (approvedRequest) {
+                    switch (approvedRequest.type) {
+                        case "VACATION":
+                            hourType = "VACATION"
+                            break
+                        case "SICK_LEAVE":
+                            hourType = "SICK_LEAVE"
+                            break
+                        case "WORK_FROM_HOME":
+                        case "REMOTE_WORK":
+                            hourType = "WORK_FROM_HOME"
+                            break
+                        case "OTHER":
+                            hourType = "OTHER"
+                            break
+                    }
+                }
                 await recalculateDailySummaryStandalone(session.user.id, entryDateLocal, hourType)
             }
 
@@ -165,7 +182,7 @@ export async function stopTimer(input: StopTimerInput) {
             Date.UTC(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate())
         )
 
-        const approvedRemoteRequest = await prisma.request.findFirst({
+        const approvedRequest = await prisma.request.findFirst({
             where: {
                 userId: session.user.id,
                 status: "APPROVED",
@@ -175,7 +192,24 @@ export async function stopTimer(input: StopTimerInput) {
             },
         })
 
-        const hourType = approvedRemoteRequest ? "WORK_FROM_HOME" : "WORK"
+        let hourType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" = "WORK"
+        if (approvedRequest) {
+            switch (approvedRequest.type) {
+                case "VACATION":
+                    hourType = "VACATION"
+                    break
+                case "SICK_LEAVE":
+                    hourType = "SICK_LEAVE"
+                    break
+                case "WORK_FROM_HOME":
+                case "REMOTE_WORK":
+                    hourType = "WORK_FROM_HOME"
+                    break
+                case "OTHER":
+                    hourType = "OTHER"
+                    break
+            }
+        }
         await recalculateDailySummaryStandalone(session.user.id, entryDateLocal, hourType)
 
         revalidatePath("/tasks")

@@ -38,7 +38,7 @@ async function syncDailySummaries() {
             dateLocal.setHours(0, 0, 0, 0)
             const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
 
-            const approvedRemoteRequest = await prisma.request.findFirst({
+            const approvedRequest = await prisma.request.findFirst({
                 where: {
                     userId: user.id,
                     status: "APPROVED",
@@ -48,7 +48,24 @@ async function syncDailySummaries() {
                 },
             })
 
-            const hourType = approvedRemoteRequest ? "WORK_FROM_HOME" : "WORK"
+            let hourType: HourType = "WORK"
+            if (approvedRequest) {
+                switch (approvedRequest.type) {
+                    case "VACATION":
+                        hourType = "VACATION"
+                        break
+                    case "SICK_LEAVE":
+                        hourType = "SICK_LEAVE"
+                        break
+                    case "WORK_FROM_HOME":
+                    case "REMOTE_WORK":
+                        hourType = "WORK_FROM_HOME"
+                        break
+                    case "OTHER":
+                        hourType = "OTHER"
+                        break
+                }
+            }
             const key = `${dateLocal.toISOString()}-${hourType}`
             uniqueCombinations.add(key)
         }
