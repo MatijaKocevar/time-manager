@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
-import { mapRequestTypeToShiftLocation, isWeekday } from "../../shifts/utils/request-shift-mapping"
+import { mapRequestTypeToShiftLocation, mapShiftLocationToHourType, isWeekday } from "../../shifts/utils/request-shift-mapping"
 import {
     CreateRequestSchema,
     UpdateRequestSchema,
@@ -20,7 +20,7 @@ import {
     type CancelApprovedRequestInput,
     type RequestDisplay,
 } from "../schemas/request-schemas"
-import { recalculateDailySummary } from "../../hours/utils/summary-helpers"
+import { recalculateDailySummary, recalculateDailySummaryStandalone } from "../../hours/utils/summary-helpers"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -286,7 +286,62 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
 
                 shiftDeleteDate.setDate(shiftDeleteDate.getDate() + 1)
             }
+
+            // Reverse migrate hour entries if request affected hour type
+            if (request.affectsHourType && 
+                request.type !== "VACATION" && 
+                request.type !== "SICK_LEAVE") {
+                
+                const shiftLocation = mapRequestTypeToShiftLocation(request.type)
+                const originalHourType = mapShiftLocationToHourType(shiftLocation)
+                const revertStartDate = new Date(request.startDate)
+                revertStartDate.setHours(0, 0, 0, 0)
+                const revertEndDate = new Date(request.endDate)
+                revertEndDate.setHours(23, 59, 59, 999)
+                
+                // Bulk update all entries back to WORK
+                await tx.hourEntry.updateMany({
+                    where: {
+                        userId: request.userId,
+                        date: {
+                            gte: revertStartDate,
+                            lte: revertEndDate,
+                        },
+                        type: originalHourType,
+                        taskId: null,
+                    },
+                    data: {
+                        type: "WORK",
+                    },
+                })
+            }
         })
+
+        // Recalculate summaries outside transaction for better performance
+        if (request.affectsHourType && 
+            request.type !== "VACATION" && 
+            request.type !== "SICK_LEAVE") {
+            
+            const shiftLocation = mapRequestTypeToShiftLocation(request.type)
+            const originalHourType = mapShiftLocationToHourType(shiftLocation)
+            const recalcDate = new Date(request.startDate)
+            const recalcEndDate = new Date(request.endDate)
+            
+            while (recalcDate <= recalcEndDate) {
+                const dayOfWeek = recalcDate.getDay()
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+                
+                if (!isWeekend) {
+                    const normalizedDate = new Date(recalcDate)
+                    normalizedDate.setHours(0, 0, 0, 0)
+                    
+                    await recalculateDailySummaryStandalone(request.userId, normalizedDate, originalHourType)
+                    await recalculateDailySummaryStandalone(request.userId, normalizedDate, "WORK")
+                }
+                
+                recalcDate.setDate(recalcDate.getDate() + 1)
+            }
+        }
 
         revalidatePath("/requests")
         revalidatePath("/hours")
@@ -415,7 +470,58 @@ export async function approveRequest(input: ApproveRequestInput) {
                 }
                 shiftDate.setDate(shiftDate.getDate() + 1)
             }
+
+            // Migrate existing hour entries if request affects hour type
+            if (request.affectsHourType && 
+                request.type !== "VACATION" && 
+                request.type !== "SICK_LEAVE") {
+                
+                const targetHourType = mapShiftLocationToHourType(shiftLocation)
+                const migrateStartDate = new Date(request.startDate)
+                migrateStartDate.setHours(0, 0, 0, 0)
+                const migrateEndDate = new Date(request.endDate)
+                migrateEndDate.setHours(23, 59, 59, 999)
+                
+                // Bulk update all WORK entries in the date range
+                await tx.hourEntry.updateMany({
+                    where: {
+                        userId: request.userId,
+                        date: {
+                            gte: migrateStartDate,
+                            lte: migrateEndDate,
+                        },
+                        type: "WORK",
+                        taskId: null,
+                    },
+                    data: {
+                        type: targetHourType,
+                    },
+                })
+            }
         })
+
+        // Recalculate summaries outside transaction for better performance
+        if (request.affectsHourType && 
+            request.type !== "VACATION" && 
+            request.type !== "SICK_LEAVE") {
+            
+            const shiftLocation = mapRequestTypeToShiftLocation(request.type)
+            const targetHourType = mapShiftLocationToHourType(shiftLocation)
+            const recalcDate = new Date(request.startDate)
+            const recalcEndDate = new Date(request.endDate)
+            
+            while (recalcDate <= recalcEndDate) {
+                if (isWeekday(recalcDate)) {
+                    const normalizedDate = new Date(recalcDate)
+                    normalizedDate.setHours(0, 0, 0, 0)
+                    
+                    await recalculateDailySummaryStandalone(request.userId, normalizedDate, "WORK")
+                    await recalculateDailySummaryStandalone(request.userId, normalizedDate, targetHourType)
+                }
+                
+                recalcDate.setDate(recalcDate.getDate() + 1)
+            }
+        }
 
         revalidatePath("/requests")
         revalidatePath("/hours")

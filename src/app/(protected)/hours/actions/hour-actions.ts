@@ -54,8 +54,20 @@ export async function createHourEntry(input: CreateHourEntryInput) {
         const { date, hours, type, description } = validation.data
 
         await prisma.$transaction(async (tx) => {
-            await tx.hourEntry.create({
-                data: {
+            await tx.hourEntry.upsert({
+                where: {
+                    userId_date_type_taskId: {
+                        userId: session.user.id,
+                        date,
+                        type,
+                        taskId: null,
+                    },
+                },
+                update: {
+                    hours,
+                    description,
+                },
+                create: {
                     userId: session.user.id,
                     date,
                     hours,
@@ -423,8 +435,18 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
 
         const parseDate = (dateStr: string) => {
             const [year, month, day] = dateStr.split("-").map(Number)
-            const date = new Date(Date.UTC(year, month - 1, day))
+            const date = new Date(year, month - 1, day)
+            date.setHours(0, 0, 0, 0)
             return date
+        }
+
+        const parseEndDate = (dateStr: string) => {
+            const [year, month, day] = dateStr.split("-").map(Number)
+            const date = new Date(year, month - 1, day)
+            date.setHours(0, 0, 0, 0)
+            const nextDay = new Date(date)
+            nextDay.setDate(nextDay.getDate() + 1)
+            return nextDay
         }
 
         const summaries = await prisma.dailyHourSummary.findMany({
@@ -434,7 +456,7 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                     ? {
                           date: {
                               gte: parseDate(startDate),
-                              lte: parseDate(endDate),
+                              lt: parseEndDate(endDate),
                           },
                       }
                     : {}),
@@ -453,7 +475,7 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                     ? {
                           date: {
                               gte: parseDate(startDate),
-                              lte: parseDate(endDate),
+                              lt: parseEndDate(endDate),
                           },
                       }
                     : {}),
@@ -583,8 +605,19 @@ export async function batchUpdateHourEntries(input: BatchUpdateHourEntriesInput)
                 affectedDates.add(`${change.date}-${change.type}`)
 
                 if (change.action === "create") {
-                    await tx.hourEntry.create({
-                        data: {
+                    await tx.hourEntry.upsert({
+                        where: {
+                            userId_date_type_taskId: {
+                                userId: session.user.id,
+                                date: parseDateString(change.date),
+                                type: change.type,
+                                taskId: null,
+                            },
+                        },
+                        update: {
+                            hours: change.hours,
+                        },
+                        create: {
                             userId: session.user.id,
                             date: parseDateString(change.date),
                             hours: change.hours,

@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -35,22 +36,23 @@ interface ShiftsCalendarProps {
     initialShifts: Shift[]
     users: User[]
     initialHolidays?: Array<{ date: Date; name: string }>
+    initialViewMode: "week" | "month"
+    initialSelectedDate: Date
 }
 
 export function ShiftsCalendar({
     initialShifts,
     users,
     initialHolidays = [],
+    initialViewMode,
+    initialSelectedDate,
 }: ShiftsCalendarProps) {
-    const viewMode = useShiftCalendarStore((state) => state.viewMode)
-    const currentDate = useShiftCalendarStore((state) => state.currentDate)
+    const router = useRouter()
+    const viewMode = initialViewMode
+    const currentDate = initialSelectedDate
     const editDialog = useShiftCalendarStore((state) => state.editDialog)
-    const setViewMode = useShiftCalendarStore((state) => state.setViewMode)
     const openEditDialog = useShiftCalendarStore((state) => state.openEditDialog)
     const closeEditDialog = useShiftCalendarStore((state) => state.closeEditDialog)
-    const handlePrevious = useShiftCalendarStore((state) => state.handlePrevious)
-    const handleNext = useShiftCalendarStore((state) => state.handleNext)
-    const handleToday = useShiftCalendarStore((state) => state.handleToday)
 
     const { startDate, days } = useMemo(() => {
         if (viewMode === "week") {
@@ -138,6 +140,38 @@ export function ShiftsCalendar({
         )
     }
 
+    const handlePrevious = () => {
+        const newDate = new Date(currentDate)
+        if (viewMode === "week") {
+            newDate.setDate(currentDate.getDate() - 7)
+        } else {
+            newDate.setMonth(currentDate.getMonth() - 1)
+        }
+        const dateStr = newDate.toISOString().split("T")[0]
+        router.push(`/shifts?view=${viewMode}&date=${dateStr}`)
+    }
+
+    const handleNext = () => {
+        const newDate = new Date(currentDate)
+        if (viewMode === "week") {
+            newDate.setDate(currentDate.getDate() + 7)
+        } else {
+            newDate.setMonth(currentDate.getMonth() + 1)
+        }
+        const dateStr = newDate.toISOString().split("T")[0]
+        router.push(`/shifts?view=${viewMode}&date=${dateStr}`)
+    }
+
+    const handleToday = () => {
+        const dateStr = new Date().toISOString().split("T")[0]
+        router.push(`/shifts?view=${viewMode}&date=${dateStr}`)
+    }
+
+    const handleViewModeChange = (mode: "week" | "month") => {
+        const dateStr = currentDate.toISOString().split("T")[0]
+        router.push(`/shifts?view=${mode}&date=${dateStr}`)
+    }
+
     return (
         <div className="flex flex-col gap-4 h-full">
             <div className="flex items-center justify-between shrink-0">
@@ -164,14 +198,14 @@ export function ShiftsCalendar({
                     <Button
                         variant={viewMode === "week" ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setViewMode("week")}
+                        onClick={() => handleViewModeChange("week")}
                     >
                         Week
                     </Button>
                     <Button
                         variant={viewMode === "month" ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setViewMode("month")}
+                        onClick={() => handleViewModeChange("month")}
                     >
                         Month
                     </Button>

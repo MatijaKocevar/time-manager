@@ -208,8 +208,17 @@ export function PendingRequestsList({ requests }: PendingRequestsListProps) {
 
     const approveMutation = useMutation({
         mutationFn: approveRequest,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: requestKeys.all })
+        onSuccess: (data) => {
+            if (data.error) {
+                console.error("Approval error:", data.error)
+                alert(`Error: ${data.error}`)
+            } else {
+                queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            }
+        },
+        onError: (error) => {
+            console.error("Approval mutation error:", error)
+            alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
         },
     })
 
