@@ -43,11 +43,11 @@ export function RequestForm() {
             startDate: formData.startDate,
             endDate: formData.endDate,
             reason: formData.reason,
-            location: formData.type === REQUEST_TYPE.REMOTE_WORK ? formData.location : undefined,
+            location: formData.type === REQUEST_TYPE.WORK_FROM_HOME ? formData.location : undefined,
         })
     }
 
-    const needsLocation = formData.type === REQUEST_TYPE.REMOTE_WORK
+    const needsLocation = formData.type === REQUEST_TYPE.WORK_FROM_HOME
 
     return (
         <Card>

@@ -1,11 +1,6 @@
 import { z } from "zod"
 
-export const RequestTypeSchema = z.enum([
-    "VACATION",
-    "SICK_LEAVE",
-    "WORK_FROM_HOME",
-    "OTHER",
-])
+export const RequestTypeSchema = z.enum(["VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "OTHER"])
 
 export const RequestStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED", "CANCELLED"])
 

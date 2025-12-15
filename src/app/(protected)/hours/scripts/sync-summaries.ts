@@ -48,24 +48,7 @@ async function syncDailySummaries() {
                 },
             })
 
-            let hourType: HourType = "WORK"
-            if (approvedRequest) {
-                switch (approvedRequest.type) {
-                    case "VACATION":
-                        hourType = "VACATION"
-                        break
-                    case "SICK_LEAVE":
-                        hourType = "SICK_LEAVE"
-                        break
-                    case "WORK_FROM_HOME":
-                    case "REMOTE_WORK":
-                        hourType = "WORK_FROM_HOME"
-                        break
-                    case "OTHER":
-                        hourType = "OTHER"
-                        break
-                }
-            }
+            const hourType: HourType = approvedRequest?.type ?? "WORK"
             const key = `${dateLocal.toISOString()}-${hourType}`
             uniqueCombinations.add(key)
         }
@@ -74,17 +57,9 @@ async function syncDailySummaries() {
 
         let processed = 0
         for (const key of uniqueCombinations) {
-            const [dateStr, type] =
-                key.split("-WORK").length > 1
-                    ? [key.substring(0, key.lastIndexOf("-")), "WORK"]
-                    : key.split("-VACATION").length > 1
-                      ? [key.substring(0, key.lastIndexOf("-")), "VACATION"]
-                      : key.split("-SICK_LEAVE").length > 1
-                        ? [key.substring(0, key.lastIndexOf("-")), "SICK_LEAVE"]
-                        : key.split("-WORK_FROM_HOME").length > 1
-                          ? [key.substring(0, key.lastIndexOf("-")), "WORK_FROM_HOME"]
-                          : [key.substring(0, key.lastIndexOf("-")), "OTHER"]
-
+            const lastDashIndex = key.lastIndexOf("-")
+            const dateStr = key.substring(0, lastDashIndex)
+            const type = key.substring(lastDashIndex + 1) as HourType
             const date = new Date(dateStr)
 
             try {

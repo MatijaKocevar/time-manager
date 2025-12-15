@@ -524,7 +524,7 @@ export async function approveRequest(input: ApproveRequestInput) {
                         if (!existingEntry) {
                             const normalizedDate = new Date(currentDate)
                             normalizedDate.setHours(0, 0, 0, 0)
-                            
+
                             await tx.hourEntry.create({
                                 data: {
                                     userId: request.userId,

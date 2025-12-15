@@ -103,21 +103,7 @@ export async function startTimer(input: StartTimerInput) {
                 let hourType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" =
                     "WORK"
                 if (approvedRequest) {
-                    switch (approvedRequest.type) {
-                        case "VACATION":
-                            hourType = "VACATION"
-                            break
-                        case "SICK_LEAVE":
-                            hourType = "SICK_LEAVE"
-                            break
-                        case "WORK_FROM_HOME":
-                        case "REMOTE_WORK":
-                            hourType = "WORK_FROM_HOME"
-                            break
-                        case "OTHER":
-                            hourType = "OTHER"
-                            break
-                    }
+                    hourType = approvedRequest.type
                 }
                 await recalculateDailySummaryStandalone(session.user.id, entryDateLocal, hourType)
             }
@@ -195,21 +181,7 @@ export async function stopTimer(input: StopTimerInput) {
 
         let hourType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" = "WORK"
         if (approvedRequest) {
-            switch (approvedRequest.type) {
-                case "VACATION":
-                    hourType = "VACATION"
-                    break
-                case "SICK_LEAVE":
-                    hourType = "SICK_LEAVE"
-                    break
-                case "WORK_FROM_HOME":
-                case "REMOTE_WORK":
-                    hourType = "WORK_FROM_HOME"
-                    break
-                case "OTHER":
-                    hourType = "OTHER"
-                    break
-            }
+            hourType = approvedRequest.type
         }
         await recalculateDailySummaryStandalone(session.user.id, entryDateLocal, hourType)
 

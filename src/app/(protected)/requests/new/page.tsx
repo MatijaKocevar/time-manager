@@ -46,11 +46,11 @@ export default function NewRequestPage() {
             startDate: formData.startDate,
             endDate: formData.endDate,
             reason: formData.reason,
-            location: formData.type === REQUEST_TYPE.REMOTE_WORK ? formData.location : undefined,
+            location: formData.type === REQUEST_TYPE.WORK_FROM_HOME ? formData.location : undefined,
         })
     }
 
-    const needsLocation = formData.type === REQUEST_TYPE.REMOTE_WORK
+    const needsLocation = formData.type === REQUEST_TYPE.WORK_FROM_HOME
 
     return (
         <div className="space-y-4">
