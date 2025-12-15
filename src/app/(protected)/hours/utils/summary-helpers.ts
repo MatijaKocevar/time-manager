@@ -7,10 +7,10 @@ export async function recalculateDailySummary(
     date: Date,
     type: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER"
 ) {
-    const normalizedDate = new Date(date)
-    normalizedDate.setHours(0, 0, 0, 0)
+    // Normalize to UTC midnight for the given date
+    const normalizedDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
     const nextDay = new Date(normalizedDate)
-    nextDay.setDate(nextDay.getDate() + 1)
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1)
 
     const manualAggregate = await tx.hourEntry.aggregate({
         where: {
@@ -30,23 +30,57 @@ export async function recalculateDailySummary(
     const startOfDay = new Date(normalizedDate)
     const endOfDay = new Date(nextDay)
 
-    const trackedAggregate = await tx.taskTimeEntry.aggregate({
+    // Determine what hour type should own the tracked hours for this day
+    const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+    const approvedRequest = await tx.request.findFirst({
         where: {
             userId,
-            startTime: {
-                gte: startOfDay,
-                lt: endOfDay,
-            },
-            endTime: { not: null },
-            duration: { not: null },
-        },
-        _sum: {
-            duration: true,
+            status: "APPROVED",
+            affectsHourType: true,
+            startDate: { lte: dateUTC },
+            endDate: { gte: dateUTC },
         },
     })
 
+    let trackedHourType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" = "WORK"
+    if (approvedRequest) {
+        switch (approvedRequest.type) {
+            case "VACATION":
+                trackedHourType = "VACATION"
+                break
+            case "SICK_LEAVE":
+                trackedHourType = "SICK_LEAVE"
+                break
+            case "WORK_FROM_HOME":
+                trackedHourType = "WORK_FROM_HOME"
+                break
+            case "OTHER":
+                trackedHourType = "OTHER"
+                break
+        }
+    }
+
+    // Only include tracked hours if this is the correct type for this day
+    let trackedHours = 0
+    if (type === trackedHourType) {
+        const trackedAggregate = await tx.taskTimeEntry.aggregate({
+            where: {
+                userId,
+                startTime: {
+                    gte: startOfDay,
+                    lt: endOfDay,
+                },
+                endTime: { not: null },
+                duration: { not: null },
+            },
+            _sum: {
+                duration: true,
+            },
+        })
+        trackedHours = (trackedAggregate._sum.duration || 0) / 3600
+    }
+
     const manualHours = manualAggregate._sum.hours || 0
-    const trackedHours = (trackedAggregate._sum.duration || 0) / 3600
     const totalHours = manualHours + trackedHours
 
     if (totalHours === 0) {

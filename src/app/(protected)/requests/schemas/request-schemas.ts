@@ -4,7 +4,6 @@ export const RequestTypeSchema = z.enum([
     "VACATION",
     "SICK_LEAVE",
     "WORK_FROM_HOME",
-    "REMOTE_WORK",
     "OTHER",
 ])
 
@@ -22,7 +21,7 @@ export const CreateRequestSchema = CreateRequestInputSchema.transform((data) => 
     ...data,
     startDate: new Date(data.startDate),
     endDate: new Date(data.endDate),
-    affectsHourType: data.type === "WORK_FROM_HOME" || data.type === "REMOTE_WORK",
+    affectsHourType: true,
 }))
 
 const UpdateRequestInputSchema = z.object({
@@ -47,7 +46,7 @@ export const UpdateRequestSchema = UpdateRequestInputSchema.transform((data) => 
 
     if (data.type !== undefined) {
         result.type = data.type
-        result.affectsHourType = data.type === "WORK_FROM_HOME" || data.type === "REMOTE_WORK"
+        result.affectsHourType = true
     }
     if (data.startDate !== undefined) result.startDate = new Date(data.startDate)
     if (data.endDate !== undefined) result.endDate = new Date(data.endDate)

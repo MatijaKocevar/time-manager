@@ -7,6 +7,7 @@ import { authConfig } from "@/lib/auth"
 import {
     mapRequestTypeToShiftLocation,
     mapShiftLocationToHourType,
+    mapRequestTypeToHourType,
     isWeekday,
 } from "../../shifts/utils/request-shift-mapping"
 import {
@@ -411,36 +412,6 @@ export async function approveRequest(input: ApproveRequestInput) {
             })
 
             if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
-                const hourType = request.type === "VACATION" ? "VACATION" : "SICK_LEAVE"
-                const currentDate = new Date(request.startDate)
-                const endDate = new Date(request.endDate)
-
-                while (currentDate <= endDate) {
-                    const dayOfWeek = currentDate.getDay()
-                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-                    const isHol = holidays.some((h) => {
-                        const holidayDate = new Date(h.date)
-                        holidayDate.setHours(0, 0, 0, 0)
-                        const checkDate = new Date(currentDate)
-                        checkDate.setHours(0, 0, 0, 0)
-                        return holidayDate.getTime() === checkDate.getTime()
-                    })
-
-                    if (!isWeekend && !isHol) {
-                        await tx.hourEntry.create({
-                            data: {
-                                userId: request.userId,
-                                date: new Date(currentDate),
-                                hours: 8,
-                                type: hourType,
-                                description: `Auto-generated from ${request.type.toLowerCase()} request`,
-                                taskId: null,
-                            },
-                        })
-                    }
-
-                    currentDate.setDate(currentDate.getDate() + 1)
-                }
             }
 
             const shiftLocation = mapRequestTypeToShiftLocation(request.type)
@@ -484,44 +455,100 @@ export async function approveRequest(input: ApproveRequestInput) {
                 shiftDate.setDate(shiftDate.getDate() + 1)
             }
 
-            // Migrate existing hour entries if request affects hour type
-            if (
-                request.affectsHourType &&
-                request.type !== "VACATION" &&
-                request.type !== "SICK_LEAVE"
-            ) {
-                const targetHourType = mapShiftLocationToHourType(shiftLocation)
+            // Migrate or create hour entries for the request date range
+            if (request.affectsHourType) {
+                const targetHourType = mapRequestTypeToHourType(request.type)
+
                 const migrateStartDate = new Date(request.startDate)
                 migrateStartDate.setHours(0, 0, 0, 0)
                 const migrateEndDate = new Date(request.endDate)
                 migrateEndDate.setHours(23, 59, 59, 999)
 
-                // Bulk update all WORK entries in the date range
-                await tx.hourEntry.updateMany({
-                    where: {
-                        userId: request.userId,
-                        date: {
-                            gte: migrateStartDate,
-                            lte: migrateEndDate,
-                        },
-                        type: "WORK",
-                        taskId: null,
-                    },
-                    data: {
-                        type: targetHourType,
-                    },
-                })
+                // First, migrate all existing hour entries from any type to target type
+                const existingTypes = ["WORK", "VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "OTHER"]
+
+                for (const oldType of existingTypes) {
+                    if (oldType !== targetHourType) {
+                        await tx.hourEntry.updateMany({
+                            where: {
+                                userId: request.userId,
+                                date: {
+                                    gte: migrateStartDate,
+                                    lte: migrateEndDate,
+                                },
+                                type: oldType as any,
+                                taskId: null,
+                            },
+                            data: {
+                                type: targetHourType,
+                            },
+                        })
+                    }
+                }
+
+                // Then, create entries for dates that have no hour entries at all
+                const currentDate = new Date(request.startDate)
+                currentDate.setHours(0, 0, 0, 0)
+                const endDate = new Date(request.endDate)
+                endDate.setHours(23, 59, 59, 999)
+
+                while (currentDate <= endDate) {
+                    const isHol = holidays.some((h) => {
+                        const holidayDate = new Date(h.date)
+                        holidayDate.setHours(0, 0, 0, 0)
+                        const checkDate = new Date(currentDate)
+                        checkDate.setHours(0, 0, 0, 0)
+                        return holidayDate.getTime() === checkDate.getTime()
+                    })
+
+                    if (isWeekday(currentDate) && !isHol) {
+                        // Use same date range as migration for consistency
+                        const dayStart = new Date(currentDate)
+                        dayStart.setHours(0, 0, 0, 0)
+                        const dayEnd = new Date(currentDate)
+                        dayEnd.setHours(23, 59, 59, 999)
+
+                        // Check if any hour entry exists for this date (using range to catch any timezone variations)
+                        const existingEntry = await tx.hourEntry.findFirst({
+                            where: {
+                                userId: request.userId,
+                                date: {
+                                    gte: dayStart,
+                                    lte: dayEnd,
+                                },
+                                taskId: null,
+                            },
+                        })
+
+                        // Only create if no entry exists
+                        if (!existingEntry) {
+                            const normalizedDate = new Date(currentDate)
+                            normalizedDate.setHours(0, 0, 0, 0)
+                            
+                            await tx.hourEntry.create({
+                                data: {
+                                    userId: request.userId,
+                                    date: normalizedDate,
+                                    hours: 8,
+                                    type: targetHourType,
+                                    taskId: null,
+                                },
+                            })
+                        }
+                    }
+
+                    currentDate.setDate(currentDate.getDate() + 1)
+                }
             }
         })
 
-        // Recalculate summaries outside transaction for better performance
-        if (
-            request.affectsHourType &&
-            request.type !== "VACATION" &&
-            request.type !== "SICK_LEAVE"
-        ) {
-            const shiftLocation = mapRequestTypeToShiftLocation(request.type)
-            const targetHourType = mapShiftLocationToHourType(shiftLocation)
+        // Recalculate summaries for all hour types
+        if (request.affectsHourType) {
+            const targetHourType = mapRequestTypeToHourType(request.type)
+
+            const allTypes: Array<"WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER"> =
+                ["WORK", "VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "OTHER"]
+
             const recalcDate = new Date(request.startDate)
             const recalcEndDate = new Date(request.endDate)
 
@@ -530,12 +557,14 @@ export async function approveRequest(input: ApproveRequestInput) {
                     const normalizedDate = new Date(recalcDate)
                     normalizedDate.setHours(0, 0, 0, 0)
 
-                    await recalculateDailySummaryStandalone(request.userId, normalizedDate, "WORK")
-                    await recalculateDailySummaryStandalone(
-                        request.userId,
-                        normalizedDate,
-                        targetHourType
-                    )
+                    // Recalculate all hour types to ensure proper migration
+                    for (const hourType of allTypes) {
+                        await recalculateDailySummaryStandalone(
+                            request.userId,
+                            normalizedDate,
+                            hourType
+                        )
+                    }
                 }
 
                 recalcDate.setDate(recalcDate.getDate() + 1)

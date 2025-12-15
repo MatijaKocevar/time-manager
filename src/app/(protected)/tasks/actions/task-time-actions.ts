@@ -100,7 +100,8 @@ export async function startTimer(input: StartTimerInput) {
                     },
                 })
 
-                let hourType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" = "WORK"
+                let hourType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" =
+                    "WORK"
                 if (approvedRequest) {
                     switch (approvedRequest.type) {
                         case "VACATION":

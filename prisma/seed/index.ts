@@ -80,6 +80,36 @@ async function main() {
 
     console.log("✅ Created 'Personal' list for admin user")
 
+    // Generate holidays for Slovenia (current and next year)
+    const currentYear = new Date().getFullYear()
+    const nextYear = currentYear + 1
+
+    for (const year of [currentYear, nextYear]) {
+        const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/SI`)
+
+        if (response.ok) {
+            const holidays = await response.json()
+
+            for (const holiday of holidays) {
+                const date = new Date(holiday.date + "T00:00:00")
+                date.setHours(0, 0, 0, 0)
+
+                await prisma.holiday.upsert({
+                    where: { date },
+                    update: {},
+                    create: {
+                        date,
+                        name: holiday.name,
+                        description: holiday.localName !== holiday.name ? holiday.localName : null,
+                        isRecurring: true,
+                    },
+                })
+            }
+
+            console.log(`✅ Imported holidays for Slovenia ${year}`)
+        }
+    }
+
     console.log("🌱 Database seeding completed!")
 }
 

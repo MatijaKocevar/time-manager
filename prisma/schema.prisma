@@ -64,7 +64,6 @@ enum RequestType {
   VACATION
   SICK_LEAVE
   WORK_FROM_HOME
-  REMOTE_WORK
   OTHER
 }
 

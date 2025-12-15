@@ -12,7 +12,6 @@ export function mapRequestTypeToShiftLocation(type: RequestType): ShiftLocation 
         case REQUEST_TYPE.SICK_LEAVE:
             return SHIFT_LOCATION.SICK_LEAVE
         case REQUEST_TYPE.WORK_FROM_HOME:
-        case REQUEST_TYPE.REMOTE_WORK:
             return SHIFT_LOCATION.HOME
         case REQUEST_TYPE.OTHER:
             return SHIFT_LOCATION.OTHER
@@ -30,6 +29,19 @@ export function mapShiftLocationToHourType(location: ShiftLocation): HourType {
         case SHIFT_LOCATION.SICK_LEAVE:
             return "SICK_LEAVE"
         case SHIFT_LOCATION.OTHER:
+            return "OTHER"
+    }
+}
+
+export function mapRequestTypeToHourType(type: RequestType): HourType {
+    switch (type) {
+        case REQUEST_TYPE.VACATION:
+            return "VACATION"
+        case REQUEST_TYPE.SICK_LEAVE:
+            return "SICK_LEAVE"
+        case REQUEST_TYPE.WORK_FROM_HOME:
+            return "WORK_FROM_HOME"
+        case REQUEST_TYPE.OTHER:
             return "OTHER"
     }
 }
