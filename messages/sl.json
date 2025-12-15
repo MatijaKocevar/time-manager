@@ -184,6 +184,14 @@
             "listOptions": "Možnosti seznama",
             "rename": "Preimenuj",
             "deleteConfirm": "Ste prepričani, da želite izbrisati ta seznam? Naloge bodo premaknjene v Brez seznama."
+        },
+        "tracker": {
+            "selectTaskToTrack": "Izberite nalogo za sledenje",
+            "noTasksAvailable": "Ni razpoložljivih nalog za sledenje.",
+            "createTaskToTrack": "Ustvarite nalogo na strani Naloge, da začnete slediti času.",
+            "noTasksYet": "Še ni nalog. Ustvarite naloge na strani Naloge, da začnete slediti času!",
+            "task": "Naloga",
+            "list": "Seznam"
         }
     },
     "requests": {

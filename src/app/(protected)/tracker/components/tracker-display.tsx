@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Play, Square } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +13,7 @@ import { taskKeys } from "@/app/(protected)/tasks/query-keys"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
 import { useTrackerStore } from "../stores/tracker-store"
 import { formatDuration, getElapsedSeconds } from "@/app/(protected)/tasks/utils/time-helpers"
+import { getTaskStatusLabel } from "@/app/(protected)/tasks/utils/task-status-labels"
 import type { TaskTimeEntryDisplay } from "@/app/(protected)/tasks/schemas/task-time-entry-schemas"
 import type { TaskDisplay } from "@/app/(protected)/tasks/schemas/task-schemas"
 
@@ -22,6 +24,8 @@ interface TrackerDisplayProps {
 
 export function TrackerDisplay({ tasks, initialActiveTimer }: TrackerDisplayProps) {
     const queryClient = useQueryClient()
+    const t = useTranslations("tasks.tracker")
+    const tStatus = useTranslations("tasks.statuses")
 
     const activeTimers = useTasksStore((state) => state.activeTimers)
     const elapsedTimes = useTasksStore((state) => state.elapsedTimes)
@@ -149,10 +153,8 @@ export function TrackerDisplay({ tasks, initialActiveTimer }: TrackerDisplayProp
             <Card>
                 <CardContent className="pt-6">
                     <div className="text-center space-y-4 py-8">
-                        <p className="text-muted-foreground">No tasks available to track.</p>
-                        <p className="text-sm text-muted-foreground">
-                            Create a task from the Tasks page to start tracking time.
-                        </p>
+                        <p className="text-muted-foreground">{t("noTasksAvailable")}</p>
+                        <p className="text-sm text-muted-foreground">{t("createTaskToTrack")}</p>
                     </div>
                 </CardContent>
             </Card>

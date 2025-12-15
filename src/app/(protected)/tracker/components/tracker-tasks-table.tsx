@@ -11,11 +11,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ChevronRight, ChevronDown } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { buildTaskTree } from "@/app/(protected)/tasks/utils/task-tree-helpers"
 import { toggleTaskExpanded } from "@/app/(protected)/tasks/actions/task-actions"
 import { useQueryClient } from "@tanstack/react-query"
 import { taskKeys } from "@/app/(protected)/tasks/query-keys"
 import { TaskTimeTracker } from "@/app/(protected)/tasks/components/task-time-tracker"
+import { getTaskStatusLabel } from "@/app/(protected)/tasks/utils/task-status-labels"
 import type { TaskDisplay, TaskTreeNode } from "@/app/(protected)/tasks/schemas/task-schemas"
 
 interface TrackerTasksTableProps {
@@ -24,6 +26,7 @@ interface TrackerTasksTableProps {
 
 function TaskTreeRow({ task }: { task: TaskTreeNode }) {
     const queryClient = useQueryClient()
+    const tStatus = useTranslations("tasks.statuses")
     const isExpanded = task.isExpanded
     const hasSubtasks = task.subtasks.length > 0
 
@@ -69,7 +72,7 @@ function TaskTreeRow({ task }: { task: TaskTreeNode }) {
                     </div>
                 </TableCell>
                 <TableCell>
-                    <Badge variant="secondary">{task.status}</Badge>
+                    <Badge variant="secondary">{getTaskStatusLabel(tStatus, task.status)}</Badge>
                 </TableCell>
                 <TableCell>
                     {task.listName && (
@@ -96,12 +99,15 @@ function TaskTreeRow({ task }: { task: TaskTreeNode }) {
 }
 
 export function TrackerTasksTable({ tasks }: TrackerTasksTableProps) {
+    const t = useTranslations("tasks.tracker")
+    const tCommon = useTranslations("common")
+    const tTasks = useTranslations("tasks")
     const taskTree = buildTaskTree(tasks)
 
     if (tasks.length === 0) {
         return (
             <div className="rounded-md border p-8 text-center text-muted-foreground">
-                No tasks yet. Create tasks from the Tasks page to start tracking time!
+                {t("noTasksYet")}
             </div>
         )
     }
@@ -112,10 +118,10 @@ export function TrackerTasksTable({ tasks }: TrackerTasksTableProps) {
                 <TableHeader>
                     <TableRow>
                         <TableHead className="w-12"></TableHead>
-                        <TableHead className="min-w-[300px]">Task</TableHead>
-                        <TableHead className="w-[150px]">Status</TableHead>
-                        <TableHead className="w-[180px]">List</TableHead>
-                        <TableHead className="w-[140px]">Time Tracker</TableHead>
+                        <TableHead className="min-w-[300px]">{t("task")}</TableHead>
+                        <TableHead className="w-[150px]">{tCommon("fields.status")}</TableHead>
+                        <TableHead className="w-[180px]">{t("list")}</TableHead>
+                        <TableHead className="w-[140px]">{tTasks("table.timeTracker")}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>

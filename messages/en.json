@@ -184,6 +184,14 @@
             "listOptions": "List options",
             "rename": "Rename",
             "deleteConfirm": "Are you sure you want to delete this list? Tasks will be moved to No List."
+        },
+        "tracker": {
+            "selectTaskToTrack": "Select Task to Track",
+            "noTasksAvailable": "No tasks available to track.",
+            "createTaskToTrack": "Create a task from the Tasks page to start tracking time.",
+            "noTasksYet": "No tasks yet. Create tasks from the Tasks page to start tracking time!",
+            "task": "Task",
+            "list": "List"
         }
     },
     "requests": {
