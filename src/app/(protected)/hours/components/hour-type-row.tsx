@@ -1,7 +1,7 @@
 "use client"
 
 import { ChevronDown, ChevronRight } from "lucide-react"
-import { Fragment } from "react"
+import { Fragment, useMemo } from "react"
 import type { HourType } from "@/../../prisma/generated/client"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { useHoursStore } from "../stores/hours-store"
@@ -14,11 +14,39 @@ interface HourTypeRowProps {
     dates: Date[]
     groupedEntries: Record<string, Record<string, HourEntryDisplay>>
     userId: string
+    holidays?: Array<{ date: Date; name: string }>
 }
 
-export function HourTypeRow({ hourType, dates, groupedEntries, userId }: HourTypeRowProps) {
+export function HourTypeRow({
+    hourType,
+    dates,
+    groupedEntries,
+    userId,
+    holidays = [],
+}: HourTypeRowProps) {
     const expandedTypes = useHoursStore((state) => state.expandedTypes)
     const toggleType = useHoursStore((state) => state.toggleType)
+
+    const holidaysByDate = useMemo(() => {
+        const map = new Map<string, { name: string }>()
+        holidays.forEach((holiday) => {
+            const holidayDate = new Date(holiday.date)
+            const year = holidayDate.getFullYear()
+            const month = String(holidayDate.getMonth() + 1).padStart(2, "0")
+            const day = String(holidayDate.getDate()).padStart(2, "0")
+            const key = `${year}-${month}-${day}`
+            map.set(key, { name: holiday.name })
+        })
+        return map
+    }, [holidays])
+
+    const isHoliday = (date: Date) => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        const key = `${year}-${month}-${day}`
+        return holidaysByDate.get(key)
+    }
 
     const isToday = (date: Date) => {
         const today = new Date()
@@ -66,11 +94,12 @@ export function HourTypeRow({ hourType, dates, groupedEntries, userId }: HourTyp
 
                     const entry = groupedEntries[totalKey]?.[dateKey]
                     const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                    const holiday = isHoliday(date)
 
                     return (
                         <TableCell
                             key={dateKey}
-                            className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
+                            className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                         >
                             <EditableHourCell
                                 date={new Date(dateKey)}
@@ -106,11 +135,12 @@ export function HourTypeRow({ hourType, dates, groupedEntries, userId }: HourTyp
 
                             const entry = groupedEntries[trackedKey]?.[dateKey]
                             const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                            const holiday = isHoliday(date)
 
                             return (
                                 <TableCell
                                     key={dateKey}
-                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
+                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                 >
                                     <EditableHourCell
                                         date={date}
@@ -144,11 +174,12 @@ export function HourTypeRow({ hourType, dates, groupedEntries, userId }: HourTyp
 
                             const entry = groupedEntries[manualKey]?.[dateKey]
                             const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                            const holiday = isHoliday(date)
 
                             return (
                                 <TableCell
                                     key={dateKey}
-                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
+                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                 >
                                     <EditableHourCell
                                         date={date}

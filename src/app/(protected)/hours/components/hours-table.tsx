@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import {
     Table,
     TableBody,
@@ -27,10 +28,38 @@ interface HoursTableProps {
     startDate: string
     endDate: string
     userId: string
+    holidays?: Array<{ date: Date; name: string }>
 }
 
-export function HoursTable({ entries, startDate, endDate, userId }: HoursTableProps) {
+export function HoursTable({
+    entries,
+    startDate,
+    endDate,
+    userId,
+    holidays = [],
+}: HoursTableProps) {
     const pendingChanges = useHoursBatchStore((state) => state.pendingChanges)
+
+    const holidaysByDate = useMemo(() => {
+        const map = new Map<string, { name: string }>()
+        holidays.forEach((holiday) => {
+            const holidayDate = new Date(holiday.date)
+            const year = holidayDate.getFullYear()
+            const month = String(holidayDate.getMonth() + 1).padStart(2, "0")
+            const day = String(holidayDate.getDate()).padStart(2, "0")
+            const key = `${year}-${month}-${day}`
+            map.set(key, { name: holiday.name })
+        })
+        return map
+    }, [holidays])
+
+    const isHoliday = (date: Date) => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        const key = `${year}-${month}-${day}`
+        return holidaysByDate.get(key)
+    }
 
     const formatDateKey = (date: Date): string => {
         const year = date.getFullYear()
@@ -123,10 +152,11 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
                             <TableHead className="sticky left-0 bg-background z-20">Type</TableHead>
                             {dates.map((date) => {
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                                const holiday = isHoliday(date)
                                 return (
                                     <TableHead
                                         key={date.toISOString()}
-                                        className={`text-center ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/10" : ""}`}
+                                        className={`text-center ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/10" : ""}`}
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-normal text-muted-foreground">
@@ -135,6 +165,11 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
                                                 })}
                                             </span>
                                             <span>{date.getDate()}</span>
+                                            {holiday && (
+                                                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 mt-1">
+                                                    {holiday.name}
+                                                </span>
+                                            )}
                                         </div>
                                     </TableHead>
                                 )
@@ -158,11 +193,12 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
 
                                 const entry = groupedEntries["GRAND_TOTAL"]?.[dateKey]
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                                const holiday = isHoliday(date)
 
                                 return (
                                     <TableCell
                                         key={dateKey}
-                                        className={`text-center p-2 relative ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
+                                        className={`text-center p-2 relative ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                     >
                                         {entry && entry.hours > 0 && (
                                             <div className="absolute top-0 left-0 right-0 h-0.5 flex">
@@ -204,6 +240,7 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
                                 dates={dates}
                                 groupedEntries={displayGroupedEntries}
                                 userId={userId}
+                                holidays={holidays}
                             />
                         ))}
                     </TableBody>

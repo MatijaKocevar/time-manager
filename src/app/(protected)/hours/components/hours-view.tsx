@@ -29,7 +29,7 @@ interface HoursViewProps {
     userId: string
     initialViewMode: ViewMode
     initialSelectedDate: Date
-    initialHolidays?: Array<{ date: Date }>
+    initialHolidays?: Array<{ date: Date; name: string }>
     initialDateRange?: { start: Date; end: Date }
 }
 
@@ -300,6 +300,7 @@ export function HoursView({
                         startDate={dateRange.startDate}
                         endDate={dateRange.endDate}
                         userId={userId}
+                        holidays={holidays}
                     />
                 </div>
             </div>
