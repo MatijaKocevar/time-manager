@@ -37,8 +37,8 @@ export function HoursSummary({
         .filter((entry) => entry.taskId === "total")
         .reduce((sum, entry) => sum + entry.hours, 0)
 
-    const workHoursOnly = monthlyEntries
-        .filter((entry) => entry.taskId === "total" && entry.type === "WORK")
+    const actualHours = monthlyEntries
+        .filter((entry) => entry.taskId === "grand_total")
         .reduce((sum, entry) => sum + entry.hours, 0)
 
     let expectedHours = 0
@@ -72,7 +72,7 @@ export function HoursSummary({
         }
 
         expectedHours = workingDays * 8
-        overtime = workHoursOnly - expectedHours
+        overtime = actualHours - expectedHours
     }
 
     const weeklyTypeTotals = weeklyEntries.filter((entry) => entry.taskId === "total")
@@ -120,9 +120,9 @@ export function HoursSummary({
                                 </div>
                                 <div className="h-4 w-px bg-border" />
                                 <div>
-                                    <span className="text-muted-foreground">Actual: </span>
+                                    <span className="text-muted-foreground">Total: </span>
                                     <span className="font-semibold">
-                                        {formatHoursMinutes(workHoursOnly)}
+                                        {formatHoursMinutes(actualHours)}
                                     </span>
                                 </div>
                             </div>
