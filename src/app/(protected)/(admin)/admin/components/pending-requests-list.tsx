@@ -1,6 +1,6 @@
 "use client"
 
-import { Fragment, useEffect, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
     Column,
@@ -16,7 +16,7 @@ import {
     SortingState,
     useReactTable,
 } from "@tanstack/react-table"
-import { Search } from "lucide-react"
+import { Loader2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
 import {
@@ -225,17 +225,31 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
 
     const approveMutation = useMutation({
         mutationFn: approveRequest,
+        onMutate: async (variables) => {
+            await queryClient.cancelQueries({ queryKey: requestKeys.all })
+            const previousRequests = queryClient.getQueryData(requestKeys.all)
+            queryClient.setQueryData(requestKeys.all, (old: RequestDisplay[] | undefined) => {
+                if (!old) return old
+                return old.filter((req) => req.id !== variables.id)
+            })
+            return { previousRequests }
+        },
         onSuccess: (data) => {
             if (data.error) {
                 console.error("Approval error:", data.error)
                 alert(`Error: ${data.error}`)
-            } else {
                 queryClient.invalidateQueries({ queryKey: requestKeys.all })
             }
         },
-        onError: (error) => {
+        onError: (error, _variables, context) => {
             console.error("Approval mutation error:", error)
             alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
+            if (context?.previousRequests) {
+                queryClient.setQueryData(requestKeys.all, context.previousRequests)
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: requestKeys.adminRequests() })
         },
     })
 
@@ -267,7 +281,7 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
         return new Date(date).toLocaleDateString()
     }
 
-    const columns: ColumnDef<RequestDisplay>[] = [
+    const columns: ColumnDef<RequestDisplay>[] = useMemo(() => [
         {
             id: "user",
             accessorFn: (row) => row.user.name || row.user.email,
@@ -332,29 +346,38 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
         },
         {
             id: "actions",
-            header: () => <div className="text-right">Actions</div>,
+            header: () => <div className="text-right w-[170px]">Actions</div>,
             cell: ({ row }) => (
-                <div className="flex gap-2 justify-end">
+                <div className="flex gap-2 justify-end w-[170px]">
                     <Button
                         size="sm"
                         onClick={() => handleApprove(row.original.id)}
                         disabled={approveMutation.isPending}
+                        className="w-[84px]"
                     >
-                        Approve
+                        {approveMutation.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            "Approve"
+                        )}
                     </Button>
                     <Button
                         size="sm"
                         variant="destructive"
                         onClick={() => handleRejectClick(row.original.id)}
                         disabled={rejectMutation.isPending}
+                        className="w-[76px]"
                     >
                         Reject
                     </Button>
                 </div>
             ),
             enableColumnFilter: false,
+            size: 170,
+            minSize: 170,
+            maxSize: 170,
         },
-    ]
+    ], [approveMutation.isPending, rejectMutation.isPending, holidays])
 
     const table = useReactTable({
         data: requests,

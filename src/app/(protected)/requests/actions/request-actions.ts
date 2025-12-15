@@ -544,11 +544,11 @@ export async function approveRequest(input: ApproveRequestInput) {
 
         // Recalculate summaries for all hour types
         if (request.affectsHourType) {
-            const targetHourType = mapRequestTypeToHourType(request.type)
-
             const allTypes: Array<"WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER"> =
                 ["WORK", "VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "OTHER"]
 
+            // Batch all recalculations together
+            const recalcPromises: Promise<void>[] = []
             const recalcDate = new Date(request.startDate)
             const recalcEndDate = new Date(request.endDate)
 
@@ -557,18 +557,21 @@ export async function approveRequest(input: ApproveRequestInput) {
                     const normalizedDate = new Date(recalcDate)
                     normalizedDate.setHours(0, 0, 0, 0)
 
-                    // Recalculate all hour types to ensure proper migration
                     for (const hourType of allTypes) {
-                        await recalculateDailySummaryStandalone(
-                            request.userId,
-                            normalizedDate,
-                            hourType
+                        recalcPromises.push(
+                            recalculateDailySummaryStandalone(
+                                request.userId,
+                                normalizedDate,
+                                hourType
+                            )
                         )
                     }
                 }
 
                 recalcDate.setDate(recalcDate.getDate() + 1)
             }
+
+            await Promise.all(recalcPromises)
         }
 
         revalidatePath("/requests")
