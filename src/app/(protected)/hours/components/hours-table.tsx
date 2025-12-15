@@ -15,6 +15,7 @@ import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { EditableHourCell } from "./editable-hour-cell"
 import { HourTypeRow } from "./hour-type-row"
 import { useHoursBatchStore } from "../stores/hours-batch-store"
+import { useHoursStore } from "../stores/hours-store"
 import {
     generateDateColumns,
     groupEntriesByType,
@@ -29,6 +30,7 @@ interface HoursTableProps {
     endDate: string
     userId: string
     holidays?: Array<{ date: Date; name: string }>
+    initialExpandedTypes?: string[]
 }
 
 export function HoursTable({
@@ -37,6 +39,7 @@ export function HoursTable({
     endDate,
     userId,
     holidays = [],
+    initialExpandedTypes = [],
 }: HoursTableProps) {
     const pendingChanges = useHoursBatchStore((state) => state.pendingChanges)
 
@@ -241,6 +244,7 @@ export function HoursTable({
                                 groupedEntries={displayGroupedEntries}
                                 userId={userId}
                                 holidays={holidays}
+                                initiallyExpanded={initialExpandedTypes.includes(hourType.value)}
                             />
                         ))}
                     </TableBody>

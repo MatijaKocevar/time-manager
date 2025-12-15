@@ -15,6 +15,7 @@ interface HourTypeRowProps {
     groupedEntries: Record<string, Record<string, HourEntryDisplay>>
     userId: string
     holidays?: Array<{ date: Date; name: string }>
+    initiallyExpanded?: boolean
 }
 
 export function HourTypeRow({
@@ -23,6 +24,7 @@ export function HourTypeRow({
     groupedEntries,
     userId,
     holidays = [],
+    initiallyExpanded = false,
 }: HourTypeRowProps) {
     const expandedTypes = useHoursStore((state) => state.expandedTypes)
     const toggleType = useHoursStore((state) => state.toggleType)
@@ -57,7 +59,7 @@ export function HourTypeRow({
         )
     }
 
-    const isExpanded = expandedTypes.has(hourType)
+    const isExpanded = expandedTypes.size > 0 ? expandedTypes.has(hourType) : initiallyExpanded
 
     const trackedKey = `${hourType}_TRACKED`
     const manualKey = `${hourType}_MANUAL`

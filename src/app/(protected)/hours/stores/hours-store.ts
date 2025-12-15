@@ -50,6 +50,7 @@ interface HoursStoreState {
 }
 
 interface HoursStoreActions {
+    initializeExpandedTypes: (types: string[]) => void
     toggleType: (type: string) => void
     expandAll: () => void
     collapseAll: () => void
@@ -102,32 +103,39 @@ interface HoursStoreActions {
 
 const saveExpandedTypes = (types: Set<string>) => {
     if (typeof window === "undefined") return
+    const typesArray = Array.from(types)
     try {
-        localStorage.setItem("hours-expanded-types", JSON.stringify(Array.from(types)))
+        localStorage.setItem("hours-expanded-types", JSON.stringify(typesArray))
     } catch {
         // Ignore localStorage errors
     }
+    // Save to cookies for server-side access
+    document.cookie = `hours-expanded-types=${JSON.stringify(typesArray)}; path=/; max-age=31536000; SameSite=Lax`
+}
+
+// Read initial state synchronously from localStorage
+const getInitialExpandedTypes = (): Set<string> => {
+    if (typeof window === "undefined") return new Set<string>()
+    try {
+        const stored = localStorage.getItem("hours-expanded-types")
+        if (stored) {
+            return new Set<string>(JSON.parse(stored) as string[])
+        }
+    } catch {
+        // Ignore localStorage errors
+    }
+    return new Set<string>()
 }
 
 export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) => {
     const today = new Date().toISOString().split("T")[0]
 
-    if (typeof window !== "undefined") {
-        setTimeout(() => {
-            try {
-                const stored = localStorage.getItem("hours-expanded-types")
-                if (stored) {
-                    const expandedTypes = new Set<string>(JSON.parse(stored) as string[])
-                    set({ expandedTypes })
-                }
-            } catch {
-                // Ignore localStorage errors
-            }
-        }, 0)
-    }
-
     return {
-        expandedTypes: new Set<string>(),
+        expandedTypes: getInitialExpandedTypes(),
+        initializeExpandedTypes: (types) => {
+            const expandedTypes = new Set<string>(types)
+            set({ expandedTypes })
+        },
         toggleType: (type) =>
             set((state) => {
                 const newExpanded = new Set(state.expandedTypes)

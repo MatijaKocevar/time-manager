@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useHoursStore } from "../stores/hours-store"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
@@ -31,6 +32,7 @@ interface HoursViewProps {
     initialSelectedDate: Date
     initialHolidays?: Array<{ date: Date; name: string }>
     initialDateRange?: { start: Date; end: Date }
+    initialExpandedTypes?: string[]
 }
 
 export function HoursView({
@@ -42,12 +44,18 @@ export function HoursView({
     initialSelectedDate,
     initialHolidays = [],
     initialDateRange,
+    initialExpandedTypes = [],
 }: HoursViewProps) {
     const router = useRouter()
     const queryClient = useQueryClient()
     const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode)
     const [currentDate, setCurrentDate] = useState<Date>(initialSelectedDate)
     const [isFormOpen, setIsFormOpen] = useState(false)
+
+    useEffect(() => {
+        const initializeExpandedTypes = useHoursStore.getState().initializeExpandedTypes
+        initializeExpandedTypes(initialExpandedTypes)
+    }, [])
 
     const isDirty = useHoursBatchStore((state) => state.isDirty)
     const isSaving = useHoursBatchStore((state) => state.isSaving)
@@ -301,6 +309,7 @@ export function HoursView({
                         endDate={dateRange.endDate}
                         userId={userId}
                         holidays={holidays}
+                        initialExpandedTypes={initialExpandedTypes}
                     />
                 </div>
             </div>
