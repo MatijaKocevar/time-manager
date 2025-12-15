@@ -103,15 +103,20 @@ export function ShiftsCalendar({
         const map = new Map<string, { name: string }>()
         initialHolidays.forEach((holiday) => {
             const holidayDate = new Date(holiday.date)
-            holidayDate.setHours(0, 0, 0, 0)
-            const key = holidayDate.toISOString().split("T")[0]
+            const year = holidayDate.getFullYear()
+            const month = String(holidayDate.getMonth() + 1).padStart(2, "0")
+            const day = String(holidayDate.getDate()).padStart(2, "0")
+            const key = `${year}-${month}-${day}`
             map.set(key, { name: holiday.name })
         })
         return map
     }, [initialHolidays])
 
     const isHoliday = (date: Date) => {
-        const key = date.toISOString().split("T")[0]
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        const key = `${year}-${month}-${day}`
         return holidaysByDate.get(key)
     }
 
@@ -261,11 +266,11 @@ export function ShiftsCalendar({
                                 </TableCell>
                                 {days.map((date) => {
                                     const shift = getShift(user.id, date)
-                                    const colors = shift
-                                        ? SHIFT_LOCATION_COLORS[shift.location]
-                                        : { bg: "bg-background", text: "text-muted-foreground" }
                                     const isWeekend = date.getDay() === 0 || date.getDay() === 6
                                     const holiday = isHoliday(date)
+                                    const shouldShowDefault = !isWeekend && !holiday
+                                    const location =
+                                        shift?.location || (shouldShowDefault ? "OFFICE" : null)
 
                                     return (
                                         <TableCell
@@ -277,13 +282,13 @@ export function ShiftsCalendar({
                                                 handleCellClick(user.id, user.name, date)
                                             }
                                         >
-                                            <div
-                                                className={`rounded-md p-2 text-xs ${colors.bg} ${colors.text} min-h-10 flex items-center justify-center`}
-                                            >
-                                                {shift
-                                                    ? SHIFT_LOCATION_COLORS[shift.location].label
-                                                    : SHIFT_LOCATION_COLORS.OFFICE.label}
-                                            </div>
+                                            {location && (
+                                                <div
+                                                    className={`rounded-md p-2 text-xs ${SHIFT_LOCATION_COLORS[location].bg} ${SHIFT_LOCATION_COLORS[location].text} min-h-10 flex items-center justify-center`}
+                                                >
+                                                    {SHIFT_LOCATION_COLORS[location].label}
+                                                </div>
+                                            )}
                                         </TableCell>
                                     )
                                 })}

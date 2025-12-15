@@ -231,7 +231,10 @@ export async function getHolidaysInRange(startDate: string, endDate: string) {
         }
 
         const start = new Date(startDate)
+        start.setDate(start.getDate() - 1)
+
         const end = new Date(endDate)
+        end.setDate(end.getDate() + 1)
 
         const holidays = await prisma.holiday.findMany({
             where: {
