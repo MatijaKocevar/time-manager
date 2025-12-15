@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Folder, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,6 +20,8 @@ interface ListSelectorProps {
 }
 
 export function ListSelector({ lists, selectedListId, onSelectList }: ListSelectorProps) {
+    const t = useTranslations("tasks.table")
+    const tForm = useTranslations("tasks.form")
     const openListDialog = useTasksStore((state) => state.openListDialog)
 
     const selectedList = lists.find((list) => list.id === selectedListId)
@@ -29,7 +32,7 @@ export function ListSelector({ lists, selectedListId, onSelectList }: ListSelect
                 <Button variant="outline" className="w-full justify-start gap-2">
                     <Folder className="h-4 w-4" />
                     <span className="flex-1 text-left">
-                        {selectedList ? selectedList.name : "All Tasks"}
+                        {selectedList ? selectedList.name : t("allTasks")}
                     </span>
                 </Button>
             </DropdownMenuTrigger>
@@ -55,7 +58,7 @@ export function ListSelector({ lists, selectedListId, onSelectList }: ListSelect
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => openListDialog()}>
                     <Plus className="mr-2 h-4 w-4" />
-                    Create New List
+                    {tForm("createNewList")}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

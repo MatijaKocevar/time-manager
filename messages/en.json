@@ -64,7 +64,8 @@
             "role": "Role",
             "color": "Color",
             "user": "User",
-            "actions": "Actions"
+            "actions": "Actions",
+            "list": "List"
         },
         "placeholders": {
             "enterTitle": "Enter title",
@@ -168,12 +169,47 @@
             "taskTitle": "Task Title",
             "taskDescription": "Task Description",
             "createTaskDescription": "Create a new task to track your work",
-            "addSubtaskDescription": "Add a new subtask to the selected task"
+            "addSubtaskDescription": "Add a new subtask to the selected task",
+            "enterTaskTitle": "Enter task title",
+            "enterTaskDescription": "Enter task description (optional)",
+            "titleRequired": "Title is required",
+            "creating": "Creating...",
+            "updating": "Updating...",
+            "moveTaskToList": "Move Task to List",
+            "selectList": "Select a list",
+            "moving": "Moving...",
+            "moveTask": "Move Task",
+            "deleteTask": "Delete Task",
+            "deleteTaskConfirm": "Are you sure you want to delete this task? This will also delete all subtasks.",
+            "deleting": "Deleting...",
+            "editList": "Edit List",
+            "createNewList": "Create New List",
+            "updateListDetails": "Update the details of your list",
+            "createListDescription": "Create a new list to organize your tasks",
+            "enterListName": "Enter list name",
+            "enterListDescription": "Enter list description",
+            "descriptionOptional": "Description (Optional)",
+            "colorOptional": "Color (Optional)",
+            "nameRequired": "Name is required",
+            "timeEntries": "Time Entries",
+            "duration": "Duration",
+            "startedAt": "Started At",
+            "endedAt": "Ended At",
+            "noTimeEntries": "No time entries yet",
+            "subtasksInheritList": "Subtasks inherit parent's list"
         },
         "table": {
             "list": "List",
             "timeTracker": "Time Tracker",
-            "noTasks": "No tasks found"
+            "noTasks": "No tasks found",
+            "title": "Title",
+            "allTasks": "All Tasks"
+        },
+        "actions": {
+            "startTimer": "Start timer",
+            "stopTimer": "Stop timer",
+            "addSubtask": "Add subtask",
+            "moveToList": "Move to list"
         },
         "list": {
             "createList": "Create List",

@@ -1,6 +1,7 @@
 "use client"
 
 import { Play, Square } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { useQueryClient } from "@tanstack/react-query"
 import { startTimer, stopTimer } from "../actions/task-time-actions"
@@ -15,6 +16,7 @@ interface TaskTimeTrackerProps {
 
 export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
     const queryClient = useQueryClient()
+    const t = useTranslations("tasks.actions")
     const activeTimers = useTasksStore((state) => state.activeTimers)
     const elapsedTimes = useTasksStore((state) => state.elapsedTimes)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
@@ -85,7 +87,7 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
                 className="h-8 w-8 p-0"
             >
                 {isRunning ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                <span className="sr-only">{isRunning ? "Stop timer" : "Start timer"}</span>
+                <span className="sr-only">{isRunning ? t("stopTimer") : t("startTimer")}</span>
             </Button>
             <button
                 onClick={handleClick}

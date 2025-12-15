@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { buildGroupedTaskTree } from "../utils/task-tree-helpers"
 import { TaskRow } from "./task-row"
 import { getStatusColor } from "../constants/task-statuses"
+import { getTaskStatusLabel } from "../utils/task-status-labels"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { useTasksStore } from "../stores/tasks-store"
 import type { TaskDisplay } from "../schemas"
@@ -16,6 +18,10 @@ interface TasksTableProps {
 
 export function TasksTable({ tasks, listId }: TasksTableProps) {
     const [isMounted, setIsMounted] = useState(false)
+    const t = useTranslations("tasks.table")
+    const tCommon = useTranslations("common")
+    const tStatus = useTranslations("tasks.statuses")
+    const tActions = useTranslations("tasks.actions")
     const groupedTasks = buildGroupedTaskTree(tasks)
     const key = listId || "no-list"
     const [defaultExpanded] = useState(() => new Set(["IN_PROGRESS" as const, "TODO" as const]))
@@ -53,7 +59,7 @@ export function TasksTable({ tasks, listId }: TasksTableProps) {
                                 <span
                                     className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors ${getStatusColor(group.status)}`}
                                 >
-                                    {group.label}
+                                    {getTaskStatusLabel(tStatus, group.status)}
                                 </span>
                                 <span className="text-sm text-muted-foreground">
                                     ({group.count})
@@ -65,12 +71,12 @@ export function TasksTable({ tasks, listId }: TasksTableProps) {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="w-12"></TableHead>
-                                        <TableHead className="min-w-[300px]">Title</TableHead>
-                                        <TableHead className="w-[150px]">Status</TableHead>
-                                        <TableHead className="w-[180px]">List</TableHead>
-                                        <TableHead className="w-[200px]">Time Tracker</TableHead>
+                                        <TableHead className="min-w-[300px]">{t("title")}</TableHead>
+                                        <TableHead className="w-[150px]">{tCommon("fields.status")}</TableHead>
+                                        <TableHead className="w-[180px]">{t("list")}</TableHead>
+                                        <TableHead className="w-[200px]">{t("timeTracker")}</TableHead>
                                         <TableHead className="w-[100px] text-right">
-                                            Actions
+                                            {tCommon("fields.actions")}
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>

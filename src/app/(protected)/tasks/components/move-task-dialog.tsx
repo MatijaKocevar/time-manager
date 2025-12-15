@@ -1,6 +1,7 @@
 "use client"
 
 import { useQueryClient } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import {
     Dialog,
     DialogContent,
@@ -29,6 +30,9 @@ interface MoveTaskDialogProps {
 
 export function MoveTaskDialog({ lists }: MoveTaskDialogProps) {
     const queryClient = useQueryClient()
+    const t = useTranslations("tasks.form")
+    const tCommon = useTranslations("common")
+    const tList = useTranslations("tasks.list")
     const moveTaskDialog = useTasksStore((state) => state.moveTaskDialog)
     const closeMoveTaskDialog = useTasksStore((state) => state.closeMoveTaskDialog)
     const selectedListId = useTasksStore((state) => state.moveTaskForm.selectedListId)
@@ -74,25 +78,24 @@ export function MoveTaskDialog({ lists }: MoveTaskDialogProps) {
             <DialogContent>
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>Move Task to List</DialogTitle>
+                        <DialogTitle>{t("moveTaskToList")}</DialogTitle>
                         <DialogDescription>
-                            Select a list to move this task to, or select no list to remove it from
-                            all lists.
+                            {t("selectList")}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="list-select">Destination List</Label>
+                            <Label htmlFor="list-select">{tCommon("fields.list")}</Label>
                             <Select
                                 value={selectedListId}
                                 onValueChange={setMoveTaskSelectedListId}
                             >
                                 <SelectTrigger id="list-select">
-                                    <SelectValue placeholder="Select a list" />
+                                    <SelectValue placeholder={t("selectList")} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">No List</SelectItem>
+                                    <SelectItem value="">{tList("noList")}</SelectItem>
                                     {lists.map((list) => (
                                         <SelectItem key={list.id} value={list.id}>
                                             {list.name}
@@ -112,10 +115,10 @@ export function MoveTaskDialog({ lists }: MoveTaskDialogProps) {
                             onClick={closeMoveTaskDialog}
                             disabled={isLoading}
                         >
-                            Cancel
+                            {tCommon("actions.cancel")}
                         </Button>
                         <Button type="submit" disabled={isLoading}>
-                            {isLoading ? "Moving..." : "Move Task"}
+                            {isLoading ? t("moving") : t("moveTask")}
                         </Button>
                     </DialogFooter>
                 </form>

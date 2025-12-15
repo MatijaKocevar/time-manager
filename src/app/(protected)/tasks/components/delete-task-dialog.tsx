@@ -1,6 +1,7 @@
 "use client"
 
 import { useQueryClient } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import {
     Dialog,
     DialogContent,
@@ -16,6 +17,8 @@ import { taskKeys } from "../query-keys"
 
 export function DeleteTaskDialog() {
     const queryClient = useQueryClient()
+    const t = useTranslations("tasks.form")
+    const tCommon = useTranslations("common")
     const deleteDialog = useTasksStore((state) => state.deleteDialog)
     const closeDeleteDialog = useTasksStore((state) => state.closeDeleteDialog)
     const isLoading = useTasksStore((state) => state.deleteTaskForm.isLoading)
@@ -50,16 +53,13 @@ export function DeleteTaskDialog() {
         <Dialog open={deleteDialog.isOpen} onOpenChange={closeDeleteDialog}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Delete Task</DialogTitle>
-                    <DialogDescription>
-                        Are you sure you want to delete this task?
-                    </DialogDescription>
+                    <DialogTitle>{t("deleteTask")}</DialogTitle>
+                    <DialogDescription>{t("deleteTaskConfirm")}</DialogDescription>
                 </DialogHeader>
 
                 <div className="py-4">
                     <p className="text-sm text-muted-foreground">
-                        This action cannot be undone. All subtasks and time entries associated with
-                        this task will also be deleted.
+                        {tCommon("messages.deleteConfirm", { item: "" })}
                     </p>
 
                     {error && <div className="mt-4 text-sm text-destructive">{error}</div>}
@@ -72,7 +72,7 @@ export function DeleteTaskDialog() {
                         onClick={closeDeleteDialog}
                         disabled={isLoading}
                     >
-                        Cancel
+                        {tCommon("actions.cancel")}
                     </Button>
                     <Button
                         type="button"
@@ -80,7 +80,7 @@ export function DeleteTaskDialog() {
                         onClick={handleDelete}
                         disabled={isLoading}
                     >
-                        {isLoading ? "Deleting..." : "Delete"}
+                        {isLoading ? t("deleting") : tCommon("actions.delete")}
                     </Button>
                 </DialogFooter>
             </DialogContent>

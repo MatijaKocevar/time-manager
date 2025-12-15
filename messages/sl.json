@@ -64,7 +64,8 @@
             "role": "Vloga",
             "color": "Barva",
             "user": "Uporabnik",
-            "actions": "Akcije"
+            "actions": "Akcije",
+            "list": "Seznam"
         },
         "placeholders": {
             "enterTitle": "Vnesite naslov",
@@ -167,13 +168,48 @@
             "newTask": "Nova naloga",
             "taskTitle": "Naslov naloge",
             "taskDescription": "Opis naloge",
-            "createTaskDescription": "Ustvari novo nalogo za sledenje delu",
-            "addSubtaskDescription": "Dodaj novo podnalogo k izbrani nalogi"
+            "createTaskDescription": "Ustvarite novo nalogo za sledenje vašega dela",
+            "addSubtaskDescription": "Dodajte novo podnalogo izbrani nalogi",
+            "enterTaskTitle": "Vnesite naslov naloge",
+            "enterTaskDescription": "Vnesite opis naloge (neobvezno)",
+            "titleRequired": "Naslov je obvezen",
+            "creating": "Ustvarjanje...",
+            "updating": "Posodabljanje...",
+            "moveTaskToList": "Premakni nalogo na seznam",
+            "selectList": "Izberite seznam",
+            "moving": "Premikanje...",
+            "moveTask": "Premakni nalogo",
+            "deleteTask": "Izbriši nalogo",
+            "deleteTaskConfirm": "Ste prepričani, da želite izbrisati to nalogo? To bo tudi izbrisalo vse podnaloge.",
+            "deleting": "Brisanje...",
+            "editList": "Uredi seznam",
+            "createNewList": "Ustvari nov seznam",
+            "updateListDetails": "Posodobi podrobnosti vašega seznama",
+            "createListDescription": "Ustvarite nov seznam za organizacijo vaših nalog",
+            "enterListName": "Vnesite ime seznama",
+            "enterListDescription": "Vnesite opis seznama",
+            "descriptionOptional": "Opis (neobvezno)",
+            "colorOptional": "Barva (neobvezno)",
+            "nameRequired": "Ime je obvezno",
+            "timeEntries": "Časovni vnosi",
+            "duration": "Trajanje",
+            "startedAt": "Začeto ob",
+            "endedAt": "Končano ob",
+            "noTimeEntries": "Še ni časovnih vnosov",
+            "subtasksInheritList": "Podnaloge podedujejo seznam starša"
         },
         "table": {
             "list": "Seznam",
             "timeTracker": "Sledenje časa",
-            "noTasks": "Ni nalog"
+            "noTasks": "Ni najdenih nalog",
+            "title": "Naslov",
+            "allTasks": "Vse naloge"
+        },
+        "actions": {
+            "startTimer": "Začni štoparico",
+            "stopTimer": "Ustavi štoparico",
+            "addSubtask": "Dodaj podnalogo",
+            "moveToList": "Premakni na seznam"
         },
         "list": {
             "createList": "Ustvari seznam",

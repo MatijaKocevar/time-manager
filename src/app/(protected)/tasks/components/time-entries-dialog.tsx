@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import {
     Dialog,
     DialogContent,
@@ -23,6 +24,7 @@ import { taskKeys } from "../query-keys"
 import { formatDateTime, formatDuration } from "../utils/time-helpers"
 
 export function TimeEntriesDialog() {
+    const t = useTranslations("tasks.form")
     const timeEntriesDialog = useTasksStore((state) => state.timeEntriesDialog)
     const closeTimeEntriesDialog = useTasksStore((state) => state.closeTimeEntriesDialog)
 
@@ -47,13 +49,13 @@ export function TimeEntriesDialog() {
         <Dialog open={timeEntriesDialog.isOpen} onOpenChange={closeTimeEntriesDialog}>
             <DialogContent className="max-w-3xl">
                 <DialogHeader>
-                    <DialogTitle>Time Entries</DialogTitle>
-                    <DialogDescription>All recorded time for this task</DialogDescription>
+                    <DialogTitle>{t("timeEntries")}</DialogTitle>
+                    <DialogDescription>{t("noTimeEntries")}</DialogDescription>
                 </DialogHeader>
 
                 {entries.length === 0 ? (
                     <div className="py-8 text-center text-muted-foreground">
-                        No time entries recorded yet
+                        {t("noTimeEntries")}
                     </div>
                 ) : (
                     <>
@@ -61,9 +63,9 @@ export function TimeEntriesDialog() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Started</TableHead>
-                                        <TableHead>Ended</TableHead>
-                                        <TableHead className="text-right">Duration</TableHead>
+                                        <TableHead>{t("startedAt")}</TableHead>
+                                        <TableHead>{t("endedAt")}</TableHead>
+                                        <TableHead className="text-right">{t("duration")}</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

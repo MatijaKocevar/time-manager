@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { ChevronDown, ChevronRight, Plus, Trash2, Folder, FolderOpen } from "lucide-react"
 import { Fragment } from "react"
 import { TableCell, TableRow } from "@/components/ui/table"
@@ -28,6 +29,9 @@ interface TaskRowProps {
 
 export function TaskRow({ task }: TaskRowProps) {
     const queryClient = useQueryClient()
+    const t = useTranslations("tasks.form")
+    const tList = useTranslations("tasks.list")
+    const tActions = useTranslations("tasks.actions")
     const openDeleteDialog = useTasksStore((state) => state.openDeleteDialog)
     const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
     const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
@@ -126,7 +130,7 @@ export function TaskRow({ task }: TaskRowProps) {
                     {task.parentId ? (
                         <div
                             className="flex items-center gap-2 text-muted-foreground"
-                            title="Subtasks inherit parent's list"
+                            title={t("subtasksInheritList")}
                         >
                             <FolderOpen className="h-3 w-3" />
                             <span className="text-sm flex items-center gap-1">
@@ -136,7 +140,7 @@ export function TaskRow({ task }: TaskRowProps) {
                                         style={{ backgroundColor: currentList.color }}
                                     />
                                 )}
-                                {currentList?.name ?? "No List"}
+                                {currentList?.name ?? tList("noList")}
                             </span>
                         </div>
                     ) : (
@@ -160,7 +164,7 @@ export function TaskRow({ task }: TaskRowProps) {
                                                     style={{ backgroundColor: currentList.color }}
                                                 />
                                             )}
-                                            {currentList?.name ?? "No List"}
+                                            {currentList?.name ?? tList("noList")}
                                         </span>
                                     </div>
                                 </SelectValue>
@@ -169,7 +173,7 @@ export function TaskRow({ task }: TaskRowProps) {
                                 <SelectItem value="none">
                                     <div className="flex items-center gap-2">
                                         <Folder className="h-3 w-3 text-muted-foreground" />
-                                        <span className="text-sm">No List</span>
+                                        <span className="text-sm">{tList("noList")}</span>
                                     </div>
                                 </SelectItem>
                                 {lists.map((list) => (
@@ -204,7 +208,7 @@ export function TaskRow({ task }: TaskRowProps) {
                             className="h-8 w-8 p-0"
                         >
                             <Plus className="h-4 w-4" />
-                            <span className="sr-only">Add subtask</span>
+                            <span className="sr-only">{tActions("addSubtask")}</span>
                         </Button>
                         <Button
                             variant="ghost"
@@ -213,7 +217,7 @@ export function TaskRow({ task }: TaskRowProps) {
                             className="h-8 w-8 p-0 text-destructive"
                         >
                             <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete task</span>
+                            <span className="sr-only">{t("deleteTask")}</span>
                         </Button>
                     </div>
                 </TableCell>

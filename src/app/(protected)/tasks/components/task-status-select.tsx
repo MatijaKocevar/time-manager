@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import {
     Select,
     SelectContent,
@@ -11,6 +12,7 @@ import { updateTask } from "../actions/task-actions"
 import { useQueryClient } from "@tanstack/react-query"
 import { taskKeys } from "../query-keys"
 import { TASK_STATUSES } from "../constants/task-statuses"
+import { getTaskStatusLabel } from "../utils/task-status-labels"
 import { useTasksStore } from "../stores/tasks-store"
 import type { TaskTreeNode } from "../schemas"
 import type { TaskStatus } from "../schemas/task-action-schemas"
@@ -21,6 +23,7 @@ interface TaskStatusSelectProps {
 
 export function TaskStatusSelect({ task }: TaskStatusSelectProps) {
     const queryClient = useQueryClient()
+    const tStatus = useTranslations("tasks.statuses")
     const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
     const isLoading = useTasksStore(
         (state) => state.taskOperations.get(task.id)?.isLoading ?? false
@@ -58,7 +61,7 @@ export function TaskStatusSelect({ task }: TaskStatusSelectProps) {
                         <div
                             className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-semibold ${currentStatus.color}`}
                         >
-                            {currentStatus.label}
+                            {getTaskStatusLabel(tStatus, currentStatus.value)}
                         </div>
                     )}
                 </SelectValue>
@@ -69,7 +72,7 @@ export function TaskStatusSelect({ task }: TaskStatusSelectProps) {
                         <div
                             className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-semibold ${status.color}`}
                         >
-                            {status.label}
+                            {getTaskStatusLabel(tStatus, status.value)}
                         </div>
                     </SelectItem>
                 ))}

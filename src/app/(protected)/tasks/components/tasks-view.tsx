@@ -93,7 +93,7 @@ export function TasksView({ initialTasks, listId }: TasksViewProps) {
             <div className="flex items-center justify-end w-full">
                 <Button onClick={() => openCreateDialog()}>
                     <Plus className="h-4 w-4 mr-2" />
-                    New Task
+                    {t("newTask")}
                 </Button>
             </div>
             <TasksTable tasks={tasks} listId={listId} />

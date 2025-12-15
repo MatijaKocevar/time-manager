@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import {
     Dialog,
     DialogContent,
@@ -24,9 +25,13 @@ import { useTasksStore } from "../stores/tasks-store"
 import { createTask } from "../actions/task-actions"
 import { taskKeys } from "../query-keys"
 import { TASK_STATUSES } from "../constants/task-statuses"
+import { getTaskStatusLabel } from "../utils/task-status-labels"
 
 export function CreateTaskDialog() {
     const queryClient = useQueryClient()
+    const t = useTranslations("tasks.form")
+    const tCommon = useTranslations("common")
+    const tStatus = useTranslations("tasks.statuses")
     const createDialog = useTasksStore((state) => state.createDialog)
     const selectedListId = useTasksStore((state) => state.selectedListId)
     const createForm = useTasksStore((state) => state.createForm)
@@ -46,7 +51,7 @@ export function CreateTaskDialog() {
         e.preventDefault()
 
         if (!createForm.data.title.trim()) {
-            setCreateFormError("Title is required")
+            setCreateFormError(t("titleRequired"))
             return
         }
 
@@ -81,41 +86,41 @@ export function CreateTaskDialog() {
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>
-                            {createDialog.parentId ? "Create Subtask" : "Create Task"}
+                            {createDialog.parentId ? t("createSubtask") : t("createTask")}
                         </DialogTitle>
                         <DialogDescription>
                             {createDialog.parentId
-                                ? "Add a new subtask to the selected task"
-                                : "Create a new task to track your work"}
+                                ? t("addSubtaskDescription")
+                                : t("createTaskDescription")}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="title">Title *</Label>
+                            <Label htmlFor="title">{tCommon("fields.title")} *</Label>
                             <Input
                                 id="title"
                                 value={createForm.data.title}
                                 onChange={(e) => setCreateFormData({ title: e.target.value })}
-                                placeholder="Enter task title"
+                                placeholder={t("enterTaskTitle")}
                                 disabled={createForm.isLoading}
                                 autoFocus
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="description">{tCommon("fields.description")}</Label>
                             <Input
                                 id="description"
                                 value={createForm.data.description}
                                 onChange={(e) => setCreateFormData({ description: e.target.value })}
-                                placeholder="Enter task description (optional)"
+                                placeholder={t("enterTaskDescription")}
                                 disabled={createForm.isLoading}
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="status">Status</Label>
+                            <Label htmlFor="status">{tCommon("fields.status")}</Label>
                             <Select
                                 value={createForm.data.status}
                                 onValueChange={(value) =>
@@ -134,7 +139,7 @@ export function CreateTaskDialog() {
                                             <div
                                                 className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-semibold ${status.color}`}
                                             >
-                                                {status.label}
+                                                {getTaskStatusLabel(tStatus, status.value)}
                                             </div>
                                         </SelectItem>
                                     ))}
@@ -154,10 +159,10 @@ export function CreateTaskDialog() {
                             onClick={closeCreateDialog}
                             disabled={createForm.isLoading}
                         >
-                            Cancel
+                            {tCommon("actions.cancel")}
                         </Button>
                         <Button type="submit" disabled={createForm.isLoading}>
-                            {createForm.isLoading ? "Creating..." : "Create"}
+                            {createForm.isLoading ? t("creating") : tCommon("actions.create")}
                         </Button>
                     </DialogFooter>
                 </form>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { useQuery } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -20,6 +21,7 @@ interface TasksViewClientProps {
 }
 
 export function TasksViewClient({ listId }: TasksViewClientProps) {
+    const t = useTranslations("tasks.form")
     const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
     const setSelectedListId = useTasksStore((state) => state.setSelectedListId)
     const activeTimers = useTasksStore((state) => state.activeTimers)
@@ -80,7 +82,7 @@ export function TasksViewClient({ listId }: TasksViewClientProps) {
             <div className="flex items-center justify-end w-full">
                 <Button onClick={() => openCreateDialog()}>
                     <Plus className="h-4 w-4 mr-2" />
-                    New Task
+                    {t("newTask")}
                 </Button>
             </div>
             <CreateTaskDialog />

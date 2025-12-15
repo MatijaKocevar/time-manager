@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import {
     Dialog,
     DialogContent,
@@ -20,6 +21,8 @@ import { listKeys } from "../query-keys"
 
 export function CreateListDialog() {
     const queryClient = useQueryClient()
+    const t = useTranslations("tasks.form")
+    const tCommon = useTranslations("common")
     const listDialog = useTasksStore((state) => state.listDialog)
     const listForm = useTasksStore((state) => state.listForm)
     const closeListDialog = useTasksStore((state) => state.closeListDialog)
@@ -40,7 +43,7 @@ export function CreateListDialog() {
         e.preventDefault()
 
         if (!listForm.data.name.trim()) {
-            setListError("Name is required")
+            setListError(t("nameRequired"))
             return
         }
 
@@ -80,20 +83,18 @@ export function CreateListDialog() {
             <DialogContent>
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>{isEditing ? "Edit List" : "Create New List"}</DialogTitle>
+                        <DialogTitle>{isEditing ? t("editList") : t("createNewList")}</DialogTitle>
                         <DialogDescription>
-                            {isEditing
-                                ? "Update the details of your list"
-                                : "Create a new list to organize your tasks"}
+                            {isEditing ? t("updateListDetails") : t("createListDescription")}
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label htmlFor="list-name">Name</Label>
+                            <Label htmlFor="list-name">{tCommon("fields.name")}</Label>
                             <Input
                                 id="list-name"
-                                placeholder="Enter list name"
+                                placeholder={t("enterListName")}
                                 value={listForm.data.name}
                                 onChange={(e) => setListFormData({ name: e.target.value })}
                                 disabled={listForm.isLoading}
@@ -102,10 +103,10 @@ export function CreateListDialog() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="list-description">Description (Optional)</Label>
+                            <Label htmlFor="list-description">{t("descriptionOptional")}</Label>
                             <Textarea
                                 id="list-description"
-                                placeholder="Enter list description"
+                                placeholder={t("enterListDescription")}
                                 value={listForm.data.description}
                                 onChange={(e) => setListFormData({ description: e.target.value })}
                                 disabled={listForm.isLoading}
@@ -113,7 +114,7 @@ export function CreateListDialog() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="list-color">Color (Optional)</Label>
+                            <Label htmlFor="list-color">{t("colorOptional")}</Label>
                             <Input
                                 id="list-color"
                                 type="color"
@@ -135,16 +136,12 @@ export function CreateListDialog() {
                             onClick={closeListDialog}
                             disabled={listForm.isLoading}
                         >
-                            Cancel
+                            {tCommon("actions.cancel")}
                         </Button>
                         <Button type="submit" disabled={listForm.isLoading}>
                             {listForm.isLoading
-                                ? isEditing
-                                    ? "Updating..."
-                                    : "Creating..."
-                                : isEditing
-                                  ? "Update"
-                                  : "Create"}
+                                ? t(isEditing ? "updating" : "creating")
+                                : tCommon(isEditing ? "actions.update" : "actions.create")}
                         </Button>
                     </DialogFooter>
                 </form>
