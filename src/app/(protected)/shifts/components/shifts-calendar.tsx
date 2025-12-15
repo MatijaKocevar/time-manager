@@ -216,7 +216,7 @@ export function ShiftsCalendar({
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="sticky left-0 z-20 bg-[hsl(var(--background))] min-w-[150px]">
+                            <TableHead className="sticky left-0 z-20 bg-background min-w-[150px]">
                                 Employee
                             </TableHead>
                             {days.map((date) => {
@@ -253,7 +253,7 @@ export function ShiftsCalendar({
                     <TableBody>
                         {users.map((user) => (
                             <TableRow key={user.id} className="hover:bg-muted/50">
-                                <TableCell className="sticky left-0 z-20 bg-[hsl(var(--background))] hover:bg-muted/50 font-medium transition-colors">
+                                <TableCell className="sticky left-0 z-20 bg-background hover:bg-muted/50 font-medium transition-colors">
                                     <div>{user.name || "Unknown"}</div>
                                     <div className="text-xs text-muted-foreground">
                                         {user.email}

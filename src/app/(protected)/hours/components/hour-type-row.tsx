@@ -20,6 +20,15 @@ export function HourTypeRow({ hourType, dates, groupedEntries, userId }: HourTyp
     const expandedTypes = useHoursStore((state) => state.expandedTypes)
     const toggleType = useHoursStore((state) => state.toggleType)
 
+    const isToday = (date: Date) => {
+        const today = new Date()
+        return (
+            date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear()
+        )
+    }
+
     const isExpanded = expandedTypes.has(hourType)
 
     const trackedKey = `${hourType}_TRACKED`
@@ -61,7 +70,7 @@ export function HourTypeRow({ hourType, dates, groupedEntries, userId }: HourTyp
                     return (
                         <TableCell
                             key={dateKey}
-                            className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
+                            className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                         >
                             <EditableHourCell
                                 date={new Date(dateKey)}
@@ -101,7 +110,7 @@ export function HourTypeRow({ hourType, dates, groupedEntries, userId }: HourTyp
                             return (
                                 <TableCell
                                     key={dateKey}
-                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
+                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                 >
                                     <EditableHourCell
                                         date={date}
@@ -139,7 +148,7 @@ export function HourTypeRow({ hourType, dates, groupedEntries, userId }: HourTyp
                             return (
                                 <TableCell
                                     key={dateKey}
-                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""}`}
+                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                 >
                                     <EditableHourCell
                                         date={date}

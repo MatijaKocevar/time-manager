@@ -39,6 +39,15 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
         return `${year}-${month}-${day}`
     }
 
+    const isToday = (date: Date) => {
+        const today = new Date()
+        return (
+            date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear()
+        )
+    }
+
     const displayEntries = entries.map((entry) => {
         const cellKey = `${formatDateKey(entry.date)}-${entry.type}`
         const pendingChange = pendingChanges.get(cellKey)
@@ -117,7 +126,7 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
                                 return (
                                     <TableHead
                                         key={date.toISOString()}
-                                        className={`text-center ${isWeekend ? "bg-muted/50" : ""}`}
+                                        className={`text-center ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/10" : ""}`}
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-normal text-muted-foreground">
@@ -153,7 +162,7 @@ export function HoursTable({ entries, startDate, endDate, userId }: HoursTablePr
                                 return (
                                     <TableCell
                                         key={dateKey}
-                                        className={`text-center p-2 relative ${isWeekend ? "bg-muted/50" : ""}`}
+                                        className={`text-center p-2 relative ${isWeekend ? "bg-muted/50" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                     >
                                         {entry && entry.hours > 0 && (
                                             <div className="absolute top-0 left-0 right-0 h-0.5 flex">
