@@ -24,6 +24,54 @@ async function requireAuth() {
     return session
 }
 
+export async function getListById(listId: string): Promise<ListDisplay | null> {
+    try {
+        const session = await requireAuth()
+
+        const list = await prisma.list.findUnique({
+            where: { id: listId },
+            include: {
+                _count: {
+                    select: {
+                        tasks: true,
+                    },
+                },
+            },
+        })
+
+        if (!list) {
+            return null
+        }
+
+        if (list.userId !== session.user.id) {
+            throw new Error("Unauthorized")
+        }
+
+        return {
+            id: list.id,
+            userId: list.userId,
+            name: list.name,
+            description: list.description,
+            color: list.color,
+            icon: list.icon,
+            order: list.order,
+            isDefault: list.isDefault,
+            createdAt: list.createdAt,
+            updatedAt: list.updatedAt,
+            taskCount: list._count.tasks,
+        }
+    } catch (error) {
+        if (
+            error instanceof Error &&
+            (error.message.includes("Dynamic server usage") || error.message.includes("headers"))
+        ) {
+            throw error
+        }
+        console.error("Error fetching list:", error)
+        throw error
+    }
+}
+
 export async function getLists(): Promise<ListDisplay[]> {
     try {
         const session = await requireAuth()
