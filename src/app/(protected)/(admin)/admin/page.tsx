@@ -68,14 +68,7 @@ export default async function AdminOverviewPage() {
     ]
 
     return (
-        <div className="flex flex-col gap-6">
-            <div>
-                <h1 className="text-3xl font-bold">Admin Overview</h1>
-                <p className="text-muted-foreground mt-1">
-                    Manage users, requests, and system settings
-                </p>
-            </div>
-
+        <div className="flex flex-col gap-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {stats.map((stat) => {
                     const Icon = stat.icon
@@ -100,7 +93,7 @@ export default async function AdminOverviewPage() {
                 })}
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>
                         <CardTitle>Request Status Breakdown</CardTitle>
