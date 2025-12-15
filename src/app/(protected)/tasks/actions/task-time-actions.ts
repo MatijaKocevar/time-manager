@@ -176,6 +176,10 @@ export async function stopTimer(input: StopTimerInput) {
                 affectsHourType: true,
                 startDate: { lte: entryDateUTC },
                 endDate: { gte: entryDateUTC },
+                cancelledAt: null,
+            },
+            orderBy: {
+                approvedAt: "desc",
             },
         })
 

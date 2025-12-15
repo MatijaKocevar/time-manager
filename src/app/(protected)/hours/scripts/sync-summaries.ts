@@ -45,6 +45,10 @@ async function syncDailySummaries() {
                     affectsHourType: true,
                     startDate: { lte: dateUTC },
                     endDate: { gte: dateUTC },
+                    cancelledAt: null,
+                },
+                orderBy: {
+                    approvedAt: "desc",
                 },
             })
 
