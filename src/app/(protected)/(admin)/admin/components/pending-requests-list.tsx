@@ -281,103 +281,108 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
         return new Date(date).toLocaleDateString()
     }
 
-    const columns: ColumnDef<RequestDisplay>[] = useMemo(() => [
-        {
-            id: "user",
-            accessorFn: (row) => row.user.name || row.user.email,
-            header: "User",
-            cell: ({ row }) => (
-                <div className="font-medium">
-                    {row.original.user.name || row.original.user.email}
-                </div>
-            ),
-            enableColumnFilter: true,
-            filterFn: "includesString",
-        },
-        {
-            id: "type",
-            accessorFn: (row) => typeLabels[row.type],
-            header: "Type",
-            cell: ({ row }) => (
-                <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
-                        typeColors[row.original.type]
-                    }`}
-                >
-                    {typeLabels[row.original.type]}
-                </span>
-            ),
-            enableColumnFilter: true,
-            filterFn: "includesString",
-        },
-        {
-            accessorKey: "startDate",
-            header: "Start Date",
-            cell: ({ row }) => formatDate(row.original.startDate),
-            enableColumnFilter: false,
-        },
-        {
-            accessorKey: "endDate",
-            header: "End Date",
-            cell: ({ row }) => formatDate(row.original.endDate),
-            enableColumnFilter: false,
-        },
-        {
-            id: "hours",
-            header: "Hours",
-            cell: ({ row }) => {
-                const workdays = calculateWorkdays(
-                    row.original.startDate,
-                    row.original.endDate,
-                    holidays
-                )
-                return `${workdays * 8}h`
+    const columns: ColumnDef<RequestDisplay>[] = useMemo(
+        () => [
+            {
+                id: "user",
+                accessorFn: (row) => row.user.name || row.user.email,
+                header: "User",
+                cell: ({ row }) => (
+                    <div className="font-medium">
+                        {row.original.user.name || row.original.user.email}
+                    </div>
+                ),
+                enableColumnFilter: true,
+                filterFn: "includesString",
             },
-            enableColumnFilter: false,
-        },
-        {
-            accessorKey: "reason",
-            header: "Reason",
-            cell: ({ row }) => (
-                <div className="text-sm text-muted-foreground">{row.original.reason || "-"}</div>
-            ),
-            enableColumnFilter: true,
-            filterFn: "includesString",
-        },
-        {
-            id: "actions",
-            header: () => <div className="text-right w-[170px]">Actions</div>,
-            cell: ({ row }) => (
-                <div className="flex gap-2 justify-end w-[170px]">
-                    <Button
-                        size="sm"
-                        onClick={() => handleApprove(row.original.id)}
-                        disabled={approveMutation.isPending}
-                        className="w-[84px]"
+            {
+                id: "type",
+                accessorFn: (row) => typeLabels[row.type],
+                header: "Type",
+                cell: ({ row }) => (
+                    <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
+                            typeColors[row.original.type]
+                        }`}
                     >
-                        {approveMutation.isPending ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            "Approve"
-                        )}
-                    </Button>
-                    <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleRejectClick(row.original.id)}
-                        disabled={rejectMutation.isPending}
-                        className="w-[76px]"
-                    >
-                        Reject
-                    </Button>
-                </div>
-            ),
-            enableColumnFilter: false,
-            size: 170,
-            minSize: 170,
-            maxSize: 170,
-        },
-    ], [approveMutation.isPending, rejectMutation.isPending, holidays])
+                        {typeLabels[row.original.type]}
+                    </span>
+                ),
+                enableColumnFilter: true,
+                filterFn: "includesString",
+            },
+            {
+                accessorKey: "startDate",
+                header: "Start Date",
+                cell: ({ row }) => formatDate(row.original.startDate),
+                enableColumnFilter: false,
+            },
+            {
+                accessorKey: "endDate",
+                header: "End Date",
+                cell: ({ row }) => formatDate(row.original.endDate),
+                enableColumnFilter: false,
+            },
+            {
+                id: "hours",
+                header: "Hours",
+                cell: ({ row }) => {
+                    const workdays = calculateWorkdays(
+                        row.original.startDate,
+                        row.original.endDate,
+                        holidays
+                    )
+                    return `${workdays * 8}h`
+                },
+                enableColumnFilter: false,
+            },
+            {
+                accessorKey: "reason",
+                header: "Reason",
+                cell: ({ row }) => (
+                    <div className="text-sm text-muted-foreground">
+                        {row.original.reason || "-"}
+                    </div>
+                ),
+                enableColumnFilter: true,
+                filterFn: "includesString",
+            },
+            {
+                id: "actions",
+                header: () => <div className="text-right w-[170px]">Actions</div>,
+                cell: ({ row }) => (
+                    <div className="flex gap-2 justify-end w-[170px]">
+                        <Button
+                            size="sm"
+                            onClick={() => handleApprove(row.original.id)}
+                            disabled={approveMutation.isPending}
+                            className="w-[84px]"
+                        >
+                            {approveMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                "Approve"
+                            )}
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleRejectClick(row.original.id)}
+                            disabled={rejectMutation.isPending}
+                            className="w-[76px]"
+                        >
+                            Reject
+                        </Button>
+                    </div>
+                ),
+                enableColumnFilter: false,
+                size: 170,
+                minSize: 170,
+                maxSize: 170,
+            },
+        ],
+        [approveMutation.isPending, rejectMutation.isPending, holidays]
+    )
 
     const table = useReactTable({
         data: requests,
