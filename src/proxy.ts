@@ -6,11 +6,23 @@ export default function proxy(request: NextRequest) {
     requestHeaders.set("x-pathname", request.nextUrl.pathname)
     requestHeaders.set("x-request-id", crypto.randomUUID())
 
-    return NextResponse.next({
+    // Handle locale cookie for i18n
+    const locale = request.cookies.get("NEXT_LOCALE")?.value || "en"
+
+    const response = NextResponse.next({
         request: {
             headers: requestHeaders,
         },
     })
+
+    if (!request.cookies.get("NEXT_LOCALE")) {
+        response.cookies.set("NEXT_LOCALE", locale, {
+            path: "/",
+            sameSite: "lax",
+        })
+    }
+
+    return response
 }
 
 export const config = {

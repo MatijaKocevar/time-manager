@@ -1,0 +1,328 @@
+{
+    "common": {
+        "actions": {
+            "save": "Shrani",
+            "cancel": "Prekliči",
+            "delete": "Izbriši",
+            "edit": "Uredi",
+            "create": "Ustvari",
+            "update": "Posodobi",
+            "submit": "Pošlji",
+            "apply": "Uporabi",
+            "clear": "Počisti",
+            "confirm": "Potrdi",
+            "close": "Zapri",
+            "ok": "V redu",
+            "yes": "Da",
+            "no": "Ne",
+            "back": "Nazaj",
+            "next": "Naprej",
+            "previous": "Prejšnje",
+            "start": "Začni",
+            "stop": "Ustavi",
+            "review": "Preglej",
+            "approve": "Odobri",
+            "reject": "Zavrni",
+            "signIn": "Prijava",
+            "logOut": "Odjava"
+        },
+        "status": {
+            "loading": "Nalaganje...",
+            "saving": "Shranjevanje...",
+            "creating": "Ustvarjanje...",
+            "updating": "Posodabljanje...",
+            "deleting": "Brisanje...",
+            "submitting": "Pošiljanje...",
+            "signingIn": "Prijavljanje...",
+            "approving": "Odobravanje...",
+            "rejecting": "Zavračanje..."
+        },
+        "messages": {
+            "noDataFound": "Ni podatkov",
+            "searchNoResults": "Ni rezultatov, ki bi ustrezali iskanju",
+            "unsavedChanges": "Imate neshranjene spremembe. Ste prepričani, da želite zapustiti stran?",
+            "deleteConfirm": "Ste prepričani, da želite izbrisati {item}?",
+            "success": "Uspeh",
+            "error": "Napaka",
+            "somethingWentWrong": "Nekaj je šlo narobe. Poskusite znova."
+        },
+        "fields": {
+            "title": "Naslov",
+            "description": "Opis",
+            "status": "Status",
+            "startDate": "Začetni datum",
+            "endDate": "Končni datum",
+            "date": "Datum",
+            "hours": "Ure",
+            "type": "Tip",
+            "location": "Lokacija",
+            "reason": "Razlog",
+            "notes": "Opombe",
+            "email": "E-pošta",
+            "password": "Geslo",
+            "name": "Ime",
+            "role": "Vloga",
+            "color": "Barva",
+            "user": "Uporabnik",
+            "actions": "Akcije"
+        },
+        "placeholders": {
+            "enterTitle": "Vnesite naslov",
+            "enterDescription": "Vnesite opis",
+            "enterEmail": "Vnesite e-pošto",
+            "enterPassword": "Vnesite geslo",
+            "enterLocation": "Vnesite lokacijo",
+            "enterReason": "Vnesite razlog",
+            "addNote": "Dodaj opombo...",
+            "search": "Iskanje...",
+            "filter": "Filtriraj...",
+            "selectRole": "Izberite vlogo",
+            "selectStatus": "Izberite status",
+            "selectType": "Izberite tip"
+        },
+        "time": {
+            "today": "Danes",
+            "yesterday": "Včeraj",
+            "tomorrow": "Jutri",
+            "week": "Teden",
+            "month": "Mesec",
+            "year": "Leto",
+            "day": "Dan",
+            "hour": "Ura",
+            "minute": "Minuta",
+            "second": "Sekunda"
+        },
+        "weekdays": {
+            "monday": "Ponedeljek",
+            "tuesday": "Torek",
+            "wednesday": "Sreda",
+            "thursday": "Četrtek",
+            "friday": "Petek",
+            "saturday": "Sobota",
+            "sunday": "Nedelja",
+            "mon": "Pon",
+            "tue": "Tor",
+            "wed": "Sre",
+            "thu": "Čet",
+            "fri": "Pet",
+            "sat": "Sob",
+            "sun": "Ned"
+        }
+    },
+    "navigation": {
+        "timeTracker": "Sledenje času",
+        "tasks": "Naloge",
+        "hours": "Ure",
+        "shifts": "Izmene",
+        "requests": "Zahtevki",
+        "admin": "Administracija",
+        "profile": "Profil",
+        "management": "Upravljanje",
+        "userManagement": "Upravljanje uporabnikov",
+        "pendingRequests": "Čakajoči zahtevki",
+        "requestHistory": "Zgodovina zahtevkov",
+        "holidays": "Prazniki"
+    },
+    "hours": {
+        "types": {
+            "work": "Delo",
+            "workFromHome": "Delo od doma",
+            "vacation": "Dopust",
+            "sickLeave": "Bolniška",
+            "other": "Drugo"
+        },
+        "labels": {
+            "total": "SKUPAJ",
+            "tracked": "SLEDENO",
+            "manual": "ROČNO",
+            "grandTotal": "SKUPAJ VSE"
+        },
+        "table": {
+            "columnType": "Tip",
+            "noEntries": "Ni vnosov ur"
+        },
+        "form": {
+            "addBulkHours": "Dodaj množične ure",
+            "editHourEntry": "Uredi vnos ur",
+            "skipWeekends": "Preskoči vikende",
+            "skipHolidays": "Preskoči praznike"
+        },
+        "summary": {
+            "weekSummary": "Tedenski povzetek",
+            "monthSummary": "Mesečni povzetek"
+        }
+    },
+    "tasks": {
+        "statuses": {
+            "todo": "Za narediti",
+            "inProgress": "V teku",
+            "onHold": "Zadržano",
+            "done": "Končano",
+            "canceled": "Preklicano"
+        },
+        "form": {
+            "createTask": "Ustvari nalogo",
+            "createSubtask": "Ustvari podnalogo",
+            "editTask": "Uredi nalogo",
+            "newTask": "Nova naloga",
+            "taskTitle": "Naslov naloge",
+            "taskDescription": "Opis naloge",
+            "createTaskDescription": "Ustvari novo nalogo za sledenje delu",
+            "addSubtaskDescription": "Dodaj novo podnalogo k izbrani nalogi"
+        },
+        "table": {
+            "list": "Seznam",
+            "timeTracker": "Sledenje časa",
+            "noTasks": "Ni nalog"
+        },
+        "list": {
+            "createList": "Ustvari seznam",
+            "updateList": "Posodobi seznam",
+            "renameList": "Preimenuj seznam",
+            "deleteList": "Izbriši seznam",
+            "noList": "Brez seznama",
+            "listOptions": "Možnosti seznama",
+            "rename": "Preimenuj",
+            "deleteConfirm": "Ste prepričani, da želite izbrisati ta seznam? Naloge bodo premaknjene v Brez seznama."
+        }
+    },
+    "requests": {
+        "types": {
+            "vacation": "Dopust",
+            "sickLeave": "Bolniška",
+            "workFromHome": "Delo od doma",
+            "other": "Drugo"
+        },
+        "statuses": {
+            "pending": "V čakanju",
+            "approved": "Odobreno",
+            "rejected": "Zavrnjeno",
+            "cancelled": "Preklicano"
+        },
+        "form": {
+            "newRequest": "Nov zahtevek",
+            "createRequest": "Ustvari zahtevek",
+            "submitRequest": "Pošlji zahtevek",
+            "rejectRequest": "Zavrni zahtevek",
+            "cancelApprovedRequest": "Prekliči odobreni zahtevek",
+            "cancellationReason": "Razlog za preklic",
+            "explainCancellation": "Pojasnite zakaj se ta zahtevek preklicuje..."
+        },
+        "table": {
+            "approvedBy": "Odobril/Zavrnil",
+            "noRequests": "Ni zahtevkov",
+            "filterPlaceholder": "Filtriraj zahtevke..."
+        },
+        "messages": {
+            "noRequestsMatch": "Noben zahtevek ne ustreza iskanju"
+        }
+    },
+    "shifts": {
+        "locations": {
+            "office": "Pisarna",
+            "home": "Delo od doma",
+            "vacation": "Dopust",
+            "sickLeave": "Bolniška",
+            "other": "Drugo"
+        },
+        "form": {
+            "editShift": "Uredi izmeno - {userName}"
+        }
+    },
+    "admin": {
+        "overview": {
+            "totalUsers": "Skupaj uporabnikov",
+            "totalUsersDesc": "Registrirani v sistemu",
+            "pendingRequests": "Čakajoči zahtevki",
+            "pendingRequestsDesc": "Čakajo na odobritev",
+            "totalRequests": "Vsi zahtevki",
+            "totalRequestsDesc": "Vsi zahtevki vseh časov",
+            "upcomingHolidays": "Prihajajoči prazniki",
+            "upcomingHolidaysDesc": "Načrtovani prazniki",
+            "requestStatusBreakdown": "Razčlenitev statusov zahtevkov",
+            "requestStatusBreakdownDesc": "Pregled vseh statusov zahtevkov",
+            "quickActions": "Hitre akcije",
+            "quickActionsDesc": "Pogoste administrativne naloge",
+            "manageUsers": "Upravljaj uporabnike",
+            "reviewPendingRequests": "Preglej čakajoče zahtevke",
+            "manageHolidays": "Upravljaj praznike",
+            "viewRequestHistory": "Preglej zgodovino zahtevkov",
+            "recentPendingRequests": "Nedavni čakajoči zahtevki",
+            "recentPendingRequestsDesc": "Najnovejši zahtevki, ki čakajo na odobritev",
+            "upcomingHolidaysSection": "Prihajajoči prazniki",
+            "upcomingHolidaysSectionDesc": "Naslednji načrtovani prazniki",
+            "viewAllPending": "Preglej vse {count} čakajoče zahtevke",
+            "viewAllHolidays": "Preglej vseh {count} prihajajoče praznike"
+        },
+        "users": {
+            "createUser": "Ustvari uporabnika",
+            "deleteUserConfirm": "Trajno odstrani tega uporabnika iz sistema. Tega dejanja ni mogoče razveljaviti."
+        },
+        "holidays": {
+            "import": "Uvozi",
+            "export": "Izvozi"
+        }
+    },
+    "profile": {
+        "title": "Profil",
+        "form": {
+            "saveChanges": "Shrani spremembe"
+        }
+    },
+    "auth": {
+        "signIn": "Prijava",
+        "signInDescription": "Vnesite svoje poverilnice za dostop do računa",
+        "loginFailed": "Napačna e-pošta ali geslo"
+    },
+    "validation": {
+        "required": "To polje je obvezno",
+        "tooLong": "To polje je predolgo",
+        "tooShort": "To polje je prekratko",
+        "invalidEmail": "Neveljaven e-poštni naslov",
+        "invalidDate": "Neveljaven datum",
+        "startBeforeEnd": "Začetni datum mora biti pred končnim datumom",
+        "tasks": {
+            "titleRequired": "Naslov je obvezen",
+            "titleTooLong": "Naslov je predolg (maks. 255 znakov)"
+        },
+        "hours": {
+            "exceedsMax": "Ure ne morejo presegati {max}",
+            "hoursRequired": "Ure so obvezne",
+            "typeRequired": "Tip je obvezen",
+            "dateRequired": "Datum je obvezen"
+        },
+        "requests": {
+            "cancellationReasonRequired": "Razlog za preklic je obvezen",
+            "typeRequired": "Tip je obvezen",
+            "startDateRequired": "Začetni datum je obvezen",
+            "endDateRequired": "Končni datum je obvezen"
+        },
+        "lists": {
+            "nameRequired": "Ime je obvezno",
+            "nameTooLong": "Ime je predolgo (maks. 100 znakov)"
+        }
+    },
+    "errors": {
+        "unauthorized": "Nepooblaščen dostop",
+        "notFound": "Ni najdeno",
+        "taskNotFound": "Naloga ni najdena",
+        "listNotFound": "Seznam ni najden",
+        "hourEntryNotFound": "Vnos ur ni najden",
+        "requestNotFound": "Zahtevek ni najden",
+        "shiftNotFound": "Izmena ni najdena",
+        "userNotFound": "Uporabnik ni najden",
+        "holidayNotFound": "Praznik ni najden",
+        "parentTaskNotFound": "Nadrejena naloga ni najdena",
+        "cannotDeleteList": "Seznama z nalogami ni mogoče izbrisati",
+        "cannotStartTimer": "Ni mogoče zagnati časovnika",
+        "cannotStopTimer": "Ni mogoče ustaviti časovnika",
+        "invalidInput": "Neveljaven vnos",
+        "databaseError": "Napaka v podatkovni bazi",
+        "alreadyExists": "Že obstaja",
+        "permissionDenied": "Dostop zavrnjen"
+    },
+    "metadata": {
+        "title": "Upravljavec časa",
+        "description": "Učinkovito upravljajte svoj čas, naloge in ure"
+    }
+}

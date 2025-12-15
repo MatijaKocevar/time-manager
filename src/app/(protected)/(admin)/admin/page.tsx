@@ -8,6 +8,7 @@ import { getUsers } from "./users/actions/user-actions"
 import { getAllRequests } from "../../requests/actions/request-actions"
 import { getHolidays } from "./holidays/actions/holiday-actions"
 import { Users, ClockAlert, History, CalendarX2, ArrowRight } from "lucide-react"
+import { getTranslations } from "next-intl/server"
 
 export default async function AdminOverviewPage() {
     const session = await getServerSession(authConfig)
@@ -15,6 +16,11 @@ export default async function AdminOverviewPage() {
     if (!session?.user || session.user.role !== "ADMIN") {
         redirect("/")
     }
+
+    const t = await getTranslations()
+    const tAdmin = await getTranslations("admin.overview")
+    const tCommon = await getTranslations("common.actions")
+    const tRequests = await getTranslations("requests.statuses")
 
     const [users, pendingRequests, allRequests, holidaysResult] = await Promise.all([
         getUsers(),
@@ -34,33 +40,33 @@ export default async function AdminOverviewPage() {
 
     const stats = [
         {
-            title: "Total Users",
+            title: tAdmin("totalUsers"),
             value: users.length,
-            description: "Registered in the system",
+            description: tAdmin("totalUsersDesc"),
             icon: Users,
             href: "/admin/users",
             color: "text-blue-600",
         },
         {
-            title: "Pending Requests",
+            title: tAdmin("pendingRequests"),
             value: pendingRequests.length,
-            description: "Awaiting approval",
+            description: tAdmin("pendingRequestsDesc"),
             icon: ClockAlert,
             href: "/admin/pending-requests",
             color: "text-orange-600",
         },
         {
-            title: "Total Requests",
+            title: tAdmin("totalRequests"),
             value: allRequests.length,
-            description: "All time requests",
+            description: tAdmin("totalRequestsDesc"),
             icon: History,
             href: "/admin/request-history",
             color: "text-purple-600",
         },
         {
-            title: "Upcoming Holidays",
+            title: tAdmin("upcomingHolidays"),
             value: upcomingHolidays.length,
-            description: "Scheduled holidays",
+            description: tAdmin("upcomingHolidaysDesc"),
             icon: CalendarX2,
             href: "/admin/holidays",
             color: "text-green-600",
@@ -96,35 +102,35 @@ export default async function AdminOverviewPage() {
             <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Request Status Breakdown</CardTitle>
-                        <CardDescription>Overview of all request statuses</CardDescription>
+                        <CardTitle>{tAdmin("requestStatusBreakdown")}</CardTitle>
+                        <CardDescription>{tAdmin("requestStatusBreakdownDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                                <span className="text-sm">Pending</span>
+                                <span className="text-sm">{tRequests("pending")}</span>
                             </div>
                             <span className="font-semibold">{pendingRequests.length}</span>
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-green-500" />
-                                <span className="text-sm">Approved</span>
+                                <span className="text-sm">{tRequests("approved")}</span>
                             </div>
                             <span className="font-semibold">{approvedRequests.length}</span>
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-red-500" />
-                                <span className="text-sm">Rejected</span>
+                                <span className="text-sm">{tRequests("rejected")}</span>
                             </div>
                             <span className="font-semibold">{rejectedRequests.length}</span>
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 rounded-full bg-gray-500" />
-                                <span className="text-sm">Cancelled</span>
+                                <span className="text-sm">{tRequests("cancelled")}</span>
                             </div>
                             <span className="font-semibold">{cancelledRequests.length}</span>
                         </div>
@@ -133,31 +139,31 @@ export default async function AdminOverviewPage() {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Quick Actions</CardTitle>
-                        <CardDescription>Common administrative tasks</CardDescription>
+                        <CardTitle>{tAdmin("quickActions")}</CardTitle>
+                        <CardDescription>{tAdmin("quickActionsDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <Link href="/admin/users">
                             <Button variant="outline" className="w-full justify-between">
-                                <span>Manage Users</span>
+                                <span>{tAdmin("manageUsers")}</span>
                                 <ArrowRight className="h-4 w-4" />
                             </Button>
                         </Link>
                         <Link href="/admin/pending-requests">
                             <Button variant="outline" className="w-full justify-between">
-                                <span>Review Pending Requests</span>
+                                <span>{tAdmin("reviewPendingRequests")}</span>
                                 <ArrowRight className="h-4 w-4" />
                             </Button>
                         </Link>
                         <Link href="/admin/holidays">
                             <Button variant="outline" className="w-full justify-between">
-                                <span>Manage Holidays</span>
+                                <span>{tAdmin("manageHolidays")}</span>
                                 <ArrowRight className="h-4 w-4" />
                             </Button>
                         </Link>
                         <Link href="/admin/request-history">
                             <Button variant="outline" className="w-full justify-between">
-                                <span>View Request History</span>
+                                <span>{tAdmin("viewRequestHistory")}</span>
                                 <ArrowRight className="h-4 w-4" />
                             </Button>
                         </Link>
@@ -168,8 +174,8 @@ export default async function AdminOverviewPage() {
             {pendingRequests.length > 0 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Recent Pending Requests</CardTitle>
-                        <CardDescription>Latest requests awaiting your approval</CardDescription>
+                        <CardTitle>{tAdmin("recentPendingRequests")}</CardTitle>
+                        <CardDescription>{tAdmin("recentPendingRequestsDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
@@ -190,7 +196,7 @@ export default async function AdminOverviewPage() {
                                     </div>
                                     <Link href="/admin/pending-requests">
                                         <Button size="sm" variant="outline">
-                                            Review
+                                            {tCommon("review")}
                                         </Button>
                                     </Link>
                                 </div>
@@ -198,7 +204,9 @@ export default async function AdminOverviewPage() {
                             {pendingRequests.length > 5 && (
                                 <Link href="/admin/pending-requests">
                                     <Button variant="link" className="w-full">
-                                        View all {pendingRequests.length} pending requests
+                                        {tAdmin("viewAllPending", {
+                                            count: pendingRequests.length,
+                                        })}
                                     </Button>
                                 </Link>
                             )}
@@ -210,8 +218,8 @@ export default async function AdminOverviewPage() {
             {upcomingHolidays.length > 0 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Upcoming Holidays</CardTitle>
-                        <CardDescription>Next scheduled holidays</CardDescription>
+                        <CardTitle>{tAdmin("upcomingHolidaysSection")}</CardTitle>
+                        <CardDescription>{tAdmin("upcomingHolidaysSectionDesc")}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-3">
@@ -236,7 +244,9 @@ export default async function AdminOverviewPage() {
                             {upcomingHolidays.length > 5 && (
                                 <Link href="/admin/holidays">
                                     <Button variant="link" className="w-full">
-                                        View all {upcomingHolidays.length} upcoming holidays
+                                        {tAdmin("viewAllHolidays", {
+                                            count: upcomingHolidays.length,
+                                        })}
                                     </Button>
                                 </Link>
                             )}

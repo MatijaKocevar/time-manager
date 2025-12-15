@@ -14,6 +14,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { useTranslations } from "next-intl"
 
 export default function LoginPage() {
     const router = useRouter()
@@ -22,6 +23,8 @@ export default function LoginPage() {
     const [password, setPassword] = useState("")
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState("")
+    const t = useTranslations("auth")
+    const tCommon = useTranslations("common")
 
     useEffect(() => {
         if (status === "authenticated") {
@@ -45,7 +48,7 @@ export default function LoginPage() {
                 callbackUrl: "/",
             })
         } catch {
-            setError("Something went wrong. Please try again.")
+            setError(tCommon("messages.somethingWentWrong"))
             setIsLoading(false)
         }
     }
@@ -54,10 +57,8 @@ export default function LoginPage() {
         <div className="flex min-h-screen items-center justify-center bg-background">
             <Card className="w-full max-w-md">
                 <CardHeader>
-                    <CardTitle>Login</CardTitle>
-                    <CardDescription>
-                        Enter your email and password to access your account
-                    </CardDescription>
+                    <CardTitle>{t("signIn")}</CardTitle>
+                    <CardDescription>{t("signInDescription")}</CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-4">
@@ -67,11 +68,11 @@ export default function LoginPage() {
                             </div>
                         )}
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">{tCommon("fields.email")}</Label>
                             <Input
                                 id="email"
                                 type="email"
-                                placeholder="Enter your email"
+                                placeholder={tCommon("placeholders.enterEmail")}
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
@@ -79,11 +80,11 @@ export default function LoginPage() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
+                            <Label htmlFor="password">{tCommon("fields.password")}</Label>
                             <Input
                                 id="password"
                                 type="password"
-                                placeholder="Enter your password"
+                                placeholder={tCommon("placeholders.enterPassword")}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
@@ -94,7 +95,7 @@ export default function LoginPage() {
                     </CardContent>
                     <CardFooter>
                         <Button type="submit" className="w-full mt-4" disabled={isLoading}>
-                            {isLoading ? "Signing in..." : "Sign in"}
+                            {isLoading ? tCommon("status.signingIn") : tCommon("actions.signIn")}
                         </Button>
                     </CardFooter>
                 </form>

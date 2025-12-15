@@ -3,6 +3,7 @@
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Breadcrumbs } from "@/features/breadcrumbs"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageToggle } from "@/components/language-toggle"
 
 const staticOverrides = {
     "/users": "Users",
@@ -15,7 +16,10 @@ export function AppHeader() {
             <div className="flex-1 min-w-0">
                 <Breadcrumbs overrides={staticOverrides} />
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+                <LanguageToggle />
+                <ThemeToggle />
+            </div>
         </header>
     )
 }

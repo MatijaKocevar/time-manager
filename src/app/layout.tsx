@@ -9,6 +9,7 @@ import { ConditionalSidebar } from "@/features/sidebar"
 import { authConfig } from "@/lib/auth"
 import { getLists } from "./(protected)/tasks/actions/list-actions"
 import { ThemeProvider } from "@/components/theme-provider"
+import { NextIntlClientProvider } from "next-intl"
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
     appleWebApp: {
         capable: true,
         statusBarStyle: "black-translucent",
-        title: "Time Manager",
+        title: "TimeManager",
     },
     formatDetection: {
         telephone: false,
@@ -80,22 +81,24 @@ export default async function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col`}
             >
-                <ThemeProvider>
-                    <QueryProvider>
-                        <SessionWrapper>
-                            <ConditionalSidebar
-                                defaultOpen={defaultOpen}
-                                hasSession={!!session}
-                                userRole={session?.user?.role}
-                                userName={session?.user?.name}
-                                userEmail={session?.user?.email}
-                                lists={lists}
-                            >
-                                {children}
-                            </ConditionalSidebar>
-                        </SessionWrapper>
-                    </QueryProvider>
-                </ThemeProvider>
+                <NextIntlClientProvider>
+                    <ThemeProvider>
+                        <QueryProvider>
+                            <SessionWrapper>
+                                <ConditionalSidebar
+                                    defaultOpen={defaultOpen}
+                                    hasSession={!!session}
+                                    userRole={session?.user?.role}
+                                    userName={session?.user?.name}
+                                    userEmail={session?.user?.email}
+                                    lists={lists}
+                                >
+                                    {children}
+                                </ConditionalSidebar>
+                            </SessionWrapper>
+                        </QueryProvider>
+                    </ThemeProvider>
+                </NextIntlClientProvider>
             </body>
         </html>
     )

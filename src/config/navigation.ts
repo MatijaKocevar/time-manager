@@ -23,61 +23,61 @@ export interface NavigationItem {
 
 export const navigationItems: NavigationItem[] = [
     {
-        title: "Time Tracker",
+        title: "navigation.timeTracker",
         url: "/tracker",
         icon: Timer,
         roles: ["USER", "ADMIN"],
     },
     {
-        title: "Tasks",
+        title: "navigation.tasks",
         url: "/tasks",
         icon: Calendar,
         roles: ["USER", "ADMIN"],
     },
     {
-        title: "Hours",
+        title: "navigation.hours",
         url: "/hours",
         icon: Clock,
         roles: ["USER", "ADMIN"],
     },
     {
-        title: "Shifts",
+        title: "navigation.shifts",
         url: "/shifts",
         icon: CalendarDays,
         roles: ["USER", "ADMIN"],
     },
     {
-        title: "Requests",
+        title: "navigation.requests",
         url: "/requests",
         icon: FileText,
         roles: ["USER", "ADMIN"],
     },
     {
-        title: "Admin",
+        title: "navigation.admin",
         url: "/admin",
         icon: Shield,
         roles: ["ADMIN"],
         children: [
             {
-                title: "User Management",
+                title: "navigation.userManagement",
                 url: "/admin/users",
                 icon: Users,
                 roles: ["ADMIN"],
             },
             {
-                title: "Pending Requests",
+                title: "navigation.pendingRequests",
                 url: "/admin/pending-requests",
                 icon: ClockAlert,
                 roles: ["ADMIN"],
             },
             {
-                title: "Request History",
+                title: "navigation.requestHistory",
                 url: "/admin/request-history",
                 icon: History,
                 roles: ["ADMIN"],
             },
             {
-                title: "Holidays",
+                title: "navigation.holidays",
                 url: "/admin/holidays",
                 icon: CalendarX2,
                 roles: ["ADMIN"],

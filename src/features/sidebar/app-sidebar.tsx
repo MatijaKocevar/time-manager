@@ -4,6 +4,7 @@ import { Users, LogOut, UserCircle, ChevronUp, MoreHorizontal, Edit, Trash } fro
 import { signOut } from "next-auth/react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { useState } from "react"
 
 import {
@@ -50,6 +51,10 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
     const queryClient = useQueryClient()
     const openListDialog = useTasksStore((state) => state.openListDialog)
     const [deletingListId, setDeletingListId] = useState<string | null>(null)
+    const t = useTranslations()
+    const tNav = useTranslations("navigation")
+    const tCommon = useTranslations("common")
+    const tTasks = useTranslations("tasks")
 
     const filteredItems = navigationItems.filter((item) =>
         userRole ? item.roles.includes(userRole) : false
@@ -60,9 +65,7 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
     }
 
     const handleDeleteList = async (listId: string) => {
-        if (
-            !confirm("Are you sure you want to delete this list? Tasks will be moved to No List.")
-        ) {
+        if (!confirm(tTasks("list.deleteConfirm"))) {
             return
         }
         setDeletingListId(listId)
@@ -94,7 +97,9 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                 <Users className="size-4" />
                             </div>
                             <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-semibold">Time Manager</span>
+                                <span className="truncate font-semibold">
+                                    {t("metadata.title")}
+                                </span>
                             </div>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -102,7 +107,7 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>Management</SidebarGroupLabel>
+                    <SidebarGroupLabel>{tNav("management")}</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {filteredItems.map((item) => {
@@ -115,7 +120,7 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                             <SidebarMenuButton asChild isActive={isActive}>
                                                 <a href={item.url}>
                                                     <item.icon />
-                                                    <span>{item.title}</span>
+                                                    <span>{t(item.title)}</span>
                                                 </a>
                                             </SidebarMenuButton>
                                         </SidebarMenuItem>
@@ -129,7 +134,9 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                                     >
                                                         <Link href="/tasks/no-list">
                                                             <Folder className="h-3 w-3 text-muted-foreground" />
-                                                            <span className="text-sm">No List</span>
+                                                            <span className="text-sm">
+                                                                {tTasks("list.noList")}
+                                                            </span>
                                                         </Link>
                                                     </SidebarMenuButton>
                                                 </SidebarMenuItem>
@@ -173,7 +180,9 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                                                         >
                                                                             <MoreHorizontal className="h-3 w-3" />
                                                                             <span className="sr-only">
-                                                                                List options
+                                                                                {tTasks(
+                                                                                    "list.listOptions"
+                                                                                )}
                                                                             </span>
                                                                         </Button>
                                                                     </DropdownMenuTrigger>
@@ -186,7 +195,7 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                                                             }
                                                                         >
                                                                             <Edit className="mr-2 h-3 w-3" />
-                                                                            Rename
+                                                                            {tTasks("list.rename")}
                                                                         </DropdownMenuItem>
                                                                         <DropdownMenuItem
                                                                             onClick={() =>
@@ -197,7 +206,9 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                                                             className="text-destructive"
                                                                         >
                                                                             <Trash className="mr-2 h-3 w-3" />
-                                                                            Delete
+                                                                            {tCommon(
+                                                                                "actions.delete"
+                                                                            )}
                                                                         </DropdownMenuItem>
                                                                     </DropdownMenuContent>
                                                                 </DropdownMenu>
@@ -224,7 +235,7 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                                                 <a href={child.url}>
                                                                     <child.icon className="h-3 w-3" />
                                                                     <span className="text-sm">
-                                                                        {child.title}
+                                                                        {t(child.title)}
                                                                     </span>
                                                                 </a>
                                                             </SidebarMenuButton>
@@ -266,7 +277,7 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                 <DropdownMenuItem asChild>
                                     <a href="/profile">
                                         <UserCircle className="mr-2 h-4 w-4" />
-                                        Profile
+                                        {tNav("profile")}
                                     </a>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
@@ -274,7 +285,7 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                     onClick={() => signOut({ callbackUrl: "/login" })}
                                 >
                                     <LogOut className="mr-2 h-4 w-4" />
-                                    Logout
+                                    {tCommon("actions.logOut")}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
