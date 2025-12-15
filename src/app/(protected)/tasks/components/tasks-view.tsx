@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { getTasks } from "../actions/task-actions"
@@ -24,6 +25,7 @@ interface TasksViewProps {
 }
 
 export function TasksView({ initialTasks, listId }: TasksViewProps) {
+    const t = useTranslations("tasks.form")
     const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
     const selectedListId = useTasksStore((state) => state.selectedListId)
     const setSelectedListId = useTasksStore((state) => state.setSelectedListId)
