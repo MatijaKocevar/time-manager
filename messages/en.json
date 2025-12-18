@@ -399,6 +399,40 @@
         "holidays": {
             "import": "Import",
             "export": "Export"
+        },
+        "pendingRequests": {
+            "title": "Pending Requests",
+            "table": {
+                "user": "User",
+                "type": "Type",
+                "startDate": "Start Date",
+                "endDate": "End Date",
+                "hours": "Hours",
+                "reason": "Reason",
+                "actions": "Actions",
+                "approve": "Approve",
+                "reject": "Reject",
+                "approving": "Approving...",
+                "rejecting": "Rejecting...",
+                "noRequests": "No pending requests found.",
+                "searchPlaceholder": "Search...",
+                "cancel": "Cancel"
+            },
+            "filter": {
+                "title": "Filter Column",
+                "search": "Search",
+                "clear": "Clear",
+                "apply": "Apply"
+            },
+            "reject": {
+                "title": "Reject Request",
+                "reason": "Rejection Reason",
+                "reasonPlaceholder": "Enter reason for rejection"
+            },
+            "pagination": {
+                "previous": "Previous",
+                "next": "Next"
+            }
         }
     },
     "profile": {
