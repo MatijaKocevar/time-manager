@@ -17,6 +17,233 @@
 - Prefer functional programming patterns where applicable
 - Use modern ES6+ syntax and React patterns
 
+## Internationalization (i18n) with next-intl
+
+### Translation Requirements
+
+**CRITICAL: Always create translations when creating or updating components**
+
+- **NEVER** hardcode user-facing text in components
+- **ALWAYS** use translation keys via `getTranslations()` (Server Components) or pass translations as props
+- **ALWAYS** add translations to BOTH `messages/en.json` AND `messages/sl.json` simultaneously
+- Use descriptive, hierarchical translation keys following existing patterns
+- **AVOID** `useTranslations()` hook in Client Components - causes text flashing
+
+### Translation Setup
+
+**Configuration:**
+
+- i18n library: `next-intl`
+- Supported locales: `en` (English), `sl` (Slovenščina/Slovenian)
+- Default locale: `en`
+- Translation files: `messages/en.json`, `messages/sl.json`
+- Config: `src/i18n/config.ts`
+
+**Key Structure Pattern:**
+
+```json
+{
+    "moduleName": {
+        "componentName": {
+            "element": "Translation text"
+        }
+    }
+}
+```
+
+### Using Translations in Components
+
+**IMPORTANT: Always prefer Server Components for translations to avoid text flashing**
+
+Using `useTranslations()` hook in Client Components causes the text to initially render in English, then shift to the correct language after hydration. This creates a poor user experience.
+
+**Server Components (PREFERRED):**
+
+```typescript
+import { getTranslations } from "next-intl/server"
+
+export default async function MyPage() {
+    const t = await getTranslations("moduleName.componentName")
+
+    return <h1>{t("title")}</h1>
+}
+```
+
+**Client Components with Server-Rendered Text (BEST PRACTICE):**
+Pass translations as props from Server Component to avoid text flashing:
+
+```typescript
+// Server Component (page.tsx)
+import { getTranslations } from "next-intl/server"
+import { InteractiveButton } from "./interactive-button"
+
+export default async function MyPage() {
+    const t = await getTranslations("moduleName.componentName")
+
+    return (
+        <InteractiveButton
+            label={t("submitButton")}
+            successMessage={t("successMessage")}
+        />
+    )
+}
+
+// Client Component
+"use client"
+interface InteractiveButtonProps {
+    label: string
+    successMessage: string
+}
+
+export function InteractiveButton({ label, successMessage }: InteractiveButtonProps) {
+    return <button onClick={() => alert(successMessage)}>{label}</button>
+}
+```
+
+**Client Components with useTranslations (ONLY when Server Component not possible):**
+
+```typescript
+"use client"
+import { useTranslations } from "next-intl"
+
+// Only use this pattern when:
+// - Component is deeply nested and prop drilling is impractical
+// - Component needs dynamic translation keys based on runtime state
+export function MyComponent() {
+    const t = useTranslations("moduleName.componentName")
+
+    return <button>{t("submitButton")}</button>
+}
+```
+
+### Translation Key Naming Conventions
+
+**Use existing common keys when available:**
+
+- `common.actions.*` - Standard actions (save, cancel, delete, edit, etc.)
+- `common.labels.*` - Common labels (name, email, date, status, etc.)
+- `common.messages.*` - Common messages (success, error, loading, etc.)
+- `common.validation.*` - Validation messages
+
+**For feature-specific text, follow this hierarchy:**
+
+```json
+{
+    "hours": {
+        "page": { "title": "Hours" },
+        "table": { "columnHeader": "Total Hours" },
+        "dialog": { "createTitle": "Add Hours" },
+        "form": { "dateLabel": "Date" }
+    }
+}
+```
+
+### Workflow for Adding Translations
+
+1. **Identify all user-facing text** in your component
+2. **Choose component type**: Prefer Server Component for translations
+3. **Check `messages/en.json`** for existing common keys first
+4. **If new keys needed:**
+    - Add to `messages/en.json` with English text
+    - Add to `messages/sl.json` with Slovenian text
+    - Use descriptive, hierarchical key structure
+5. **Import and use translations**:
+    - Server Components: Use `getTranslations()` from "next-intl/server"
+    - Client Components: Pass translations as props from parent Server Component
+    - Last resort: Use `useTranslations()` hook if Server Component not possible
+6. **Test language toggle** to verify both translations work without text flashing
+
+### Examples
+
+**Before (❌ Wrong - hardcoded text):**
+
+```typescript
+export function TaskCard() {
+    return (
+        <div>
+            <h2>Task Details</h2>
+            <button>Save</button>
+        </div>
+    )
+}
+```
+
+**After (✅ Correct - Server Component with translations):**
+
+```typescript
+import { getTranslations } from "next-intl/server"
+
+export async function TaskCard() {
+    const t = await getTranslations("tasks.card")
+    const tCommon = await getTranslations("common.actions")
+
+    return (
+        <div>
+            <h2>{t("title")}</h2>
+            <button>{tCommon("save")}</button>
+        </div>
+    )
+}
+```
+
+**If interactivity needed (✅ Better - pass translations as props):**
+
+```typescript
+// Server Component wrapper
+import { getTranslations } from "next-intl/server"
+import { TaskCardClient } from "./task-card-client"
+
+export async function TaskCard() {
+    const t = await getTranslations("tasks.card")
+    const tCommon = await getTranslations("common.actions")
+
+    return (
+        <TaskCardClient
+            title={t("title")}
+            saveLabel={tCommon("save")}
+        />
+    )
+}
+
+// Client Component
+"use client"
+interface TaskCardClientProps {
+    title: string
+    saveLabel: string
+}
+
+export function TaskCardClient({ title, saveLabel }: TaskCardClientProps) {
+    return (
+        <div>
+            <h2>{title}</h2>
+            <button onClick={() => console.log("save")}>{saveLabel}</button>
+        </div>
+    )
+}
+```
+
+**Translation files:**
+
+```json
+// messages/en.json
+{
+  "tasks": {
+    "card": {
+      "title": "Task Details"
+    }
+  }
+}
+
+// messages/sl.json
+{
+  "tasks": {
+    "card": {
+      "title": "Podrobnosti naloge"
+    }
+  }
+}
+```
+
 ### Error Handling
 
 - Never leave TypeScript errors or warnings
