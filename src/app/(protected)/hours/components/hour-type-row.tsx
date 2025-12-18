@@ -28,11 +28,11 @@ export function HourTypeRow({
 }: HourTypeRowProps) {
     const expandedTypes = useHoursStore((state) => state.expandedTypes)
     const toggleType = useHoursStore((state) => state.toggleType)
-    const [mounted, setMounted] = useState(false)
+    const [isExpanded, setIsExpanded] = useState(initiallyExpanded)
 
     useEffect(() => {
-        setMounted(true)
-    }, [])
+        setIsExpanded(expandedTypes.has(hourType))
+    }, [expandedTypes, hourType])
 
     const holidaysByDate = useMemo(() => {
         const map = new Map<string, { name: string }>()
@@ -63,8 +63,6 @@ export function HourTypeRow({
             date.getFullYear() === today.getFullYear()
         )
     }
-
-    const isExpanded = mounted ? expandedTypes.has(hourType) : initiallyExpanded
 
     const trackedKey = `${hourType}_TRACKED`
     const manualKey = `${hourType}_MANUAL`
@@ -123,7 +121,7 @@ export function HourTypeRow({
             </TableRow>
 
             {isExpanded && (
-                <>
+                <Fragment key={`expanded-${hourType}`}>
                     <TableRow>
                         <TableCell className="font-medium sticky left-0 z-20 bg-background">
                             <div className="pl-8">
@@ -198,7 +196,7 @@ export function HourTypeRow({
                             )
                         })}
                     </TableRow>
-                </>
+                </Fragment>
             )}
         </>
     )
