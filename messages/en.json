@@ -366,9 +366,13 @@
                 "edit": "Edit"
             },
             "form": {
+                "fillDetails": "Fill in the details to create a new user",
                 "name": "Name",
+                "namePlaceholder": "Enter user's full name",
                 "email": "Email",
+                "emailPlaceholder": "user@example.com",
                 "password": "Password",
+                "passwordPlaceholder": "Minimum 6 characters",
                 "role": "Role",
                 "selectRole": "Select a role",
                 "createUser": "Create User",

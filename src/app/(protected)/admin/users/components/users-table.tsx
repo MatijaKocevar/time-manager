@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useTranslations } from "next-intl"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
     Table,
     TableBody,
@@ -14,10 +15,28 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label"
 import { Edit, Search, Plus } from "lucide-react"
 import type { UserTableItem } from "../schemas/user-table-schemas"
 import { USER_ROLE_COLORS } from "../constants/user-constants"
 import { getUserRoleTranslationKey } from "../utils/translation-helpers"
+import { createUser } from "../actions/user-actions"
+import { useUserFormStore } from "../stores/user-form-store"
+import { type UserRole } from "../schemas/user-action-schemas"
 
 interface UsersTableProps {
     users: UserTableItem[]
@@ -26,10 +45,17 @@ interface UsersTableProps {
 
 export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
     const router = useRouter()
+    const queryClient = useQueryClient()
     const t = useTranslations("admin.users.table")
     const tRoles = useTranslations("admin.users.roles")
+    const tUsers = useTranslations("admin.users")
+    const tForm = useTranslations("admin.users.form")
     const tCommon = useTranslations("common.actions")
     const [searchQuery, setSearchQuery] = useState("")
+    const [isNewUserOpen, setIsNewUserOpen] = useState(false)
+
+    const { createForm, setCreateFormData, resetCreateForm, setCreateLoading, setCreateError } =
+        useUserFormStore()
 
     const filteredUsers = users.filter((user) =>
         user.name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -38,6 +64,24 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
     const handleRowDoubleClick = (userId: string) => {
         router.push(`/admin/users/${userId}`)
     }
+
+    const createUserMutation = useMutation({
+        mutationFn: createUser,
+        onMutate: () => {
+            setCreateLoading(true)
+            setCreateError("")
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] })
+            setIsNewUserOpen(false)
+            resetCreateForm()
+            setCreateLoading(false)
+        },
+        onError: (error) => {
+            setCreateError(error instanceof Error ? error.message : tCommon("error"))
+            setCreateLoading(false)
+        },
+    })
 
     return (
         <>
@@ -51,11 +95,9 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                         className="pl-9"
                     />
                 </div>
-                <Button asChild>
-                    <Link href="/admin/users/create">
-                        <Plus className="h-4 w-4 mr-2" />
-                        {tCommon("create")} {t("name")}
-                    </Link>
+                <Button onClick={() => setIsNewUserOpen(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {tUsers("createUser")}
                 </Button>
             </div>
             <div className="rounded-md border overflow-auto flex-1 min-h-0">
@@ -66,7 +108,9 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                             <TableHead className="min-w-[200px]">{t("email")}</TableHead>
                             <TableHead className="min-w-[100px]">{t("role")}</TableHead>
                             <TableHead className="min-w-[120px]">{t("created")}</TableHead>
-                            <TableHead className="text-right min-w-[180px]">{t("actions")}</TableHead>
+                            <TableHead className="text-right min-w-[180px]">
+                                {t("actions")}
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -123,6 +167,100 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                     </TableBody>
                 </Table>
             </div>
+
+            <Dialog open={isNewUserOpen} onOpenChange={setIsNewUserOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{tUsers("createUser")}</DialogTitle>
+                        <DialogDescription>{tForm("fillDetails")}</DialogDescription>
+                    </DialogHeader>
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault()
+                            createUserMutation.mutate(createForm.data)
+                        }}
+                        className="space-y-4"
+                    >
+                        <div className="space-y-2">
+                            <Label htmlFor="name">{tForm("name")}</Label>
+                            <Input
+                                id="name"
+                                value={createForm.data.name}
+                                onChange={(e) => setCreateFormData({ name: e.target.value })}
+                                placeholder={tForm("namePlaceholder")}
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="email">{tForm("email")}</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                value={createForm.data.email}
+                                onChange={(e) => setCreateFormData({ email: e.target.value })}
+                                placeholder={tForm("emailPlaceholder")}
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="password">{tForm("password")}</Label>
+                            <Input
+                                id="password"
+                                type="password"
+                                value={createForm.data.password}
+                                onChange={(e) => setCreateFormData({ password: e.target.value })}
+                                placeholder={tForm("passwordPlaceholder")}
+                                required
+                                minLength={6}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="role">{tForm("role")}</Label>
+                            <Select
+                                value={createForm.data.role}
+                                onValueChange={(value: UserRole) =>
+                                    setCreateFormData({ role: value })
+                                }
+                            >
+                                <SelectTrigger id="role">
+                                    <SelectValue placeholder={tForm("selectRole")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="USER">
+                                        {tRoles(getUserRoleTranslationKey("USER"))}
+                                    </SelectItem>
+                                    <SelectItem value="ADMIN">
+                                        {tRoles(getUserRoleTranslationKey("ADMIN"))}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {createForm.error && (
+                            <p className="text-sm text-destructive">{createForm.error}</p>
+                        )}
+
+                        <div className="flex justify-end gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setIsNewUserOpen(false)
+                                    resetCreateForm()
+                                }}
+                            >
+                                {tCommon("cancel")}
+                            </Button>
+                            <Button type="submit" disabled={createForm.isLoading}>
+                                {createForm.isLoading ? tCommon("saving") : tCommon("save")}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </>
     )
 }

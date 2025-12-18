@@ -366,9 +366,13 @@
                 "edit": "Uredi"
             },
             "form": {
+                "fillDetails": "Izpolnite podrobnosti za ustvarjanje novega uporabnika",
                 "name": "Ime",
+                "namePlaceholder": "Vnesite polno ime uporabnika",
                 "email": "E-pošta",
+                "emailPlaceholder": "uporabnik@example.com",
                 "password": "Geslo",
+                "passwordPlaceholder": "Najmanj 6 znakov",
                 "role": "Vloga",
                 "selectRole": "Izberi vlogo",
                 "createUser": "Ustvari uporabnika",
