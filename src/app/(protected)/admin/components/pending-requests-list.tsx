@@ -2,7 +2,6 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useTranslations } from "next-intl"
 import {
     Column,
     ColumnDef,
@@ -59,6 +58,53 @@ type RequestDisplay = {
 interface PendingRequestsListProps {
     requests: RequestDisplay[]
     holidays: Array<{ date: Date; name: string }>
+    translations: {
+        table: {
+            user: string
+            type: string
+            startDate: string
+            endDate: string
+            hours: string
+            days: string
+            reason: string
+            actions: string
+            approve: string
+            reject: string
+            approving: string
+            rejecting: string
+            noPending: string
+            searchPlaceholder: string
+        }
+        reject: {
+            title: string
+            confirmQuestion: string
+            user: string
+            type: string
+            period: string
+            reason: string
+            reasonRequired: string
+            reasonPlaceholder: string
+            cancel: string
+            rejecting: string
+            rejectRequest: string
+        }
+        pagination: {
+            previous: string
+            next: string
+        }
+        filter: {
+            title: string
+            search: string
+            clear: string
+            apply: string
+        }
+        types: {
+            vacation: string
+            sickLeave: string
+            workFromHome: string
+            other: string
+        }
+    }
 }
 
 const typeColors: Record<string, string> = {
@@ -129,9 +175,13 @@ function DebouncedInput({
     return <Input {...props} value={value} onChange={(e) => setValue(e.target.value)} />
 }
 
-function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
-    const t = useTranslations("admin.pendingRequests.filter")
-    const tTable = useTranslations("admin.pendingRequests.table")
+function Filter({
+    column,
+    translations,
+}: {
+    column: Column<RequestDisplay, unknown>
+    translations: PendingRequestsListProps["translations"]
+}) {
     const columnFilterValue = column.getFilterValue()
     const uniqueValues = column.getFacetedUniqueValues()
     const isMobile = useIsMobile()
@@ -175,24 +225,24 @@ function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
                 <Dialog open={filterDialogOpen} onOpenChange={handleDialogOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>{t("title")}</DialogTitle>
+                            <DialogTitle>{translations.filter.title}</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="filter-input">{t("search")}</Label>
+                                <Label htmlFor="filter-input">{translations.filter.search}</Label>
                                 <Input
                                     id="filter-input"
                                     value={filterValue}
                                     onChange={(e) => setFilterValue(e.target.value)}
-                                    placeholder={`${tTable("searchPlaceholder")} (${uniqueValues.size})`}
+                                    placeholder={`${translations.table.searchPlaceholder} (${uniqueValues.size})`}
                                 />
                             </div>
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={handleClearFilter}>
-                                {t("clear")}
+                                {translations.filter.clear}
                             </Button>
-                            <Button onClick={handleApplyFilter}>{t("apply")}</Button>
+                            <Button onClick={handleApplyFilter}>{translations.filter.apply}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -205,17 +255,17 @@ function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
             type="text"
             value={(columnFilterValue ?? "") as string}
             onChange={(value) => column.setFilterValue(value)}
-            placeholder={`${tTable("searchPlaceholder")} (${uniqueValues.size})`}
+            placeholder={`${translations.table.searchPlaceholder} (${uniqueValues.size})`}
             className="h-8"
         />
     )
 }
 
-export function PendingRequestsList({ requests, holidays }: PendingRequestsListProps) {
-    const t = useTranslations("admin.pendingRequests.table")
-    const tReject = useTranslations("admin.pendingRequests.reject")
-    const tPagination = useTranslations("admin.pendingRequests.pagination")
-    const tTypes = useTranslations("requests.types")
+export function PendingRequestsList({
+    requests,
+    holidays,
+    translations,
+}: PendingRequestsListProps) {
     const queryClient = useQueryClient()
     const isMobile = useIsMobile()
     const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
@@ -290,12 +340,23 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
         OTHER: "bg-gray-100 text-gray-800",
     }
 
+    const getTypeTranslation = (type: RequestType) => {
+        const key = getRequestTypeTranslationKey(type)
+        const typeMap: Record<string, string> = {
+            vacation: translations.types.vacation,
+            sickLeave: translations.types.sickLeave,
+            workFromHome: translations.types.workFromHome,
+            other: translations.types.other,
+        }
+        return typeMap[key] || key
+    }
+
     const columns: ColumnDef<RequestDisplay>[] = useMemo(
         () => [
             {
                 id: "user",
                 accessorFn: (row) => row.user.name || row.user.email,
-                header: t("user"),
+                header: translations.table.user,
                 cell: ({ row }) => (
                     <div className="font-medium">
                         {row.original.user.name || row.original.user.email}
@@ -306,15 +367,15 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
             },
             {
                 id: "type",
-                accessorFn: (row) => tTypes(getRequestTypeTranslationKey(row.type as RequestType)),
-                header: t("type"),
+                accessorFn: (row) => getTypeTranslation(row.type as RequestType),
+                header: translations.table.type,
                 cell: ({ row }) => (
                     <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
                             typeColors[row.original.type]
                         }`}
                     >
-                        {tTypes(getRequestTypeTranslationKey(row.original.type as RequestType))}
+                        {getTypeTranslation(row.original.type as RequestType)}
                     </span>
                 ),
                 enableColumnFilter: true,
@@ -322,19 +383,19 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
             },
             {
                 accessorKey: "startDate",
-                header: t("startDate"),
+                header: translations.table.startDate,
                 cell: ({ row }) => formatDate(row.original.startDate),
                 enableColumnFilter: false,
             },
             {
                 accessorKey: "endDate",
-                header: t("endDate"),
+                header: translations.table.endDate,
                 cell: ({ row }) => formatDate(row.original.endDate),
                 enableColumnFilter: false,
             },
             {
                 id: "hours",
-                header: t("hours"),
+                header: translations.table.hours,
                 cell: ({ row }) => {
                     const workdays = calculateWorkdays(
                         row.original.startDate,
@@ -347,7 +408,7 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
             },
             {
                 accessorKey: "reason",
-                header: t("reason"),
+                header: translations.table.reason,
                 cell: ({ row }) => (
                     <div className="text-sm text-muted-foreground">
                         {row.original.reason || "-"}
@@ -358,7 +419,9 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
             },
             {
                 id: "actions",
-                header: () => <div className="text-right w-[170px]">{t("actions")}</div>,
+                header: () => (
+                    <div className="text-right w-[170px]">{translations.table.actions}</div>
+                ),
                 cell: ({ row }) => (
                     <div className="flex gap-2 justify-end w-[170px]">
                         <Button
@@ -370,7 +433,7 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
                             {approveMutation.isPending ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                                t("approve")
+                                translations.table.approve
                             )}
                         </Button>
                         <Button
@@ -380,7 +443,7 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
                             disabled={rejectMutation.isPending}
                             className="w-[76px]"
                         >
-                            {t("reject")}
+                            {translations.table.reject}
                         </Button>
                     </div>
                 ),
@@ -390,7 +453,7 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
                 maxSize: 170,
             },
         ],
-        [approveMutation.isPending, rejectMutation.isPending, holidays, t, tTypes]
+        [approveMutation.isPending, rejectMutation.isPending, holidays, translations]
     )
 
     const table = useReactTable({
@@ -429,7 +492,10 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
                                                               header.getContext()
                                                           )}
                                                     {isMobile && header.column.getCanFilter() && (
-                                                        <Filter column={header.column} />
+                                                        <Filter
+                                                            column={header.column}
+                                                            translations={translations}
+                                                        />
                                                     )}
                                                 </div>
                                             </TableHead>
@@ -443,7 +509,10 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
                                                     className="py-2"
                                                 >
                                                     {header.column.getCanFilter() ? (
-                                                        <Filter column={header.column} />
+                                                        <Filter
+                                                            column={header.column}
+                                                            translations={translations}
+                                                        />
                                                     ) : null}
                                                 </TableHead>
                                             ))}
@@ -472,7 +541,7 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
                                         colSpan={columns.length}
                                         className="h-24 text-center text-muted-foreground"
                                     >
-                                        {t("noRequests")}
+                                        {translations.table.noPending}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -486,7 +555,7 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                     >
-                        {tPagination("previous")}
+                        {translations.pagination.previous}
                     </Button>
                     <Button
                         variant="outline"
@@ -494,7 +563,7 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}
                     >
-                        {tPagination("next")}
+                        {translations.pagination.next}
                     </Button>
                 </div>
             </div>
@@ -502,16 +571,16 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
             <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{tReject("title")}</DialogTitle>
+                        <DialogTitle>{translations.reject.title}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="rejectionReason">{tReject("reason")}</Label>
+                            <Label htmlFor="rejectionReason">{translations.reject.reason}</Label>
                             <Input
                                 id="rejectionReason"
                                 value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
-                                placeholder={tReject("reasonPlaceholder")}
+                                placeholder={translations.reject.reasonPlaceholder}
                             />
                         </div>
                     </div>
@@ -521,14 +590,16 @@ export function PendingRequestsList({ requests, holidays }: PendingRequestsListP
                             onClick={() => setRejectDialogOpen(false)}
                             disabled={rejectMutation.isPending}
                         >
-                            {t("cancel")}
+                            {translations.reject.cancel}
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={handleReject}
                             disabled={rejectMutation.isPending || !rejectionReason}
                         >
-                            {rejectMutation.isPending ? t("rejecting") : t("reject")}
+                            {rejectMutation.isPending
+                                ? translations.reject.rejecting
+                                : translations.reject.rejectRequest}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

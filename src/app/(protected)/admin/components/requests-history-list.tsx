@@ -281,7 +281,11 @@ function Filter({
     )
 }
 
-export function RequestsHistoryList({ requests, holidays, translations }: RequestsHistoryListProps) {
+export function RequestsHistoryList({
+    requests,
+    holidays,
+    translations,
+}: RequestsHistoryListProps) {
     const isMobile = useIsMobile()
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -520,15 +524,21 @@ export function RequestsHistoryList({ requests, holidays, translations }: Reques
                         {selectedRequest && (
                             <div className="space-y-2 p-3 bg-muted rounded-md">
                                 <div className="text-sm">
-                                    <span className="font-semibold">{translations.cancel.user} </span>
+                                    <span className="font-semibold">
+                                        {translations.cancel.user}{" "}
+                                    </span>
                                     {selectedRequest.user.name || selectedRequest.user.email}
                                 </div>
                                 <div className="text-sm">
-                                    <span className="font-semibold">{translations.cancel.type} </span>
+                                    <span className="font-semibold">
+                                        {translations.cancel.type}{" "}
+                                    </span>
                                     {getTypeTranslation(selectedRequest.type as RequestType)}
                                 </div>
                                 <div className="text-sm">
-                                    <span className="font-semibold">{translations.cancel.period} </span>
+                                    <span className="font-semibold">
+                                        {translations.cancel.period}{" "}
+                                    </span>
                                     {formatDate(selectedRequest.startDate)} -{" "}
                                     {formatDate(selectedRequest.endDate)}
                                 </div>
@@ -537,7 +547,9 @@ export function RequestsHistoryList({ requests, holidays, translations }: Reques
                         <div className="space-y-2">
                             <Label htmlFor="cancellation-reason">
                                 {translations.cancel.reason}{" "}
-                                <span className="text-red-600">{translations.cancel.reasonRequired}</span>
+                                <span className="text-red-600">
+                                    {translations.cancel.reasonRequired}
+                                </span>
                             </Label>
                             <Textarea
                                 id="cancellation-reason"

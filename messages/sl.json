@@ -444,8 +444,10 @@
                 "approving": "Odobravanje...",
                 "rejecting": "Zavračanje...",
                 "noRequests": "Ni čakajočih zahtevkov.",
+                "noPending": "Ni čakajočih zahtevkov.",
                 "searchPlaceholder": "Iskanje...",
-                "cancel": "Prekliči"
+                "cancel": "Prekliči",
+                "days": "d"
             },
             "filter": {
                 "title": "Filtriraj stolpec",
@@ -455,8 +457,16 @@
             },
             "reject": {
                 "title": "Zavrni zahtevek",
+                "confirmQuestion": "Ste prepričani, da želite zavrniti ta zahtevek?",
+                "user": "Uporabnik:",
+                "type": "Tip:",
+                "period": "Obdobje:",
                 "reason": "Razlog za zavrnitev",
-                "reasonPlaceholder": "Vnesite razlog za zavrnitev"
+                "reasonRequired": "*",
+                "reasonPlaceholder": "Vnesite razlog za zavrnitev",
+                "cancel": "Prekliči",
+                "rejecting": "Zavračanje...",
+                "rejectRequest": "Zavrni zahtevek"
             },
             "pagination": {
                 "previous": "Prejšnje",
