@@ -40,7 +40,10 @@ import {
 } from "@/components/ui/table"
 import { cancelApprovedRequest } from "../../requests/actions/request-actions"
 import { requestKeys } from "../../requests/query-keys"
-import { getRequestTypeTranslationKey, getRequestStatusTranslationKey } from "../../requests/utils/translation-helpers"
+import {
+    getRequestTypeTranslationKey,
+    getRequestStatusTranslationKey,
+} from "../../requests/utils/translation-helpers"
 import type { RequestType, RequestStatus } from "../../requests/schemas/request-schemas"
 
 type RequestDisplay = {
@@ -333,7 +336,8 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                 const hours = workdays * 8
                 return (
                     <div className="font-semibold">
-                        {hours}h ({workdays}{t("days")})
+                        {hours}h ({workdays}
+                        {t("days")})
                     </div>
                 )
             },
@@ -348,7 +352,9 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                         statusColors[row.original.status]
                     }`}
                 >
-                    {tStatuses(getRequestStatusTranslationKey(row.original.status as RequestStatus))}
+                    {tStatuses(
+                        getRequestStatusTranslationKey(row.original.status as RequestStatus)
+                    )}
                 </span>
             ),
             enableColumnFilter: true,
@@ -449,7 +455,11 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                                 </div>
                                 <div className="text-sm">
                                     <span className="font-semibold">{tCancel("type")} </span>
-                                    {tTypes(getRequestTypeTranslationKey(selectedRequest.type as RequestType))}
+                                    {tTypes(
+                                        getRequestTypeTranslationKey(
+                                            selectedRequest.type as RequestType
+                                        )
+                                    )}
                                 </div>
                                 <div className="text-sm">
                                     <span className="font-semibold">{tCancel("period")} </span>
@@ -460,7 +470,8 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                         )}
                         <div className="space-y-2">
                             <Label htmlFor="cancellation-reason">
-                                {tCancel("reason")} <span className="text-red-600">{tCancel("reasonRequired")}</span>
+                                {tCancel("reason")}{" "}
+                                <span className="text-red-600">{tCancel("reasonRequired")}</span>
                             </Label>
                             <Textarea
                                 id="cancellation-reason"
@@ -484,7 +495,9 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                             onClick={handleCancelConfirm}
                             disabled={!cancellationReason.trim() || cancelMutation.isPending}
                         >
-                            {cancelMutation.isPending ? tCancel("cancelling") : tCancel("cancelRequest")}
+                            {cancelMutation.isPending
+                                ? tCancel("cancelling")
+                                : tCancel("cancelRequest")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

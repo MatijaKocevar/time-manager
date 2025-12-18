@@ -397,8 +397,37 @@
             }
         },
         "holidays": {
+            "title": "Holidays",
             "import": "Import",
-            "export": "Export"
+            "export": "Export",
+            "table": {
+                "date": "Date",
+                "name": "Name",
+                "description": "Description",
+                "recurring": "Recurring",
+                "actions": "Actions",
+                "noHolidays": "No holidays found",
+                "yes": "Yes",
+                "no": "No"
+            },
+            "form": {
+                "addHoliday": "Add Holiday",
+                "editHoliday": "Edit Holiday",
+                "date": "Date",
+                "name": "Name",
+                "description": "Description",
+                "recurringAnnually": "Recurring annually",
+                "cancel": "Cancel",
+                "create": "Create",
+                "update": "Update"
+            },
+            "actions": {
+                "importPublicHolidays": "Import Public Holidays (SI)",
+                "importing": "Importing...",
+                "deleteConfirm": "Are you sure you want to delete this holiday?",
+                "importSuccess": "✅ Imported {count} holidays for {year} and {nextYear}",
+                "importError": "❌ Failed to import holidays: {error}"
+            }
         },
         "pendingRequests": {
             "title": "Pending Requests",

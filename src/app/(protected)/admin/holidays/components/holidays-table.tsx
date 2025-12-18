@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
     Table,
@@ -38,9 +39,39 @@ type Holiday = {
 
 interface HolidaysTableProps {
     holidays: Holiday[]
+    translations: {
+        title: string
+        table: {
+            date: string
+            name: string
+            description: string
+            recurring: string
+            actions: string
+            noHolidays: string
+            yes: string
+            no: string
+        }
+        form: {
+            addHoliday: string
+            editHoliday: string
+            date: string
+            name: string
+            description: string
+            recurringAnnually: string
+            cancel: string
+            create: string
+            update: string
+        }
+        actions: {
+            importPublicHolidays: string
+            importing: string
+            deleteConfirm: string
+        }
+    }
 }
 
-export function HolidaysTable({ holidays }: HolidaysTableProps) {
+export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
+    const tActions = useTranslations("admin.holidays.actions")
     const queryClient = useQueryClient()
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null)
@@ -94,13 +125,19 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
         onSuccess: async (data) => {
             if (data.success) {
                 await queryClient.refetchQueries({ queryKey: holidayKeys.all })
+                const year = new Date().getFullYear()
+                const nextYear = year + 1
                 alert(
-                    `✅ Imported ${data.total} holidays for ${new Date().getFullYear()} and ${new Date().getFullYear() + 1}`
+                    tActions("importSuccess", {
+                        count: data.total,
+                        year: year,
+                        nextYear: nextYear,
+                    })
                 )
             }
         },
         onError: (error) => {
-            alert(`❌ Failed to import holidays: ${error.message}`)
+            alert(tActions("importError", { error: error.message }))
         },
     })
 
@@ -148,7 +185,7 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
     }
 
     const handleDelete = (id: string) => {
-        if (confirm("Are you sure you want to delete this holiday?")) {
+        if (confirm(translations.actions.deleteConfirm)) {
             deleteMutation.mutate({ id })
         }
     }
@@ -168,7 +205,7 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
     return (
         <div className="flex flex-col gap-4 h-full">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">Holidays</h2>
+                <h2 className="text-lg font-semibold">{translations.title}</h2>
                 <div className="flex gap-2">
                     <Button
                         variant="secondary"
@@ -177,25 +214,27 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
                     >
                         <Sparkles className="h-4 w-4 mr-2" />
                         {generateMutation.isPending
-                            ? "Importing..."
-                            : "Import Public Holidays (SI)"}
+                            ? translations.actions.importing
+                            : translations.actions.importPublicHolidays}
                     </Button>
                     <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
                         <DialogTrigger asChild>
                             <Button>
                                 <Plus className="h-4 w-4 mr-2" />
-                                Add Holiday
+                                {translations.form.addHoliday}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>
-                                    {editingHoliday ? "Edit Holiday" : "Add Holiday"}
+                                    {editingHoliday
+                                        ? translations.form.editHoliday
+                                        : translations.form.addHoliday}
                                 </DialogTitle>
                             </DialogHeader>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
-                                    <Label htmlFor="date">Date</Label>
+                                    <Label htmlFor="date">{translations.form.date}</Label>
                                     <Input
                                         id="date"
                                         type="date"
@@ -207,7 +246,7 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="name">Name</Label>
+                                    <Label htmlFor="name">{translations.form.name}</Label>
                                     <Input
                                         id="name"
                                         value={formData.name}
@@ -219,7 +258,9 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
                                     />
                                 </div>
                                 <div>
-                                    <Label htmlFor="description">Description</Label>
+                                    <Label htmlFor="description">
+                                        {translations.form.description}
+                                    </Label>
                                     <Textarea
                                         id="description"
                                         value={formData.description}
@@ -245,7 +286,9 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
                                         }
                                         className="h-4 w-4"
                                     />
-                                    <Label htmlFor="isRecurring">Recurring annually</Label>
+                                    <Label htmlFor="isRecurring">
+                                        {translations.form.recurringAnnually}
+                                    </Label>
                                 </div>
                                 <div className="flex justify-end gap-2">
                                     <Button
@@ -253,7 +296,7 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
                                         variant="outline"
                                         onClick={() => handleOpenChange(false)}
                                     >
-                                        Cancel
+                                        {translations.form.cancel}
                                     </Button>
                                     <Button
                                         type="submit"
@@ -261,7 +304,9 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
                                             createMutation.isPending || updateMutation.isPending
                                         }
                                     >
-                                        {editingHoliday ? "Update" : "Create"}
+                                        {editingHoliday
+                                            ? translations.form.update
+                                            : translations.form.create}
                                     </Button>
                                 </div>
                             </form>
@@ -273,11 +318,21 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="min-w-[120px]">Date</TableHead>
-                            <TableHead className="min-w-[200px]">Name</TableHead>
-                            <TableHead className="min-w-[250px]">Description</TableHead>
-                            <TableHead className="min-w-[100px]">Recurring</TableHead>
-                            <TableHead className="text-right min-w-[150px]">Actions</TableHead>
+                            <TableHead className="min-w-[120px]">
+                                {translations.table.date}
+                            </TableHead>
+                            <TableHead className="min-w-[200px]">
+                                {translations.table.name}
+                            </TableHead>
+                            <TableHead className="min-w-[250px]">
+                                {translations.table.description}
+                            </TableHead>
+                            <TableHead className="min-w-[100px]">
+                                {translations.table.recurring}
+                            </TableHead>
+                            <TableHead className="text-right min-w-[150px]">
+                                {translations.table.actions}
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -287,7 +342,7 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
                                     colSpan={5}
                                     className="text-center text-muted-foreground"
                                 >
-                                    No holidays found
+                                    {translations.table.noHolidays}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -309,10 +364,12 @@ export function HolidaysTable({ holidays }: HolidaysTableProps) {
                                     </TableCell>
                                     <TableCell>
                                         {holiday.isRecurring ? (
-                                            <span className="text-xs text-green-600">Yes</span>
+                                            <span className="text-xs text-green-600">
+                                                {translations.table.yes}
+                                            </span>
                                         ) : (
                                             <span className="text-xs text-muted-foreground">
-                                                No
+                                                {translations.table.no}
                                             </span>
                                         )}
                                     </TableCell>

@@ -14,6 +14,7 @@ interface ConditionalSidebarProps {
     userName?: string | null
     userEmail?: string | null
     lists?: ListDisplay[]
+    breadcrumbTranslations?: Record<string, string>
 }
 
 export function ConditionalSidebar({
@@ -24,6 +25,7 @@ export function ConditionalSidebar({
     userName,
     userEmail,
     lists = [],
+    breadcrumbTranslations = {},
 }: ConditionalSidebarProps) {
     if (hasSession) {
         return (
@@ -36,7 +38,7 @@ export function ConditionalSidebar({
                         lists={lists}
                     />
                     <main className="flex flex-1 flex-col min-w-0 w-full h-full overflow-hidden">
-                        <AppHeader />
+                        <AppHeader breadcrumbTranslations={breadcrumbTranslations} />
                         <div className="flex-1 p-4 overflow-auto min-w-0">{children}</div>
                     </main>
                 </div>

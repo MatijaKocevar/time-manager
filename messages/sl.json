@@ -397,8 +397,37 @@
             }
         },
         "holidays": {
+            "title": "Prazniki",
             "import": "Uvozi",
-            "export": "Izvozi"
+            "export": "Izvozi",
+            "table": {
+                "date": "Datum",
+                "name": "Ime",
+                "description": "Opis",
+                "recurring": "Ponavljajoče",
+                "actions": "Dejanja",
+                "noHolidays": "Ni praznikov",
+                "yes": "Da",
+                "no": "Ne"
+            },
+            "form": {
+                "addHoliday": "Dodaj praznik",
+                "editHoliday": "Uredi praznik",
+                "date": "Datum",
+                "name": "Ime",
+                "description": "Opis",
+                "recurringAnnually": "Ponavljajoče letno",
+                "cancel": "Prekliči",
+                "create": "Ustvari",
+                "update": "Posodobi"
+            },
+            "actions": {
+                "importPublicHolidays": "Uvozi javne praznike (SI)",
+                "importing": "Uvažanje...",
+                "deleteConfirm": "Ali ste prepričani, da želite izbrisati ta praznik?",
+                "importSuccess": "✅ Uvoženih {count} praznikov za {year} in {nextYear}",
+                "importError": "❌ Uvoz praznikov ni uspel: {error}"
+            }
         },
         "pendingRequests": {
             "title": "Čakajoči zahtevki",

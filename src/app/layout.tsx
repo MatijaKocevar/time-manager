@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { cookies } from "next/headers"
 import { getServerSession } from "next-auth"
+import { getTranslations } from "next-intl/server"
 import "./globals.css"
 import SessionWrapper from "@/providers/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
@@ -57,6 +58,21 @@ export default async function RootLayout({
     const session = await getServerSession(authConfig)
     const lists = session ? await getLists().catch(() => []) : []
 
+    // Fetch breadcrumb translations server-side
+    const t = await getTranslations("navigation")
+    const breadcrumbTranslations = {
+        "/tracker": t("timeTracker"),
+        "/tasks": t("tasks"),
+        "/hours": t("hours"),
+        "/shifts": t("shifts"),
+        "/requests": t("requests"),
+        "/admin": t("admin"),
+        "/admin/users": t("userManagement"),
+        "/admin/pending-requests": t("pendingRequests"),
+        "/admin/request-history": t("requestHistory"),
+        "/admin/holidays": t("holidays"),
+        "/profile": t("profile"),
+    }
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
@@ -102,6 +118,7 @@ export default async function RootLayout({
                                     userName={session?.user?.name}
                                     userEmail={session?.user?.email}
                                     lists={lists}
+                                    breadcrumbTranslations={breadcrumbTranslations}
                                 >
                                     {children}
                                 </ConditionalSidebar>
