@@ -348,7 +348,49 @@
         },
         "users": {
             "createUser": "Create User",
-            "deleteUserConfirm": "Permanently remove this user from the system. This action cannot be undone."
+            "deleteUserConfirm": "Permanently remove this user from the system. This action cannot be undone.",
+            "roles": {
+                "user": "User",
+                "admin": "Admin"
+            },
+            "table": {
+                "filterPlaceholder": "Filter by name...",
+                "name": "Name",
+                "email": "Email",
+                "role": "Role",
+                "created": "Created",
+                "actions": "Actions",
+                "noUsers": "No users found",
+                "noUsersMatch": "No users match your search",
+                "you": "You",
+                "edit": "Edit"
+            },
+            "form": {
+                "name": "Name",
+                "email": "Email",
+                "password": "Password",
+                "role": "Role",
+                "selectRole": "Select a role",
+                "createUser": "Create User",
+                "creating": "Creating...",
+                "saveChanges": "Save Changes",
+                "saving": "Saving...",
+                "changePassword": "Change Password",
+                "newPassword": "New Password",
+                "enterNewPassword": "Enter new password",
+                "changing": "Changing...",
+                "deleteUser": "Delete User",
+                "deleteUserTitle": "Delete User",
+                "deleteUserDescription": "Permanently remove this user from the system. This action cannot be undone.",
+                "deleting": "Deleting...",
+                "deleteConfirm": "Are you sure you want to delete {name}?"
+            },
+            "detail": {
+                "hoursSummary": "Hours Summary",
+                "hoursSummaryDescription": "Overview of user's tracked hours",
+                "requests": "Requests",
+                "requestsDescription": "User's leave and work requests"
+            }
         },
         "holidays": {
             "import": "Import",

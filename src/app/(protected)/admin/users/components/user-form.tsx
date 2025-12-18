@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { useUserFormStore } from "../stores/user-form-store"
 import { createUser, updateUser, deleteUser, changeUserPassword } from "../actions/user-actions"
 import { Button } from "@/components/ui/button"
@@ -16,7 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Trash2 } from "lucide-react"
-import { USER_ROLE_LABELS } from "../constants/user-constants"
+import { getUserRoleTranslationKey } from "../utils/translation-helpers"
 import { type UserRole } from "../schemas/user-action-schemas"
 
 interface UserFormProps {
@@ -30,6 +31,9 @@ interface UserFormProps {
 
 export function UserForm({ user }: UserFormProps) {
     const router = useRouter()
+    const t = useTranslations("admin.users.form")
+    const tRoles = useTranslations("admin.users.roles")
+    const tCommon = useTranslations("common.actions")
     const isEditMode = !!user
 
     const storeName = useUserFormStore((state) => state.createForm.data.name)
@@ -119,8 +123,7 @@ export function UserForm({ user }: UserFormProps) {
     }
 
     const handleDelete = async () => {
-        if (!user || !confirm(`Are you sure you want to delete ${user.name || "this user"}?`))
-            return
+        if (!user || !confirm(t("deleteConfirm", { name: user.name || "this user" }))) return
 
         clearDeleteError()
         setDeleteLoading(true)
@@ -140,7 +143,7 @@ export function UserForm({ user }: UserFormProps) {
         <div className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="name">{t("name")}</Label>
                     <Input
                         id="name"
                         value={name}
@@ -149,7 +152,7 @@ export function UserForm({ user }: UserFormProps) {
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t("email")}</Label>
                     <Input
                         id="email"
                         type="email"
@@ -160,7 +163,7 @@ export function UserForm({ user }: UserFormProps) {
                 </div>
                 {!isEditMode && (
                     <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password">{t("password")}</Label>
                         <Input
                             id="password"
                             type="password"
@@ -171,7 +174,7 @@ export function UserForm({ user }: UserFormProps) {
                     </div>
                 )}
                 <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
+                    <Label htmlFor="role">{t("role")}</Label>
                     <Select
                         key={user?.id || "new"}
                         value={role}
@@ -179,11 +182,15 @@ export function UserForm({ user }: UserFormProps) {
                         disabled={isLoading}
                     >
                         <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select a role" />
+                            <SelectValue placeholder={t("selectRole")} />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="USER">{USER_ROLE_LABELS.USER}</SelectItem>
-                            <SelectItem value="ADMIN">{USER_ROLE_LABELS.ADMIN}</SelectItem>
+                            <SelectItem value="USER">
+                                {tRoles(getUserRoleTranslationKey("USER"))}
+                            </SelectItem>
+                            <SelectItem value="ADMIN">
+                                {tRoles(getUserRoleTranslationKey("ADMIN"))}
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -192,19 +199,19 @@ export function UserForm({ user }: UserFormProps) {
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => router.push("/users")}
+                        onClick={() => router.push("/admin/users")}
                         disabled={isLoading}
                     >
-                        Cancel
+                        {tCommon("cancel")}
                     </Button>
                     <Button type="submit" disabled={isLoading}>
                         {isLoading
                             ? isEditMode
-                                ? "Saving..."
-                                : "Creating..."
+                                ? t("saving")
+                                : t("creating")
                             : isEditMode
-                              ? "Save Changes"
-                              : "Create User"}
+                              ? t("saveChanges")
+                              : t("createUser")}
                     </Button>
                 </div>
             </form>
@@ -214,11 +221,11 @@ export function UserForm({ user }: UserFormProps) {
                     <Separator />
                     <form onSubmit={handleChangePassword} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="newPassword">Change Password</Label>
+                            <Label htmlFor="newPassword">{t("changePassword")}</Label>
                             <Input
                                 id="newPassword"
                                 type="password"
-                                placeholder="Enter new password"
+                                placeholder={t("enterNewPassword")}
                                 value={newPassword}
                                 onChange={(e) => setPasswordData({ newPassword: e.target.value })}
                                 disabled={isPasswordLoading}
@@ -227,7 +234,7 @@ export function UserForm({ user }: UserFormProps) {
                         {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
                         <div className="flex justify-end">
                             <Button type="submit" disabled={isPasswordLoading || !newPassword}>
-                                {isPasswordLoading ? "Changing..." : "Change Password"}
+                                {isPasswordLoading ? t("changing") : t("changePassword")}
                             </Button>
                         </div>
                     </form>
@@ -235,10 +242,9 @@ export function UserForm({ user }: UserFormProps) {
                     <Separator />
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-lg font-medium">Delete User</h3>
+                            <h3 className="text-lg font-medium">{t("deleteUserTitle")}</h3>
                             <p className="text-sm text-muted-foreground">
-                                Permanently remove this user from the system. This action cannot be
-                                undone.
+                                {t("deleteUserDescription")}
                             </p>
                         </div>
                         {deleteError && <p className="text-sm text-red-500">{deleteError}</p>}
@@ -250,7 +256,7 @@ export function UserForm({ user }: UserFormProps) {
                                 disabled={isDeleteLoading}
                             >
                                 <Trash2 className="h-4 w-4 mr-2" />
-                                {isDeleteLoading ? "Deleting..." : "Delete User"}
+                                {isDeleteLoading ? t("deleting") : t("deleteUser")}
                             </Button>
                         </div>
                     </div>

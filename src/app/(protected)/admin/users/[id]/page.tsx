@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { getUserById } from "../actions/user-actions"
@@ -31,6 +32,7 @@ function getCurrentMonthDates() {
 
 export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
+    const t = await getTranslations("admin.users.detail")
     const { startDate, endDate } = getCurrentMonthDates()
 
     const [user, userHours, userRequests, holidays] = await Promise.all([
@@ -66,8 +68,8 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Requests</CardTitle>
-                        <CardDescription>User&apos;s leave and work requests</CardDescription>
+                        <CardTitle>{t("requests")}</CardTitle>
+                        <CardDescription>{t("requestsDescription")}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <RequestsTable

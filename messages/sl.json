@@ -348,7 +348,49 @@
         },
         "users": {
             "createUser": "Ustvari uporabnika",
-            "deleteUserConfirm": "Trajno odstrani tega uporabnika iz sistema. Tega dejanja ni mogoče razveljaviti."
+            "deleteUserConfirm": "Trajno odstrani tega uporabnika iz sistema. Tega dejanja ni mogoče razveljaviti.",
+            "roles": {
+                "user": "Uporabnik",
+                "admin": "Administrator"
+            },
+            "table": {
+                "filterPlaceholder": "Filtriraj po imenu...",
+                "name": "Ime",
+                "email": "E-pošta",
+                "role": "Vloga",
+                "created": "Ustvarjeno",
+                "actions": "Dejanja",
+                "noUsers": "Ni uporabnikov",
+                "noUsersMatch": "Noben uporabnik ne ustreza vašemu iskanju",
+                "you": "Ti",
+                "edit": "Uredi"
+            },
+            "form": {
+                "name": "Ime",
+                "email": "E-pošta",
+                "password": "Geslo",
+                "role": "Vloga",
+                "selectRole": "Izberi vlogo",
+                "createUser": "Ustvari uporabnika",
+                "creating": "Ustvarjanje...",
+                "saveChanges": "Shrani spremembe",
+                "saving": "Shranjevanje...",
+                "changePassword": "Spremeni geslo",
+                "newPassword": "Novo geslo",
+                "enterNewPassword": "Vnesite novo geslo",
+                "changing": "Spreminjanje...",
+                "deleteUser": "Izbriši uporabnika",
+                "deleteUserTitle": "Izbriši uporabnika",
+                "deleteUserDescription": "Trajno odstrani tega uporabnika iz sistema. Tega dejanja ni mogoče razveljaviti.",
+                "deleting": "Brisanje...",
+                "deleteConfirm": "Ali ste prepričani, da želite izbrisati {name}?"
+            },
+            "detail": {
+                "hoursSummary": "Povzetek ur",
+                "hoursSummaryDescription": "Pregled uporabnikovih beleženih ur",
+                "requests": "Zahtevki",
+                "requestsDescription": "Uporabnikovi zahtevki za dopust in delo"
+            }
         },
         "holidays": {
             "import": "Uvozi",

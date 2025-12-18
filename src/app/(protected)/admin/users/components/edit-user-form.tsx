@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { updateUser, deleteUser, changeUserPassword } from "../actions/user-actions"
 import { useUserFormStore } from "../stores/user-form-store"
 import { Button } from "@/components/ui/button"
@@ -16,7 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Trash2 } from "lucide-react"
-import { USER_ROLE_LABELS } from "../constants/user-constants"
+import { getUserRoleTranslationKey } from "../utils/translation-helpers"
 import { type UserRole } from "../schemas/user-action-schemas"
 
 interface EditUserFormProps {
@@ -30,6 +31,9 @@ interface EditUserFormProps {
 
 export function EditUserForm({ user }: EditUserFormProps) {
     const router = useRouter()
+    const t = useTranslations("admin.users.form")
+    const tRoles = useTranslations("admin.users.roles")
+    const tCommon = useTranslations("common.actions")
 
     const editData = useUserFormStore((state) => state.editForm.data)
     const name = editData?.name || ""
@@ -122,7 +126,7 @@ export function EditUserForm({ user }: EditUserFormProps) {
     }
 
     const handleDelete = async () => {
-        if (!confirm(`Are you sure you want to delete ${user.name || "this user"}?`)) return
+        if (!confirm(t("deleteConfirm", { name: user.name || "this user" }))) return
 
         clearDeleteError()
         setDeleteLoading(true)
@@ -142,7 +146,7 @@ export function EditUserForm({ user }: EditUserFormProps) {
         <div className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
+                    <Label htmlFor="name">{t("name")}</Label>
                     <Input
                         id="name"
                         value={name}
@@ -151,11 +155,11 @@ export function EditUserForm({ user }: EditUserFormProps) {
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t("email")}</Label>
                     <Input id="email" type="email" value={user.email} disabled />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
+                    <Label htmlFor="role">{t("role")}</Label>
                     <Select
                         key={user.id}
                         value={role}
@@ -168,8 +172,12 @@ export function EditUserForm({ user }: EditUserFormProps) {
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="USER">{USER_ROLE_LABELS.USER}</SelectItem>
-                            <SelectItem value="ADMIN">{USER_ROLE_LABELS.ADMIN}</SelectItem>
+                            <SelectItem value="USER">
+                                {tRoles(getUserRoleTranslationKey("USER"))}
+                            </SelectItem>
+                            <SelectItem value="ADMIN">
+                                {tRoles(getUserRoleTranslationKey("ADMIN"))}
+                            </SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -181,10 +189,10 @@ export function EditUserForm({ user }: EditUserFormProps) {
                         onClick={() => router.push("/admin/users")}
                         disabled={isLoading}
                     >
-                        Cancel
+                        {tCommon("cancel")}
                     </Button>
                     <Button type="submit" disabled={isLoading}>
-                        {isLoading ? "Saving..." : "Save Changes"}
+                        {isLoading ? t("saving") : t("saveChanges")}
                     </Button>
                 </div>
             </form>
@@ -192,11 +200,11 @@ export function EditUserForm({ user }: EditUserFormProps) {
             <Separator />
             <form onSubmit={handleChangePassword} className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="newPassword">Change Password</Label>
+                    <Label htmlFor="newPassword">{t("changePassword")}</Label>
                     <Input
                         id="newPassword"
                         type="password"
-                        placeholder="Enter new password"
+                        placeholder={t("enterNewPassword")}
                         value={newPassword}
                         onChange={(e) => setChangePasswordFormData({ newPassword: e.target.value })}
                         disabled={isPasswordLoading}
@@ -205,7 +213,7 @@ export function EditUserForm({ user }: EditUserFormProps) {
                 {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
                 <div className="flex justify-end">
                     <Button type="submit" disabled={isPasswordLoading || !newPassword}>
-                        {isPasswordLoading ? "Changing..." : "Change Password"}
+                        {isPasswordLoading ? t("changing") : t("changePassword")}
                     </Button>
                 </div>
             </form>
@@ -213,10 +221,8 @@ export function EditUserForm({ user }: EditUserFormProps) {
             <Separator />
             <div className="space-y-4">
                 <div>
-                    <h3 className="text-lg font-medium">Delete User</h3>
-                    <p className="text-sm text-muted-foreground">
-                        Permanently remove this user from the system. This action cannot be undone.
-                    </p>
+                    <h3 className="text-lg font-medium">{t("deleteUserTitle")}</h3>
+                    <p className="text-sm text-muted-foreground">{t("deleteUserDescription")}</p>
                 </div>
                 {deleteError && <p className="text-sm text-red-500">{deleteError}</p>}
                 <div className="flex justify-end">
@@ -227,7 +233,7 @@ export function EditUserForm({ user }: EditUserFormProps) {
                         disabled={isDeleteLoading}
                     >
                         <Trash2 className="h-4 w-4 mr-2" />
-                        {isDeleteLoading ? "Deleting..." : "Delete User"}
+                        {isDeleteLoading ? t("deleting") : t("deleteUser")}
                     </Button>
                 </div>
             </div>

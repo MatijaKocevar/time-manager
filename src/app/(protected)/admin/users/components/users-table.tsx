@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import {
     Table,
     TableBody,
@@ -15,7 +16,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Edit, Search, Plus } from "lucide-react"
 import type { UserTableItem } from "../schemas/user-table-schemas"
-import { USER_ROLE_LABELS, USER_ROLE_COLORS } from "../constants/user-constants"
+import { USER_ROLE_COLORS } from "../constants/user-constants"
+import { getUserRoleTranslationKey } from "../utils/translation-helpers"
 
 interface UsersTableProps {
     users: UserTableItem[]
@@ -24,6 +26,9 @@ interface UsersTableProps {
 
 export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
     const router = useRouter()
+    const t = useTranslations("admin.users.table")
+    const tRoles = useTranslations("admin.users.roles")
+    const tCommon = useTranslations("common.actions")
     const [searchQuery, setSearchQuery] = useState("")
 
     const filteredUsers = users.filter((user) =>
@@ -40,7 +45,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                 <div className="relative flex-1 max-w-sm">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                        placeholder="Filter by name..."
+                        placeholder={t("filterPlaceholder")}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-9"
@@ -49,7 +54,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                 <Button asChild>
                     <Link href="/admin/users/create">
                         <Plus className="h-4 w-4 mr-2" />
-                        Create User
+                        {tCommon("create")} {t("name")}
                     </Link>
                 </Button>
             </div>
@@ -57,11 +62,11 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="min-w-[150px]">Name</TableHead>
-                            <TableHead className="min-w-[200px]">Email</TableHead>
-                            <TableHead className="min-w-[100px]">Role</TableHead>
-                            <TableHead className="min-w-[120px]">Created</TableHead>
-                            <TableHead className="text-right min-w-[180px]">Actions</TableHead>
+                            <TableHead className="min-w-[150px]">{t("name")}</TableHead>
+                            <TableHead className="min-w-[200px]">{t("email")}</TableHead>
+                            <TableHead className="min-w-[100px]">{t("role")}</TableHead>
+                            <TableHead className="min-w-[120px]">{t("created")}</TableHead>
+                            <TableHead className="text-right min-w-[180px]">{t("actions")}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -71,7 +76,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                     colSpan={5}
                                     className="text-center text-muted-foreground"
                                 >
-                                    {searchQuery ? "No users match your search" : "No users found"}
+                                    {searchQuery ? t("noUsersMatch") : t("noUsers")}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -85,7 +90,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                         {user.name}
                                         {user.id === currentUserId && (
                                             <span className="ml-2 text-xs text-muted-foreground">
-                                                (You)
+                                                ({t("you")})
                                             </span>
                                         )}
                                     </TableCell>
@@ -94,7 +99,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                         <span
                                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${USER_ROLE_COLORS[user.role]}`}
                                         >
-                                            {USER_ROLE_LABELS[user.role]}
+                                            {tRoles(getUserRoleTranslationKey(user.role))}
                                         </span>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
@@ -108,7 +113,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                         <Button variant="outline" size="sm" asChild>
                                             <Link href={`/admin/users/${user.id}`}>
                                                 <Edit className="h-4 w-4 mr-2" />
-                                                Edit
+                                                {t("edit")}
                                             </Link>
                                         </Button>
                                     </TableCell>

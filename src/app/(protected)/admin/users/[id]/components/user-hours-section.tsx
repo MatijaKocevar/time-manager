@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
+import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -22,6 +23,7 @@ export function UserHoursSection({
     initialEntries,
     initialHolidays = [],
 }: UserHoursSectionProps) {
+    const t = useTranslations("admin.users.detail")
     const [currentDate, setCurrentDate] = useState(new Date())
 
     const { startDate, endDate, start, end } = getDateRange("MONTHLY", currentDate)
@@ -50,8 +52,8 @@ export function UserHoursSection({
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <div>
-                        <CardTitle>Hours Summary</CardTitle>
-                        <CardDescription>Overview of user&apos;s tracked hours</CardDescription>
+                        <CardTitle>{t("hoursSummary")}</CardTitle>
+                        <CardDescription>{t("hoursSummaryDescription")}</CardDescription>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button
