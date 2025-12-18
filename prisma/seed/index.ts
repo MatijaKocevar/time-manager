@@ -1,116 +1,146 @@
 import { PrismaClient } from "../generated/client"
-import bcrypt from "bcryptjs"
+import { SeededRandom, addDays } from "./utils"
+import { seedHolidays } from "./holidays"
+import { seedUsers } from "./users"
+import { seedListsForUser } from "./lists"
+import { seedTasksForUser, seedTimeEntriesForUser } from "./tasks"
+import { seedHourEntriesForUser, recalculateSummariesForUser } from "./hours"
+import { seedRequestsForUser } from "./requests"
+import { seedShiftsForUser } from "./shifts"
 
 const prisma = new PrismaClient()
+const random = new SeededRandom(42)
 
 async function main() {
-    console.log("🌱 Starting database seeding...")
+    console.log("🌱 Starting comprehensive database seeding...")
+    console.log("📅 Seeding 1 year of data for 5 users\n")
 
-    const hashedPassword = await bcrypt.hash("password123", 12)
+    const totalUsers = 5
+    const adminCount = 2
+    const batchSize = 5
 
-    const testUser = await prisma.user.upsert({
-        where: { email: "test@example.com" },
-        update: {
-            password: hashedPassword,
-            role: "USER",
-        },
-        create: {
-            email: "test@example.com",
-            name: "Test User",
-            password: hashedPassword,
-            role: "USER",
-        },
-    })
+    const endDate = new Date()
+    const startDate = addDays(endDate, -365)
 
-    console.log("✅ Created test user:", testUser.email)
+    // Step 1: Seed holidays
+    const holidayDates = await seedHolidays(prisma)
 
-    await prisma.list.upsert({
-        where: {
-            userId_name: {
-                userId: testUser.id,
-                name: "Personal",
-            },
-        },
-        update: {},
-        create: {
-            userId: testUser.id,
-            name: "Personal",
-            description: "Personal tasks and projects",
-            color: "#3b82f6",
-            isDefault: false,
-            order: 1,
-        },
-    })
+    // Step 2: Seed users
+    const allUsers = await seedUsers(prisma, random, totalUsers, adminCount)
+    const adminUsers = allUsers.filter((u) => u.role === "ADMIN")
 
-    console.log("✅ Created 'Personal' list for test user")
+    // Step 3: Seed data for each user in batches
+    for (let batchIndex = 0; batchIndex < allUsers.length; batchIndex += batchSize) {
+        const batch = allUsers.slice(batchIndex, Math.min(batchIndex + batchSize, allUsers.length))
+        const batchNum = Math.floor(batchIndex / batchSize) + 1
+        const totalBatches = Math.ceil(allUsers.length / batchSize)
 
-    const adminUser = await prisma.user.upsert({
-        where: { email: "admin@example.com" },
-        update: {
-            password: hashedPassword,
-            role: "ADMIN",
-        },
-        create: {
-            email: "admin@example.com",
-            name: "Admin User",
-            password: hashedPassword,
-            role: "ADMIN",
-        },
-    })
+        console.log(
+            `\n📦 Processing batch ${batchNum}/${totalBatches} (users ${batchIndex + 1}-${batchIndex + batch.length})`
+        )
 
-    console.log("✅ Created admin user:", adminUser.email)
+        for (const user of batch) {
+            try {
+                console.log(`\n  👤 Seeding data for ${user.name}...`)
 
-    await prisma.list.upsert({
-        where: {
-            userId_name: {
-                userId: adminUser.id,
-                name: "Personal",
-            },
-        },
-        update: {},
-        create: {
-            userId: adminUser.id,
-            name: "Personal",
-            description: "Personal tasks and projects",
-            color: "#3b82f6",
-            isDefault: false,
-            order: 1,
-        },
-    })
+                // Lists
+                const lists = await seedListsForUser(prisma, random, user.id)
+                console.log(`    ✓ Created ${lists.length} lists`)
 
-    console.log("✅ Created 'Personal' list for admin user")
+                // Tasks
+                const tasks = await seedTasksForUser(prisma, random, user.id, lists)
+                console.log(`    ✓ Created ~${tasks.length} tasks`)
 
-    // Generate holidays for Slovenia (current and next year)
-    const currentYear = new Date().getFullYear()
-    const nextYear = currentYear + 1
+                // Time entries
+                const timeEntries = await seedTimeEntriesForUser(
+                    prisma,
+                    random,
+                    user.id,
+                    tasks,
+                    endDate
+                )
+                console.log(`    ✓ Created ${timeEntries} time entries`)
 
-    for (const year of [currentYear, nextYear]) {
-        const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/SI`)
+                // Hour entries
+                const hourEntries = await seedHourEntriesForUser(
+                    prisma,
+                    random,
+                    user.id,
+                    tasks,
+                    startDate,
+                    endDate,
+                    holidayDates
+                )
+                console.log(`    ✓ Created ~${hourEntries} hour entries`)
 
-        if (response.ok) {
-            const holidays = await response.json()
+                // Requests
+                const requests = await seedRequestsForUser(
+                    prisma,
+                    random,
+                    user.id,
+                    adminUsers,
+                    endDate,
+                    holidayDates
+                )
+                console.log(`    ✓ Created ${requests} requests`)
 
-            for (const holiday of holidays) {
-                const date = new Date(holiday.date + "T00:00:00")
-                date.setHours(0, 0, 0, 0)
+                // Shifts
+                const shifts = await seedShiftsForUser(
+                    prisma,
+                    random,
+                    user.id,
+                    startDate,
+                    endDate,
+                    holidayDates
+                )
+                console.log(`    ✓ Created ~${shifts} shifts`)
 
-                await prisma.holiday.upsert({
-                    where: { date },
-                    update: {},
-                    create: {
-                        date,
-                        name: holiday.name,
-                        description: holiday.localName !== holiday.name ? holiday.localName : null,
-                        isRecurring: true,
-                    },
-                })
+                // Recalculate summaries
+                console.log(`    ⏳ Calculating daily summaries...`)
+                const summaries = await recalculateSummariesForUser(
+                    prisma,
+                    user.id,
+                    startDate,
+                    endDate
+                )
+                console.log(`    ✓ Created ${summaries} daily summaries`)
+            } catch (error) {
+                console.error(`    ❌ Error seeding user ${user.name}:`, error)
+                // Continue with next user
             }
-
-            console.log(`✅ Imported holidays for Slovenia ${year}`)
         }
+
+        console.log(`\n✅ Completed batch ${batchNum}/${totalBatches}`)
     }
 
-    console.log("🌱 Database seeding completed!")
+    // Final statistics
+    const stats = {
+        users: await prisma.user.count(),
+        lists: await prisma.list.count(),
+        tasks: await prisma.task.count(),
+        timeEntries: await prisma.taskTimeEntry.count(),
+        hourEntries: await prisma.hourEntry.count(),
+        requests: await prisma.request.count(),
+        shifts: await prisma.shift.count(),
+        summaries: await prisma.dailyHourSummary.count(),
+        holidays: await prisma.holiday.count(),
+    }
+
+    console.log("\n" + "=".repeat(60))
+    console.log("🎉 DATABASE SEEDING COMPLETED!")
+    console.log("=".repeat(60))
+    console.log("\n📊 Final Statistics:")
+    console.log(`   Users:               ${stats.users.toLocaleString()}`)
+    console.log(`   Lists:               ${stats.lists.toLocaleString()}`)
+    console.log(`   Tasks:               ${stats.tasks.toLocaleString()}`)
+    console.log(`   Time Entries:        ${stats.timeEntries.toLocaleString()}`)
+    console.log(`   Hour Entries:        ${stats.hourEntries.toLocaleString()}`)
+    console.log(`   Requests:            ${stats.requests.toLocaleString()}`)
+    console.log(`   Shifts:              ${stats.shifts.toLocaleString()}`)
+    console.log(`   Daily Summaries:     ${stats.summaries.toLocaleString()}`)
+    console.log(`   Holidays:            ${stats.holidays.toLocaleString()}`)
+    console.log("\n🔐 Default password for all users: password123")
+    console.log("=".repeat(60) + "\n")
 }
 
 main()
