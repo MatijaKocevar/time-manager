@@ -1,6 +1,7 @@
 "use client"
 
 import { Fragment, useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import {
     Column,
     ColumnDef,
@@ -39,6 +40,8 @@ import {
 } from "@/components/ui/table"
 import { cancelApprovedRequest } from "../../requests/actions/request-actions"
 import { requestKeys } from "../../requests/query-keys"
+import { getRequestTypeTranslationKey, getRequestStatusTranslationKey } from "../../requests/utils/translation-helpers"
+import type { RequestType, RequestStatus } from "../../requests/schemas/request-schemas"
 
 type RequestDisplay = {
     id: string
@@ -75,28 +78,6 @@ type RequestDisplay = {
 interface RequestsHistoryListProps {
     requests: RequestDisplay[]
     holidays: Array<{ date: Date; name: string }>
-}
-
-const typeLabels: Record<string, string> = {
-    VACATION: "Vacation",
-    SICK_LEAVE: "Sick Leave",
-    WORK_FROM_HOME: "Work From Home",
-    REMOTE_WORK: "Remote Work",
-    OTHER: "Other",
-}
-
-const typeColors: Record<string, string> = {
-    VACATION: "bg-blue-100 text-blue-800",
-    SICK_LEAVE: "bg-red-100 text-red-800",
-    WORK_FROM_HOME: "bg-green-100 text-green-800",
-    REMOTE_WORK: "bg-purple-100 text-purple-800",
-    OTHER: "bg-gray-100 text-gray-800",
-}
-
-const statusColors: Record<string, string> = {
-    APPROVED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
-    CANCELLED: "bg-gray-100 text-gray-800",
 }
 
 const calculateWorkdays = (
@@ -160,6 +141,8 @@ function DebouncedInput({
 }
 
 function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
+    const t = useTranslations("admin.requestHistory.filter")
+    const tTable = useTranslations("admin.requestHistory.table")
     const columnFilterValue = column.getFilterValue()
     const uniqueValues = column.getFacetedUniqueValues()
     const isMobile = useIsMobile()
@@ -203,24 +186,24 @@ function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
                 <Dialog open={filterDialogOpen} onOpenChange={handleDialogOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Filter Column</DialogTitle>
+                            <DialogTitle>{t("title")}</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="filter-input">Search</Label>
+                                <Label htmlFor="filter-input">{t("search")}</Label>
                                 <Input
                                     id="filter-input"
                                     value={filterValue}
                                     onChange={(e) => setFilterValue(e.target.value)}
-                                    placeholder={`Search... (${uniqueValues.size})`}
+                                    placeholder={`${tTable("searchPlaceholder")} (${uniqueValues.size})`}
                                 />
                             </div>
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={handleClearFilter}>
-                                Clear
+                                {t("clear")}
                             </Button>
-                            <Button onClick={handleApplyFilter}>Apply</Button>
+                            <Button onClick={handleApplyFilter}>{t("apply")}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -233,13 +216,18 @@ function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
             type="text"
             value={(columnFilterValue ?? "") as string}
             onChange={(value) => column.setFilterValue(value)}
-            placeholder={`Search... (${uniqueValues.size})`}
+            placeholder={`${tTable("searchPlaceholder")} (${uniqueValues.size})`}
             className="h-8"
         />
     )
 }
 
 export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListProps) {
+    const t = useTranslations("admin.requestHistory.table")
+    const tCancel = useTranslations("admin.requestHistory.cancel")
+    const tPagination = useTranslations("admin.requestHistory.pagination")
+    const tTypes = useTranslations("requests.types")
+    const tStatuses = useTranslations("requests.statuses")
     const isMobile = useIsMobile()
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -278,11 +266,25 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         return new Date(date).toLocaleDateString()
     }
 
+    const typeColors: Record<string, string> = {
+        VACATION: "bg-blue-100 text-blue-800",
+        SICK_LEAVE: "bg-red-100 text-red-800",
+        WORK_FROM_HOME: "bg-green-100 text-green-800",
+        REMOTE_WORK: "bg-purple-100 text-purple-800",
+        OTHER: "bg-gray-100 text-gray-800",
+    }
+
+    const statusColors: Record<string, string> = {
+        APPROVED: "bg-green-100 text-green-800",
+        REJECTED: "bg-red-100 text-red-800",
+        CANCELLED: "bg-gray-100 text-gray-800",
+    }
+
     const columns: ColumnDef<RequestDisplay>[] = [
         {
             id: "user",
             accessorFn: (row) => row.user.name || row.user.email,
-            header: "User",
+            header: t("user"),
             cell: ({ row }) => (
                 <div className="font-medium">
                     {row.original.user.name || row.original.user.email}
@@ -293,15 +295,15 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         },
         {
             id: "type",
-            accessorFn: (row) => typeLabels[row.type],
-            header: "Type",
+            accessorFn: (row) => tTypes(getRequestTypeTranslationKey(row.type as RequestType)),
+            header: t("type"),
             cell: ({ row }) => (
                 <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
                         typeColors[row.original.type]
                     }`}
                 >
-                    {typeLabels[row.original.type]}
+                    {tTypes(getRequestTypeTranslationKey(row.original.type as RequestType))}
                 </span>
             ),
             enableColumnFilter: true,
@@ -309,19 +311,19 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         },
         {
             accessorKey: "startDate",
-            header: "Start Date",
+            header: t("startDate"),
             cell: ({ row }) => formatDate(row.original.startDate),
             enableColumnFilter: false,
         },
         {
             accessorKey: "endDate",
-            header: "End Date",
+            header: t("endDate"),
             cell: ({ row }) => formatDate(row.original.endDate),
             enableColumnFilter: false,
         },
         {
             id: "hours",
-            header: "Hours",
+            header: t("hours"),
             cell: ({ row }) => {
                 const workdays = calculateWorkdays(
                     row.original.startDate,
@@ -331,7 +333,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                 const hours = workdays * 8
                 return (
                     <div className="font-semibold">
-                        {hours}h ({workdays}d)
+                        {hours}h ({workdays}{t("days")})
                     </div>
                 )
             },
@@ -339,14 +341,14 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         },
         {
             accessorKey: "status",
-            header: "Status",
+            header: t("status"),
             cell: ({ row }) => (
                 <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         statusColors[row.original.status]
                     }`}
                 >
-                    {row.original.status}
+                    {tStatuses(getRequestStatusTranslationKey(row.original.status as RequestStatus))}
                 </span>
             ),
             enableColumnFilter: true,
@@ -358,7 +360,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                 const processor = row.approver || row.rejector || row.canceller
                 return processor?.name || processor?.email || "-"
             },
-            header: "Processed By",
+            header: t("processedBy"),
             cell: ({ row }) => {
                 const processor =
                     row.original.approver || row.original.rejector || row.original.canceller
@@ -369,7 +371,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         },
         {
             accessorKey: "reason",
-            header: "Reason",
+            header: t("reason"),
             cell: ({ row }) => (
                 <div className="text-sm text-muted-foreground">
                     {row.original.cancellationReason ||
@@ -383,7 +385,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         },
         {
             id: "actions",
-            header: "Actions",
+            header: t("actions"),
             cell: ({ row }) => {
                 if (row.original.status === "APPROVED") {
                     return (
@@ -426,31 +428,31 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
             <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Cancel Approved Request</DialogTitle>
+                        <DialogTitle>{tCancel("title")}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <p className="text-sm text-muted-foreground">
-                                Are you sure you want to cancel this approved request? This will:
+                                {tCancel("confirmQuestion")}
                             </p>
                             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                                <li>Mark the request as cancelled</li>
-                                <li>Remove auto-generated hour entries</li>
-                                <li>Recalculate daily summaries</li>
+                                <li>{tCancel("markCancelled")}</li>
+                                <li>{tCancel("removeHours")}</li>
+                                <li>{tCancel("recalculate")}</li>
                             </ul>
                         </div>
                         {selectedRequest && (
                             <div className="space-y-2 p-3 bg-muted rounded-md">
                                 <div className="text-sm">
-                                    <span className="font-semibold">User: </span>
+                                    <span className="font-semibold">{tCancel("user")} </span>
                                     {selectedRequest.user.name || selectedRequest.user.email}
                                 </div>
                                 <div className="text-sm">
-                                    <span className="font-semibold">Type: </span>
-                                    {typeLabels[selectedRequest.type]}
+                                    <span className="font-semibold">{tCancel("type")} </span>
+                                    {tTypes(getRequestTypeTranslationKey(selectedRequest.type as RequestType))}
                                 </div>
                                 <div className="text-sm">
-                                    <span className="font-semibold">Period: </span>
+                                    <span className="font-semibold">{tCancel("period")} </span>
                                     {formatDate(selectedRequest.startDate)} -{" "}
                                     {formatDate(selectedRequest.endDate)}
                                 </div>
@@ -458,13 +460,13 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                         )}
                         <div className="space-y-2">
                             <Label htmlFor="cancellation-reason">
-                                Cancellation Reason <span className="text-red-600">*</span>
+                                {tCancel("reason")} <span className="text-red-600">{tCancel("reasonRequired")}</span>
                             </Label>
                             <Textarea
                                 id="cancellation-reason"
                                 value={cancellationReason}
                                 onChange={(e) => setCancellationReason(e.target.value)}
-                                placeholder="Explain why this request is being cancelled..."
+                                placeholder={tCancel("reasonPlaceholder")}
                                 rows={3}
                             />
                         </div>
@@ -475,14 +477,14 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                             onClick={() => setCancelDialogOpen(false)}
                             disabled={cancelMutation.isPending}
                         >
-                            Close
+                            {tCancel("close")}
                         </Button>
                         <Button
                             variant="destructive"
                             onClick={handleCancelConfirm}
                             disabled={!cancellationReason.trim() || cancelMutation.isPending}
                         >
-                            {cancelMutation.isPending ? "Cancelling..." : "Cancel Request"}
+                            {cancelMutation.isPending ? tCancel("cancelling") : tCancel("cancelRequest")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -547,7 +549,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                                         colSpan={columns.length}
                                         className="h-24 text-center text-muted-foreground"
                                     >
-                                        No request history found.
+                                        {t("noHistory")}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -561,7 +563,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                     >
-                        Previous
+                        {tPagination("previous")}
                     </Button>
                     <Button
                         variant="outline"
@@ -569,7 +571,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}
                     >
-                        Next
+                        {tPagination("next")}
                     </Button>
                 </div>
             </div>

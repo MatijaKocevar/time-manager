@@ -433,6 +433,49 @@
                 "previous": "Previous",
                 "next": "Next"
             }
+        },
+        "requestHistory": {
+            "title": "Request History",
+            "table": {
+                "user": "User",
+                "type": "Type",
+                "startDate": "Start Date",
+                "endDate": "End Date",
+                "hours": "Hours",
+                "status": "Status",
+                "processedBy": "Processed By",
+                "reason": "Reason",
+                "actions": "Actions",
+                "noHistory": "No request history found.",
+                "searchPlaceholder": "Search...",
+                "days": "d"
+            },
+            "filter": {
+                "title": "Filter Column",
+                "search": "Search",
+                "clear": "Clear",
+                "apply": "Apply"
+            },
+            "cancel": {
+                "title": "Cancel Approved Request",
+                "confirmQuestion": "Are you sure you want to cancel this approved request? This will:",
+                "markCancelled": "Mark the request as cancelled",
+                "removeHours": "Remove auto-generated hour entries",
+                "recalculate": "Recalculate daily summaries",
+                "user": "User:",
+                "type": "Type:",
+                "period": "Period:",
+                "reason": "Cancellation Reason",
+                "reasonRequired": "*",
+                "reasonPlaceholder": "Explain why this request is being cancelled...",
+                "close": "Close",
+                "cancelling": "Cancelling...",
+                "cancelRequest": "Cancel Request"
+            },
+            "pagination": {
+                "previous": "Previous",
+                "next": "Next"
+            }
         }
     },
     "profile": {

@@ -433,6 +433,49 @@
                 "previous": "Prejšnje",
                 "next": "Naprej"
             }
+        },
+        "requestHistory": {
+            "title": "Zgodovina zahtevkov",
+            "table": {
+                "user": "Uporabnik",
+                "type": "Tip",
+                "startDate": "Začetni datum",
+                "endDate": "Končni datum",
+                "hours": "Ure",
+                "status": "Status",
+                "processedBy": "Obdelal",
+                "reason": "Razlog",
+                "actions": "Dejanja",
+                "noHistory": "Ni zgodovine zahtevkov.",
+                "searchPlaceholder": "Iskanje...",
+                "days": "d"
+            },
+            "filter": {
+                "title": "Filtriraj stolpec",
+                "search": "Iskanje",
+                "clear": "Počisti",
+                "apply": "Uporabi"
+            },
+            "cancel": {
+                "title": "Prekliči odobreni zahtevek",
+                "confirmQuestion": "Ste prepričani, da želite preklicati ta odobreni zahtevek? To bo:",
+                "markCancelled": "Označilo zahtevek kot preklican",
+                "removeHours": "Odstranilo samodejno ustvarjene vnose ur",
+                "recalculate": "Ponovno izračunalo dnevne povzetke",
+                "user": "Uporabnik:",
+                "type": "Tip:",
+                "period": "Obdobje:",
+                "reason": "Razlog za preklic",
+                "reasonRequired": "*",
+                "reasonPlaceholder": "Pojasnite, zakaj se ta zahtevek preklicuje...",
+                "close": "Zapri",
+                "cancelling": "Preklicevanje...",
+                "cancelRequest": "Prekliči zahtevek"
+            },
+            "pagination": {
+                "previous": "Prejšnje",
+                "next": "Naprej"
+            }
         }
     },
     "profile": {
