@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
+import { useTranslations, useLocale } from "next-intl"
 import {
     Table,
     TableBody,
@@ -40,7 +41,12 @@ export function HoursTable({
     holidays = [],
     initialExpandedTypes = [],
 }: HoursTableProps) {
+    const t = useTranslations("hours.table")
+    const tLabels = useTranslations("hours.labels")
+    const tMessages = useTranslations("hours.messages")
     const pendingChanges = useHoursBatchStore((state) => state.pendingChanges)
+    const locale = useLocale()
+    const dateLocale = locale === "sl" ? "sl-SI" : "en-US"
 
     const holidaysByDate = useMemo(() => {
         const map = new Map<string, { name: string }>()
@@ -151,7 +157,9 @@ export function HoursTable({
                     </colgroup>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="sticky left-0 bg-background z-20">Type</TableHead>
+                            <TableHead className="sticky left-0 bg-background z-20">
+                                {t("columnType")}
+                            </TableHead>
                             {dates.map((date) => {
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
                                 const holiday = isHoliday(date)
@@ -162,7 +170,7 @@ export function HoursTable({
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-normal text-muted-foreground">
-                                                {date.toLocaleDateString("en-US", {
+                                                {date.toLocaleDateString(dateLocale, {
                                                     weekday: "short",
                                                 })}
                                             </span>
@@ -184,7 +192,7 @@ export function HoursTable({
                                 <span
                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor("GRAND_TOTAL")}`}
                                 >
-                                    {getTypeLabel("GRAND_TOTAL")}
+                                    {tLabels("grandTotal")} ({tMessages("allTypes")})
                                 </span>
                             </TableCell>
                             {dates.map((date) => {

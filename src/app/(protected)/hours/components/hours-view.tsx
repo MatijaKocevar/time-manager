@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useTranslations, useLocale } from "next-intl"
 import { useHoursStore } from "../stores/hours-store"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -45,6 +46,12 @@ export function HoursView({
     initialHolidays = [],
     initialExpandedTypes = [],
 }: HoursViewProps) {
+    const t = useTranslations("hours.actions")
+    const tCommon = useTranslations("common")
+    const tForm = useTranslations("hours.form")
+    const tViews = useTranslations("hours.views")
+    const tMessages = useTranslations("hours.messages")
+    const locale = useLocale()
     const router = useRouter()
     const queryClient = useQueryClient()
     const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode)
@@ -99,7 +106,7 @@ export function HoursView({
     }
 
     const handleCancel = () => {
-        if (confirm("Discard all unsaved changes?")) {
+        if (confirm(tMessages("discardChanges"))) {
             clearChanges()
         }
     }
@@ -124,7 +131,7 @@ export function HoursView({
             if (link && isDirty && !isSaving) {
                 const href = link.getAttribute("href")
                 if (href && !href.startsWith("#") && href !== window.location.pathname) {
-                    if (!confirm("You have unsaved changes. Are you sure you want to leave?")) {
+                    if (!confirm(tCommon("messages.unsavedChanges"))) {
                         e.preventDefault()
                         e.stopPropagation()
                     }
@@ -216,7 +223,7 @@ export function HoursView({
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <h2 className="text-xl font-semibold min-w-0 text-center">
-                            {getViewTitle(viewMode, dateRange, currentDate)}
+                            {getViewTitle(viewMode, dateRange, currentDate, locale)}
                         </h2>
                         <Button
                             variant="outline"
@@ -237,7 +244,7 @@ export function HoursView({
                                     disabled={isSaving}
                                 >
                                     <Save className="h-4 w-4 mr-1" />
-                                    Save ({changeCount})
+                                    {t("saveWithCount", { count: changeCount })}
                                 </Button>
                                 <Button
                                     variant="outline"
@@ -246,7 +253,7 @@ export function HoursView({
                                     disabled={isSaving}
                                 >
                                     <X className="h-4 w-4 mr-1" />
-                                    Cancel
+                                    {tCommon("actions.cancel")}
                                 </Button>
                                 <div className="w-px h-6 bg-border mx-1" />
                             </>
@@ -257,7 +264,7 @@ export function HoursView({
                             onClick={() => handleViewModeChange("WEEKLY")}
                             disabled={isLoading || isDirty}
                         >
-                            Week
+                            {tCommon("time.week")}
                         </Button>
                         <Button
                             variant={viewMode === "MONTHLY" ? "default" : "outline"}
@@ -265,7 +272,7 @@ export function HoursView({
                             onClick={() => handleViewModeChange("MONTHLY")}
                             disabled={isLoading || isDirty}
                         >
-                            Month
+                            {tCommon("time.month")}
                         </Button>
                         <div className="w-px h-6 bg-border mx-1" />
                         <Button
@@ -275,7 +282,7 @@ export function HoursView({
                             disabled={isDirty}
                         >
                             <Plus className="h-4 w-4 mr-1" />
-                            Add New Entry
+                            {t("addNewEntry")}
                         </Button>
                     </div>
                     <div className="md:hidden">
@@ -287,14 +294,14 @@ export function HoursView({
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem onClick={() => handleViewModeChange("WEEKLY")}>
-                                    Week View
+                                    {tViews("weekView")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleViewModeChange("MONTHLY")}>
-                                    Month View
+                                    {tViews("monthView")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setIsFormOpen(true)}>
                                     <Plus className="h-4 w-4 mr-2" />
-                                    Add New Entry
+                                    {t("addNewEntry")}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -316,7 +323,7 @@ export function HoursView({
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Add Hours</DialogTitle>
+                        <DialogTitle>{tForm("addHours")}</DialogTitle>
                     </DialogHeader>
                     <HourEntryForm onSuccess={() => setIsFormOpen(false)} />
                 </DialogContent>

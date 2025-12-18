@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,12 +16,16 @@ import { useHoursStore } from "../stores/hours-store"
 import { bulkCreateHourEntries } from "../actions/hour-actions"
 import { HOUR_TYPES, MAX_HOURS_PER_DAY } from "../constants/hour-types"
 import { hourKeys } from "../query-keys"
+import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 
 interface HourEntryFormProps {
     onSuccess?: () => void
 }
 
 export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
+    const t = useTranslations("hours.form")
+    const tCommon = useTranslations("common")
+    const tTypes = useTranslations("hours.types")
     const queryClient = useQueryClient()
     const bulkEntryForm = useHoursStore((state) => state.bulkEntryForm)
     const setBulkEntryFormData = useHoursStore((state) => state.setBulkEntryFormData)
@@ -67,7 +72,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="start-date">Start Date</Label>
+                    <Label htmlFor="start-date">{tCommon("fields.startDate")}</Label>
                     <Input
                         id="start-date"
                         type="date"
@@ -78,7 +83,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="end-date">End Date</Label>
+                    <Label htmlFor="end-date">{tCommon("fields.endDate")}</Label>
                     <Input
                         id="end-date"
                         type="date"
@@ -90,7 +95,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="hours">Hours per Day</Label>
+                <Label htmlFor="hours">{t("hoursPerDay")}</Label>
                 <Input
                     id="hours"
                     type="number"
@@ -104,7 +109,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type">{tCommon("fields.type")}</Label>
                 <Select
                     value={bulkEntryForm.data.type}
                     onValueChange={(value) =>
@@ -119,12 +124,12 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
                     }
                 >
                     <SelectTrigger id="type">
-                        <SelectValue placeholder="Select type" />
+                        <SelectValue placeholder={tCommon("placeholders.selectType")} />
                     </SelectTrigger>
                     <SelectContent>
                         {HOUR_TYPES.map((hourType) => (
                             <SelectItem key={hourType.value} value={hourType.value}>
-                                {hourType.label}
+                                {tTypes(getHourTypeTranslationKey(hourType.value))}
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -132,13 +137,13 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="description">Description (Optional)</Label>
+                <Label htmlFor="description">{t("descriptionOptional")}</Label>
                 <Input
                     id="description"
                     type="text"
                     value={bulkEntryForm.data.description || ""}
                     onChange={(e) => setBulkEntryFormData({ description: e.target.value })}
-                    placeholder="Add a note..."
+                    placeholder={tCommon("placeholders.addNote")}
                 />
             </div>
 
@@ -151,7 +156,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
                     className="h-4 w-4 rounded border-gray-300"
                 />
                 <Label htmlFor="skip-weekends" className="cursor-pointer">
-                    Skip weekends
+                    {t("skipWeekends")}
                 </Label>
             </div>
 
@@ -164,7 +169,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
                     className="h-4 w-4 rounded border-gray-300"
                 />
                 <Label htmlFor="skip-holidays" className="cursor-pointer">
-                    Skip holidays
+                    {t("skipHolidays")}
                 </Label>
             </div>
 
@@ -173,7 +178,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
             )}
 
             <Button type="submit" disabled={bulkEntryForm.isLoading} className="w-full">
-                {bulkEntryForm.isLoading ? "Creating..." : "Add Hours"}
+                {bulkEntryForm.isLoading ? tCommon("status.creating") : t("addHours")}
             </Button>
         </form>
     )

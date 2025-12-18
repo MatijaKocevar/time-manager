@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import type { HourType } from "@/../../prisma/generated/client"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { useEditableCellStore } from "../stores/editable-cell-store"
@@ -33,6 +34,7 @@ export function EditableHourCell({
     userId,
     showProgressBar = false,
 }: EditableHourCellProps) {
+    const t = useTranslations("hours.form")
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, "0")
     const day = String(date.getDate()).padStart(2, "0")
@@ -170,7 +172,7 @@ export function EditableHourCell({
                     <PopoverContent className="w-[200px] p-0" align="start">
                         <Command>
                             <CommandInput
-                                placeholder="HH:MM"
+                                placeholder={t("durationFormat")}
                                 value={durationInput}
                                 onValueChange={(value) => setDurationInput(value)}
                                 onKeyDown={(e) => {
@@ -187,7 +189,7 @@ export function EditableHourCell({
                                 }}
                             />
                             <CommandList>
-                                <CommandEmpty>Type duration (HH:MM)</CommandEmpty>
+                                <CommandEmpty>{t("typeDuration")}</CommandEmpty>
                                 <CommandGroup>
                                     {durationOptions.map((option) => (
                                         <CommandItem

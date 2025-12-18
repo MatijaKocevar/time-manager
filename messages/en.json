@@ -144,13 +144,37 @@
         },
         "form": {
             "addBulkHours": "Add Bulk Hours",
+            "addHours": "Add Hours",
             "editHourEntry": "Edit Hour Entry",
+            "hoursPerDay": "Hours per Day",
+            "descriptionOptional": "Description (Optional)",
             "skipWeekends": "Skip weekends",
-            "skipHolidays": "Skip holidays"
+            "skipHolidays": "Skip holidays",
+            "saveChanges": "Save Changes",
+            "addNotesPlaceholder": "Add notes about this entry...",
+            "durationFormat": "HH:MM",
+            "typeDuration": "Type duration (HH:MM)"
         },
         "summary": {
             "weekSummary": "Week Summary",
-            "monthSummary": "Month Summary"
+            "monthSummary": "Month Summary",
+            "workingDays": "Working Days",
+            "expected": "Expected",
+            "total": "Total",
+            "overtime": "Overtime",
+            "totalHours": "Total Hours"
+        },
+        "actions": {
+            "addNewEntry": "Add New Entry",
+            "saveWithCount": "Save ({count})"
+        },
+        "views": {
+            "weekView": "Week View",
+            "monthView": "Month View"
+        },
+        "messages": {
+            "discardChanges": "Discard all unsaved changes?",
+            "allTypes": "All Types"
         }
     },
     "tasks": {

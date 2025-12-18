@@ -1,9 +1,11 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Card, CardHeader } from "@/components/ui/card"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { HOUR_TYPES, HOUR_TYPE_COLORS } from "../constants/hour-types"
+import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 
 function formatHoursMinutes(hours: number): string {
     const h = Math.floor(hours)
@@ -29,6 +31,9 @@ export function HoursSummary({
     dateRange,
     holidays = [],
 }: HoursSummaryProps) {
+    const t = useTranslations("hours.summary")
+    const tCommon = useTranslations("common")
+    const tTypes = useTranslations("hours.types")
     const weeklyGrandTotal = weeklyEntries
         .filter((entry) => entry.taskId === "total")
         .reduce((sum, entry) => sum + entry.hours, 0)
@@ -108,26 +113,30 @@ export function HoursSummary({
                         <div className="flex items-center justify-between gap-6">
                             <div className="flex items-center gap-6 text-sm">
                                 <div>
-                                    <span className="text-muted-foreground">Working Days: </span>
+                                    <span className="text-muted-foreground">
+                                        {t("workingDays")}:{" "}
+                                    </span>
                                     <span className="font-semibold">{workingDays}</span>
                                 </div>
                                 <div className="h-4 w-px bg-border" />
                                 <div>
-                                    <span className="text-muted-foreground">Expected: </span>
+                                    <span className="text-muted-foreground">{t("expected")}: </span>
                                     <span className="font-semibold">
                                         {formatHoursMinutes(expectedHours)}
                                     </span>
                                 </div>
                                 <div className="h-4 w-px bg-border" />
                                 <div>
-                                    <span className="text-muted-foreground">Total: </span>
+                                    <span className="text-muted-foreground">{t("total")}: </span>
                                     <span className="font-semibold">
                                         {formatHoursMinutes(actualHours)}
                                     </span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">Overtime:</span>
+                                <span className="text-sm text-muted-foreground">
+                                    {t("overtime")}:
+                                </span>
                                 <span
                                     className={`text-lg font-bold ${
                                         overtime > 0
@@ -151,18 +160,22 @@ export function HoursSummary({
                         <div
                             className={`inline-block px-2 py-1 rounded text-xs font-medium mb-2 ${HOUR_TYPE_COLORS.GRAND_TOTAL}`}
                         >
-                            Total Hours
+                            {t("totalHours")}
                         </div>
                         {showWeekly ? (
                             <div className="flex flex-col gap-1 mt-2">
                                 <div>
-                                    <div className="text-xs text-muted-foreground">Week</div>
+                                    <div className="text-xs text-muted-foreground">
+                                        {tCommon("time.week")}
+                                    </div>
                                     <div className="text-xl font-bold">
                                         {formatHoursMinutes(weeklyGrandTotal)}
                                     </div>
                                 </div>
                                 <div>
-                                    <div className="text-xs text-muted-foreground">Month</div>
+                                    <div className="text-xs text-muted-foreground">
+                                        {tCommon("time.month")}
+                                    </div>
                                     <div className="text-xl font-bold">
                                         {formatHoursMinutes(monthlyGrandTotal)}
                                     </div>
@@ -181,18 +194,22 @@ export function HoursSummary({
                             <div
                                 className={`inline-block px-2 py-1 rounded text-xs font-medium mb-2 ${HOUR_TYPE_COLORS[hourType.value]}`}
                             >
-                                {hourType.label}
+                                {tTypes(getHourTypeTranslationKey(hourType.value))}
                             </div>
                             {showWeekly ? (
                                 <div className="flex flex-col gap-1 mt-2">
                                     <div>
-                                        <div className="text-xs text-muted-foreground">Week</div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {tCommon("time.week")}
+                                        </div>
                                         <div className="text-lg font-semibold">
                                             {formatHoursMinutes(weeklyHoursByType[hourType.value])}
                                         </div>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-muted-foreground">Month</div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {tCommon("time.month")}
+                                        </div>
                                         <div className="text-lg font-semibold">
                                             {formatHoursMinutes(monthlyHoursByType[hourType.value])}
                                         </div>

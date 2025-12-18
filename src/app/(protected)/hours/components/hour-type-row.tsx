@@ -2,12 +2,14 @@
 
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { Fragment, useMemo, useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import type { HourType } from "@/../../prisma/generated/client"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { useHoursStore } from "../stores/hours-store"
 import { EditableHourCell } from "./editable-hour-cell"
 import { getTypeLabel, getTypeColor } from "../utils/table-helpers"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
+import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 
 interface HourTypeRowProps {
     hourType: HourType
@@ -26,9 +28,30 @@ export function HourTypeRow({
     holidays = [],
     initiallyExpanded = false,
 }: HourTypeRowProps) {
+    const tTypes = useTranslations("hours.types")
+    const tLabels = useTranslations("hours.labels")
     const expandedTypes = useHoursStore((state) => state.expandedTypes)
     const toggleType = useHoursStore((state) => state.toggleType)
     const [isExpanded, setIsExpanded] = useState(initiallyExpanded)
+
+    const getTranslatedTypeLabel = (type: string): string => {
+        if (type === "GRAND_TOTAL") {
+            return `${tLabels("grandTotal")} (${tTypes("work")})`
+        }
+        if (type.endsWith("_TRACKED")) {
+            const baseType = type.replace("_TRACKED", "") as HourType
+            return `${tTypes(getHourTypeTranslationKey(baseType))} (${tLabels("tracked")})`
+        }
+        if (type.endsWith("_MANUAL")) {
+            const baseType = type.replace("_MANUAL", "") as HourType
+            return `${tTypes(getHourTypeTranslationKey(baseType))} (${tLabels("manual")})`
+        }
+        if (type.endsWith("_TOTAL")) {
+            const baseType = type.replace("_TOTAL", "") as HourType
+            return `${tTypes(getHourTypeTranslationKey(baseType))} (${tLabels("total")})`
+        }
+        return tTypes(getHourTypeTranslationKey(type))
+    }
 
     useEffect(() => {
         setIsExpanded(expandedTypes.has(hourType))
@@ -87,7 +110,7 @@ export function HourTypeRow({
                         <span
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(totalKey)}`}
                         >
-                            {getTypeLabel(totalKey)}
+                            {getTranslatedTypeLabel(totalKey)}
                         </span>
                     </div>
                 </TableCell>
@@ -128,7 +151,7 @@ export function HourTypeRow({
                                 <span
                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(trackedKey)}`}
                                 >
-                                    {getTypeLabel(trackedKey)}
+                                    {getTranslatedTypeLabel(trackedKey)}
                                 </span>
                             </div>
                         </TableCell>
@@ -167,7 +190,7 @@ export function HourTypeRow({
                                 <span
                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(manualKey)}`}
                                 >
-                                    {getTypeLabel(manualKey)}
+                                    {getTranslatedTypeLabel(manualKey)}
                                 </span>
                             </div>
                         </TableCell>

@@ -144,13 +144,37 @@
         },
         "form": {
             "addBulkHours": "Dodaj množične ure",
+            "addHours": "Dodaj ure",
             "editHourEntry": "Uredi vnos ur",
+            "hoursPerDay": "Ure na dan",
+            "descriptionOptional": "Opis (izbirno)",
             "skipWeekends": "Preskoči vikende",
-            "skipHolidays": "Preskoči praznike"
+            "skipHolidays": "Preskoči praznike",
+            "saveChanges": "Shrani spremembe",
+            "addNotesPlaceholder": "Dodajte opombe o tem vnosu...",
+            "durationFormat": "UU:MM",
+            "typeDuration": "Vnesite trajanje (UU:MM)"
         },
         "summary": {
             "weekSummary": "Tedenski povzetek",
-            "monthSummary": "Mesečni povzetek"
+            "monthSummary": "Mesečni povzetek",
+            "workingDays": "Delovni dnevi",
+            "expected": "Pričakovano",
+            "total": "Skupaj",
+            "overtime": "Nadure",
+            "totalHours": "Skupaj ur"
+        },
+        "actions": {
+            "addNewEntry": "Dodaj nov vnos",
+            "saveWithCount": "Shrani ({count})"
+        },
+        "views": {
+            "weekView": "Tedenski pogled",
+            "monthView": "Mesečni pogled"
+        },
+        "messages": {
+            "discardChanges": "Zavrzi vse neshranjene spremembe?",
+            "allTypes": "Vsi tipi"
         }
     },
     "tasks": {

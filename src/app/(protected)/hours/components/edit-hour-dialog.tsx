@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useQueryClient } from "@tanstack/react-query"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -16,6 +17,7 @@ import { useHoursStore } from "../stores/hours-store"
 import { updateHourEntry } from "../actions/hour-actions"
 import { HOUR_TYPES, MAX_HOURS_PER_DAY } from "../constants/hour-types"
 import { hourKeys } from "../query-keys"
+import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 
 interface EditHourDialogProps {
     open: boolean
@@ -23,6 +25,9 @@ interface EditHourDialogProps {
 }
 
 export function EditHourDialog({ open, onOpenChange }: EditHourDialogProps) {
+    const t = useTranslations("hours.form")
+    const tCommon = useTranslations("common")
+    const tTypes = useTranslations("hours.types")
     const queryClient = useQueryClient()
     const editFormData = useHoursStore((state) => state.editForm.data)
     const isEditLoading = useHoursStore((state) => state.editForm.isLoading)
@@ -67,7 +72,7 @@ export function EditHourDialog({ open, onOpenChange }: EditHourDialogProps) {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Edit Hour Entry</DialogTitle>
+                    <DialogTitle>{t("editHourEntry")}</DialogTitle>
                 </DialogHeader>
                 {editFormData && (
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -77,7 +82,7 @@ export function EditHourDialog({ open, onOpenChange }: EditHourDialogProps) {
                             </div>
                         )}
                         <div className="space-y-2">
-                            <Label htmlFor="edit-date">Date</Label>
+                            <Label htmlFor="edit-date">{tCommon("fields.date")}</Label>
                             <Input
                                 id="edit-date"
                                 type="date"
@@ -88,7 +93,7 @@ export function EditHourDialog({ open, onOpenChange }: EditHourDialogProps) {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit-hours">Hours</Label>
+                            <Label htmlFor="edit-hours">{tCommon("fields.hours")}</Label>
                             <Input
                                 id="edit-hours"
                                 type="number"
@@ -104,7 +109,7 @@ export function EditHourDialog({ open, onOpenChange }: EditHourDialogProps) {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit-type">Type</Label>
+                            <Label htmlFor="edit-type">{tCommon("fields.type")}</Label>
                             <Select
                                 value={editFormData.type}
                                 onValueChange={(value: string) =>
@@ -125,19 +130,19 @@ export function EditHourDialog({ open, onOpenChange }: EditHourDialogProps) {
                                 <SelectContent>
                                     {HOUR_TYPES.map((hourType) => (
                                         <SelectItem key={hourType.value} value={hourType.value}>
-                                            {hourType.label}
+                                            {tTypes(getHourTypeTranslationKey(hourType.value))}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit-description">Description (Optional)</Label>
+                            <Label htmlFor="edit-description">{t("descriptionOptional")}</Label>
                             <Input
                                 id="edit-description"
                                 value={editFormData.description}
                                 onChange={(e) => setEditFormData({ description: e.target.value })}
-                                placeholder="Add notes about this entry..."
+                                placeholder={t("addNotesPlaceholder")}
                                 disabled={isEditLoading}
                             />
                         </div>
@@ -148,10 +153,10 @@ export function EditHourDialog({ open, onOpenChange }: EditHourDialogProps) {
                                 onClick={handleClose}
                                 disabled={isEditLoading}
                             >
-                                Cancel
+                                {tCommon("actions.cancel")}
                             </Button>
                             <Button type="submit" disabled={isEditLoading}>
-                                {isEditLoading ? "Saving..." : "Save Changes"}
+                                {isEditLoading ? tCommon("status.saving") : t("saveChanges")}
                             </Button>
                         </div>
                     </form>

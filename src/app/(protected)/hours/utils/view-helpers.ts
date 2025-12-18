@@ -44,23 +44,30 @@ export function getDateRange(mode: ViewMode, referenceDate: Date = new Date()) {
 export function getViewTitle(
     mode: ViewMode,
     dateRange: { start: Date; end: Date },
-    currentDate: Date
+    currentDate: Date,
+    locale: string = "en"
 ): string {
+    const localeMap: Record<string, string> = {
+        en: "en-US",
+        sl: "sl-SI",
+    }
+    const dateLocale = localeMap[locale] || "en-US"
+
     if (mode === "WEEKLY") {
         const start = dateRange.start
         const end = dateRange.end
-        return `${start.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${end.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
+        return `${start.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })} - ${end.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })}`
     } else if (mode === "MONTHLY") {
-        return currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })
+        return currentDate.toLocaleDateString(dateLocale, { month: "long", year: "numeric" })
     } else if (mode === "DAILY") {
-        return currentDate.toLocaleDateString("en-US", {
+        return currentDate.toLocaleDateString(dateLocale, {
             weekday: "long",
             month: "long",
             day: "numeric",
             year: "numeric",
         })
     } else {
-        return currentDate.toLocaleDateString("en-US", { year: "numeric" })
+        return currentDate.toLocaleDateString(dateLocale, { year: "numeric" })
     }
 }
 
