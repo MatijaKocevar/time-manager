@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createRequest } from "../actions/request-actions"
 import { requestKeys } from "../query-keys"
@@ -18,8 +19,12 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
+import { getRequestTypeTranslationKey } from "../utils/translation-helpers"
 
 export default function NewRequestPage() {
+    const t = useTranslations("requests.form")
+    const tCommon = useTranslations("common")
+    const tTypes = useTranslations("requests.types")
     const router = useRouter()
     const queryClient = useQueryClient()
     const formData = useRequestStore((state) => state.formData)
@@ -58,7 +63,7 @@ export default function NewRequestPage() {
                 <CardContent className="pt-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
-                            <Label htmlFor="type">Type</Label>
+                            <Label htmlFor="type">{tCommon("fields.type")}</Label>
                             <Select
                                 value={formData.type}
                                 onValueChange={(value) =>
@@ -66,12 +71,12 @@ export default function NewRequestPage() {
                                 }
                             >
                                 <SelectTrigger id="type">
-                                    <SelectValue placeholder="Select request type" />
+                                    <SelectValue placeholder={t("selectType")} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {REQUEST_TYPES.map((rt) => (
                                         <SelectItem key={rt.value} value={rt.value}>
-                                            {rt.label}
+                                            {tTypes(getRequestTypeTranslationKey(rt.value))}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -80,7 +85,7 @@ export default function NewRequestPage() {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="startDate">Start Date</Label>
+                                <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
                                 <Input
                                     id="startDate"
                                     type="date"
@@ -89,7 +94,7 @@ export default function NewRequestPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="endDate">End Date</Label>
+                                <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
                                 <Input
                                     id="endDate"
                                     type="date"
@@ -101,11 +106,11 @@ export default function NewRequestPage() {
 
                         {needsLocation && (
                             <div className="space-y-2">
-                                <Label htmlFor="location">Location</Label>
+                                <Label htmlFor="location">{tCommon("fields.location")}</Label>
                                 <Input
                                     id="location"
                                     type="text"
-                                    placeholder="Enter location"
+                                    placeholder={t("enterLocation")}
                                     value={formData.location}
                                     onChange={(e) => setFormData({ location: e.target.value })}
                                 />
@@ -113,11 +118,11 @@ export default function NewRequestPage() {
                         )}
 
                         <div className="space-y-2">
-                            <Label htmlFor="reason">Reason (optional)</Label>
+                            <Label htmlFor="reason">{t("reasonOptional")}</Label>
                             <Input
                                 id="reason"
                                 type="text"
-                                placeholder="Enter reason"
+                                placeholder={t("enterReason")}
                                 value={formData.reason}
                                 onChange={(e) => setFormData({ reason: e.target.value })}
                             />
@@ -133,10 +138,10 @@ export default function NewRequestPage() {
                                 variant="outline"
                                 onClick={() => router.push("/requests")}
                             >
-                                Cancel
+                                {tCommon("actions.cancel")}
                             </Button>
                             <Button type="submit" disabled={mutation.isPending}>
-                                {mutation.isPending ? "Creating..." : "Create Request"}
+                                {mutation.isPending ? tCommon("status.creating") : t("createRequest")}
                             </Button>
                         </div>
                     </form>

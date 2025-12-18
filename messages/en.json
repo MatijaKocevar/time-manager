@@ -273,13 +273,23 @@
             "submitRequest": "Submit Request",
             "rejectRequest": "Reject Request",
             "cancelApprovedRequest": "Cancel Approved Request",
+            "cancelRequest": "Cancel Request",
             "cancellationReason": "Cancellation reason",
-            "explainCancellation": "Explain why this request is being cancelled..."
+            "explainCancellation": "Explain why this request is being cancelled...",
+            "reasonOptional": "Reason (optional)",
+            "enterReason": "Enter reason",
+            "enterLocation": "Enter location",
+            "selectType": "Select request type",
+            "requestDetails": "Request Details"
         },
         "table": {
             "approvedBy": "Approved/Rejected By",
             "noRequests": "No requests found",
-            "filterPlaceholder": "Filter requests..."
+            "filterPlaceholder": "Filter requests...",
+            "user": "User",
+            "unknown": "Unknown",
+            "edit": "Edit",
+            "view": "View"
         },
         "messages": {
             "noRequestsMatch": "No requests match your search"

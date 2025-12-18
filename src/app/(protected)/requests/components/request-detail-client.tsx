@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { cancelRequest, updateRequest } from "../actions/request-actions"
 import { requestKeys } from "../query-keys"
@@ -24,12 +25,17 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useEffect } from "react"
+import { getRequestTypeTranslationKey, getRequestStatusTranslationKey } from "../utils/translation-helpers"
 
 interface RequestDetailClientProps {
     request: RequestDisplay
 }
 
 export function RequestDetailClient({ request }: RequestDetailClientProps) {
+    const t = useTranslations("requests.form")
+    const tCommon = useTranslations("common")
+    const tTypes = useTranslations("requests.types")
+    const tStatuses = useTranslations("requests.statuses")
     const router = useRouter()
     const queryClient = useQueryClient()
     const formData = useRequestStore((state) => state.formData)
@@ -96,7 +102,7 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                         REQUEST_STATUS_COLORS[request.status]
                     }`}
                 >
-                    {request.status}
+                    {tStatuses(getRequestStatusTranslationKey(request.status))}
                 </span>
                 <div className="flex gap-2">
                     {canCancel && (
@@ -105,38 +111,38 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                             onClick={handleCancel}
                             disabled={cancelMutation.isPending}
                         >
-                            Cancel Request
+                            {t("cancelRequest")}
                         </Button>
                     )}
                 </div>
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type">{tCommon("fields.type")}</Label>
                 {isEditable ? (
                     <Select
                         value={formData.type}
                         onValueChange={(value) => setFormData({ type: value as RequestType })}
                     >
                         <SelectTrigger id="type">
-                            <SelectValue placeholder="Select type" />
+                            <SelectValue placeholder={t("selectType")} />
                         </SelectTrigger>
                         <SelectContent>
-                            {REQUEST_TYPES.map((t) => (
-                                <SelectItem key={t.value} value={t.value}>
-                                    {t.label}
+                            {REQUEST_TYPES.map((rt) => (
+                                <SelectItem key={rt.value} value={rt.value}>
+                                    {tTypes(getRequestTypeTranslationKey(rt.value))}
                                 </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 ) : (
-                    <div className="text-lg">{REQUEST_TYPE_LABELS[request.type]}</div>
+                    <div className="text-lg">{tTypes(getRequestTypeTranslationKey(request.type))}</div>
                 )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                    <Label htmlFor="startDate">Start Date</Label>
+                    <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
                     {isEditable ? (
                         <Input
                             id="startDate"
@@ -149,7 +155,7 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                     )}
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="endDate">End Date</Label>
+                    <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
                     {isEditable ? (
                         <Input
                             id="endDate"
@@ -165,13 +171,13 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
 
             {(needsLocation || request.location) && (
                 <div className="space-y-2">
-                    <Label htmlFor="location">Location</Label>
+                    <Label htmlFor="location">{tCommon("fields.location")}</Label>
                     {isEditable ? (
                         <Input
                             id="location"
                             value={formData.location}
                             onChange={(e) => setFormData({ location: e.target.value })}
-                            placeholder="Enter location"
+                            placeholder={t("enterLocation")}
                         />
                     ) : (
                         <div className="text-lg">{request.location}</div>
@@ -180,13 +186,13 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
             )}
 
             <div className="space-y-2">
-                <Label htmlFor="reason">Reason</Label>
+                <Label htmlFor="reason">{tCommon("fields.reason")}</Label>
                 {isEditable ? (
                     <Input
                         id="reason"
                         value={formData.reason}
                         onChange={(e) => setFormData({ reason: e.target.value })}
-                        placeholder="Enter reason (optional)"
+                        placeholder={t("enterReason")}
                     />
                 ) : request.reason ? (
                     <div className="text-lg">{request.reason}</div>
@@ -195,7 +201,7 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
 
             {request.status === REQUEST_STATUS.REJECTED && request.rejectionReason && (
                 <div className="space-y-2">
-                    <Label className="text-red-600">Rejection Reason</Label>
+                    <Label className="text-red-600">{t("rejectRequest")}</Label>
                     <div className="text-lg text-red-600">{request.rejectionReason}</div>
                 </div>
             )}
@@ -204,7 +210,7 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                 <>
                     {request.cancellationReason && (
                         <div className="space-y-2">
-                            <Label className="text-gray-600">Cancellation Reason</Label>
+                            <Label className="text-gray-600">{t("cancellationReason")}</Label>
                             <div className="text-lg text-gray-600">
                                 {request.cancellationReason}
                             </div>
@@ -212,7 +218,7 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                     )}
                     {request.canceller && (
                         <div className="space-y-2">
-                            <Label>Cancelled By</Label>
+                            <Label>{tCommon("fields.user")}</Label>
                             <div className="text-lg">
                                 {request.canceller.name || request.canceller.email}
                             </div>
@@ -220,7 +226,7 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                     )}
                     {request.cancelledAt && (
                         <div className="space-y-2">
-                            <Label>Cancelled At</Label>
+                            <Label>{tCommon("fields.date")}</Label>
                             <div className="text-lg">
                                 {new Date(request.cancelledAt).toLocaleString()}
                             </div>
@@ -240,7 +246,7 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                             !formData.endDate
                         }
                     >
-                        {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                        {updateMutation.isPending ? tCommon("status.saving") : tCommon("actions.save")}
                     </Button>
                 </div>
             )}

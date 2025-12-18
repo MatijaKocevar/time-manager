@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createRequest } from "../actions/request-actions"
 import { requestKeys } from "../query-keys"
@@ -17,8 +18,12 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
+import { getRequestTypeTranslationKey } from "../utils/translation-helpers"
 
 export function RequestForm() {
+    const t = useTranslations("requests.form")
+    const tCommon = useTranslations("common")
+    const tTypes = useTranslations("requests.types")
     const queryClient = useQueryClient()
     const formData = useRequestStore((state) => state.formData)
     const setFormData = useRequestStore((state) => state.setFormData)
@@ -54,18 +59,18 @@ export function RequestForm() {
             <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                        <Label htmlFor="type">Type</Label>
+                        <Label htmlFor="type">{tCommon("fields.type")}</Label>
                         <Select
                             value={formData.type}
                             onValueChange={(value) => setFormData({ type: value as RequestType })}
                         >
                             <SelectTrigger id="type">
-                                <SelectValue placeholder="Select request type" />
+                                <SelectValue placeholder={t("selectType")} />
                             </SelectTrigger>
                             <SelectContent>
                                 {REQUEST_TYPES.map((rt) => (
                                     <SelectItem key={rt.value} value={rt.value}>
-                                        {rt.label}
+                                        {tTypes(getRequestTypeTranslationKey(rt.value))}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -74,7 +79,7 @@ export function RequestForm() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="startDate">Start Date</Label>
+                            <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
                             <Input
                                 id="startDate"
                                 type="date"
@@ -83,7 +88,7 @@ export function RequestForm() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="endDate">End Date</Label>
+                            <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
                             <Input
                                 id="endDate"
                                 type="date"
@@ -95,11 +100,11 @@ export function RequestForm() {
 
                     {needsLocation && (
                         <div className="space-y-2">
-                            <Label htmlFor="location">Location</Label>
+                            <Label htmlFor="location">{tCommon("fields.location")}</Label>
                             <Input
                                 id="location"
                                 type="text"
-                                placeholder="Enter location"
+                                placeholder={t("enterLocation")}
                                 value={formData.location}
                                 onChange={(e) => setFormData({ location: e.target.value })}
                             />
@@ -107,11 +112,11 @@ export function RequestForm() {
                     )}
 
                     <div className="space-y-2">
-                        <Label htmlFor="reason">Reason (optional)</Label>
+                        <Label htmlFor="reason">{t("reasonOptional")}</Label>
                         <Input
                             id="reason"
                             type="text"
-                            placeholder="Enter reason"
+                            placeholder={t("enterReason")}
                             value={formData.reason}
                             onChange={(e) => setFormData({ reason: e.target.value })}
                         />
@@ -122,7 +127,7 @@ export function RequestForm() {
                     )}
 
                     <Button type="submit" disabled={mutation.isPending}>
-                        {mutation.isPending ? "Submitting..." : "Submit Request"}
+                        {mutation.isPending ? tCommon("status.submitting") : t("submitRequest")}
                     </Button>
                 </form>
             </CardContent>

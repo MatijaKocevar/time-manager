@@ -273,13 +273,23 @@
             "submitRequest": "Pošlji zahtevek",
             "rejectRequest": "Zavrni zahtevek",
             "cancelApprovedRequest": "Prekliči odobreni zahtevek",
+            "cancelRequest": "Prekliči zahtevek",
             "cancellationReason": "Razlog za preklic",
-            "explainCancellation": "Pojasnite zakaj se ta zahtevek preklicuje..."
+            "explainCancellation": "Pojasnite zakaj se ta zahtevek preklicuje...",
+            "reasonOptional": "Razlog (izbirno)",
+            "enterReason": "Vnesite razlog",
+            "enterLocation": "Vnesite lokacijo",
+            "selectType": "Izberite tip zahtevka",
+            "requestDetails": "Podrobnosti zahtevka"
         },
         "table": {
             "approvedBy": "Odobril/Zavrnil",
             "noRequests": "Ni zahtevkov",
-            "filterPlaceholder": "Filtriraj zahtevke..."
+            "filterPlaceholder": "Filtriraj zahtevke...",
+            "user": "Uporabnik",
+            "unknown": "Neznano",
+            "edit": "Uredi",
+            "view": "Poglej"
         },
         "messages": {
             "noRequestsMatch": "Noben zahtevek ne ustreza iskanju"

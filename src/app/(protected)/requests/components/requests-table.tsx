@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import {
     Table,
     TableBody,
@@ -15,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Edit, Search, Plus } from "lucide-react"
 import type { RequestDisplay } from "../schemas/request-schemas"
 import { REQUEST_TYPE_LABELS, REQUEST_STATUS_COLORS, REQUEST_STATUS } from "../constants"
+import { getRequestTypeTranslationKey, getRequestStatusTranslationKey } from "../utils/translation-helpers"
 
 interface RequestsTableProps {
     requests: RequestDisplay[]
@@ -29,6 +31,10 @@ export function RequestsTable({
     showNewButton = true,
     onRequestClick,
 }: RequestsTableProps) {
+    const t = useTranslations("requests")
+    const tCommon = useTranslations("common")
+    const tTypes = useTranslations("requests.types")
+    const tStatuses = useTranslations("requests.statuses")
     const [searchQuery, setSearchQuery] = useState("")
 
     const formatDate = (date: Date) => {
@@ -57,7 +63,7 @@ export function RequestsTable({
                 <div className="relative flex-1 max-w-sm">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
-                        placeholder="Filter requests..."
+                        placeholder={t("table.filterPlaceholder")}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="pl-9"
@@ -67,7 +73,7 @@ export function RequestsTable({
                     <Button asChild>
                         <Link href="/requests/new">
                             <Plus className="h-4 w-4 mr-2" />
-                            New Request
+                            {t("form.newRequest")}
                         </Link>
                     </Button>
                 )}
@@ -76,14 +82,14 @@ export function RequestsTable({
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            {showUser && <TableHead className="min-w-[150px]">User</TableHead>}
-                            <TableHead className="min-w-[150px]">Type</TableHead>
-                            <TableHead className="min-w-[120px]">Start Date</TableHead>
-                            <TableHead className="min-w-[120px]">End Date</TableHead>
-                            <TableHead className="min-w-[100px]">Status</TableHead>
-                            <TableHead className="min-w-[150px]">Approved/Rejected By</TableHead>
-                            <TableHead className="min-w-[200px]">Reason</TableHead>
-                            <TableHead className="text-right min-w-[180px]">Actions</TableHead>
+                            {showUser && <TableHead className="min-w-[150px]">{t("table.user")}</TableHead>}
+                            <TableHead className="min-w-[150px]">{tCommon("fields.type")}</TableHead>
+                            <TableHead className="min-w-[120px]">{tCommon("fields.startDate")}</TableHead>
+                            <TableHead className="min-w-[120px]">{tCommon("fields.endDate")}</TableHead>
+                            <TableHead className="min-w-[100px]">{tCommon("fields.status")}</TableHead>
+                            <TableHead className="min-w-[150px]">{t("table.approvedBy")}</TableHead>
+                            <TableHead className="min-w-[200px]">{tCommon("fields.reason")}</TableHead>
+                            <TableHead className="text-right min-w-[180px]">{tCommon("fields.actions")}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -94,8 +100,8 @@ export function RequestsTable({
                                     className="text-center text-muted-foreground"
                                 >
                                     {searchQuery
-                                        ? "No requests match your search"
-                                        : "No requests found"}
+                                        ? t("messages.noRequestsMatch")
+                                        : t("table.noRequests")}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -107,10 +113,10 @@ export function RequestsTable({
                                 >
                                     {showUser && (
                                         <TableCell className="font-medium">
-                                            {request.user?.name || request.user?.email || "Unknown"}
+                                            {request.user?.name || request.user?.email || t("table.unknown")}
                                         </TableCell>
                                     )}
-                                    <TableCell>{REQUEST_TYPE_LABELS[request.type]}</TableCell>
+                                    <TableCell>{tTypes(getRequestTypeTranslationKey(request.type))}</TableCell>
                                     <TableCell className="whitespace-nowrap">
                                         {formatDate(request.startDate)}
                                     </TableCell>
@@ -123,7 +129,7 @@ export function RequestsTable({
                                                 REQUEST_STATUS_COLORS[request.status]
                                             }`}
                                         >
-                                            {request.status}
+                                            {tStatuses(getRequestStatusTranslationKey(request.status))}
                                         </span>
                                     </TableCell>
                                     <TableCell>
@@ -152,8 +158,8 @@ export function RequestsTable({
                                         >
                                             <Edit className="h-4 w-4 mr-2" />
                                             {request.status === REQUEST_STATUS.PENDING
-                                                ? "Edit"
-                                                : "View"}
+                                                ? t("table.edit")
+                                                : t("table.view")}
                                         </Button>
                                     </TableCell>
                                 </TableRow>
