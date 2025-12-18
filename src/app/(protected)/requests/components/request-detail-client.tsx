@@ -25,7 +25,10 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useEffect } from "react"
-import { getRequestTypeTranslationKey, getRequestStatusTranslationKey } from "../utils/translation-helpers"
+import {
+    getRequestTypeTranslationKey,
+    getRequestStatusTranslationKey,
+} from "../utils/translation-helpers"
 
 interface RequestDetailClientProps {
     request: RequestDisplay
@@ -136,7 +139,9 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                         </SelectContent>
                     </Select>
                 ) : (
-                    <div className="text-lg">{tTypes(getRequestTypeTranslationKey(request.type))}</div>
+                    <div className="text-lg">
+                        {tTypes(getRequestTypeTranslationKey(request.type))}
+                    </div>
                 )}
             </div>
 
@@ -246,7 +251,9 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                             !formData.endDate
                         }
                     >
-                        {updateMutation.isPending ? tCommon("status.saving") : tCommon("actions.save")}
+                        {updateMutation.isPending
+                            ? tCommon("status.saving")
+                            : tCommon("actions.save")}
                     </Button>
                 </div>
             )}

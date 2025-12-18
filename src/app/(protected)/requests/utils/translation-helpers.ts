@@ -21,8 +21,6 @@ export function getRequestTypeTranslationKey(type: RequestType): RequestTypeTran
     return REQUEST_TYPE_TO_TRANSLATION_KEY[type] ?? "other"
 }
 
-export function getRequestStatusTranslationKey(
-    status: RequestStatus
-): RequestStatusTranslationKey {
+export function getRequestStatusTranslationKey(status: RequestStatus): RequestStatusTranslationKey {
     return REQUEST_STATUS_TO_TRANSLATION_KEY[status] ?? "pending"
 }

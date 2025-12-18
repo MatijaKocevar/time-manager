@@ -12,10 +12,7 @@ export default async function RequestsPage() {
         return null
     }
 
-    const [requests, t] = await Promise.all([
-        getUserRequests(),
-        getTranslations("navigation"),
-    ])
+    const [requests, t] = await Promise.all([getUserRequests(), getTranslations("navigation")])
 
     return (
         <>

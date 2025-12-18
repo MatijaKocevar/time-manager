@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import {
@@ -16,13 +15,17 @@ import { Input } from "@/components/ui/input"
 import { Edit, Search, Plus } from "lucide-react"
 import type { RequestDisplay } from "../schemas/request-schemas"
 import { REQUEST_TYPE_LABELS, REQUEST_STATUS_COLORS, REQUEST_STATUS } from "../constants"
-import { getRequestTypeTranslationKey, getRequestStatusTranslationKey } from "../utils/translation-helpers"
+import {
+    getRequestTypeTranslationKey,
+    getRequestStatusTranslationKey,
+} from "../utils/translation-helpers"
 
 interface RequestsTableProps {
     requests: RequestDisplay[]
     showUser?: boolean
     showNewButton?: boolean
     onRequestClick?: (request: RequestDisplay) => void
+    onNewRequestClick?: () => void
 }
 
 export function RequestsTable({
@@ -30,6 +33,7 @@ export function RequestsTable({
     showUser = false,
     showNewButton = true,
     onRequestClick,
+    onNewRequestClick,
 }: RequestsTableProps) {
     const t = useTranslations("requests")
     const tCommon = useTranslations("common")
@@ -70,11 +74,9 @@ export function RequestsTable({
                     />
                 </div>
                 {showNewButton && (
-                    <Button asChild>
-                        <Link href="/requests/new">
-                            <Plus className="h-4 w-4 mr-2" />
-                            {t("form.newRequest")}
-                        </Link>
+                    <Button onClick={onNewRequestClick}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        {t("form.newRequest")}
                     </Button>
                 )}
             </div>
@@ -82,14 +84,28 @@ export function RequestsTable({
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            {showUser && <TableHead className="min-w-[150px]">{t("table.user")}</TableHead>}
-                            <TableHead className="min-w-[150px]">{tCommon("fields.type")}</TableHead>
-                            <TableHead className="min-w-[120px]">{tCommon("fields.startDate")}</TableHead>
-                            <TableHead className="min-w-[120px]">{tCommon("fields.endDate")}</TableHead>
-                            <TableHead className="min-w-[100px]">{tCommon("fields.status")}</TableHead>
+                            {showUser && (
+                                <TableHead className="min-w-[150px]">{t("table.user")}</TableHead>
+                            )}
+                            <TableHead className="min-w-[150px]">
+                                {tCommon("fields.type")}
+                            </TableHead>
+                            <TableHead className="min-w-[120px]">
+                                {tCommon("fields.startDate")}
+                            </TableHead>
+                            <TableHead className="min-w-[120px]">
+                                {tCommon("fields.endDate")}
+                            </TableHead>
+                            <TableHead className="min-w-[100px]">
+                                {tCommon("fields.status")}
+                            </TableHead>
                             <TableHead className="min-w-[150px]">{t("table.approvedBy")}</TableHead>
-                            <TableHead className="min-w-[200px]">{tCommon("fields.reason")}</TableHead>
-                            <TableHead className="text-right min-w-[180px]">{tCommon("fields.actions")}</TableHead>
+                            <TableHead className="min-w-[200px]">
+                                {tCommon("fields.reason")}
+                            </TableHead>
+                            <TableHead className="text-right min-w-[180px]">
+                                {tCommon("fields.actions")}
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -113,10 +129,14 @@ export function RequestsTable({
                                 >
                                     {showUser && (
                                         <TableCell className="font-medium">
-                                            {request.user?.name || request.user?.email || t("table.unknown")}
+                                            {request.user?.name ||
+                                                request.user?.email ||
+                                                t("table.unknown")}
                                         </TableCell>
                                     )}
-                                    <TableCell>{tTypes(getRequestTypeTranslationKey(request.type))}</TableCell>
+                                    <TableCell>
+                                        {tTypes(getRequestTypeTranslationKey(request.type))}
+                                    </TableCell>
                                     <TableCell className="whitespace-nowrap">
                                         {formatDate(request.startDate)}
                                     </TableCell>
@@ -129,7 +149,9 @@ export function RequestsTable({
                                                 REQUEST_STATUS_COLORS[request.status]
                                             }`}
                                         >
-                                            {tStatuses(getRequestStatusTranslationKey(request.status))}
+                                            {tStatuses(
+                                                getRequestStatusTranslationKey(request.status)
+                                            )}
                                         </span>
                                     </TableCell>
                                     <TableCell>
