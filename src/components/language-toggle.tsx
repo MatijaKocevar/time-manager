@@ -1,7 +1,7 @@
 "use client"
 
 import { useLocale } from "next-intl"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -15,7 +15,6 @@ import { locales, localeNames, type Locale } from "@/i18n/config"
 export function LanguageToggle() {
     const locale = useLocale() as Locale
     const router = useRouter()
-    const pathname = usePathname()
 
     const handleLocaleChange = async (newLocale: Locale) => {
         const response = await fetch("/api/set-locale", {

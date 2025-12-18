@@ -15,7 +15,6 @@ import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { EditableHourCell } from "./editable-hour-cell"
 import { HourTypeRow } from "./hour-type-row"
 import { useHoursBatchStore } from "../stores/hours-batch-store"
-import { useHoursStore } from "../stores/hours-store"
 import {
     generateDateColumns,
     groupEntriesByType,

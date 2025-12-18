@@ -78,6 +78,12 @@ interface TasksStoreActions {
     clearActiveTimer: (taskId: string) => void
     clearAllActiveTimers: () => void
     updateElapsedTime: (taskId: string, seconds: number) => void
+    syncActiveTimerFromServer: (
+        serverTimer: { taskId: string; id: string; startTime: Date; endTime: Date | null } | null,
+        activeTimers: Map<string, ActiveTimer>,
+        clearAll: () => void,
+        setTimer: (taskId: string, entryId: string, startTime: Date) => void
+    ) => void
     setSelectedListId: (listId: string | null) => void
     openCreateDialog: (parentId?: string, listId?: string | null) => void
     closeCreateDialog: () => void
@@ -257,6 +263,18 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
             newElapsed.set(taskId, seconds)
             return { elapsedTimes: newElapsed }
         }),
+    syncActiveTimerFromServer: (serverTimer, activeTimers, clearAll, setTimer) => {
+        if (serverTimer && serverTimer.endTime === null) {
+            const currentTimer = activeTimers.get(serverTimer.taskId)
+
+            if (!currentTimer || currentTimer.entryId !== serverTimer.id) {
+                clearAll()
+                setTimer(serverTimer.taskId, serverTimer.id, serverTimer.startTime)
+            }
+        } else if (!serverTimer && activeTimers.size > 0) {
+            clearAll()
+        }
+    },
 
     selectedListId: null,
     setSelectedListId: (listId) => set(() => ({ selectedListId: listId })),

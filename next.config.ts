@@ -6,9 +6,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts")
 const nextConfig: NextConfig = {
     reactCompiler: true,
     output: "standalone",
-    experimental: {
-        serverComponentsExternalPackages: ["@prisma/client", "bcryptjs"],
-    },
+    serverExternalPackages: ["@prisma/client", "bcryptjs"],
     async headers() {
         return [
             {

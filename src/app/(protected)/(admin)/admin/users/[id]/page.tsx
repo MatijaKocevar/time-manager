@@ -31,7 +31,7 @@ function getCurrentMonthDates() {
 
 export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
-    const { startDate, endDate, firstDay, lastDay } = getCurrentMonthDates()
+    const { startDate, endDate } = getCurrentMonthDates()
 
     const [user, userHours, userRequests, holidays] = await Promise.all([
         getUserById(id),

@@ -21,7 +21,6 @@ export function TasksTable({ tasks, listId }: TasksTableProps) {
     const t = useTranslations("tasks.table")
     const tCommon = useTranslations("common")
     const tStatus = useTranslations("tasks.statuses")
-    const tActions = useTranslations("tasks.actions")
     const groupedTasks = buildGroupedTaskTree(tasks)
     const key = listId || "no-list"
     const [defaultExpanded] = useState(() => new Set(["IN_PROGRESS" as const, "TODO" as const]))
@@ -71,10 +70,16 @@ export function TasksTable({ tasks, listId }: TasksTableProps) {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead className="w-12"></TableHead>
-                                        <TableHead className="min-w-[300px]">{t("title")}</TableHead>
-                                        <TableHead className="w-[150px]">{tCommon("fields.status")}</TableHead>
+                                        <TableHead className="min-w-[300px]">
+                                            {t("title")}
+                                        </TableHead>
+                                        <TableHead className="w-[150px]">
+                                            {tCommon("fields.status")}
+                                        </TableHead>
                                         <TableHead className="w-[180px]">{t("list")}</TableHead>
-                                        <TableHead className="w-[200px]">{t("timeTracker")}</TableHead>
+                                        <TableHead className="w-[200px]">
+                                            {t("timeTracker")}
+                                        </TableHead>
                                         <TableHead className="w-[100px] text-right">
                                             {tCommon("fields.actions")}
                                         </TableHead>

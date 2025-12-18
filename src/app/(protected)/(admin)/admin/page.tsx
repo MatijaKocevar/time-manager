@@ -17,7 +17,6 @@ export default async function AdminOverviewPage() {
         redirect("/")
     }
 
-    const t = await getTranslations()
     const tAdmin = await getTranslations("admin.overview")
     const tCommon = await getTranslations("common.actions")
     const tRequests = await getTranslations("requests.statuses")

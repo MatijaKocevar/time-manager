@@ -43,7 +43,6 @@ export function HoursView({
     initialViewMode,
     initialSelectedDate,
     initialHolidays = [],
-    initialDateRange,
     initialExpandedTypes = [],
 }: HoursViewProps) {
     const router = useRouter()

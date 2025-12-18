@@ -1,7 +1,7 @@
 "use client"
 
 import { ChevronDown, ChevronRight } from "lucide-react"
-import { Fragment, useMemo } from "react"
+import { Fragment, useMemo, useState } from "react"
 import type { HourType } from "@/../../prisma/generated/client"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { useHoursStore } from "../stores/hours-store"
@@ -28,6 +28,7 @@ export function HourTypeRow({
 }: HourTypeRowProps) {
     const expandedTypes = useHoursStore((state) => state.expandedTypes)
     const toggleType = useHoursStore((state) => state.toggleType)
+    const [mounted] = useState(true)
 
     const holidaysByDate = useMemo(() => {
         const map = new Map<string, { name: string }>()
@@ -59,7 +60,7 @@ export function HourTypeRow({
         )
     }
 
-    const isExpanded = expandedTypes.size > 0 ? expandedTypes.has(hourType) : initiallyExpanded
+    const isExpanded = mounted ? expandedTypes.has(hourType) : initiallyExpanded
 
     const trackedKey = `${hourType}_TRACKED`
     const manualKey = `${hourType}_MANUAL`

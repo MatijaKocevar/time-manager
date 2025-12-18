@@ -8,8 +8,8 @@ import { QueryProvider } from "@/providers/QueryProvider"
 import { ConditionalSidebar } from "@/features/sidebar"
 import { authConfig } from "@/lib/auth"
 import { getLists } from "./(protected)/tasks/actions/list-actions"
-import { ThemeProvider } from "@/components/theme-provider"
 import { NextIntlClientProvider } from "next-intl"
+import { ThemeProvider } from "@/providers/theme-provider"
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -65,15 +65,25 @@ export default async function RootLayout({
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `
-                            try {
-                                const stored = localStorage.getItem('theme-storage');
-                                if (stored) {
-                                    const theme = JSON.parse(stored).state.theme;
-                                    if (theme === 'dark') {
-                                        document.documentElement.classList.add('dark');
+                            (function() {
+                                try {
+                                    const stored = localStorage.getItem('theme-storage');
+                                    let theme = 'system';
+                                    
+                                    if (stored) {
+                                        theme = JSON.parse(stored).state.theme;
                                     }
-                                }
-                            } catch (e) {}
+                                    
+                                    const isDark = theme === 'dark' || 
+                                        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                                    
+                                    if (isDark) {
+                                        document.documentElement.classList.add('dark');
+                                    } else {
+                                        document.documentElement.classList.remove('dark');
+                                    }
+                                } catch (e) {}
+                            })();
                         `,
                     }}
                 />

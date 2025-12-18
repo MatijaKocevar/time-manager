@@ -476,7 +476,7 @@ export async function approveRequest(input: ApproveRequestInput) {
                                     gte: migrateStartDate,
                                     lte: migrateEndDate,
                                 },
-                                type: oldType as any,
+                                type: oldType as HourType,
                                 taskId: null,
                             },
                             data: {

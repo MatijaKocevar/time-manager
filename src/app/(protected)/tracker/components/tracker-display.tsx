@@ -13,7 +13,6 @@ import { taskKeys } from "@/app/(protected)/tasks/query-keys"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
 import { useTrackerStore } from "../stores/tracker-store"
 import { formatDuration, getElapsedSeconds } from "@/app/(protected)/tasks/utils/time-helpers"
-import { getTaskStatusLabel } from "@/app/(protected)/tasks/utils/task-status-labels"
 import type { TaskTimeEntryDisplay } from "@/app/(protected)/tasks/schemas/task-time-entry-schemas"
 import type { TaskDisplay } from "@/app/(protected)/tasks/schemas/task-schemas"
 
@@ -25,18 +24,18 @@ interface TrackerDisplayProps {
 export function TrackerDisplay({ tasks, initialActiveTimer }: TrackerDisplayProps) {
     const queryClient = useQueryClient()
     const t = useTranslations("tasks.tracker")
-    const tStatus = useTranslations("tasks.statuses")
 
     const activeTimers = useTasksStore((state) => state.activeTimers)
     const elapsedTimes = useTasksStore((state) => state.elapsedTimes)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
     const updateElapsedTime = useTasksStore((state) => state.updateElapsedTime)
+    const syncActiveTimerFromServer = useTasksStore((state) => state.syncActiveTimerFromServer)
 
     const selectedTaskId = useTrackerStore((state) => state.selectedTaskId)
-    const setSelectedTaskId = useTrackerStore((state) => state.setSelectedTaskId)
     const trackerError = useTrackerStore((state) => state.error)
     const setTrackerError = useTrackerStore((state) => state.setError)
+    const initializeSelectedTask = useTrackerStore((state) => state.initializeSelectedTask)
 
     const { data: activeTimerData } = useQuery({
         queryKey: taskKeys.activeTimer(),
@@ -95,21 +94,19 @@ export function TrackerDisplay({ tasks, initialActiveTimer }: TrackerDisplayProp
     })
 
     useEffect(() => {
-        if (activeTimerData && activeTimerData.endTime === null) {
-            const currentTimer = activeTimers.get(activeTimerData.taskId)
-
-            if (!currentTimer || currentTimer.entryId !== activeTimerData.id) {
-                clearAllActiveTimers()
-                setActiveTimer(
-                    activeTimerData.taskId,
-                    activeTimerData.id,
-                    new Date(activeTimerData.startTime)
-                )
-            }
-        } else if (!activeTimerData && activeTimers.size > 0) {
-            clearAllActiveTimers()
-        }
-    }, [activeTimerData, activeTimers, clearAllActiveTimers, setActiveTimer])
+        syncActiveTimerFromServer(
+            activeTimerData,
+            activeTimers,
+            clearAllActiveTimers,
+            setActiveTimer
+        )
+    }, [
+        activeTimerData,
+        activeTimers,
+        clearAllActiveTimers,
+        setActiveTimer,
+        syncActiveTimerFromServer,
+    ])
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -122,20 +119,16 @@ export function TrackerDisplay({ tasks, initialActiveTimer }: TrackerDisplayProp
         return () => clearInterval(interval)
     }, [activeTimers, updateElapsedTime])
 
+    useEffect(() => {
+        initializeSelectedTask(activeTimerData?.taskId, selectedTaskId, tasks)
+    }, [activeTimerData, selectedTaskId, tasks, initializeSelectedTask])
+
     const activeTaskId = activeTimerData?.taskId
     const isTimerRunning = Boolean(activeTaskId)
     const activeTimerEntry = activeTimerData as TaskTimeEntryDisplay | null
 
     const displayedTaskId = activeTaskId ?? selectedTaskId ?? tasks[0]?.id
     const displayedTask = tasks.find((task) => task.id === displayedTaskId)
-
-    useEffect(() => {
-        if (activeTimerData?.taskId) {
-            setSelectedTaskId(activeTimerData.taskId)
-        } else if (!selectedTaskId && tasks.length > 0) {
-            setSelectedTaskId(tasks[0].id)
-        }
-    }, [activeTimerData, selectedTaskId, setSelectedTaskId, tasks])
     const elapsedSeconds = displayedTaskId ? (elapsedTimes.get(displayedTaskId) ?? 0) : 0
 
     const isLoading = startMutation.isPending || stopMutation.isPending
