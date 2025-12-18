@@ -84,16 +84,13 @@ export default async function RootLayout({
                             (function() {
                                 try {
                                     const stored = localStorage.getItem('theme-storage');
-                                    let theme = 'system';
+                                    let theme = 'light';
                                     
                                     if (stored) {
                                         theme = JSON.parse(stored).state.theme;
                                     }
                                     
-                                    const isDark = theme === 'dark' || 
-                                        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                                    
-                                    if (isDark) {
+                                    if (theme === 'dark') {
                                         document.documentElement.classList.add('dark');
                                     } else {
                                         document.documentElement.classList.remove('dark');
