@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authConfig } from "@/lib/auth"
-import { getAllRequests } from "../../../requests/actions/request-actions"
+import { getAllRequests } from "../../requests/actions/request-actions"
 import { getHolidays } from "../holidays/actions/holiday-actions"
 import { PendingRequestsList } from "../components/pending-requests-list"
 

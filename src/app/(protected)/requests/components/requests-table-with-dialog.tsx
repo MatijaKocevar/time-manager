@@ -11,12 +11,7 @@ import { requestKeys } from "../query-keys"
 import { useRequestStore } from "../stores/request-store"
 import { REQUEST_TYPES, REQUEST_TYPE } from "../constants"
 import { getRequestTypeTranslationKey } from "../utils/translation-helpers"
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import {
@@ -105,7 +100,9 @@ export function RequestsTableWithDialog({ requests, showUser }: RequestsTableWit
                             <Label htmlFor="type">{tCommon("fields.type")}</Label>
                             <Select
                                 value={formData.type}
-                                onValueChange={(value) => setFormData({ type: value as RequestType })}
+                                onValueChange={(value) =>
+                                    setFormData({ type: value as RequestType })
+                                }
                             >
                                 <SelectTrigger id="type">
                                     <SelectValue placeholder={t("selectType")} />
@@ -178,7 +175,9 @@ export function RequestsTableWithDialog({ requests, showUser }: RequestsTableWit
                                 {tCommon("actions.cancel")}
                             </Button>
                             <Button type="submit" disabled={mutation.isPending}>
-                                {mutation.isPending ? tCommon("status.submitting") : t("submitRequest")}
+                                {mutation.isPending
+                                    ? tCommon("status.submitting")
+                                    : t("submitRequest")}
                             </Button>
                         </div>
                     </form>

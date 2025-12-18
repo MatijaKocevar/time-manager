@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { HoursSummary } from "@/app/(protected)/hours/components/hours-summary"
 import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
 import { getDateRange, getViewTitle } from "@/app/(protected)/hours/utils/view-helpers"
-import { getHolidaysInRange } from "@/app/(protected)/(admin)/admin/holidays/actions/holiday-actions"
+import { getHolidaysInRange } from "@/app/(protected)/admin/holidays/actions/holiday-actions"
 import { userHourKeys } from "../../query-keys"
 
 interface UserHoursSectionProps {

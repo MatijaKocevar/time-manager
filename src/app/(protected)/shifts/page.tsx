@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server"
 import { getShiftsForPeriod, getAllUsers } from "./actions/shift-actions"
-import { getHolidaysInRange } from "../(admin)/admin/holidays/actions/holiday-actions"
+import { getHolidaysInRange } from "../admin/holidays/actions/holiday-actions"
 import { ShiftsCalendar } from "./components/shifts-calendar"
 import { SetBreadcrumbData } from "@/features/breadcrumbs/set-breadcrumb-data"
 
@@ -41,7 +41,7 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
                 <div className="flex flex-col gap-4 h-full">
                     <div className="text-red-500">
                         {tShifts("failedToLoad", {
-                            error: shiftsResult.error || usersResult.error,
+                            error: shiftsResult.error || usersResult.error || "Unknown error",
                         })}
                     </div>
                 </div>

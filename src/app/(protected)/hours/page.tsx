@@ -5,7 +5,7 @@ import { authConfig } from "@/lib/auth"
 import { HoursView } from "./components/hours-view"
 import { getHourEntries } from "./actions/hour-actions"
 import { getDateRange } from "./utils/view-helpers"
-import { getHolidaysInRange } from "../(admin)/admin/holidays/actions/holiday-actions"
+import { getHolidaysInRange } from "../admin/holidays/actions/holiday-actions"
 import { SetBreadcrumbData } from "@/features/breadcrumbs/set-breadcrumb-data"
 import type { ViewMode } from "./schemas/hour-filter-schemas"
 

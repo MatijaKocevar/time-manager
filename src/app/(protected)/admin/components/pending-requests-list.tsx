@@ -1,6 +1,7 @@
 "use client"
 
-import { Fragment, useEffect, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
     Column,
     ColumnDef,
@@ -15,9 +16,9 @@ import {
     SortingState,
     useReactTable,
 } from "@tanstack/react-table"
-import { Search, X } from "lucide-react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Loader2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useIsMobile } from "@/hooks/use-mobile"
 import {
     Dialog,
     DialogContent,
@@ -27,8 +28,6 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { useIsMobile } from "@/hooks/use-mobile"
 import {
     Table,
     TableBody,
@@ -37,8 +36,8 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { cancelApprovedRequest } from "../../../requests/actions/request-actions"
-import { requestKeys } from "../../../requests/query-keys"
+import { approveRequest, rejectRequest } from "../../requests/actions/request-actions"
+import { requestKeys } from "../../requests/query-keys"
 
 type RequestDisplay = {
     id: string
@@ -52,27 +51,9 @@ type RequestDisplay = {
         name: string | null
         email: string
     }
-    approver?: {
-        id: string
-        name: string | null
-        email: string
-    } | null
-    rejector?: {
-        id: string
-        name: string | null
-        email: string
-    } | null
-    canceller?: {
-        id: string
-        name: string | null
-        email: string
-    } | null
-    rejectionReason?: string | null
-    cancellationReason?: string | null
-    cancelledAt?: Date | null
 }
 
-interface RequestsHistoryListProps {
+interface PendingRequestsListProps {
     requests: RequestDisplay[]
     holidays: Array<{ date: Date; name: string }>
 }
@@ -91,12 +72,6 @@ const typeColors: Record<string, string> = {
     WORK_FROM_HOME: "bg-green-100 text-green-800",
     REMOTE_WORK: "bg-purple-100 text-purple-800",
     OTHER: "bg-gray-100 text-gray-800",
-}
-
-const statusColors: Record<string, string> = {
-    APPROVED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
-    CANCELLED: "bg-gray-100 text-gray-800",
 }
 
 const calculateWorkdays = (
@@ -239,170 +214,175 @@ function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
     )
 }
 
-export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListProps) {
+export function PendingRequestsList({ requests, holidays }: PendingRequestsListProps) {
+    const queryClient = useQueryClient()
     const isMobile = useIsMobile()
+    const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
+    const [selectedRequestId, setSelectedRequestId] = useState<string>("")
+    const [rejectionReason, setRejectionReason] = useState<string>("")
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-    const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
-    const [selectedRequest, setSelectedRequest] = useState<RequestDisplay | null>(null)
-    const [cancellationReason, setCancellationReason] = useState("")
-    const queryClient = useQueryClient()
 
-    const cancelMutation = useMutation({
-        mutationFn: (data: { id: string; cancellationReason: string }) =>
-            cancelApprovedRequest(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: requestKeys.all })
-            setCancelDialogOpen(false)
-            setSelectedRequest(null)
-            setCancellationReason("")
+    const approveMutation = useMutation({
+        mutationFn: approveRequest,
+        onMutate: async (variables) => {
+            await queryClient.cancelQueries({ queryKey: requestKeys.all })
+            const previousRequests = queryClient.getQueryData(requestKeys.all)
+            queryClient.setQueryData(requestKeys.all, (old: RequestDisplay[] | undefined) => {
+                if (!old) return old
+                return old.filter((req) => req.id !== variables.id)
+            })
+            return { previousRequests }
+        },
+        onSuccess: (data) => {
+            if (data.error) {
+                console.error("Approval error:", data.error)
+                alert(`Error: ${data.error}`)
+                queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            }
+        },
+        onError: (error, _variables, context) => {
+            console.error("Approval mutation error:", error)
+            alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
+            if (context?.previousRequests) {
+                queryClient.setQueryData(requestKeys.all, context.previousRequests)
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: requestKeys.adminRequests() })
         },
     })
 
-    const handleCancelClick = (request: RequestDisplay) => {
-        setSelectedRequest(request)
-        setCancellationReason("")
-        setCancelDialogOpen(true)
+    const rejectMutation = useMutation({
+        mutationFn: rejectRequest,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            setRejectDialogOpen(false)
+            setRejectionReason("")
+            setSelectedRequestId("")
+        },
+    })
+
+    const handleApprove = (requestId: string) => {
+        approveMutation.mutate({ id: requestId })
     }
 
-    const handleCancelConfirm = () => {
-        if (selectedRequest && cancellationReason.trim()) {
-            cancelMutation.mutate({
-                id: selectedRequest.id,
-                cancellationReason: cancellationReason.trim(),
-            })
-        }
+    const handleRejectClick = (requestId: string) => {
+        setSelectedRequestId(requestId)
+        setRejectDialogOpen(true)
+    }
+
+    const handleReject = () => {
+        if (!rejectionReason || !selectedRequestId) return
+        rejectMutation.mutate({ id: selectedRequestId, rejectionReason })
     }
 
     const formatDate = (date: Date) => {
         return new Date(date).toLocaleDateString()
     }
 
-    const columns: ColumnDef<RequestDisplay>[] = [
-        {
-            id: "user",
-            accessorFn: (row) => row.user.name || row.user.email,
-            header: "User",
-            cell: ({ row }) => (
-                <div className="font-medium">
-                    {row.original.user.name || row.original.user.email}
-                </div>
-            ),
-            enableColumnFilter: true,
-            filterFn: "includesString",
-        },
-        {
-            id: "type",
-            accessorFn: (row) => typeLabels[row.type],
-            header: "Type",
-            cell: ({ row }) => (
-                <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
-                        typeColors[row.original.type]
-                    }`}
-                >
-                    {typeLabels[row.original.type]}
-                </span>
-            ),
-            enableColumnFilter: true,
-            filterFn: "includesString",
-        },
-        {
-            accessorKey: "startDate",
-            header: "Start Date",
-            cell: ({ row }) => formatDate(row.original.startDate),
-            enableColumnFilter: false,
-        },
-        {
-            accessorKey: "endDate",
-            header: "End Date",
-            cell: ({ row }) => formatDate(row.original.endDate),
-            enableColumnFilter: false,
-        },
-        {
-            id: "hours",
-            header: "Hours",
-            cell: ({ row }) => {
-                const workdays = calculateWorkdays(
-                    row.original.startDate,
-                    row.original.endDate,
-                    holidays
-                )
-                const hours = workdays * 8
-                return (
-                    <div className="font-semibold">
-                        {hours}h ({workdays}d)
+    const columns: ColumnDef<RequestDisplay>[] = useMemo(
+        () => [
+            {
+                id: "user",
+                accessorFn: (row) => row.user.name || row.user.email,
+                header: "User",
+                cell: ({ row }) => (
+                    <div className="font-medium">
+                        {row.original.user.name || row.original.user.email}
                     </div>
-                )
+                ),
+                enableColumnFilter: true,
+                filterFn: "includesString",
             },
-            enableColumnFilter: false,
-        },
-        {
-            accessorKey: "status",
-            header: "Status",
-            cell: ({ row }) => (
-                <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        statusColors[row.original.status]
-                    }`}
-                >
-                    {row.original.status}
-                </span>
-            ),
-            enableColumnFilter: true,
-            filterFn: "includesString",
-        },
-        {
-            id: "processedBy",
-            accessorFn: (row) => {
-                const processor = row.approver || row.rejector || row.canceller
-                return processor?.name || processor?.email || "-"
+            {
+                id: "type",
+                accessorFn: (row) => typeLabels[row.type],
+                header: "Type",
+                cell: ({ row }) => (
+                    <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
+                            typeColors[row.original.type]
+                        }`}
+                    >
+                        {typeLabels[row.original.type]}
+                    </span>
+                ),
+                enableColumnFilter: true,
+                filterFn: "includesString",
             },
-            header: "Processed By",
-            cell: ({ row }) => {
-                const processor =
-                    row.original.approver || row.original.rejector || row.original.canceller
-                return <div className="text-sm">{processor?.name || processor?.email || "-"}</div>
+            {
+                accessorKey: "startDate",
+                header: "Start Date",
+                cell: ({ row }) => formatDate(row.original.startDate),
+                enableColumnFilter: false,
             },
-            enableColumnFilter: true,
-            filterFn: "includesString",
-        },
-        {
-            accessorKey: "reason",
-            header: "Reason",
-            cell: ({ row }) => (
-                <div className="text-sm text-muted-foreground">
-                    {row.original.cancellationReason ||
-                        row.original.rejectionReason ||
-                        row.original.reason ||
-                        "-"}
-                </div>
-            ),
-            enableColumnFilter: true,
-            filterFn: "includesString",
-        },
-        {
-            id: "actions",
-            header: "Actions",
-            cell: ({ row }) => {
-                if (row.original.status === "APPROVED") {
-                    return (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleCancelClick(row.original)}
-                            className="h-8 w-8 p-0"
-                            aria-label="Cancel request"
-                        >
-                            <X className="h-4 w-4 text-red-600" />
-                        </Button>
+            {
+                accessorKey: "endDate",
+                header: "End Date",
+                cell: ({ row }) => formatDate(row.original.endDate),
+                enableColumnFilter: false,
+            },
+            {
+                id: "hours",
+                header: "Hours",
+                cell: ({ row }) => {
+                    const workdays = calculateWorkdays(
+                        row.original.startDate,
+                        row.original.endDate,
+                        holidays
                     )
-                }
-                return null
+                    return `${workdays * 8}h`
+                },
+                enableColumnFilter: false,
             },
-            enableColumnFilter: false,
-        },
-    ]
+            {
+                accessorKey: "reason",
+                header: "Reason",
+                cell: ({ row }) => (
+                    <div className="text-sm text-muted-foreground">
+                        {row.original.reason || "-"}
+                    </div>
+                ),
+                enableColumnFilter: true,
+                filterFn: "includesString",
+            },
+            {
+                id: "actions",
+                header: () => <div className="text-right w-[170px]">Actions</div>,
+                cell: ({ row }) => (
+                    <div className="flex gap-2 justify-end w-[170px]">
+                        <Button
+                            size="sm"
+                            onClick={() => handleApprove(row.original.id)}
+                            disabled={approveMutation.isPending}
+                            className="w-[84px]"
+                        >
+                            {approveMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                "Approve"
+                            )}
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleRejectClick(row.original.id)}
+                            disabled={rejectMutation.isPending}
+                            className="w-[76px]"
+                        >
+                            Reject
+                        </Button>
+                    </div>
+                ),
+                enableColumnFilter: false,
+                size: 170,
+                minSize: 170,
+                maxSize: 170,
+            },
+        ],
+        [approveMutation.isPending, rejectMutation.isPending, holidays]
+    )
 
     const table = useReactTable({
         data: requests,
@@ -423,70 +403,6 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
 
     return (
         <>
-            <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Cancel Approved Request</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <p className="text-sm text-muted-foreground">
-                                Are you sure you want to cancel this approved request? This will:
-                            </p>
-                            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                                <li>Mark the request as cancelled</li>
-                                <li>Remove auto-generated hour entries</li>
-                                <li>Recalculate daily summaries</li>
-                            </ul>
-                        </div>
-                        {selectedRequest && (
-                            <div className="space-y-2 p-3 bg-muted rounded-md">
-                                <div className="text-sm">
-                                    <span className="font-semibold">User: </span>
-                                    {selectedRequest.user.name || selectedRequest.user.email}
-                                </div>
-                                <div className="text-sm">
-                                    <span className="font-semibold">Type: </span>
-                                    {typeLabels[selectedRequest.type]}
-                                </div>
-                                <div className="text-sm">
-                                    <span className="font-semibold">Period: </span>
-                                    {formatDate(selectedRequest.startDate)} -{" "}
-                                    {formatDate(selectedRequest.endDate)}
-                                </div>
-                            </div>
-                        )}
-                        <div className="space-y-2">
-                            <Label htmlFor="cancellation-reason">
-                                Cancellation Reason <span className="text-red-600">*</span>
-                            </Label>
-                            <Textarea
-                                id="cancellation-reason"
-                                value={cancellationReason}
-                                onChange={(e) => setCancellationReason(e.target.value)}
-                                placeholder="Explain why this request is being cancelled..."
-                                rows={3}
-                            />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setCancelDialogOpen(false)}
-                            disabled={cancelMutation.isPending}
-                        >
-                            Close
-                        </Button>
-                        <Button
-                            variant="destructive"
-                            onClick={handleCancelConfirm}
-                            disabled={!cancellationReason.trim() || cancelMutation.isPending}
-                        >
-                            {cancelMutation.isPending ? "Cancelling..." : "Cancel Request"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
             <div className="flex flex-col gap-4 h-full min-w-0">
                 <div className="rounded-md border flex-1 min-h-0">
                     <Table>
@@ -547,7 +463,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                                         colSpan={columns.length}
                                         className="h-24 text-center text-muted-foreground"
                                     >
-                                        No request history found.
+                                        No pending requests found.
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -573,6 +489,41 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                     </Button>
                 </div>
             </div>
+
+            <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Reject Request</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="rejectionReason">Rejection Reason</Label>
+                            <Input
+                                id="rejectionReason"
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                                placeholder="Enter reason for rejection"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setRejectDialogOpen(false)}
+                            disabled={rejectMutation.isPending}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleReject}
+                            disabled={rejectMutation.isPending || !rejectionReason}
+                        >
+                            {rejectMutation.isPending ? "Rejecting..." : "Reject"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     )
 }

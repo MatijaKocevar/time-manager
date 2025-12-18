@@ -172,7 +172,7 @@ export function HoursView({
         queryKey: ["holidays", monthRange.startDate, monthRange.endDate],
         queryFn: async () => {
             const { getHolidaysInRange } =
-                await import("../../(admin)/admin/holidays/actions/holiday-actions")
+                await import("../../admin/holidays/actions/holiday-actions")
             return getHolidaysInRange(monthRange.startDate, monthRange.endDate)
         },
         initialData: initialHolidays,
