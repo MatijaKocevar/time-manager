@@ -293,8 +293,22 @@
             "sickLeave": "Sick Leave",
             "other": "Other"
         },
+        "table": {
+            "employee": "Employee",
+            "unknown": "Unknown"
+        },
         "form": {
-            "editShift": "Edit Shift - {userName}"
+            "editShift": "Edit Shift",
+            "editShiftWithUser": "Edit Shift - {userName}",
+            "notesOptional": "Notes (optional)"
+        },
+        "views": {
+            "weekOf": "Week of {date}",
+            "weekView": "Week",
+            "monthView": "Month"
+        },
+        "messages": {
+            "failedToLoad": "Failed to load shifts: {error}"
         }
     },
     "admin": {

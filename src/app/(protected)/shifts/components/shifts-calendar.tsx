@@ -2,6 +2,7 @@
 
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations, useLocale } from "next-intl"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,6 +17,7 @@ import { EditShiftDialog } from "./edit-shift-dialog"
 import { SHIFT_LOCATION_COLORS } from "../constants"
 import { useShiftCalendarStore } from "../stores"
 import type { ShiftLocation } from "../schemas/shift-schemas"
+import { getShiftLocationTranslationKey } from "../utils/translation-helpers"
 
 interface User {
     id: string
@@ -47,6 +49,11 @@ export function ShiftsCalendar({
     initialViewMode,
     initialSelectedDate,
 }: ShiftsCalendarProps) {
+    const t = useTranslations("shifts")
+    const tCommon = useTranslations("common")
+    const tLocations = useTranslations("shifts.locations")
+    const locale = useLocale()
+    const dateLocale = locale === "sl" ? "sl-SI" : "en-US"
     const router = useRouter()
     const viewMode = initialViewMode
     const currentDate = initialSelectedDate
@@ -188,12 +195,18 @@ export function ShiftsCalendar({
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                     <Button variant="outline" size="sm" onClick={handleToday}>
-                        Today
+                        {tCommon("time.today")}
                     </Button>
                     <h2 className="text-xl font-semibold ml-4">
                         {viewMode === "week"
-                            ? `Week of ${startDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
-                            : currentDate.toLocaleDateString("en-US", {
+                            ? t("views.weekOf", {
+                                  date: startDate.toLocaleDateString(dateLocale, {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                  }),
+                              })
+                            : currentDate.toLocaleDateString(dateLocale, {
                                   month: "long",
                                   year: "numeric",
                               })}
@@ -205,14 +218,14 @@ export function ShiftsCalendar({
                         size="sm"
                         onClick={() => handleViewModeChange("week")}
                     >
-                        Week
+                        {t("views.weekView")}
                     </Button>
                     <Button
                         variant={viewMode === "month" ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleViewModeChange("month")}
                     >
-                        Month
+                        {t("views.monthView")}
                     </Button>
                 </div>
             </div>
@@ -222,7 +235,7 @@ export function ShiftsCalendar({
                     <TableHeader>
                         <TableRow>
                             <TableHead className="sticky left-0 z-20 bg-background min-w-[150px]">
-                                Employee
+                                {t("table.employee")}
                             </TableHead>
                             {days.map((date) => {
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
@@ -234,12 +247,12 @@ export function ShiftsCalendar({
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-normal text-muted-foreground">
-                                                {date.toLocaleDateString("en-US", {
+                                                {date.toLocaleDateString(dateLocale, {
                                                     weekday: "short",
                                                 })}
                                             </span>
                                             <span>
-                                                {date.toLocaleDateString("en-US", {
+                                                {date.toLocaleDateString(dateLocale, {
                                                     month: "short",
                                                     day: "numeric",
                                                 })}
@@ -259,7 +272,7 @@ export function ShiftsCalendar({
                         {users.map((user) => (
                             <TableRow key={user.id} className="hover:bg-muted/50">
                                 <TableCell className="sticky left-0 z-20 bg-background hover:bg-muted/50 font-medium transition-colors">
-                                    <div>{user.name || "Unknown"}</div>
+                                    <div>{user.name || t("table.unknown")}</div>
                                     <div className="text-xs text-muted-foreground">
                                         {user.email}
                                     </div>
@@ -286,7 +299,9 @@ export function ShiftsCalendar({
                                                 <div
                                                     className={`rounded-md p-2 text-xs ${SHIFT_LOCATION_COLORS[location].bg} ${SHIFT_LOCATION_COLORS[location].text} min-h-10 flex items-center justify-center`}
                                                 >
-                                                    {SHIFT_LOCATION_COLORS[location].label}
+                                                    {tLocations(
+                                                        getShiftLocationTranslationKey(location)
+                                                    )}
                                                 </div>
                                             )}
                                         </TableCell>

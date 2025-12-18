@@ -1,6 +1,8 @@
+import { getTranslations } from "next-intl/server"
 import { getShiftsForPeriod, getAllUsers } from "./actions/shift-actions"
 import { getHolidaysInRange } from "../(admin)/admin/holidays/actions/holiday-actions"
 import { ShiftsCalendar } from "./components/shifts-calendar"
+import { SetBreadcrumbData } from "@/features/breadcrumbs/set-breadcrumb-data"
 
 export const dynamic = "force-dynamic"
 
@@ -24,19 +26,26 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
         return `${year}-${month}-${day}`
     }
 
-    const [shiftsResult, usersResult, holidays] = await Promise.all([
+    const [shiftsResult, usersResult, holidays, t, tShifts] = await Promise.all([
         getShiftsForPeriod({ startDate, endDate }),
         getAllUsers(),
         getHolidaysInRange(formatDate(startDate), formatDate(endDate)),
+        getTranslations("navigation"),
+        getTranslations("shifts.messages"),
     ])
 
     if (shiftsResult.error || usersResult.error) {
         return (
-            <div className="flex flex-col gap-4 h-full">
-                <div className="text-red-500">
-                    Failed to load shifts: {shiftsResult.error || usersResult.error}
+            <>
+                <SetBreadcrumbData data={{ "/shifts": t("shifts") }} />
+                <div className="flex flex-col gap-4 h-full">
+                    <div className="text-red-500">
+                        {tShifts("failedToLoad", {
+                            error: shiftsResult.error || usersResult.error,
+                        })}
+                    </div>
                 </div>
-            </div>
+            </>
         )
     }
 
@@ -49,17 +58,20 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
     }))
 
     return (
-        <div className="flex flex-col gap-4 h-full">
-            <div className="flex-1 min-h-0">
-                <ShiftsCalendar
-                    initialShifts={shiftsWithParsedDates}
-                    users={users}
-                    initialHolidays={holidays}
-                    initialViewMode={viewMode}
-                    initialSelectedDate={selectedDate}
-                />
+        <>
+            <SetBreadcrumbData data={{ "/shifts": t("shifts") }} />
+            <div className="flex flex-col gap-4 h-full">
+                <div className="flex-1 min-h-0">
+                    <ShiftsCalendar
+                        initialShifts={shiftsWithParsedDates}
+                        users={users}
+                        initialHolidays={holidays}
+                        initialViewMode={viewMode}
+                        initialSelectedDate={selectedDate}
+                    />
+                </div>
             </div>
-        </div>
+        </>
     )
 }
 

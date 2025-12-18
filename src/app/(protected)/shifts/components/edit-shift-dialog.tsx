@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useSession } from "next-auth/react"
+import { useTranslations, useLocale } from "next-intl"
 import { updateMyShift, updateUserShift } from "../actions/shift-actions"
 import { Button } from "@/components/ui/button"
 import {
@@ -23,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { SHIFT_LOCATIONS } from "../constants"
 import { useShiftFormStore } from "../stores"
 import type { ShiftLocation } from "../schemas/shift-schemas"
+import { getShiftLocationTranslationKey } from "../utils/translation-helpers"
 
 interface EditShiftDialogProps {
     isOpen: boolean
@@ -43,6 +45,11 @@ export function EditShiftDialog({
     currentLocation,
     currentNotes,
 }: EditShiftDialogProps) {
+    const t = useTranslations("shifts.form")
+    const tCommon = useTranslations("common")
+    const tLocations = useTranslations("shifts.locations")
+    const locale = useLocale()
+    const dateLocale = locale === "sl" ? "sl-SI" : "en-US"
     const { data: session } = useSession()
     const isAdmin = session?.user?.role === "ADMIN"
 
@@ -85,13 +92,15 @@ export function EditShiftDialog({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Edit Shift {userName && `- ${userName}`}</DialogTitle>
+                    <DialogTitle>
+                        {userName ? t("editShiftWithUser", { userName }) : t("editShift")}
+                    </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <Label>Date</Label>
+                        <Label>{tCommon("fields.date")}</Label>
                         <div className="text-sm text-muted-foreground">
-                            {date.toLocaleDateString("en-US", {
+                            {date.toLocaleDateString(dateLocale, {
                                 weekday: "long",
                                 year: "numeric",
                                 month: "long",
@@ -100,7 +109,7 @@ export function EditShiftDialog({
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="location">Location</Label>
+                        <Label htmlFor="location">{tCommon("fields.location")}</Label>
                         <Select
                             value={location}
                             onValueChange={(value) => setLocation(value as ShiftLocation)}
@@ -112,14 +121,14 @@ export function EditShiftDialog({
                             <SelectContent>
                                 {SHIFT_LOCATIONS.map((option) => (
                                     <SelectItem key={option.value} value={option.value}>
-                                        {option.label}
+                                        {tLocations(getShiftLocationTranslationKey(option.value))}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="notes">Notes (optional)</Label>
+                        <Label htmlFor="notes">{t("notesOptional")}</Label>
                         <Textarea
                             id="notes"
                             value={notes}
@@ -138,10 +147,10 @@ export function EditShiftDialog({
                             onClick={onClose}
                             disabled={isLoading}
                         >
-                            Cancel
+                            {tCommon("actions.cancel")}
                         </Button>
                         <Button type="submit" disabled={isLoading}>
-                            {isLoading ? "Saving..." : "Save"}
+                            {isLoading ? tCommon("status.saving") : tCommon("actions.save")}
                         </Button>
                     </DialogFooter>
                 </form>

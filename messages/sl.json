@@ -293,8 +293,22 @@
             "sickLeave": "Bolniška",
             "other": "Drugo"
         },
+        "table": {
+            "employee": "Zaposleni",
+            "unknown": "Neznano"
+        },
         "form": {
-            "editShift": "Uredi izmeno - {userName}"
+            "editShift": "Uredi izmeno",
+            "editShiftWithUser": "Uredi izmeno - {userName}",
+            "notesOptional": "Opombe (izbirno)"
+        },
+        "views": {
+            "weekOf": "Teden {date}",
+            "weekView": "Teden",
+            "monthView": "Mesec"
+        },
+        "messages": {
+            "failedToLoad": "Napaka pri nalaganju izmen: {error}"
         }
     },
     "admin": {
