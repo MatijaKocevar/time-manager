@@ -1,7 +1,6 @@
 "use client"
 
 import { Fragment, useEffect, useState } from "react"
-import { useTranslations } from "next-intl"
 import {
     Column,
     ColumnDef,
@@ -81,6 +80,59 @@ type RequestDisplay = {
 interface RequestsHistoryListProps {
     requests: RequestDisplay[]
     holidays: Array<{ date: Date; name: string }>
+    translations: {
+        table: {
+            user: string
+            type: string
+            startDate: string
+            endDate: string
+            hours: string
+            days: string
+            status: string
+            processedBy: string
+            reason: string
+            actions: string
+            noHistory: string
+            searchPlaceholder: string
+        }
+        cancel: {
+            title: string
+            confirmQuestion: string
+            markCancelled: string
+            removeHours: string
+            recalculate: string
+            user: string
+            type: string
+            period: string
+            reason: string
+            reasonRequired: string
+            reasonPlaceholder: string
+            close: string
+            cancelling: string
+            cancelRequest: string
+        }
+        pagination: {
+            previous: string
+            next: string
+        }
+        filter: {
+            title: string
+            search: string
+            clear: string
+            apply: string
+        }
+        types: {
+            vacation: string
+            sickLeave: string
+            workFromHome: string
+            other: string
+        }
+        statuses: {
+            approved: string
+            rejected: string
+            cancelled: string
+        }
+    }
 }
 
 const calculateWorkdays = (
@@ -143,9 +195,13 @@ function DebouncedInput({
     return <Input {...props} value={value} onChange={(e) => setValue(e.target.value)} />
 }
 
-function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
-    const t = useTranslations("admin.requestHistory.filter")
-    const tTable = useTranslations("admin.requestHistory.table")
+function Filter({
+    column,
+    translations,
+}: {
+    column: Column<RequestDisplay, unknown>
+    translations: RequestsHistoryListProps["translations"]
+}) {
     const columnFilterValue = column.getFilterValue()
     const uniqueValues = column.getFacetedUniqueValues()
     const isMobile = useIsMobile()
@@ -189,24 +245,24 @@ function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
                 <Dialog open={filterDialogOpen} onOpenChange={handleDialogOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>{t("title")}</DialogTitle>
+                            <DialogTitle>{translations.filter.title}</DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="filter-input">{t("search")}</Label>
+                                <Label htmlFor="filter-input">{translations.filter.search}</Label>
                                 <Input
                                     id="filter-input"
                                     value={filterValue}
                                     onChange={(e) => setFilterValue(e.target.value)}
-                                    placeholder={`${tTable("searchPlaceholder")} (${uniqueValues.size})`}
+                                    placeholder={`${translations.table.searchPlaceholder} (${uniqueValues.size})`}
                                 />
                             </div>
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={handleClearFilter}>
-                                {t("clear")}
+                                {translations.filter.clear}
                             </Button>
-                            <Button onClick={handleApplyFilter}>{t("apply")}</Button>
+                            <Button onClick={handleApplyFilter}>{translations.filter.apply}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -219,18 +275,13 @@ function Filter({ column }: { column: Column<RequestDisplay, unknown> }) {
             type="text"
             value={(columnFilterValue ?? "") as string}
             onChange={(value) => column.setFilterValue(value)}
-            placeholder={`${tTable("searchPlaceholder")} (${uniqueValues.size})`}
+            placeholder={`${translations.table.searchPlaceholder} (${uniqueValues.size})`}
             className="h-8"
         />
     )
 }
 
-export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListProps) {
-    const t = useTranslations("admin.requestHistory.table")
-    const tCancel = useTranslations("admin.requestHistory.cancel")
-    const tPagination = useTranslations("admin.requestHistory.pagination")
-    const tTypes = useTranslations("requests.types")
-    const tStatuses = useTranslations("requests.statuses")
+export function RequestsHistoryList({ requests, holidays, translations }: RequestsHistoryListProps) {
     const isMobile = useIsMobile()
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -283,11 +334,32 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         CANCELLED: "bg-gray-100 text-gray-800",
     }
 
+    const getTypeTranslation = (type: RequestType) => {
+        const key = getRequestTypeTranslationKey(type)
+        const typeMap: Record<string, string> = {
+            vacation: translations.types.vacation,
+            sickLeave: translations.types.sickLeave,
+            workFromHome: translations.types.workFromHome,
+            other: translations.types.other,
+        }
+        return typeMap[key] || key
+    }
+
+    const getStatusTranslation = (status: RequestStatus) => {
+        const key = getRequestStatusTranslationKey(status)
+        const statusMap: Record<string, string> = {
+            approved: translations.statuses.approved,
+            rejected: translations.statuses.rejected,
+            cancelled: translations.statuses.cancelled,
+        }
+        return statusMap[key] || key
+    }
+
     const columns: ColumnDef<RequestDisplay>[] = [
         {
             id: "user",
             accessorFn: (row) => row.user.name || row.user.email,
-            header: t("user"),
+            header: translations.table.user,
             cell: ({ row }) => (
                 <div className="font-medium">
                     {row.original.user.name || row.original.user.email}
@@ -298,15 +370,15 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         },
         {
             id: "type",
-            accessorFn: (row) => tTypes(getRequestTypeTranslationKey(row.type as RequestType)),
-            header: t("type"),
+            accessorFn: (row) => getTypeTranslation(row.type as RequestType),
+            header: translations.table.type,
             cell: ({ row }) => (
                 <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
                         typeColors[row.original.type]
                     }`}
                 >
-                    {tTypes(getRequestTypeTranslationKey(row.original.type as RequestType))}
+                    {getTypeTranslation(row.original.type as RequestType)}
                 </span>
             ),
             enableColumnFilter: true,
@@ -314,19 +386,19 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         },
         {
             accessorKey: "startDate",
-            header: t("startDate"),
+            header: translations.table.startDate,
             cell: ({ row }) => formatDate(row.original.startDate),
             enableColumnFilter: false,
         },
         {
             accessorKey: "endDate",
-            header: t("endDate"),
+            header: translations.table.endDate,
             cell: ({ row }) => formatDate(row.original.endDate),
             enableColumnFilter: false,
         },
         {
             id: "hours",
-            header: t("hours"),
+            header: translations.table.hours,
             cell: ({ row }) => {
                 const workdays = calculateWorkdays(
                     row.original.startDate,
@@ -337,7 +409,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                 return (
                     <div className="font-semibold">
                         {hours}h ({workdays}
-                        {t("days")})
+                        {translations.table.days})
                     </div>
                 )
             },
@@ -345,16 +417,14 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         },
         {
             accessorKey: "status",
-            header: t("status"),
+            header: translations.table.status,
             cell: ({ row }) => (
                 <span
                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                         statusColors[row.original.status]
                     }`}
                 >
-                    {tStatuses(
-                        getRequestStatusTranslationKey(row.original.status as RequestStatus)
-                    )}
+                    {getStatusTranslation(row.original.status as RequestStatus)}
                 </span>
             ),
             enableColumnFilter: true,
@@ -366,7 +436,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                 const processor = row.approver || row.rejector || row.canceller
                 return processor?.name || processor?.email || "-"
             },
-            header: t("processedBy"),
+            header: translations.table.processedBy,
             cell: ({ row }) => {
                 const processor =
                     row.original.approver || row.original.rejector || row.original.canceller
@@ -377,7 +447,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         },
         {
             accessorKey: "reason",
-            header: t("reason"),
+            header: translations.table.reason,
             cell: ({ row }) => (
                 <div className="text-sm text-muted-foreground">
                     {row.original.cancellationReason ||
@@ -391,7 +461,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
         },
         {
             id: "actions",
-            header: t("actions"),
+            header: translations.table.actions,
             cell: ({ row }) => {
                 if (row.original.status === "APPROVED") {
                     return (
@@ -434,35 +504,31 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
             <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{tCancel("title")}</DialogTitle>
+                        <DialogTitle>{translations.cancel.title}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <p className="text-sm text-muted-foreground">
-                                {tCancel("confirmQuestion")}
+                                {translations.cancel.confirmQuestion}
                             </p>
                             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                                <li>{tCancel("markCancelled")}</li>
-                                <li>{tCancel("removeHours")}</li>
-                                <li>{tCancel("recalculate")}</li>
+                                <li>{translations.cancel.markCancelled}</li>
+                                <li>{translations.cancel.removeHours}</li>
+                                <li>{translations.cancel.recalculate}</li>
                             </ul>
                         </div>
                         {selectedRequest && (
                             <div className="space-y-2 p-3 bg-muted rounded-md">
                                 <div className="text-sm">
-                                    <span className="font-semibold">{tCancel("user")} </span>
+                                    <span className="font-semibold">{translations.cancel.user} </span>
                                     {selectedRequest.user.name || selectedRequest.user.email}
                                 </div>
                                 <div className="text-sm">
-                                    <span className="font-semibold">{tCancel("type")} </span>
-                                    {tTypes(
-                                        getRequestTypeTranslationKey(
-                                            selectedRequest.type as RequestType
-                                        )
-                                    )}
+                                    <span className="font-semibold">{translations.cancel.type} </span>
+                                    {getTypeTranslation(selectedRequest.type as RequestType)}
                                 </div>
                                 <div className="text-sm">
-                                    <span className="font-semibold">{tCancel("period")} </span>
+                                    <span className="font-semibold">{translations.cancel.period} </span>
                                     {formatDate(selectedRequest.startDate)} -{" "}
                                     {formatDate(selectedRequest.endDate)}
                                 </div>
@@ -470,14 +536,14 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                         )}
                         <div className="space-y-2">
                             <Label htmlFor="cancellation-reason">
-                                {tCancel("reason")}{" "}
-                                <span className="text-red-600">{tCancel("reasonRequired")}</span>
+                                {translations.cancel.reason}{" "}
+                                <span className="text-red-600">{translations.cancel.reasonRequired}</span>
                             </Label>
                             <Textarea
                                 id="cancellation-reason"
                                 value={cancellationReason}
                                 onChange={(e) => setCancellationReason(e.target.value)}
-                                placeholder={tCancel("reasonPlaceholder")}
+                                placeholder={translations.cancel.reasonPlaceholder}
                                 rows={3}
                             />
                         </div>
@@ -488,7 +554,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                             onClick={() => setCancelDialogOpen(false)}
                             disabled={cancelMutation.isPending}
                         >
-                            {tCancel("close")}
+                            {translations.cancel.close}
                         </Button>
                         <Button
                             variant="destructive"
@@ -496,8 +562,8 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                             disabled={!cancellationReason.trim() || cancelMutation.isPending}
                         >
                             {cancelMutation.isPending
-                                ? tCancel("cancelling")
-                                : tCancel("cancelRequest")}
+                                ? translations.cancel.cancelling
+                                : translations.cancel.cancelRequest}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -519,7 +585,10 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                                                               header.getContext()
                                                           )}
                                                     {isMobile && header.column.getCanFilter() && (
-                                                        <Filter column={header.column} />
+                                                        <Filter
+                                                            column={header.column}
+                                                            translations={translations}
+                                                        />
                                                     )}
                                                 </div>
                                             </TableHead>
@@ -533,7 +602,10 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                                                     className="py-2"
                                                 >
                                                     {header.column.getCanFilter() ? (
-                                                        <Filter column={header.column} />
+                                                        <Filter
+                                                            column={header.column}
+                                                            translations={translations}
+                                                        />
                                                     ) : null}
                                                 </TableHead>
                                             ))}
@@ -562,7 +634,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                                         colSpan={columns.length}
                                         className="h-24 text-center text-muted-foreground"
                                     >
-                                        {t("noHistory")}
+                                        {translations.table.noHistory}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -576,7 +648,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                         onClick={() => table.previousPage()}
                         disabled={!table.getCanPreviousPage()}
                     >
-                        {tPagination("previous")}
+                        {translations.pagination.previous}
                     </Button>
                     <Button
                         variant="outline"
@@ -584,7 +656,7 @@ export function RequestsHistoryList({ requests, holidays }: RequestsHistoryListP
                         onClick={() => table.nextPage()}
                         disabled={!table.getCanNextPage()}
                     >
-                        {tPagination("next")}
+                        {translations.pagination.next}
                     </Button>
                 </div>
             </div>
