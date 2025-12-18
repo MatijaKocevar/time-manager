@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
+import type { HourType } from "@/../../prisma/generated/client"
 import {
     mapRequestTypeToShiftLocation,
     mapShiftLocationToHourType,
