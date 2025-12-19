@@ -5,6 +5,9 @@ import { AppSidebar } from "./app-sidebar"
 import { AppHeader } from "./app-header"
 import { UserRole } from "@/types"
 import type { ListDisplay } from "@/app/(protected)/tasks/schemas/list-schemas"
+import { updateSidebarState } from "@/app/(protected)/actions/sidebar-actions"
+import { useSidebar } from "@/components/ui/sidebar"
+import { useEffect } from "react"
 
 interface ConditionalSidebarProps {
     children: React.ReactNode
@@ -15,6 +18,16 @@ interface ConditionalSidebarProps {
     userEmail?: string | null
     lists?: ListDisplay[]
     breadcrumbTranslations?: Record<string, string>
+}
+
+function SidebarStateSync() {
+    const { open } = useSidebar()
+
+    useEffect(() => {
+        updateSidebarState(open).catch(console.error)
+    }, [open])
+
+    return null
 }
 
 export function ConditionalSidebar({
@@ -30,6 +43,7 @@ export function ConditionalSidebar({
     if (hasSession) {
         return (
             <SidebarProvider defaultOpen={defaultOpen}>
+                <SidebarStateSync />
                 <div className="flex h-full w-full">
                     <AppSidebar
                         userRole={userRole}

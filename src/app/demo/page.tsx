@@ -11,32 +11,20 @@ export default function DemoPage() {
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        const autoLogin = async () => {
-            if (status === "authenticated") {
-                router.push("/tracker")
-                return
-            }
-
-            if (status === "unauthenticated") {
-                try {
-                    const result = await signIn("credentials", {
-                        email: "demo@example.com",
-                        password: "password123",
-                        redirect: false,
-                    })
-
-                    if (result?.error) {
-                        setError("Demo login failed. Please ensure database is seeded.")
-                    } else if (result?.ok) {
-                        router.push("/tracker")
-                    }
-                } catch {
-                    setError("An error occurred during demo login")
-                }
-            }
+        if (status === "authenticated") {
+            router.push("/tracker")
+            return
         }
 
-        autoLogin()
+        if (status === "unauthenticated") {
+            signIn("credentials", {
+                email: "demo@example.com",
+                password: "password123",
+                callbackUrl: "/tracker",
+            }).catch(() => {
+                setError("Demo login failed. Please ensure database is seeded.")
+            })
+        }
     }, [status, router])
 
     if (error) {

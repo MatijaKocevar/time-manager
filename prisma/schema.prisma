@@ -90,6 +90,7 @@ model User {
   image         String?
   password      String?
   role          UserRole  @default(USER)
+  sidebarOpen   Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
-import { cookies } from "next/headers"
 import { getServerSession } from "next-auth"
 import { getTranslations } from "next-intl/server"
 import "./globals.css"
@@ -8,6 +7,7 @@ import SessionWrapper from "@/providers/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
 import { ConditionalSidebar } from "@/features/sidebar"
 import { authConfig } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import { getLists } from "./(protected)/tasks/actions/list-actions"
 import { NextIntlClientProvider } from "next-intl"
 import { ThemeProvider } from "@/providers/theme-provider"
@@ -53,10 +53,17 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode
 }>) {
-    const cookieStore = await cookies()
-    const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
     const session = await getServerSession(authConfig)
     const lists = session ? await getLists().catch(() => []) : []
+
+    let defaultOpen = true
+    if (session?.user?.id) {
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { sidebarOpen: true },
+        })
+        defaultOpen = user?.sidebarOpen ?? true
+    }
 
     // Fetch breadcrumb translations server-side
     const t = await getTranslations("navigation")
