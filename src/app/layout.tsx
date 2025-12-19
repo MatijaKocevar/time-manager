@@ -40,12 +40,8 @@ export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,
     maximumScale: 5,
-    userScalable: true,
+    userScalable: false,
     viewportFit: "contain",
-    themeColor: [
-        { media: "(prefers-color-scheme: dark)", color: "#000000" },
-        { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    ],
 }
 
 export default async function RootLayout({
@@ -57,13 +53,17 @@ export default async function RootLayout({
     const lists = session ? await getLists().catch(() => []) : []
 
     let defaultOpen = true
+    let userTheme = "light"
     if (session?.user?.id) {
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
-            select: { sidebarOpen: true },
+            select: { sidebarOpen: true, theme: true },
         })
         defaultOpen = user?.sidebarOpen ?? true
+        userTheme = user?.theme ?? "light"
     }
+
+    const themeColor = userTheme === "dark" ? "#000000" : "#ffffff"
 
     // Fetch breadcrumb translations server-side
     const t = await getTranslations("navigation")
@@ -83,6 +83,16 @@ export default async function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
+                <meta
+                    name="theme-color"
+                    content={themeColor}
+                    media="(prefers-color-scheme: dark)"
+                />
+                <meta
+                    name="theme-color"
+                    content={themeColor}
+                    media="(prefers-color-scheme: light)"
+                />
                 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
                 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
                 <script

@@ -91,6 +91,7 @@ model User {
   password      String?
   role          UserRole  @default(USER)
   sidebarOpen   Boolean   @default(true)
+  theme         String    @default("light")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
