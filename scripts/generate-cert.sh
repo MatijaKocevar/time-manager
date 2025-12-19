@@ -10,18 +10,18 @@ mkdir -p certs
 
 # Generate private key and certificate
 openssl req -x509 -newkey rsa:4096 -nodes \
-  -keyout certs/localhost-key.pem \
-  -out certs/localhost-cert.pem \
+  -keyout certs/key.pem \
+  -out certs/cert.pem \
   -days 365 \
-  -subj "/C=US/ST=State/L=City/O=Development/CN=localhost" \
-  -addext "subjectAltName=DNS:localhost,IP:192.168.0.237,IP:192.168.0.83,IP:127.0.0.1"
+  -subj "/C=US/ST=State/L=City/O=Development/CN=time-manager.home" \
+  -addext "subjectAltName=DNS:localhost,DNS:time-manager.home,IP:192.168.0.237,IP:192.168.0.83,IP:127.0.0.1"
 
 echo ""
 echo "✅ Certificate generated successfully!"
 echo ""
 echo "📁 Certificate files created:"
-echo "   - certs/localhost-key.pem (private key)"
-echo "   - certs/localhost-cert.pem (certificate)"
+echo "   - certs/key.pem (private key)"
+echo "   - certs/cert.pem (certificate)"
 echo ""
 echo "📱 To test on your phone:"
 echo "   1. Find your local IP: ip addr show | grep 'inet '"
