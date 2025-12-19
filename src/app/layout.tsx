@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     manifest: "/manifest.json",
     appleWebApp: {
         capable: true,
-        statusBarStyle: "black-translucent",
+        statusBarStyle: "default",
         title: "TimeManager",
     },
     formatDetection: {
@@ -41,7 +41,7 @@ export const viewport: Viewport = {
     initialScale: 1,
     maximumScale: 5,
     userScalable: true,
-    viewportFit: "cover",
+    viewportFit: "contain",
     themeColor: [
         { media: "(prefers-color-scheme: dark)", color: "#000000" },
         { media: "(prefers-color-scheme: light)", color: "#ffffff" },
