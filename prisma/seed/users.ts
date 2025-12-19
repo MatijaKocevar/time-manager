@@ -14,6 +14,13 @@ export async function seedUsers(
     const users: Array<{ email: string; name: string; password: string; role: "USER" | "ADMIN" }> =
         []
 
+    users.push({
+        email: "demo@example.com",
+        name: "Demo Admin",
+        password: hashedPassword,
+        role: "ADMIN",
+    })
+
     for (let i = 0; i < count; i++) {
         const firstName = random.choice(FIRST_NAMES)
         const lastName = random.choice(LAST_NAMES)
