@@ -5,7 +5,10 @@
             "name": "Next.js: debug server-side",
             "type": "node-terminal",
             "request": "launch",
-            "command": "npm run dev -- --inspect"
+            "command": "npm run dev",
+            "env": {
+                "NODE_OPTIONS": "--inspect"
+            }
         },
         {
             "name": "Next.js: debug client-side",
@@ -15,17 +18,16 @@
         },
         {
             "name": "Next.js: debug full stack",
-            "type": "node",
+            "type": "node-terminal",
             "request": "launch",
-            "program": "${workspaceFolder}/node_modules/next/dist/bin/next",
-            "runtimeArgs": ["--inspect"],
-            "skipFiles": ["<node_internals>/**"],
+            "command": "npm run dev",
+            "env": {
+                "NODE_OPTIONS": "--inspect"
+            },
             "serverReadyAction": {
-                "action": "debugWithEdge",
-                "killOnServerStop": true,
-                "pattern": "- Local:.+(https?://.+)",
+                "pattern": "Local:.+(https?:\\/\\/.+)",
                 "uriFormat": "%s",
-                "webRoot": "${workspaceFolder}"
+                "action": "debugWithChrome"
             }
         }
     ]

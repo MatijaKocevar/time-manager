@@ -8,6 +8,7 @@ import type { ListDisplay } from "@/app/(protected)/tasks/schemas/list-schemas"
 import { updateSidebarState } from "@/app/(protected)/actions/sidebar-actions"
 import { useSidebar } from "@/components/ui/sidebar"
 import { useEffect } from "react"
+import { PullToRefreshContainer } from "@/components/pull-to-refresh"
 
 interface ConditionalSidebarProps {
     children: React.ReactNode
@@ -53,7 +54,7 @@ export function ConditionalSidebar({
                     />
                     <main className="flex flex-1 flex-col min-w-0 w-full h-full overflow-hidden">
                         <AppHeader breadcrumbTranslations={breadcrumbTranslations} />
-                        <div className="flex-1 p-4 overflow-auto min-w-0">{children}</div>
+                        <PullToRefreshContainer>{children}</PullToRefreshContainer>
                     </main>
                 </div>
             </SidebarProvider>

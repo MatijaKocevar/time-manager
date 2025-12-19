@@ -1,0 +1,12 @@
+.ptr--ptr {
+    color: hsl(var(--foreground)) !important;
+    background: hsl(var(--background)) !important;
+}
+
+.ptr--icon,
+.ptr--text {
+    color: hsl(var(--foreground)) !important;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
