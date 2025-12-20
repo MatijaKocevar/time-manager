@@ -4,9 +4,24 @@ import { useEffect, useRef } from "react"
 import { useThemeStore } from "@/stores/theme-store"
 import { updateThemePreference } from "@/app/(protected)/actions/theme-actions"
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({
+    children,
+    initialTheme,
+}: {
+    children: React.ReactNode
+    initialTheme: "light" | "dark"
+}) {
     const theme = useThemeStore((state) => state.theme)
+    const setTheme = useThemeStore((state) => state.setTheme)
     const isInitialMount = useRef(true)
+    const hasSyncedWithServer = useRef(false)
+
+    useEffect(() => {
+        if (!hasSyncedWithServer.current) {
+            setTheme(initialTheme)
+            hasSyncedWithServer.current = true
+        }
+    }, [initialTheme, setTheme])
 
     useEffect(() => {
         const root = document.documentElement

@@ -93,36 +93,26 @@ export default async function RootLayout({
                     content={themeColor}
                     media="(prefers-color-scheme: light)"
                 />
-                <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-                <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `
                             (function() {
-                                try {
-                                    const stored = localStorage.getItem('theme-storage');
-                                    let theme = 'light';
-                                    
-                                    if (stored) {
-                                        theme = JSON.parse(stored).state.theme;
-                                    }
-                                    
-                                    if (theme === 'dark') {
-                                        document.documentElement.classList.add('dark');
-                                    } else {
-                                        document.documentElement.classList.remove('dark');
-                                    }
-                                } catch (e) {}
+                                const serverTheme = '${userTheme}';
+                                if (serverTheme === 'dark') {
+                                    document.documentElement.classList.add('dark');
+                                }
                             })();
                         `,
                     }}
                 />
+                <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+                <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
             </head>
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col`}
             >
                 <NextIntlClientProvider>
-                    <ThemeProvider>
+                    <ThemeProvider initialTheme={userTheme as "light" | "dark"}>
                         <QueryProvider>
                             <SessionWrapper>
                                 <ConditionalSidebar
