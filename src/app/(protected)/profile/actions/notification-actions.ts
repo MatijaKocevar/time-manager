@@ -6,11 +6,27 @@ import { authConfig } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
-webpush.setVapidDetails(
-    "mailto:noreply@timemanager.com",
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
-)
+let vapidConfigured = false
+
+function ensureVapidDetails() {
+    if (vapidConfigured) return true
+
+    const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+    const privateKey = process.env.VAPID_PRIVATE_KEY
+
+    if (!publicKey || !privateKey) {
+        return false
+    }
+
+    try {
+        webpush.setVapidDetails("mailto:noreply@timemanager.com", publicKey, privateKey)
+        vapidConfigured = true
+        return true
+    } catch (error) {
+        console.error("Failed to configure VAPID details:", error)
+        return false
+    }
+}
 
 const PushSubscriptionSchema = z.object({
     endpoint: z.string().url(),
@@ -86,6 +102,11 @@ export async function sendPushNotification(
         url?: string
     }
 ) {
+    if (!ensureVapidDetails()) {
+        console.warn("VAPID not configured, skipping push notification")
+        return { success: false, error: "Push notifications not configured" }
+    }
+
     try {
         const subscriptions = await prisma.pushSubscription.findMany({
             where: { userId },
@@ -157,6 +178,11 @@ export async function sendPushToAdmins(payload: {
     icon?: string
     url?: string
 }) {
+    if (!ensureVapidDetails()) {
+        console.warn("VAPID not configured, skipping push notification")
+        return { success: false, error: "Push notifications not configured" }
+    }
+
     try {
         const admins = await prisma.user.findMany({
             where: { role: "ADMIN" },
