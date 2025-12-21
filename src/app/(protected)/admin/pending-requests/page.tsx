@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server"
 import { authConfig } from "@/lib/auth"
 import { getAllRequests } from "../../requests/actions/request-actions"
 import { getHolidays } from "../holidays/actions/holiday-actions"
-import { PendingRequestsList } from "../components/pending-requests-list"
+import { PendingRequestsTable } from "./components/pending-requests-table"
 
 export default async function PendingRequestsPage() {
     const session = await getServerSession(authConfig)
@@ -84,7 +84,7 @@ export default async function PendingRequestsPage() {
     return (
         <div className="flex flex-col gap-4 h-full">
             <div className="flex-1 min-h-0">
-                <PendingRequestsList
+                <PendingRequestsTable
                     requests={requestsData}
                     holidays={holidays}
                     translations={translations}
