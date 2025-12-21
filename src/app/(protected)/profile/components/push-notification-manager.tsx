@@ -15,7 +15,8 @@ export function PushNotificationManager({
     initialHasSubscription,
     vapidPublicKey,
 }: PushNotificationManagerProps) {
-    const [hasSubscription, setHasSubscription] = useState(initialHasSubscription)
+    const [hasSubscription, setHasSubscription] = useState(false)
+    const [isCheckingBrowser, setIsCheckingBrowser] = useState(true)
 
     const isLoading = usePushNotificationStore((state) => state.isLoading)
     const error = usePushNotificationStore((state) => state.error)
@@ -23,12 +24,25 @@ export function PushNotificationManager({
     const unsubscribeFromPush = usePushNotificationStore((state) => state.unsubscribeFromPush)
 
     useEffect(() => {
-        if ("serviceWorker" in navigator && "PushManager" in window) {
-            navigator.serviceWorker.register("/sw.js", {
-                scope: "/",
-                updateViaCache: "none",
-            })
+        async function checkBrowserSubscription() {
+            if ("serviceWorker" in navigator && "PushManager" in window) {
+                try {
+                    const registration = await navigator.serviceWorker.register("/sw.js", {
+                        scope: "/",
+                        updateViaCache: "none",
+                    })
+
+                    const browserSubscription = await registration.pushManager.getSubscription()
+                    setHasSubscription(browserSubscription !== null)
+                } catch (error) {
+                    console.error("Error checking browser subscription:", error)
+                    setHasSubscription(false)
+                }
+            }
+            setIsCheckingBrowser(false)
         }
+
+        checkBrowserSubscription()
     }, [])
 
     return (
@@ -55,7 +69,11 @@ export function PushNotificationManager({
                     </div>
                 )}
 
-                {hasSubscription ? (
+                {isCheckingBrowser ? (
+                    <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+                        Checking browser subscription status...
+                    </div>
+                ) : hasSubscription ? (
                     <div className="space-y-4">
                         <div className="rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400">
                             ✓ Notifications are enabled. You will receive push alerts.
