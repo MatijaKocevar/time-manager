@@ -11,6 +11,7 @@ import {
     CalendarX2,
     Wrench,
     LucideIcon,
+    FileSpreadsheet,
 } from "lucide-react"
 import { UserRole } from "@/types"
 
@@ -39,6 +40,12 @@ export const navigationItems: NavigationItem[] = [
         title: "navigation.hours",
         url: "/hours",
         icon: Clock,
+        roles: ["USER", "ADMIN"],
+    },
+    {
+        title: "navigation.timeSheets",
+        url: "/time-sheets",
+        icon: FileSpreadsheet,
         roles: ["USER", "ADMIN"],
     },
     {

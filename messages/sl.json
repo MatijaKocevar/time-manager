@@ -114,6 +114,7 @@
         "timeTracker": "Sledenje času",
         "tasks": "Naloge",
         "hours": "Ure",
+        "timeSheets": "Časovnice",
         "shifts": "Izmene",
         "requests": "Zahtevki",
         "admin": "Administracija",
@@ -124,6 +125,24 @@
         "requestHistory": "Zgodovina zahtevkov",
         "holidays": "Prazniki",
         "devTools": "Razvojna orodja"
+    },
+    "timeSheets": {
+        "page": {
+            "title": "Časovnice"
+        },
+        "viewMode": {
+            "week": "Teden",
+            "month": "Mesec"
+        },
+        "table": {
+            "task": "Naloga",
+            "total": "Skupaj"
+        },
+        "messages": {
+            "noData": "Ni najdenih vnosov časa za to obdobje",
+            "loading": "Nalaganje časovnic...",
+            "error": "Napaka pri nalaganju časovnic. Prosim poskusite znova."
+        }
     },
     "hours": {
         "types": {

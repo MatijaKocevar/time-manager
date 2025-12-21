@@ -1,0 +1,58 @@
+"use server"
+
+import { getServerSession } from "next-auth"
+import { authConfig } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import {
+    GetTimeSheetEntriesSchema,
+    type GetTimeSheetEntriesInput,
+} from "../schemas/time-sheet-schemas"
+
+async function requireAuth() {
+    const session = await getServerSession(authConfig)
+    if (!session?.user) {
+        throw new Error("Unauthorized")
+    }
+    return session
+}
+
+export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
+    const session = await requireAuth()
+
+    const validation = GetTimeSheetEntriesSchema.safeParse(input)
+    if (!validation.success) {
+        return { error: validation.error.message }
+    }
+
+    const { startDate, endDate } = validation.data
+
+    try {
+        const entries = await prisma.taskTimeEntry.findMany({
+            where: {
+                userId: session.user.id,
+                startTime: {
+                    gte: new Date(startDate),
+                    lte: new Date(endDate),
+                },
+                endTime: {
+                    not: null,
+                },
+            },
+            include: {
+                task: {
+                    include: {
+                        list: true,
+                    },
+                },
+            },
+            orderBy: {
+                startTime: "desc",
+            },
+        })
+
+        return { success: true, data: entries }
+    } catch (error) {
+        console.error("Error fetching time sheet entries:", error)
+        return { error: "Failed to fetch time sheet entries" }
+    }
+}

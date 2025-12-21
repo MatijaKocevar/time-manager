@@ -114,6 +114,7 @@
         "timeTracker": "Time Tracker",
         "tasks": "Tasks",
         "hours": "Hours",
+        "timeSheets": "Time Sheets",
         "shifts": "Shifts",
         "requests": "Requests",
         "admin": "Admin",
@@ -124,6 +125,24 @@
         "requestHistory": "Request History",
         "holidays": "Holidays",
         "devTools": "Dev Tools"
+    },
+    "timeSheets": {
+        "page": {
+            "title": "Time Sheets"
+        },
+        "viewMode": {
+            "week": "Week",
+            "month": "Month"
+        },
+        "table": {
+            "task": "Task",
+            "total": "Total"
+        },
+        "messages": {
+            "noData": "No time entries found for this period",
+            "loading": "Loading time sheets...",
+            "error": "Failed to load time sheets. Please try again."
+        }
     },
     "hours": {
         "types": {
