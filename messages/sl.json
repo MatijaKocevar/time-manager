@@ -329,6 +329,7 @@
             "pendingRequestsDesc": "Čakajo na odobritev",
             "totalRequests": "Vsi zahtevki",
             "totalRequestsDesc": "Vsi zahtevki vseh časov",
+            "totalLists": "Seznam nalog",
             "upcomingHolidays": "Prihajajoči prazniki",
             "upcomingHolidaysDesc": "Načrtovani prazniki",
             "requestStatusBreakdown": "Razčlenitev statusov zahtevkov",
@@ -344,7 +345,10 @@
             "upcomingHolidaysSection": "Prihajajoči prazniki",
             "upcomingHolidaysSectionDesc": "Naslednji načrtovani prazniki",
             "viewAllPending": "Preglej vse {count} čakajoče zahtevke",
-            "viewAllHolidays": "Preglej vseh {count} prihajajoče praznike"
+            "viewAllHolidays": "Preglej vseh {count} prihajajoče praznike",
+            "user": "Uporabnik",
+            "type": "Tip",
+            "period": "Obdobje"
         },
         "users": {
             "createUser": "Ustvari uporabnika",

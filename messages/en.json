@@ -329,6 +329,7 @@
             "pendingRequestsDesc": "Awaiting approval",
             "totalRequests": "Total Requests",
             "totalRequestsDesc": "All time requests",
+            "totalLists": "Task Lists",
             "upcomingHolidays": "Upcoming Holidays",
             "upcomingHolidaysDesc": "Scheduled holidays",
             "requestStatusBreakdown": "Request Status Breakdown",
@@ -344,7 +345,10 @@
             "upcomingHolidaysSection": "Upcoming Holidays",
             "upcomingHolidaysSectionDesc": "Next scheduled holidays",
             "viewAllPending": "View all {count} pending requests",
-            "viewAllHolidays": "View all {count} upcoming holidays"
+            "viewAllHolidays": "View all {count} upcoming holidays",
+            "user": "User",
+            "type": "Type",
+            "period": "Period"
         },
         "users": {
             "createUser": "Create User",
