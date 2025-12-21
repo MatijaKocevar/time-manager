@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { useBreadcrumbStore } from "./breadcrumb-store"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface BreadcrumbSegment {
     label: string
@@ -45,6 +46,7 @@ function generateBreadcrumbsFromPath(pathname: string): BreadcrumbSegment[] {
 export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
     const pathname = usePathname()
     const dynamicOverrides = useBreadcrumbStore((state) => state.overrides)
+    const isMobile = useIsMobile()
 
     const generated = generateBreadcrumbsFromPath(pathname)
     const allOverrides = { ...overrides, ...dynamicOverrides }
@@ -72,7 +74,7 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
         )
     }
 
-    if (breadcrumbs.length === 2) {
+    if (breadcrumbs.length === 2 && !isMobile) {
         return (
             <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
                 <Link
@@ -94,9 +96,44 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
         )
     }
 
-    const middleCrumbs = breadcrumbs.slice(0, -2)
-    const previousCrumb = breadcrumbs[breadcrumbs.length - 2]
+    const middleCrumbs = isMobile ? breadcrumbs.slice(0, -1) : breadcrumbs.slice(0, -2)
     const lastCrumb = breadcrumbs[breadcrumbs.length - 1]
+
+    if (isMobile) {
+        return (
+            <nav className="flex items-center text-sm text-muted-foreground">
+                <Link
+                    href="/tracker"
+                    className="flex items-center hover:text-foreground transition-colors"
+                >
+                    <Home className="h-4 w-4" />
+                </Link>
+                <ChevronRight className="h-4 w-4 mx-1" />
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-auto p-0 hover:bg-transparent"
+                        >
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                        {middleCrumbs.map((crumb, index) => (
+                            <DropdownMenuItem key={index} asChild>
+                                <Link href={crumb.href}>{crumb.label}</Link>
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                <ChevronRight className="h-4 w-4 mx-1" />
+                <span className="font-medium text-foreground">{lastCrumb.label}</span>
+            </nav>
+        )
+    }
+
+    const previousCrumb = breadcrumbs[breadcrumbs.length - 2]
 
     return (
         <nav className="flex items-center space-x-1 text-sm text-muted-foreground">

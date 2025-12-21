@@ -1,5 +1,14 @@
 # GitHub Copilot Instructions
 
+## Git Workflow
+
+**CRITICAL: Never commit or push changes unless explicitly requested by the user**
+
+- **NEVER** run `git commit` or `git push` automatically after making changes
+- **ONLY** commit and push when the user specifically says "commit and push" or similar explicit instruction
+- Making code changes does NOT imply committing them
+- Let the user decide when changes are ready to be committed
+
 ## Code Quality Standards
 
 ### TypeScript Requirements
