@@ -14,7 +14,7 @@ export async function sendEmail(
     html: string
 ): Promise<{ success: boolean; error?: string }> {
     const resend = getResendClient()
-    
+
     if (!resend) {
         console.warn("RESEND_API_KEY not configured, skipping email send")
         return { success: false, error: "Email service not configured" }
