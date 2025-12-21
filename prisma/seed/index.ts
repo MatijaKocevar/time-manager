@@ -13,20 +13,20 @@ const random = new SeededRandom(42)
 
 async function main() {
     console.log("🌱 Starting comprehensive database seeding...")
-    console.log("📅 Seeding 1 year of data for 5 users\n")
+    console.log("📅 Seeding 3 months of data for 10 users\n")
 
-    const totalUsers = 5
+    const totalUsers = 10
     const adminCount = 2
     const batchSize = 5
 
     const endDate = new Date()
-    const startDate = addDays(endDate, -365)
+    const startDate = addDays(endDate, -90)
 
     // Step 1: Seed holidays
     const holidayDates = await seedHolidays(prisma)
 
-    // Step 2: Seed users
-    const allUsers = await seedUsers(prisma, random, totalUsers, adminCount)
+    // Step 2: Seed users (totalUsers - 1 because Demo Admin is always created)
+    const allUsers = await seedUsers(prisma, random, totalUsers - 1, adminCount)
     const adminUsers = allUsers.filter((u) => u.role === "ADMIN")
 
     // Step 3: Seed data for each user in batches

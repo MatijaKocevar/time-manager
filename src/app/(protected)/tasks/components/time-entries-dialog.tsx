@@ -65,7 +65,9 @@ export function TimeEntriesDialog() {
                                     <TableRow>
                                         <TableHead>{t("startedAt")}</TableHead>
                                         <TableHead>{t("endedAt")}</TableHead>
-                                        <TableHead className="text-right">{t("duration")}</TableHead>
+                                        <TableHead className="text-right">
+                                            {t("duration")}
+                                        </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

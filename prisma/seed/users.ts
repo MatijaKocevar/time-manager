@@ -8,7 +8,7 @@ export async function seedUsers(
     count: number,
     adminCount: number
 ) {
-    console.log(`\n📊 Seeding ${count} users (${adminCount} admins)...`)
+    console.log(`\n📊 Seeding ${count + 1} users (${adminCount} admins + Demo Admin)...`)
     const hashedPassword = await bcrypt.hash("password123", 12)
 
     const users: Array<{ email: string; name: string; password: string; role: "USER" | "ADMIN" }> =

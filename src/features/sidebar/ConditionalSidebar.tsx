@@ -13,6 +13,7 @@ import { PullToRefreshContainer } from "@/components/pull-to-refresh"
 interface ConditionalSidebarProps {
     children: React.ReactNode
     defaultOpen: boolean
+    sidebarExpandedItems: string[]
     hasSession: boolean
     userRole?: UserRole
     userName?: string | null
@@ -34,6 +35,7 @@ function SidebarStateSync() {
 export function ConditionalSidebar({
     children,
     defaultOpen,
+    sidebarExpandedItems,
     hasSession,
     userRole,
     userName,
@@ -51,6 +53,7 @@ export function ConditionalSidebar({
                         userName={userName}
                         userEmail={userEmail}
                         lists={lists}
+                        initialExpandedItems={sidebarExpandedItems}
                     />
                     <main className="flex flex-1 flex-col min-w-0 w-full h-full overflow-hidden">
                         <AppHeader breadcrumbTranslations={breadcrumbTranslations} />

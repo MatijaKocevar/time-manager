@@ -54,13 +54,17 @@ export default async function RootLayout({
 
     let defaultOpen = true
     let userTheme = "light"
+    let sidebarExpandedItems: string[] = []
     if (session?.user?.id) {
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
-            select: { sidebarOpen: true, theme: true },
+            select: { sidebarOpen: true, theme: true, sidebarExpandedItems: true },
         })
         defaultOpen = user?.sidebarOpen ?? true
         userTheme = user?.theme ?? "light"
+        sidebarExpandedItems = Array.isArray(user?.sidebarExpandedItems)
+            ? (user.sidebarExpandedItems as string[])
+            : []
     }
 
     const themeColor = userTheme === "dark" ? "#000000" : "#ffffff"
@@ -117,6 +121,7 @@ export default async function RootLayout({
                             <SessionWrapper>
                                 <ConditionalSidebar
                                     defaultOpen={defaultOpen}
+                                    sidebarExpandedItems={sidebarExpandedItems}
                                     hasSession={!!session}
                                     userRole={session?.user?.role}
                                     userName={session?.user?.name}

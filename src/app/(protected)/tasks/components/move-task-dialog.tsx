@@ -79,9 +79,7 @@ export function MoveTaskDialog({ lists }: MoveTaskDialogProps) {
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
                         <DialogTitle>{t("moveTaskToList")}</DialogTitle>
-                        <DialogDescription>
-                            {t("selectList")}
-                        </DialogDescription>
+                        <DialogDescription>{t("selectList")}</DialogDescription>
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">

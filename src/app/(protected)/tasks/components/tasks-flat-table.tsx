@@ -33,7 +33,9 @@ export function TasksFlatTable({ tasks }: TasksFlatTableProps) {
                         <TableHead className="w-[150px]">{tCommon("fields.status")}</TableHead>
                         <TableHead className="w-[180px]">{t("list")}</TableHead>
                         <TableHead className="w-[200px]">{t("timeTracker")}</TableHead>
-                        <TableHead className="w-[100px] text-right">{tCommon("fields.actions")}</TableHead>
+                        <TableHead className="w-[100px] text-right">
+                            {tCommon("fields.actions")}
+                        </TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>

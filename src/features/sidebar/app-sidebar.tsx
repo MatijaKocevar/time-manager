@@ -1,11 +1,21 @@
 "use client"
 
-import { Users, LogOut, UserCircle, ChevronUp, MoreHorizontal, Edit, Trash } from "lucide-react"
+import {
+    Users,
+    LogOut,
+    UserCircle,
+    ChevronUp,
+    MoreHorizontal,
+    Edit,
+    Trash,
+    ChevronRight,
+    ChevronDown,
+} from "lucide-react"
 import { signOut } from "next-auth/react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import {
     Sidebar,
@@ -36,6 +46,7 @@ import { NewListButton } from "./new-list-button"
 import { Button } from "@/components/ui/button"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
 import { deleteList } from "@/app/(protected)/tasks/actions/list-actions"
+import { updateSidebarExpandedItems } from "@/app/(protected)/actions/sidebar-actions"
 import { useQueryClient } from "@tanstack/react-query"
 import { listKeys } from "@/app/(protected)/tasks/query-keys"
 
@@ -44,17 +55,49 @@ interface AppSidebarProps {
     userName?: string | null
     userEmail?: string | null
     lists?: ListDisplay[]
+    initialExpandedItems?: string[]
 }
 
-export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSidebarProps) {
+export function AppSidebar({
+    userRole,
+    userName,
+    userEmail,
+    lists = [],
+    initialExpandedItems = [],
+}: AppSidebarProps) {
     const pathname = usePathname()
     const queryClient = useQueryClient()
     const openListDialog = useTasksStore((state) => state.openListDialog)
     const [deletingListId, setDeletingListId] = useState<string | null>(null)
+    const [expandedItemsSet, setExpandedItemsSet] = useState(() => new Set(initialExpandedItems))
+    const [hasInitialized, setHasInitialized] = useState(false)
     const t = useTranslations()
     const tNav = useTranslations("navigation")
     const tCommon = useTranslations("common")
     const tTasks = useTranslations("tasks")
+
+    useEffect(() => {
+        if (!hasInitialized) {
+            setHasInitialized(true)
+            return
+        }
+        const items = Array.from(expandedItemsSet)
+        updateSidebarExpandedItems(items).catch(console.error)
+    }, [expandedItemsSet, hasInitialized])
+
+    const toggleItem = (itemUrl: string) => {
+        setExpandedItemsSet((prev) => {
+            const newSet = new Set(prev)
+            if (newSet.has(itemUrl)) {
+                newSet.delete(itemUrl)
+            } else {
+                newSet.add(itemUrl)
+            }
+            return newSet
+        })
+    }
+
+    const isExpanded = (itemUrl: string) => expandedItemsSet.has(itemUrl)
 
     const filteredItems = navigationItems.filter((item) =>
         userRole ? item.roles.includes(userRole) : false
@@ -114,17 +157,39 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                 const isActive =
                                     pathname === item.url || pathname.startsWith(item.url + "/")
                                 const isTasksItem = item.url === "/tasks"
+                                const hasChildren =
+                                    isTasksItem || (item.children && item.children.length > 0)
+                                const itemExpanded = isExpanded(item.url)
                                 return (
                                     <div key={item.title}>
                                         <SidebarMenuItem>
-                                            <SidebarMenuButton asChild isActive={isActive}>
-                                                <a href={item.url}>
-                                                    <item.icon />
-                                                    <span>{t(item.title)}</span>
-                                                </a>
-                                            </SidebarMenuButton>
+                                            <div className="flex items-center w-full">
+                                                {hasChildren && (
+                                                    <button
+                                                        type="button"
+                                                        className="flex items-center justify-center h-8 w-8 hover:bg-accent hover:text-accent-foreground rounded-md"
+                                                        onClick={() => toggleItem(item.url)}
+                                                    >
+                                                        {itemExpanded ? (
+                                                            <ChevronDown className="h-4 w-4" />
+                                                        ) : (
+                                                            <ChevronRight className="h-4 w-4" />
+                                                        )}
+                                                    </button>
+                                                )}
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    isActive={isActive}
+                                                    className={hasChildren ? "flex-1" : "w-full"}
+                                                >
+                                                    <a href={item.url}>
+                                                        <item.icon />
+                                                        <span>{t(item.title)}</span>
+                                                    </a>
+                                                </SidebarMenuButton>
+                                            </div>
                                         </SidebarMenuItem>
-                                        {isTasksItem && (
+                                        {isTasksItem && itemExpanded && (
                                             <div className="ml-4 mt-1">
                                                 <SidebarMenuItem>
                                                     <SidebarMenuButton
@@ -219,31 +284,33 @@ export function AppSidebar({ userRole, userName, userEmail, lists = [] }: AppSid
                                                 <NewListButton />
                                             </div>
                                         )}
-                                        {item.children && item.children.length > 0 && (
-                                            <div className="ml-4 mt-1">
-                                                {item.children.map((child) => {
-                                                    const isChildActive =
-                                                        pathname === child.url ||
-                                                        pathname.startsWith(child.url + "/")
-                                                    return (
-                                                        <SidebarMenuItem key={child.title}>
-                                                            <SidebarMenuButton
-                                                                asChild
-                                                                size="sm"
-                                                                isActive={isChildActive}
-                                                            >
-                                                                <a href={child.url}>
-                                                                    <child.icon className="h-3 w-3" />
-                                                                    <span className="text-sm">
-                                                                        {t(child.title)}
-                                                                    </span>
-                                                                </a>
-                                                            </SidebarMenuButton>
-                                                        </SidebarMenuItem>
-                                                    )
-                                                })}
-                                            </div>
-                                        )}
+                                        {item.children &&
+                                            item.children.length > 0 &&
+                                            itemExpanded && (
+                                                <div className="ml-4 mt-1">
+                                                    {item.children.map((child) => {
+                                                        const isChildActive =
+                                                            pathname === child.url ||
+                                                            pathname.startsWith(child.url + "/")
+                                                        return (
+                                                            <SidebarMenuItem key={child.title}>
+                                                                <SidebarMenuButton
+                                                                    asChild
+                                                                    size="sm"
+                                                                    isActive={isChildActive}
+                                                                >
+                                                                    <a href={child.url}>
+                                                                        <child.icon className="h-3 w-3" />
+                                                                        <span className="text-sm">
+                                                                            {t(child.title)}
+                                                                        </span>
+                                                                    </a>
+                                                                </SidebarMenuButton>
+                                                            </SidebarMenuItem>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
                                     </div>
                                 )
                             })}

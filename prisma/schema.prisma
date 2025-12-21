@@ -83,17 +83,18 @@ enum ShiftLocation {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?
-  role          UserRole  @default(USER)
-  sidebarOpen   Boolean   @default(true)
-  theme         String    @default("light")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  name                  String?
+  email                 String    @unique
+  emailVerified         DateTime?
+  image                 String?
+  password              String?
+  role                  UserRole  @default(USER)
+  sidebarOpen           Boolean   @default(true)
+  sidebarExpandedItems  Json?     @default("[]")
+  theme                 String    @default("light")
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   accounts          Account[]
   sessions          Session[]

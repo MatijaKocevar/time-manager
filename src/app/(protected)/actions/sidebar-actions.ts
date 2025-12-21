@@ -18,3 +18,18 @@ export async function updateSidebarState(open: boolean) {
 
     return { success: true }
 }
+
+export async function updateSidebarExpandedItems(expandedItems: string[]) {
+    const session = await getServerSession(authConfig)
+
+    if (!session?.user?.id) {
+        throw new Error("Unauthorized")
+    }
+
+    await prisma.user.update({
+        where: { id: session.user.id },
+        data: { sidebarExpandedItems: expandedItems },
+    })
+
+    return { success: true }
+}
