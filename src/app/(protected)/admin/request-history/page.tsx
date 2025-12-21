@@ -1,10 +1,10 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
-import { getTranslations } from "next-intl/server"
+import { getTranslations, getLocale } from "next-intl/server"
 import { authConfig } from "@/lib/auth"
 import { getAllRequests } from "../../requests/actions/request-actions"
 import { getHolidays } from "../holidays/actions/holiday-actions"
-import { RequestsHistoryList } from "../components/requests-history-list"
+import { RequestHistoryTable } from "./components/request-history-table"
 
 export default async function RequestHistoryPage() {
     const session = await getServerSession(authConfig)
@@ -13,13 +13,14 @@ export default async function RequestHistoryPage() {
         redirect("/")
     }
 
-    const [tTable, tCancel, tPagination, tFilter, tTypes, tStatuses] = await Promise.all([
+    const [tTable, tCancel, tPagination, tFilter, tTypes, tStatuses, locale] = await Promise.all([
         getTranslations("admin.requestHistory.table"),
         getTranslations("admin.requestHistory.cancel"),
         getTranslations("admin.requestHistory.pagination"),
         getTranslations("admin.requestHistory.filter"),
         getTranslations("requests.types"),
         getTranslations("requests.statuses"),
+        getLocale(),
     ])
 
     const translations = {
@@ -91,10 +92,11 @@ export default async function RequestHistoryPage() {
     return (
         <div className="flex flex-col gap-4 h-full">
             <div className="flex-1 min-h-0">
-                <RequestsHistoryList
+                <RequestHistoryTable
                     requests={historyData}
                     holidays={holidays}
                     translations={translations}
+                    locale={locale}
                 />
             </div>
         </div>

@@ -24,77 +24,57 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { approveRequest, rejectRequest } from "../../../requests/actions/request-actions"
+import { cancelApprovedRequest } from "../../../requests/actions/request-actions"
 import { requestKeys } from "../../../requests/query-keys"
 import { ColumnFilter } from "./column-filter"
-import { RejectDialog } from "./reject-dialog"
+import { CancelDialog } from "./cancel-dialog"
 import { createColumns } from "../utils/columns"
-import { usePendingRequestsStore } from "../stores/pending-requests-store"
-import type { RequestDisplay, PendingRequestTranslations } from "../types"
+import { useRequestHistoryStore } from "../stores/request-history-store"
+import type { RequestDisplay, RequestHistoryTranslations } from "../types"
 
-interface PendingRequestsTableProps {
+interface RequestHistoryTableProps {
     requests: RequestDisplay[]
     holidays: Array<{ date: Date; name: string }>
-    translations: PendingRequestTranslations
+    translations: RequestHistoryTranslations
     locale: string
 }
 
-export function PendingRequestsTable({
+export function RequestHistoryTable({
     requests,
     holidays,
     translations,
     locale,
-}: PendingRequestsTableProps) {
+}: RequestHistoryTableProps) {
     const queryClient = useQueryClient()
     const isMobile = useIsMobile()
     const [sorting, setSorting] = useState<SortingState>([])
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
-    const rejectDialogOpen = usePendingRequestsStore((state) => state.rejectDialogOpen)
-    const selectedRequestId = usePendingRequestsStore((state) => state.selectedRequestId)
-    const rejectionReason = usePendingRequestsStore((state) => state.rejectionReason)
-    const setRejectionReason = usePendingRequestsStore((state) => state.setRejectionReason)
-    const openRejectDialog = usePendingRequestsStore((state) => state.openRejectDialog)
-    const setRejectDialogOpen = usePendingRequestsStore((state) => state.setRejectDialogOpen)
-    const resetRejectDialog = usePendingRequestsStore((state) => state.resetRejectDialog)
+    const cancelDialogOpen = useRequestHistoryStore((state) => state.cancelDialogOpen)
+    const selectedRequestId = useRequestHistoryStore((state) => state.selectedRequestId)
+    const selectedRequestData = useRequestHistoryStore((state) => state.selectedRequestData)
+    const cancellationReason = useRequestHistoryStore((state) => state.cancellationReason)
+    const setCancellationReason = useRequestHistoryStore((state) => state.setCancellationReason)
+    const openCancelDialog = useRequestHistoryStore((state) => state.openCancelDialog)
+    const setCancelDialogOpen = useRequestHistoryStore((state) => state.setCancelDialogOpen)
+    const resetCancelDialog = useRequestHistoryStore((state) => state.resetCancelDialog)
 
-    const approveMutation = useMutation({
-        mutationFn: approveRequest,
-        onMutate: async (variables) => {
-            await queryClient.cancelQueries({ queryKey: requestKeys.all })
-            const previousRequests = queryClient.getQueryData(requestKeys.all)
-            queryClient.setQueryData(requestKeys.all, (old: RequestDisplay[] | undefined) => {
-                if (!old) return old
-                return old.filter((req) => req.id !== variables.id)
-            })
-            return { previousRequests }
-        },
-        onSuccess: (data) => {
-            if (data.error) {
-                console.error("Approval error:", data.error)
-                alert(`Error: ${data.error}`)
-                queryClient.invalidateQueries({ queryKey: requestKeys.all })
-            }
-        },
-        onError: (error, _variables, context) => {
-            console.error("Approval mutation error:", error)
-            alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
-            if (context?.previousRequests) {
-                queryClient.setQueryData(requestKeys.all, context.previousRequests)
-            }
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: requestKeys.adminRequests() })
-        },
-    })
-
-    const rejectMutation = useMutation({
-        mutationFn: rejectRequest,
+    const cancelMutation = useMutation({
+        mutationFn: (data: { id: string; cancellationReason: string }) =>
+            cancelApprovedRequest(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: requestKeys.all })
-            resetRejectDialog()
+            resetCancelDialog()
         },
     })
+
+    const handleCancel = () => {
+        if (!cancellationReason.trim() || !selectedRequestId) return
+        cancelMutation.mutate({
+            id: selectedRequestId,
+            cancellationReason: cancellationReason.trim(),
+        })
+    }
 
     const columns = useMemo(
         () =>
@@ -102,25 +82,10 @@ export function PendingRequestsTable({
                 translations,
                 holidays,
                 locale,
-                isApproving: approveMutation.isPending,
-                isRejecting: rejectMutation.isPending,
-                onApprove: (requestId: string) => approveMutation.mutate({ id: requestId }),
-                onReject: openRejectDialog,
+                onCancel: openCancelDialog,
             }),
-        [
-            approveMutation,
-            rejectMutation.isPending,
-            holidays,
-            translations,
-            locale,
-            openRejectDialog,
-        ]
+        [holidays, translations, locale, openCancelDialog]
     )
-
-    const handleReject = () => {
-        if (!rejectionReason || !selectedRequestId) return
-        rejectMutation.mutate({ id: selectedRequestId, rejectionReason })
-    }
 
     const table = useReactTable({
         data: requests,
@@ -207,7 +172,7 @@ export function PendingRequestsTable({
                                         colSpan={columns.length}
                                         className="h-24 text-center text-muted-foreground"
                                     >
-                                        {translations.table.noPending}
+                                        {translations.table.noHistory}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -234,14 +199,16 @@ export function PendingRequestsTable({
                 </div>
             </div>
 
-            <RejectDialog
-                open={rejectDialogOpen}
-                onOpenChange={setRejectDialogOpen}
-                rejectionReason={rejectionReason}
-                onReasonChange={setRejectionReason}
-                onConfirm={handleReject}
-                isPending={rejectMutation.isPending}
-                translations={translations.reject}
+            <CancelDialog
+                open={cancelDialogOpen}
+                onOpenChange={setCancelDialogOpen}
+                cancellationReason={cancellationReason}
+                onReasonChange={setCancellationReason}
+                onConfirm={handleCancel}
+                isPending={cancelMutation.isPending}
+                translations={translations.cancel}
+                selectedRequestData={selectedRequestData}
+                locale={locale}
             />
         </>
     )
