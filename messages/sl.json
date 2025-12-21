@@ -122,7 +122,8 @@
         "userManagement": "Upravljanje uporabnikov",
         "pendingRequests": "Čakajoči zahtevki",
         "requestHistory": "Zgodovina zahtevkov",
-        "holidays": "Prazniki"
+        "holidays": "Prazniki",
+        "devTools": "Razvojna orodja"
     },
     "hours": {
         "types": {
@@ -578,6 +579,127 @@
         "databaseError": "Napaka v podatkovni bazi",
         "alreadyExists": "Že obstaja",
         "permissionDenied": "Dostop zavrnjen"
+    },
+    "notifications": {
+        "pushNotifications": {
+            "title": "Potisna obvestila",
+            "description": "Omogočite potisna obvestila za takojšnja opozorila o odobritvah zahtevkov in novih zahtevkih v čakanju.",
+            "descriptionSubscribed": "Naročeni ste na potisna obvestila. Prejemali boste opozorila o posodobitvah zahtevkov.",
+            "notSupported": "Potisna obvestila v tem brskalniku niso podprta.",
+            "enable": "Omogoči obvestila",
+            "disable": "Onemogoči obvestila",
+            "enabling": "Omogočanje...",
+            "unsubscribing": "Odjava...",
+            "subscribed": "✓ Obvestila so omogočena. Prejemali boste potisna opozorila.",
+            "permissionDenied": "Dovoljenje za obvestila zavrnjeno",
+            "httpsNote": "Opomba: Potisna obvestila zahtevajo HTTPS. Za lokalno testiranje uporabite",
+            "errors": {
+                "registerFailed": "Registracija service workerja ni uspela",
+                "subscribeFailed": "Naročilo na obvestila ni uspelo",
+                "unsubscribeFailed": "Odjava ni uspela"
+            }
+        },
+        "requestNotifications": {
+            "newRequestTitle": "Nova zahteva za odsotnost",
+            "requestApprovedTitle": "Zahteva odobrena ✓",
+            "requestRejectedTitle": "Zahteva zavrnjena",
+            "newRequestBody": "{userName} je oddal/a novo zahtevo tipa {requestType}",
+            "approvedBody": "Vaša zahteva za {requestType} je bila odobrena",
+            "rejectedBody": "Vaša zahteva za {requestType} je bila zavrnjena"
+        }
+    },
+    "admin": {
+        "users": {
+            "createUser": "Ustvari uporabnika",
+            "form": {
+                "name": "Ime",
+                "email": "E-pošta",
+                "password": "Geslo",
+                "role": "Vloga",
+                "namePlaceholder": "Vnesite ime uporabnika",
+                "emailPlaceholder": "uporabnik@primer.si",
+                "passwordPlaceholder": "Vnesite geslo (min. 6 znakov)",
+                "selectRole": "Izberite vlogo",
+                "fillDetails": "Izpolnite podrobnosti za ustvarjanje novega uporabniškega računa",
+                "saveChanges": "Shrani spremembe",
+                "saving": "Shranjevanje...",
+                "changePassword": "Spremeni geslo",
+                "changing": "Spreminjanje...",
+                "enterNewPassword": "Vnesite novo geslo",
+                "deleteUserTitle": "Izbriši uporabnika",
+                "deleteUserDescription": "Tega dejanja ni mogoče razveljaviti. To bo trajno izbrisalo uporabniški račun.",
+                "deleteUser": "Izbriši uporabnika",
+                "deleting": "Brisanje...",
+                "deleteConfirm": "Ste prepričani, da želite izbrisati {name}? Tega dejanja ni mogoče razveljaviti."
+            },
+            "table": {
+                "name": "Ime",
+                "email": "E-pošta",
+                "role": "Vloga",
+                "created": "Ustvarjeno",
+                "actions": "Dejanja",
+                "filterPlaceholder": "Išči po imenu...",
+                "noUsers": "Ni najdenih uporabnikov",
+                "noUsersMatch": "Noben uporabnik ne ustreza iskanju",
+                "you": "vi",
+                "edit": "Uredi"
+            },
+            "roles": {
+                "user": "Uporabnik",
+                "admin": "Skrbnik"
+            },
+            "detail": {
+                "hoursSummary": "Povzetek ur",
+                "hoursSummaryDescription": "Mesečni pregled sledenih in ročnih ur",
+                "requests": "Zahtevki",
+                "requestsDescription": "Zahtevki za odsotnost in zgodovina odobritev"
+            }
+        },
+        "dev": {
+            "title": "Razvojna orodja",
+            "description": "Testirajte in odpravljajte napake v sistemu obveščanja. Pošiljajte testna e-poštna sporočila, potisna obvestila in simulirajte poteke zahtevkov.",
+            "testEmail": {
+                "title": "Testno e-poštno obvestilo",
+                "description": "Pošljite testno e-poštno obvestilo za preverjanje funkcionalnosti e-pošte",
+                "recipientLabel": "E-pošta prejemnika",
+                "recipientPlaceholder": "uporabnik@primer.si",
+                "button": "Pošlji testno e-pošto"
+            },
+            "testPush": {
+                "title": "Testno potisno obvestilo",
+                "description": "Pošljite testno potisno obvestilo določenemu uporabniku",
+                "userIdLabel": "ID uporabnika",
+                "userIdPlaceholder": "Vnesite ID uporabnika (cuid)",
+                "button": "Pošlji potisno obvestilo"
+            },
+            "testAdminPush": {
+                "title": "Testno skupinsko sporočilo",
+                "description": "Pošljite testno potisno obvestilo vsem skrbnikom",
+                "button": "Pošlji vsem skrbnikom"
+            },
+            "simulateFlow": {
+                "title": "Simuliraj potek zahtevka",
+                "description": "Simulirajte celoten potek obveščanja za zahtevo za odsotnost",
+                "userEmailLabel": "E-pošta uporabnika",
+                "userEmailPlaceholder": "uporabnik@primer.si",
+                "button": "Simuliraj celoten potek"
+            },
+            "subscriptions": {
+                "title": "Naročnine na obvestila",
+                "description": "Oglejte si vse aktivne naročnine na potisna obvestila",
+                "button": "Prikaži naročnine",
+                "subscriptionText": "naročnin(a/e)",
+                "table": {
+                    "user": "Uporabnik",
+                    "email": "E-pošta",
+                    "role": "Vloga",
+                    "created": "Ustvarjeno"
+                }
+            },
+            "results": {
+                "admins": "Skrbniki:"
+            }
+        }
     },
     "metadata": {
         "title": "Upravljavec časa",

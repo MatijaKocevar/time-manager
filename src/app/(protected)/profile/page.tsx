@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { ProfileForm } from "./components/profile-form"
 import { UserAvatar } from "@/components/user-avatar"
+import { PushNotificationManager } from "@/components/notifications/push-notification-manager"
 import { getCurrentUser } from "./actions/profile-actions"
 import { ROLE_COLORS } from "./constants/profile-constants"
 
@@ -27,8 +28,9 @@ export default async function ProfilePage() {
                     </div>
                 </div>
             </div>
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 space-y-6">
                 <ProfileForm user={user} />
+                <PushNotificationManager />
             </div>
         </div>
     )

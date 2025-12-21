@@ -108,6 +108,7 @@ model User {
   cancelledRequests Request[]         @relation("CancelledRequests")
   shifts            Shift[]
   lists             List[]
+  pushSubscriptions PushSubscription[]
 }
 
 model HourEntry {
@@ -272,6 +273,19 @@ model Holiday {
   updatedAt   DateTime @updatedAt
 
   @@index([date])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {

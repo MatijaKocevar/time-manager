@@ -9,6 +9,7 @@ import {
     History,
     CalendarDays,
     CalendarX2,
+    Wrench,
     LucideIcon,
 } from "lucide-react"
 import { UserRole } from "@/types"
@@ -80,6 +81,12 @@ export const navigationItems: NavigationItem[] = [
                 title: "navigation.holidays",
                 url: "/admin/holidays",
                 icon: CalendarX2,
+                roles: ["ADMIN"],
+            },
+            {
+                title: "navigation.devTools",
+                url: "/admin/dev",
+                icon: Wrench,
                 roles: ["ADMIN"],
             },
         ],

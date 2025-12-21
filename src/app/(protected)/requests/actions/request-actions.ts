@@ -12,6 +12,11 @@ import {
     isWeekday,
 } from "../../shifts/utils/request-shift-mapping"
 import {
+    notifyAdminsNewRequest,
+    notifyUserApproval,
+    notifyUserRejection,
+} from "@/lib/notifications/notify"
+import {
     CreateRequestSchema,
     UpdateRequestSchema,
     CancelRequestSchema,
@@ -62,7 +67,7 @@ export async function createRequest(input: CreateRequestInput) {
             return { error: "Start date must be before or equal to end date" }
         }
 
-        await prisma.request.create({
+        const createdRequest = await prisma.request.create({
             data: {
                 userId: session.user.id,
                 type,
@@ -72,6 +77,17 @@ export async function createRequest(input: CreateRequestInput) {
                 location,
                 affectsHourType,
             },
+        })
+
+        notifyAdminsNewRequest({
+            requestId: createdRequest.id,
+            userName: session.user.name || session.user.email || "Unknown User",
+            requestType: type,
+            startDate,
+            endDate,
+            reason,
+        }).catch((error) => {
+            console.error("Failed to notify admins:", error)
         })
 
         revalidatePath("/requests")
@@ -575,6 +591,23 @@ export async function approveRequest(input: ApproveRequestInput) {
             await Promise.all(recalcPromises)
         }
 
+        const requestUser = await prisma.user.findUnique({
+            where: { id: request.userId },
+            select: { name: true, email: true },
+        })
+
+        notifyUserApproval({
+            userId: request.userId,
+            userName: requestUser?.name || requestUser?.email || "User",
+            requestType: request.type,
+            startDate: request.startDate,
+            endDate: request.endDate,
+            reason: request.reason || undefined,
+            approvedByName: session.user.name || session.user.email || "Admin",
+        }).catch((error) => {
+            console.error("Failed to notify user of approval:", error)
+        })
+
         revalidatePath("/requests")
         revalidatePath("/hours")
         revalidatePath("/shifts")
@@ -633,6 +666,24 @@ export async function rejectRequest(input: RejectRequestInput) {
                     },
                 },
             })
+        })
+
+        const requestUser = await prisma.user.findUnique({
+            where: { id: request.userId },
+            select: { name: true, email: true },
+        })
+
+        notifyUserRejection({
+            userId: request.userId,
+            userName: requestUser?.name || requestUser?.email || "User",
+            requestType: request.type,
+            startDate: request.startDate,
+            endDate: request.endDate,
+            reason: request.reason || undefined,
+            rejectedByName: session.user.name || session.user.email || "Admin",
+            rejectionReason: rejectionReason || "No reason provided",
+        }).catch((error) => {
+            console.error("Failed to notify user of rejection:", error)
         })
 
         revalidatePath("/requests")
