@@ -136,6 +136,21 @@ export async function sendPushNotification(
     }
 }
 
+export async function hasUserSubscription() {
+    const session = await requireAuth()
+
+    try {
+        const count = await prisma.pushSubscription.count({
+            where: { userId: session.user.id },
+        })
+
+        return { hasSubscription: count > 0 }
+    } catch (error) {
+        console.error("Error checking push subscription:", error)
+        return { hasSubscription: false }
+    }
+}
+
 export async function sendPushToAdmins(payload: {
     title: string
     body: string

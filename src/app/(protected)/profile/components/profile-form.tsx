@@ -7,9 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { UserAvatar } from "@/components/user-avatar"
 import { updateProfile } from "../actions/profile-actions"
 import { useProfileStore } from "../stores/profile-store"
-import { MIN_PASSWORD_LENGTH } from "../constants/profile-constants"
+import { MIN_PASSWORD_LENGTH, ROLE_COLORS } from "../constants/profile-constants"
 import type { UserRole } from "@/types"
 
 interface ProfileFormProps {
@@ -64,8 +65,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
         <form onSubmit={handleSubmit}>
             <Card>
                 <CardHeader>
-                    <CardTitle>Profile Information</CardTitle>
-                    <CardDescription>Update your name and password</CardDescription>
+                    <div className="flex items-center gap-4">
+                        <UserAvatar role={user.role} className="h-16 w-16" />
+                        <div className="flex-1">
+                            <CardTitle>Profile Information</CardTitle>
+                            <div className="flex items-center gap-2 mt-1">
+                                <CardDescription>Update your name and password</CardDescription>
+                                <span
+                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${ROLE_COLORS[user.role]}`}
+                                >
+                                    {user.role}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     {error && (
