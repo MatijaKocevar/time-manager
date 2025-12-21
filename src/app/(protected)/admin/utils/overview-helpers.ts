@@ -18,11 +18,7 @@ export function formatHolidayDate(date: Date, locale: string): string {
     })
 }
 
-export function formatRequestDateRange(
-    startDate: Date,
-    endDate: Date,
-    locale: string
-): string {
+export function formatRequestDateRange(startDate: Date, endDate: Date, locale: string): string {
     const formatOptions: Intl.DateTimeFormatOptions = {
         year: "numeric",
         month: "2-digit",

@@ -25,7 +25,12 @@ export function QuickActions({ translations }: QuickActionsProps) {
             <CardContent>
                 <div className="grid gap-4 md:grid-cols-2">
                     {QUICK_ACTIONS.map(({ labelKey, href }) => (
-                        <Button key={labelKey} variant="outline" asChild className="justify-between">
+                        <Button
+                            key={labelKey}
+                            variant="outline"
+                            asChild
+                            className="justify-between"
+                        >
                             <Link href={href}>
                                 {translations[labelKey]}
                                 <ArrowRight className="h-4 w-4" />

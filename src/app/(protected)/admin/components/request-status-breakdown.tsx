@@ -35,7 +35,11 @@ export function RequestStatusBreakdown({
                             <div className="flex items-center gap-2">
                                 <div className={`h-3 w-3 rounded-full ${color}`} />
                                 <span className="text-sm font-medium">
-                                    {translations[status.toLowerCase() as keyof typeof translations]}
+                                    {
+                                        translations[
+                                            status.toLowerCase() as keyof typeof translations
+                                        ]
+                                    }
                                 </span>
                             </div>
                             <span className="text-sm text-muted-foreground">

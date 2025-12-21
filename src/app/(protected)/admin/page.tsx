@@ -36,30 +36,34 @@ export default async function AdminOverviewPage() {
     const holidays = (holidaysResult.success ? holidaysResult.data : []) ?? []
     const approvedRequests = allRequests.filter((r: { status: string }) => r.status === "APPROVED")
     const rejectedRequests = allRequests.filter((r: { status: string }) => r.status === "REJECTED")
-    const cancelledRequests = allRequests.filter((r: { status: string }) => r.status === "CANCELLED")
+    const cancelledRequests = allRequests.filter(
+        (r: { status: string }) => r.status === "CANCELLED"
+    )
 
     const upcomingHolidays = getUpcomingHolidays(
-        holidays.map((h: { id: string; name: string; date: string | Date }) => ({ 
-            ...h, 
-            date: h.date instanceof Date ? h.date : new Date(h.date) 
+        holidays.map((h: { id: string; name: string; date: string | Date }) => ({
+            ...h,
+            date: h.date instanceof Date ? h.date : new Date(h.date),
         }))
     )
 
-    const recentPendingRequests: Request[] = pendingRequests.map((r: {
-        id: string
-        type: string
-        startDate: string | Date
-        endDate: string | Date
-        status: string
-        user?: { name?: string | null; email?: string }
-    }) => ({
-        id: r.id,
-        type: r.type,
-        startDate: r.startDate instanceof Date ? r.startDate : new Date(r.startDate),
-        endDate: r.endDate instanceof Date ? r.endDate : new Date(r.endDate),
-        status: r.status,
-        user: { name: r.user?.name ?? r.user?.email ?? "" },
-    }))
+    const recentPendingRequests: Request[] = pendingRequests.map(
+        (r: {
+            id: string
+            type: string
+            startDate: string | Date
+            endDate: string | Date
+            status: string
+            user?: { name?: string | null; email?: string }
+        }) => ({
+            id: r.id,
+            type: r.type,
+            startDate: r.startDate instanceof Date ? r.startDate : new Date(r.startDate),
+            endDate: r.endDate instanceof Date ? r.endDate : new Date(r.endDate),
+            status: r.status,
+            user: { name: r.user?.name ?? r.user?.email ?? "" },
+        })
+    )
 
     const stats = {
         users: users.length,

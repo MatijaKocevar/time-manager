@@ -14,11 +14,7 @@ interface UpcomingHolidaysProps {
     }
 }
 
-export function UpcomingHolidays({
-    holidays,
-    locale,
-    translations,
-}: UpcomingHolidaysProps) {
+export function UpcomingHolidays({ holidays, locale, translations }: UpcomingHolidaysProps) {
     if (holidays.length === 0) {
         return null
     }
@@ -39,9 +35,7 @@ export function UpcomingHolidays({
                             className="flex items-center justify-between space-x-4"
                         >
                             <div className="space-y-1">
-                                <p className="text-sm font-medium leading-none">
-                                    {holiday.name}
-                                </p>
+                                <p className="text-sm font-medium leading-none">{holiday.name}</p>
                                 <p className="text-xs text-muted-foreground">
                                     {formatHolidayDate(holiday.date, locale)}
                                 </p>

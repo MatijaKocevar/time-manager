@@ -49,11 +49,16 @@ export function RecentPendingRequests({
                                     {translations.user}: {request.user.name}
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                    {translations.type}: <Badge variant="outline">{request.type}</Badge>
+                                    {translations.type}:{" "}
+                                    <Badge variant="outline">{request.type}</Badge>
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                     {translations.period}:{" "}
-                                    {formatRequestDateRange(request.startDate, request.endDate, locale)}
+                                    {formatRequestDateRange(
+                                        request.startDate,
+                                        request.endDate,
+                                        locale
+                                    )}
                                 </p>
                             </div>
                         </div>
