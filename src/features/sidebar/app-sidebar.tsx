@@ -164,10 +164,20 @@ export function AppSidebar({
                                     <div key={item.title}>
                                         <SidebarMenuItem>
                                             <div className="flex items-center w-full">
+                                                <SidebarMenuButton
+                                                    asChild
+                                                    isActive={isActive}
+                                                    className="w-full"
+                                                >
+                                                    <a href={item.url}>
+                                                        <item.icon />
+                                                        <span>{t(item.title)}</span>
+                                                    </a>
+                                                </SidebarMenuButton>
                                                 {hasChildren && (
                                                     <button
                                                         type="button"
-                                                        className="flex items-center justify-center h-8 w-8 hover:bg-accent hover:text-accent-foreground rounded-md"
+                                                        className="flex items-center justify-center h-8 w-8 hover:bg-accent hover:text-accent-foreground rounded-md ml-auto"
                                                         onClick={() => toggleItem(item.url)}
                                                     >
                                                         {itemExpanded ? (
@@ -177,16 +187,6 @@ export function AppSidebar({
                                                         )}
                                                     </button>
                                                 )}
-                                                <SidebarMenuButton
-                                                    asChild
-                                                    isActive={isActive}
-                                                    className={hasChildren ? "flex-1" : "w-full"}
-                                                >
-                                                    <a href={item.url}>
-                                                        <item.icon />
-                                                        <span>{t(item.title)}</span>
-                                                    </a>
-                                                </SidebarMenuButton>
                                             </div>
                                         </SidebarMenuItem>
                                         {isTasksItem && itemExpanded && (
