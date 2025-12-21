@@ -434,6 +434,64 @@
                 "importError": "❌ Failed to import holidays: {error}"
             }
         },
+        "dev": {
+            "title": "Development Tools",
+            "testEmail": {
+                "title": "Test Email Notification",
+                "description": "Send a test email to verify email service configuration",
+                "recipientLabel": "Email Address",
+                "recipientPlaceholder": "user@example.com",
+                "button": "Send Test Email",
+                "sending": "Sending..."
+            },
+            "testPush": {
+                "title": "Test Push Notification",
+                "description": "Send a test push notification to a specific user",
+                "userIdLabel": "User ID",
+                "userIdPlaceholder": "Enter user ID",
+                "button": "Send Test Push",
+                "sending": "Sending..."
+            },
+            "testAdminPush": {
+                "title": "Test Admin Broadcast",
+                "description": "Send a test push notification to all admins",
+                "button": "Send to All Admins",
+                "sending": "Sending..."
+            },
+            "simulateFlow": {
+                "title": "Simulate Complete Flow",
+                "description": "Simulate a complete request lifecycle: create → notify admins → approve → notify user",
+                "userEmailLabel": "User Email",
+                "userEmailPlaceholder": "user@example.com",
+                "button": "Simulate Flow",
+                "simulating": "Simulating..."
+            },
+            "subscriptions": {
+                "title": "View Push Subscriptions",
+                "description": "List all active push notification subscriptions",
+                "button": "Load Subscriptions",
+                "loading": "Loading...",
+                "subscriptionText": "subscription(s)",
+                "table": {
+                    "user": "User",
+                    "email": "Email",
+                    "role": "Role",
+                    "endpoint": "Endpoint",
+                    "created": "Created"
+                }
+            },
+            "results": {
+                "success": "Success",
+                "error": "Error",
+                "admins": "admin(s)",
+                "emailSent": "✅ Test email sent to {email}",
+                "pushSent": "✅ Push notification sent to user {userId}",
+                "adminPushSent": "✅ Broadcast sent to {count} admins",
+                "flowCompleted": "✅ Flow simulation completed",
+                "flowSteps": "Flow steps:",
+                "subscriptionsLoaded": "✅ Found {count} subscriptions"
+            }
+        },
         "pendingRequests": {
             "title": "Pending Requests",
             "table": {

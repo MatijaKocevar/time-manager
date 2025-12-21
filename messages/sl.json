@@ -434,6 +434,64 @@
                 "importError": "❌ Uvoz praznikov ni uspel: {error}"
             }
         },
+        "dev": {
+            "title": "Razvojna orodja",
+            "testEmail": {
+                "title": "Testno e-poštno obvestilo",
+                "description": "Pošlji testno e-pošto za preverjanje konfiguracije e-poštne storitve",
+                "recipientLabel": "E-poštni naslov",
+                "recipientPlaceholder": "uporabnik@primer.si",
+                "button": "Pošlji testno e-pošto",
+                "sending": "Pošiljanje..."
+            },
+            "testPush": {
+                "title": "Testno push obvestilo",
+                "description": "Pošlji testno push obvestilo določenemu uporabniku",
+                "userIdLabel": "ID uporabnika",
+                "userIdPlaceholder": "Vnesi ID uporabnika",
+                "button": "Pošlji testni push",
+                "sending": "Pošiljanje..."
+            },
+            "testAdminPush": {
+                "title": "Testno oddajanje adminom",
+                "description": "Pošlji testno push obvestilo vsem adminom",
+                "button": "Pošlji vsem adminom",
+                "sending": "Pošiljanje..."
+            },
+            "simulateFlow": {
+                "title": "Simuliraj celoten potek",
+                "description": "Simuliraj celoten življenjski cikel zahtevka: ustvari → obvesti admine → odobri → obvesti uporabnika",
+                "userEmailLabel": "E-pošta uporabnika",
+                "userEmailPlaceholder": "uporabnik@primer.si",
+                "button": "Simuliraj potek",
+                "simulating": "Simuliranje..."
+            },
+            "subscriptions": {
+                "title": "Prikaži push naročnine",
+                "description": "Seznam vseh aktivnih push obvestilnih naročnin",
+                "button": "Naloži naročnine",
+                "loading": "Nalaganje...",
+                "subscriptionText": "naročnin",
+                "table": {
+                    "user": "Uporabnik",
+                    "email": "E-pošta",
+                    "role": "Vloga",
+                    "endpoint": "Končna točka",
+                    "created": "Ustvarjeno"
+                }
+            },
+            "results": {
+                "success": "Uspeh",
+                "error": "Napaka",
+                "admins": "adminov",
+                "emailSent": "✅ Testna e-pošta poslana na {email}",
+                "pushSent": "✅ Push obvestilo poslano uporabniku {userId}",
+                "adminPushSent": "✅ Oddajanje poslano {count} adminom",
+                "flowCompleted": "✅ Simulacija poteka končana",
+                "flowSteps": "Koraki poteka:",
+                "subscriptionsLoaded": "✅ Najdenih {count} naročnin"
+            }
+        },
         "pendingRequests": {
             "title": "Čakajoči zahtevki",
             "table": {
