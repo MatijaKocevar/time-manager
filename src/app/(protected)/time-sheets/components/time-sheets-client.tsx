@@ -4,11 +4,12 @@ import { useQuery } from "@tanstack/react-query"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTimeSheetsStore } from "../stores/time-sheets-store"
-import { getDateRangeForView } from "../utils/date-helpers"
+import { getDateRangeForView, countWorkingDays } from "../utils/date-helpers"
 import { aggregateTimeEntriesByTaskAndDate } from "../utils/aggregation-helpers"
 import { getTimeSheetEntries } from "../actions/time-sheet-actions"
 import { timeSheetKeys } from "../query-keys"
 import { TimeSheetsTable } from "./time-sheets-table"
+import { TimeSheetsSummary } from "./time-sheets-summary"
 
 interface TimeSheetsClientProps {
     translations: {
@@ -18,6 +19,10 @@ interface TimeSheetsClientProps {
         noData: string
         loading: string
         error: string
+        workingDays: string
+        expected: string
+        total: string
+        overtime: string
     }
 }
 
@@ -52,6 +57,13 @@ export function TimeSheetsClient({ translations }: TimeSheetsClientProps) {
     const aggregatedData = data
         ? aggregateTimeEntriesByTaskAndDate(data, dateRange.dates)
         : { tasks: new Map(), dates: dateRange.dates.map((d) => d.toISOString().split("T")[0]) }
+
+    const totalSeconds = Array.from(aggregatedData.tasks.values()).reduce(
+        (sum, task) => sum + task.totalDuration,
+        0
+    )
+
+    const workingDays = countWorkingDays(dateRange.dates)
 
     return (
         <div className="flex flex-col gap-4 h-full">
@@ -97,15 +109,27 @@ export function TimeSheetsClient({ translations }: TimeSheetsClientProps) {
             )}
 
             {!isLoading && !error && (
-                <div className="flex-1 overflow-hidden">
-                    <TimeSheetsTable
-                        aggregatedData={aggregatedData}
+                <>
+                    <TimeSheetsSummary
+                        totalSeconds={totalSeconds}
+                        workingDays={workingDays}
                         translations={{
-                            task: translations.task,
-                            noData: translations.noData,
+                            workingDays: translations.workingDays,
+                            expected: translations.expected,
+                            total: translations.total,
+                            overtime: translations.overtime,
                         }}
                     />
-                </div>
+                    <div className="flex-1 overflow-hidden">
+                        <TimeSheetsTable
+                            aggregatedData={aggregatedData}
+                            translations={{
+                                task: translations.task,
+                                noData: translations.noData,
+                            }}
+                        />
+                    </div>
+                </>
             )}
         </div>
     )

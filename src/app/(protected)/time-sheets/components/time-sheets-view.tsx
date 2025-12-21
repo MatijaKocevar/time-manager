@@ -4,6 +4,7 @@ import { TimeEntriesDialog } from "../../tasks/components/time-entries-dialog"
 
 export async function TimeSheetsView() {
     const t = await getTranslations("timeSheets")
+    const tSummary = await getTranslations("hours.summary")
 
     return (
         <>
@@ -15,6 +16,10 @@ export async function TimeSheetsView() {
                     noData: t("messages.noData"),
                     loading: t("messages.loading"),
                     error: t("messages.error"),
+                    workingDays: tSummary("workingDays"),
+                    expected: tSummary("expected"),
+                    total: tSummary("total"),
+                    overtime: tSummary("overtime"),
                 }}
             />
             <TimeEntriesDialog />

@@ -106,3 +106,10 @@ export function formatDateHeader(date: Date): string {
     const weekday = date.toLocaleDateString("en-US", { weekday: "short" })
     return `${weekday} ${day}`
 }
+
+export function countWorkingDays(dates: Date[]): number {
+    return dates.filter((date) => {
+        const day = date.getDay()
+        return day !== 0 && day !== 6
+    }).length
+}
