@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
-import { getTranslations } from "next-intl/server"
+import { getTranslations, getLocale } from "next-intl/server"
 import { authConfig } from "@/lib/auth"
 import { getAllRequests } from "../../requests/actions/request-actions"
 import { getHolidays } from "../holidays/actions/holiday-actions"
@@ -13,12 +13,13 @@ export default async function PendingRequestsPage() {
         redirect("/")
     }
 
-    const [tTable, tReject, tPagination, tFilter, tTypes] = await Promise.all([
+    const [tTable, tReject, tPagination, tFilter, tTypes, locale] = await Promise.all([
         getTranslations("admin.pendingRequests.table"),
         getTranslations("admin.pendingRequests.reject"),
         getTranslations("admin.pendingRequests.pagination"),
         getTranslations("admin.pendingRequests.filter"),
         getTranslations("requests.types"),
+        getLocale(),
     ])
 
     const translations = {
@@ -88,6 +89,7 @@ export default async function PendingRequestsPage() {
                     requests={requestsData}
                     holidays={holidays}
                     translations={translations}
+                    locale={locale}
                 />
             </div>
         </div>

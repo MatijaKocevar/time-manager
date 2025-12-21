@@ -10,6 +10,7 @@ import { calculateWorkdays, formatDate } from "./helpers"
 interface CreateColumnsParams {
     translations: PendingRequestTranslations
     holidays: Array<{ date: Date; name: string }>
+    locale: string
     isApproving: boolean
     isRejecting: boolean
     onApprove: (id: string) => void
@@ -19,6 +20,7 @@ interface CreateColumnsParams {
 export function createColumns({
     translations,
     holidays,
+    locale,
     isApproving,
     isRejecting,
     onApprove,
@@ -67,13 +69,13 @@ export function createColumns({
         {
             accessorKey: "startDate",
             header: translations.table.startDate,
-            cell: ({ row }) => formatDate(row.original.startDate),
+            cell: ({ row }) => formatDate(row.original.startDate, locale),
             enableColumnFilter: false,
         },
         {
             accessorKey: "endDate",
             header: translations.table.endDate,
-            cell: ({ row }) => formatDate(row.original.endDate),
+            cell: ({ row }) => formatDate(row.original.endDate, locale),
             enableColumnFilter: false,
         },
         {

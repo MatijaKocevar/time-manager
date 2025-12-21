@@ -31,6 +31,10 @@ export const calculateWorkdays = (
     return count
 }
 
-export const formatDate = (date: Date): string => {
-    return new Date(date).toLocaleDateString()
+export const formatDate = (date: Date, locale: string): string => {
+    return new Date(date).toLocaleDateString(locale, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    })
 }

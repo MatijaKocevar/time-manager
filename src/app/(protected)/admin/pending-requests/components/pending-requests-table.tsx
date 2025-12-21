@@ -36,12 +36,14 @@ interface PendingRequestsTableProps {
     requests: RequestDisplay[]
     holidays: Array<{ date: Date; name: string }>
     translations: PendingRequestTranslations
+    locale: string
 }
 
 export function PendingRequestsTable({
     requests,
     holidays,
     translations,
+    locale,
 }: PendingRequestsTableProps) {
     const queryClient = useQueryClient()
     const isMobile = useIsMobile()
@@ -99,12 +101,13 @@ export function PendingRequestsTable({
             createColumns({
                 translations,
                 holidays,
+                locale,
                 isApproving: approveMutation.isPending,
                 isRejecting: rejectMutation.isPending,
                 onApprove: (requestId: string) => approveMutation.mutate({ id: requestId }),
                 onReject: openRejectDialog,
             }),
-        [approveMutation, rejectMutation.isPending, holidays, translations, openRejectDialog]
+        [approveMutation, rejectMutation.isPending, holidays, translations, locale, openRejectDialog]
     )
 
     const handleReject = () => {
