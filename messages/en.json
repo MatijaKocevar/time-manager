@@ -437,6 +437,7 @@
                 "startDate": "Start Date",
                 "endDate": "End Date",
                 "hours": "Hours",
+                "days": "d",
                 "reason": "Reason",
                 "actions": "Actions",
                 "approve": "Approve",
@@ -444,6 +445,7 @@
                 "approving": "Approving...",
                 "rejecting": "Rejecting...",
                 "noRequests": "No pending requests found.",
+                "noPending": "No pending requests found.",
                 "searchPlaceholder": "Search...",
                 "cancel": "Cancel"
             },
@@ -455,8 +457,16 @@
             },
             "reject": {
                 "title": "Reject Request",
+                "confirmQuestion": "Are you sure you want to reject this request?",
+                "user": "User:",
+                "type": "Type:",
+                "period": "Period:",
                 "reason": "Rejection Reason",
-                "reasonPlaceholder": "Enter reason for rejection"
+                "reasonRequired": "*",
+                "reasonPlaceholder": "Enter reason for rejection",
+                "cancel": "Cancel",
+                "rejecting": "Rejecting...",
+                "rejectRequest": "Reject Request"
             },
             "pagination": {
                 "previous": "Previous",
