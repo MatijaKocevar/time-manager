@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -93,10 +94,19 @@ export default function LoginPage() {
                             />
                         </div>
                     </CardContent>
-                    <CardFooter>
-                        <Button type="submit" className="w-full mt-4" disabled={isLoading}>
+                    <CardFooter className="flex flex-col space-y-4">
+                        <Button type="submit" className="w-full" disabled={isLoading}>
                             {isLoading ? tCommon("status.signingIn") : tCommon("actions.signIn")}
                         </Button>
+                        <p className="text-center text-sm text-muted-foreground">
+                            {t("dontHaveAccount")}{" "}
+                            <Link
+                                href="/register"
+                                className="text-primary hover:underline font-medium"
+                            >
+                                {t("createAccount")}
+                            </Link>
+                        </p>
                     </CardFooter>
                 </form>
             </Card>

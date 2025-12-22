@@ -302,3 +302,128 @@ export function requestRejectedEmail(
 </html>
     `.trim()
 }
+
+export function verificationEmail(
+    email: string,
+    token: string,
+    locale: "en" | "sl" = "en"
+): string {
+    const verificationUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/verify-email?token=${token}`
+
+    const content = {
+        en: {
+            subject: "Verify your email - Time Manager",
+            title: "Welcome to Time Manager!",
+            intro: "Thank you for creating an account. Please verify your email address to complete your registration.",
+            instructionsTitle: "Verify Your Email",
+            instructions:
+                "Click the button below to verify your email address. This link will expire in 24 hours.",
+            buttonText: "Verify Email Address",
+            alternativeText:
+                "If the button doesn't work, copy and paste this link into your browser:",
+            expiryNotice: "This verification link expires in 24 hours.",
+            ignoreText:
+                "If you didn't create an account with Time Manager, you can safely ignore this email.",
+        },
+        sl: {
+            subject: "Potrdite vaš email - Time Manager",
+            title: "Dobrodošli v Time Manager!",
+            intro: "Hvala, ker ste ustvarili račun. Prosimo, potrdite svoj email naslov za dokončanje registracije.",
+            instructionsTitle: "Potrdite vaš email",
+            instructions:
+                "Kliknite na spodnji gumb za potrditev vašega email naslova. Ta povezava bo potekla čez 24 ur.",
+            buttonText: "Potrdi email naslov",
+            alternativeText:
+                "Če gumb ne deluje, kopirajte in prilepite to povezavo v vaš brskalnik:",
+            expiryNotice: "Ta potrditvena povezava poteče čez 24 ur.",
+            ignoreText:
+                "Če niste ustvarili računa pri Time Manager, lahko to sporočilo mirno ignorirate.",
+        },
+    }
+
+    const t = content[locale]
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .info-box { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }
+        .button { 
+            display: inline-block; 
+            background-color: #2563eb; 
+            color: white; 
+            padding: 14px 28px; 
+            text-decoration: none; 
+            border-radius: 6px; 
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .link-box { 
+            background-color: #f3f4f6; 
+            padding: 15px; 
+            border-radius: 6px; 
+            margin: 15px 0; 
+            word-break: break-all;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .warning { 
+            background-color: #fef3c7; 
+            padding: 15px; 
+            border-radius: 6px; 
+            margin: 20px 0; 
+            border-left: 4px solid #f59e0b;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 30px; 
+            color: #6b7280; 
+            font-size: 14px; 
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${t.title}</h1>
+        </div>
+        <div class="content">
+            <p>${t.intro}</p>
+            
+            <div class="info-box">
+                <h3>${t.instructionsTitle}</h3>
+                <p>${t.instructions}</p>
+                
+                <center>
+                    <a href="${verificationUrl}" class="button">
+                        ${t.buttonText}
+                    </a>
+                </center>
+            </div>
+            
+            <div class="warning">
+                <p style="margin: 0; font-size: 14px;">⏰ ${t.expiryNotice}</p>
+            </div>
+            
+            <p style="font-size: 14px; color: #6b7280;">${t.alternativeText}</p>
+            <div class="link-box">
+                ${verificationUrl}
+            </div>
+            
+            <div class="footer">
+                <p>${t.ignoreText}</p>
+                <p style="margin-top: 20px;">Time Manager - ${locale === "en" ? "Time & Request Management System" : "Sistem za upravljanje časa in zahtev"}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim()
+}

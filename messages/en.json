@@ -625,7 +625,36 @@
     "auth": {
         "signIn": "Sign in",
         "signInDescription": "Enter your credentials to access your account",
-        "loginFailed": "Invalid email or password"
+        "loginFailed": "Invalid email or password",
+        "dontHaveAccount": "Don't have an account?",
+        "createAccount": "Create account",
+        "register": {
+            "createAccount": "Create Account",
+            "createAccountDescription": "Sign up for a new account to get started",
+            "confirmPassword": "Confirm Password",
+            "passwordRequirement": "At least {minLength} characters required",
+            "creatingAccount": "Creating account...",
+            "alreadyHaveAccount": "Already have an account?",
+            "signIn": "Sign in",
+            "registrationFailed": "Registration failed. Please try again.",
+            "checkYourEmail": "Check Your Email",
+            "verificationEmailSent": "We've sent a verification link to your email address.",
+            "verificationInstructions": "Please check your inbox and click the verification link to activate your account. The link will expire in 24 hours.",
+            "backToLogin": "Back to Login"
+        },
+        "verification": {
+            "verifying": "Verifying Your Email",
+            "pleaseWait": "Please wait while we verify your email address...",
+            "verificationFailed": "Verification Failed",
+            "errorOccurred": "An error occurred during verification",
+            "invalidToken": "Invalid or missing verification token",
+            "emailVerified": "Email Verified Successfully!",
+            "successMessage": "Your email has been verified. You can now sign in to your account.",
+            "redirecting": "Redirecting you to the login page...",
+            "goToLogin": "Go to Login",
+            "registerAgain": "Register Again",
+            "backToLogin": "Back to Login"
+        }
     },
     "validation": {
         "required": "This field is required",

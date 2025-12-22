@@ -22,7 +22,7 @@ export async function sendEmail(
 
     try {
         await resend.emails.send({
-            from: "Time Manager <noreply@timemanager.com>",
+            from: "Time Manager <noreply@timemanager-demo.com>",
             to,
             subject,
             html,

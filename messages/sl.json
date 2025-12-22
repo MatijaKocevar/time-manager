@@ -625,7 +625,36 @@
     "auth": {
         "signIn": "Prijava",
         "signInDescription": "Vnesite svoje poverilnice za dostop do računa",
-        "loginFailed": "Napačna e-pošta ali geslo"
+        "loginFailed": "Napačna e-pošta ali geslo",
+        "dontHaveAccount": "Še nimate računa?",
+        "createAccount": "Ustvari račun",
+        "register": {
+            "createAccount": "Ustvari račun",
+            "createAccountDescription": "Registrirajte se za nov račun",
+            "confirmPassword": "Potrdite geslo",
+            "passwordRequirement": "Zahtevanih je vsaj {minLength} znakov",
+            "creatingAccount": "Ustvarjam račun...",
+            "alreadyHaveAccount": "Že imate račun?",
+            "signIn": "Prijavite se",
+            "registrationFailed": "Registracija ni uspela. Prosimo poskusite znova.",
+            "checkYourEmail": "Preverite svojo e-pošto",
+            "verificationEmailSent": "Poslali smo potrditveno povezavo na vaš e-poštni naslov.",
+            "verificationInstructions": "Prosimo, preverite svojo e-pošto in kliknite na potrditveno povezavo za aktivacijo računa. Povezava bo potekla čez 24 ur.",
+            "backToLogin": "Nazaj na prijavo"
+        },
+        "verification": {
+            "verifying": "Preverjanje e-poštnega naslova",
+            "pleaseWait": "Prosimo počakajte, medtem ko preverjamo vaš e-poštni naslov...",
+            "verificationFailed": "Preverjanje ni uspelo",
+            "errorOccurred": "Med preverjanjem je prišlo do napake",
+            "invalidToken": "Neveljaven ali manjkajoč potrditveni token",
+            "emailVerified": "E-pošta uspešno potrjena!",
+            "successMessage": "Vaš e-poštni naslov je bil potrjen. Sedaj se lahko prijavite v svoj račun.",
+            "redirecting": "Preusmerjamo vas na stran za prijavo...",
+            "goToLogin": "Pojdi na prijavo",
+            "registerAgain": "Registrirajte se znova",
+            "backToLogin": "Nazaj na prijavo"
+        }
     },
     "validation": {
         "required": "To polje je obvezno",
