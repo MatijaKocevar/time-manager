@@ -8,10 +8,13 @@ import { HOUR_TYPES, HOUR_TYPE_COLORS } from "../constants/hour-types"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 
 function formatHoursMinutes(hours: number): string {
-    const h = Math.floor(hours)
-    const m = Math.round((hours - h) * 60)
-    if (m === 0) return `${h}h`
-    return `${h}h ${m}m`
+    const isNegative = hours < 0
+    const absHours = Math.abs(hours)
+    const h = Math.floor(absHours)
+    const m = Math.round((absHours - h) * 60)
+    const sign = isNegative ? "-" : ""
+    if (m === 0) return `${sign}${h}h`
+    return `${sign}${h}h ${m}m`
 }
 
 interface HoursSummaryProps {
@@ -40,10 +43,6 @@ export function HoursSummary({
 
     const monthlyGrandTotal = monthlyEntries
         .filter((entry) => entry.taskId === "total")
-        .reduce((sum, entry) => sum + entry.hours, 0)
-
-    const actualHours = monthlyEntries
-        .filter((entry) => entry.taskId === "grand_total")
         .reduce((sum, entry) => sum + entry.hours, 0)
 
     let expectedHours = 0
@@ -77,7 +76,7 @@ export function HoursSummary({
         }
 
         expectedHours = workingDays * 8
-        overtime = actualHours - expectedHours
+        overtime = monthlyGrandTotal - expectedHours
     }
 
     const weeklyTypeTotals = weeklyEntries.filter((entry) => entry.taskId === "total")
@@ -129,7 +128,7 @@ export function HoursSummary({
                                 <div>
                                     <span className="text-muted-foreground">{t("total")}: </span>
                                     <span className="font-semibold">
-                                        {formatHoursMinutes(actualHours)}
+                                        {formatHoursMinutes(monthlyGrandTotal)}
                                     </span>
                                 </div>
                             </div>
