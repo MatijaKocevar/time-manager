@@ -186,33 +186,51 @@ export function ShiftsCalendar({
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <div className="flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={handlePrevious}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleNext}>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={handleToday}>
-                        {tCommon("time.today")}
-                    </Button>
-                    <h2 className="text-xl font-semibold ml-4">
-                        {viewMode === "week"
-                            ? t("views.weekOf", {
-                                  date: startDate.toLocaleDateString(dateLocale, {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                  }),
-                              })
-                            : currentDate.toLocaleDateString(dateLocale, {
-                                  month: "long",
-                                  year: "numeric",
-                              })}
-                    </h2>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 shrink-0">
+                <div className="flex items-center justify-between lg:justify-start gap-2">
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={handlePrevious}>
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleNext}>
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleToday}>
+                            {tCommon("time.today")}
+                        </Button>
+                    </div>
+                    <div className="flex gap-2 lg:hidden">
+                        <Button
+                            variant={viewMode === "week" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleViewModeChange("week")}
+                        >
+                            {t("views.weekView")}
+                        </Button>
+                        <Button
+                            variant={viewMode === "month" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleViewModeChange("month")}
+                        >
+                            {t("views.monthView")}
+                        </Button>
+                    </div>
                 </div>
-                <div className="flex gap-2">
+                <h2 className="text-xl font-semibold text-center lg:text-left lg:ml-4">
+                    {viewMode === "week"
+                        ? t("views.weekOf", {
+                              date: startDate.toLocaleDateString(dateLocale, {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                              }),
+                          })
+                        : currentDate.toLocaleDateString(dateLocale, {
+                              month: "long",
+                              year: "numeric",
+                          })}
+                </h2>
+                <div className="hidden lg:flex gap-2">
                     <Button
                         variant={viewMode === "week" ? "default" : "outline"}
                         size="sm"
