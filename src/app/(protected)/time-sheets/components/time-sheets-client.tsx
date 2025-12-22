@@ -201,6 +201,7 @@ export function TimeSheetsClient({
                     aggregatedData={aggregatedData}
                     isLoading={isLoading}
                     error={error ? translations.error : null}
+                    currentTime={currentTime}
                     translations={{
                         task: translations.task,
                         noData: translations.noData,

@@ -25,6 +25,7 @@ interface TimeSheetsTableProps {
     aggregatedData: AggregatedTimeSheet
     isLoading: boolean
     error: string | null
+    currentTime: Date
     translations: {
         task: string
         noData: string
@@ -35,6 +36,7 @@ export function TimeSheetsTable({
     aggregatedData,
     isLoading,
     error,
+    currentTime,
     translations,
 }: TimeSheetsTableProps) {
     const queryClient = useQueryClient()
@@ -186,6 +188,10 @@ export function TimeSheetsTable({
                                         const isHovered = hoveredCell === cellKey
                                         const isLoadingThis = loadingTask === task.taskId
 
+                                        const displayDuration = isTracking && isTodayDay && activeTimer
+                                            ? Math.floor((currentTime.getTime() - activeTimer.startTime.getTime()) / 1000)
+                                            : durationInSeconds
+
                                         return (
                                             <TableCell
                                                 key={dateStr}
@@ -200,19 +206,19 @@ export function TimeSheetsTable({
                                                 <div className="flex items-center justify-center gap-1">
                                                     <span
                                                         className={`${
-                                                            durationInSeconds
+                                                            displayDuration
                                                                 ? "cursor-pointer hover:underline"
                                                                 : ""
                                                         }`}
                                                         onClick={() => {
-                                                            if (durationInSeconds) {
+                                                            if (displayDuration) {
                                                                 openTimeEntriesDialog(task.taskId)
                                                             }
                                                         }}
                                                         suppressHydrationWarning
                                                     >
-                                                        {durationInSeconds
-                                                            ? formatDuration(durationInSeconds)
+                                                        {displayDuration
+                                                            ? formatDuration(displayDuration)
                                                             : "-"}
                                                     </span>
                                                     {(isHovered || isTracking) && isTodayDay && (
