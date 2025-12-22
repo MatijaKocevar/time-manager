@@ -19,6 +19,18 @@ export const StopTimerSchema = z.object({
     id: z.string(),
 })
 
+export const UpdateTaskTimeEntrySchema = z.object({
+    id: z.string(),
+    startTime: z.date(),
+    endTime: z.date().nullable().optional(),
+})
+
+export const DeleteTaskTimeEntrySchema = z.object({
+    id: z.string(),
+})
+
 export type TaskTimeEntryDisplay = z.infer<typeof TaskTimeEntryDisplaySchema>
 export type StartTimerInput = z.infer<typeof StartTimerSchema>
 export type StopTimerInput = z.infer<typeof StopTimerSchema>
+export type UpdateTaskTimeEntryInput = z.infer<typeof UpdateTaskTimeEntrySchema>
+export type DeleteTaskTimeEntryInput = z.infer<typeof DeleteTaskTimeEntrySchema>

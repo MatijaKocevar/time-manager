@@ -257,6 +257,7 @@
             "startedAt": "Začeto ob",
             "endedAt": "Končano ob",
             "noTimeEntries": "Še ni časovnih vnosov",
+            "deleteTimeEntryConfirm": "Ali si prepričan, da želiš izbrisati ta vnos časa?",
             "subtasksInheritList": "Podnaloge podedujejo seznam starša"
         },
         "table": {
@@ -289,6 +290,17 @@
             "noTasksYet": "Še ni nalog. Ustvarite naloge na strani Naloge, da začnete slediti času!",
             "task": "Naloga",
             "list": "Seznam"
+        },
+        "editTimeEntry": {
+            "title": "Uredi vnos časa",
+            "description": "Uredi čas začetka in konca za ta vnos časa",
+            "descriptionActive": "Uredi čas začetka za ta aktivni vnos sledenja",
+            "startTime": "Čas začetka",
+            "endTime": "Čas konca",
+            "activeNote": "Ta vnos trenutno sledi času. Urejati je mogoče le čas začetka. Ustavi štoparico, da urejaš čas konca.",
+            "updateError": "Posodobitev vnosa časa ni uspela",
+            "deleteError": "Brisanje vnosa časa ni uspelo",
+            "deleteConfirm": "Ali si prepričan, da želiš izbrisati ta vnos časa?"
         }
     },
     "requests": {

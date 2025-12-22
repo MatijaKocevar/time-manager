@@ -257,6 +257,7 @@
             "startedAt": "Started At",
             "endedAt": "Ended At",
             "noTimeEntries": "No time entries yet",
+            "deleteTimeEntryConfirm": "Are you sure you want to delete this time entry?",
             "subtasksInheritList": "Subtasks inherit parent's list"
         },
         "table": {
@@ -289,6 +290,17 @@
             "noTasksYet": "No tasks yet. Create tasks from the Tasks page to start tracking time!",
             "task": "Task",
             "list": "List"
+        },
+        "editTimeEntry": {
+            "title": "Edit Time Entry",
+            "description": "Edit the start and end times for this time entry",
+            "descriptionActive": "Edit the start time for this active tracking entry",
+            "startTime": "Start Time",
+            "endTime": "End Time",
+            "activeNote": "This entry is currently tracking. Only the start time can be edited. Stop the timer to edit the end time.",
+            "updateError": "Failed to update time entry",
+            "deleteError": "Failed to delete time entry",
+            "deleteConfirm": "Are you sure you want to delete this time entry?"
         }
     },
     "requests": {

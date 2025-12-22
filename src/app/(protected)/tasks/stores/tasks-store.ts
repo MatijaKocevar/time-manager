@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import type { TaskStatus } from "../schemas"
+import type { TaskTimeEntryDisplay } from "../schemas/task-time-entry-schemas"
 import { TASK_STATUS } from "../constants/task-statuses"
 
 interface ActiveTimer {
@@ -28,6 +29,10 @@ interface TasksStoreState {
     timeEntriesDialog: {
         isOpen: boolean
         taskId: string | null
+    }
+    editTimeEntryDialog: {
+        isOpen: boolean
+        entry: TaskTimeEntryDisplay | null
     }
     deleteDialog: {
         isOpen: boolean
@@ -89,6 +94,8 @@ interface TasksStoreActions {
     closeCreateDialog: () => void
     openTimeEntriesDialog: (taskId: string) => void
     closeTimeEntriesDialog: () => void
+    openEditTimeEntryDialog: (entry: TaskTimeEntryDisplay) => void
+    closeEditTimeEntryDialog: () => void
     openDeleteDialog: (taskId: string) => void
     closeDeleteDialog: () => void
     openListDialog: (listId?: string) => void
@@ -288,6 +295,10 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
         isOpen: false,
         taskId: null,
     },
+    editTimeEntryDialog: {
+        isOpen: false,
+        entry: null,
+    },
     deleteDialog: {
         isOpen: false,
         taskId: null,
@@ -343,6 +354,15 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
     closeTimeEntriesDialog: () =>
         set(() => ({
             timeEntriesDialog: { isOpen: false, taskId: null },
+        })),
+
+    openEditTimeEntryDialog: (entry) =>
+        set(() => ({
+            editTimeEntryDialog: { isOpen: true, entry },
+        })),
+    closeEditTimeEntryDialog: () =>
+        set(() => ({
+            editTimeEntryDialog: { isOpen: false, entry: null },
         })),
 
     openDeleteDialog: (taskId) =>

@@ -72,9 +72,7 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
     }
 
     const handleClick = () => {
-        if (!isRunning) {
-            openTimeEntriesDialog(task.id)
-        }
+        openTimeEntriesDialog(task.id)
     }
 
     return (
@@ -92,7 +90,6 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
             <button
                 onClick={handleClick}
                 className="text-sm font-mono hover:underline cursor-pointer"
-                disabled={isRunning}
             >
                 {isRunning ? formatDuration(elapsedSeconds) : formatDuration(task.totalTime ?? 0)}
             </button>

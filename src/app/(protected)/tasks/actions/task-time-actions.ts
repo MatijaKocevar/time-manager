@@ -7,8 +7,12 @@ import { authConfig } from "@/lib/auth"
 import {
     StartTimerSchema,
     StopTimerSchema,
+    UpdateTaskTimeEntrySchema,
+    DeleteTaskTimeEntrySchema,
     type StartTimerInput,
     type StopTimerInput,
+    type UpdateTaskTimeEntryInput,
+    type DeleteTaskTimeEntryInput,
     type TaskTimeEntryDisplay,
 } from "../schemas/task-time-entry-schemas"
 import { recalculateDailySummaryStandalone } from "@/app/(protected)/hours/utils/summary-helpers"
@@ -254,5 +258,150 @@ export async function getTotalTaskTime(taskId: string): Promise<number> {
             throw error
         }
         throw new Error("Failed to calculate total time")
+    }
+}
+
+async function getHourTypeForDate(
+    userId: string,
+    date: Date
+): Promise<"WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER"> {
+    const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+
+    const approvedRequest = await prisma.request.findFirst({
+        where: {
+            userId,
+            status: "APPROVED",
+            affectsHourType: true,
+            startDate: { lte: dateUTC },
+            endDate: { gte: dateUTC },
+            cancelledAt: null,
+        },
+        orderBy: {
+            approvedAt: "desc",
+        },
+    })
+
+    return approvedRequest ? approvedRequest.type : "WORK"
+}
+
+export async function updateTaskTimeEntry(input: UpdateTaskTimeEntryInput) {
+    try {
+        const session = await requireAuth()
+
+        const validation = UpdateTaskTimeEntrySchema.safeParse(input)
+        if (!validation.success) {
+            return { error: validation.error.issues[0].message }
+        }
+
+        const { id, startTime, endTime } = validation.data
+
+        const existing = await prisma.taskTimeEntry.findUnique({
+            where: { id },
+        })
+
+        if (!existing || existing.userId !== session.user.id) {
+            return { error: "Time entry not found" }
+        }
+
+        if (endTime && startTime >= endTime) {
+            return { error: "Start time must be before end time" }
+        }
+
+        if (startTime > new Date()) {
+            return { error: "Start time cannot be in the future" }
+        }
+
+        if (endTime && endTime > new Date()) {
+            return { error: "End time cannot be in the future" }
+        }
+
+        const oldDate = new Date(existing.startTime)
+        oldDate.setHours(0, 0, 0, 0)
+
+        const newDate = new Date(startTime)
+        newDate.setHours(0, 0, 0, 0)
+
+        const dateChanged = oldDate.getTime() !== newDate.getTime()
+
+        let duration = existing.duration
+        if (endTime) {
+            duration = Math.floor((endTime.getTime() - startTime.getTime()) / 1000)
+        } else if (existing.endTime) {
+            duration = Math.floor((existing.endTime.getTime() - startTime.getTime()) / 1000)
+        }
+
+        await prisma.$transaction(async (tx) => {
+            await tx.taskTimeEntry.update({
+                where: { id },
+                data: {
+                    startTime,
+                    endTime: endTime !== undefined ? endTime : existing.endTime,
+                    duration,
+                },
+            })
+
+            const oldHourType = await getHourTypeForDate(session.user.id, oldDate)
+            await recalculateDailySummaryStandalone(session.user.id, oldDate, oldHourType)
+
+            if (dateChanged) {
+                const newHourType = await getHourTypeForDate(session.user.id, newDate)
+                await recalculateDailySummaryStandalone(session.user.id, newDate, newHourType)
+            }
+        })
+
+        revalidatePath("/tasks")
+        revalidatePath("/hours")
+        revalidatePath("/time-sheets")
+
+        return { success: true }
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error.message }
+        }
+        return { error: "Failed to update time entry" }
+    }
+}
+
+export async function deleteTaskTimeEntry(input: DeleteTaskTimeEntryInput) {
+    try {
+        const session = await requireAuth()
+
+        const validation = DeleteTaskTimeEntrySchema.safeParse(input)
+        if (!validation.success) {
+            return { error: validation.error.issues[0].message }
+        }
+
+        const { id } = validation.data
+
+        const existing = await prisma.taskTimeEntry.findUnique({
+            where: { id },
+        })
+
+        if (!existing || existing.userId !== session.user.id) {
+            return { error: "Time entry not found" }
+        }
+
+        const entryDate = new Date(existing.startTime)
+        entryDate.setHours(0, 0, 0, 0)
+
+        await prisma.$transaction(async (tx) => {
+            await tx.taskTimeEntry.delete({
+                where: { id },
+            })
+
+            const hourType = await getHourTypeForDate(session.user.id, entryDate)
+            await recalculateDailySummaryStandalone(session.user.id, entryDate, hourType)
+        })
+
+        revalidatePath("/tasks")
+        revalidatePath("/hours")
+        revalidatePath("/time-sheets")
+
+        return { success: true }
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error.message }
+        }
+        return { error: "Failed to delete time entry" }
     }
 }
