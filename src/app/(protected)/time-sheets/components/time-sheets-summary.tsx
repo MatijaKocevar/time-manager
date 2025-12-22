@@ -44,9 +44,7 @@ export function TimeSheetsSummary({
                         </div>
                         <div className="h-4 w-px bg-border" />
                         <div>
-                            <span className="text-muted-foreground">
-                                {translations.expected}:{" "}
-                            </span>
+                            <span className="text-muted-foreground">{translations.expected}: </span>
                             <span className="font-semibold">
                                 {formatHoursMinutes(expectedHours)}
                             </span>
@@ -54,9 +52,7 @@ export function TimeSheetsSummary({
                         <div className="h-4 w-px bg-border" />
                         <div>
                             <span className="text-muted-foreground">{translations.total}: </span>
-                            <span className="font-semibold">
-                                {formatHoursMinutes(totalHours)}
-                            </span>
+                            <span className="font-semibold">{formatHoursMinutes(totalHours)}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
