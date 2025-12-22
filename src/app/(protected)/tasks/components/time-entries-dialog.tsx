@@ -176,9 +176,7 @@ export function TimeEntriesDialog() {
 
     const totalDuration = entries.reduce((sum, entry) => {
         if (entry.endTime === null) {
-            const elapsed = Math.floor(
-                (currentTime.getTime() - entry.startTime.getTime()) / 1000
-            )
+            const elapsed = Math.floor((currentTime.getTime() - entry.startTime.getTime()) / 1000)
             return sum + elapsed
         }
         return sum + (entry.duration ?? 0)
@@ -215,14 +213,13 @@ export function TimeEntriesDialog() {
                                 <TableBody>
                                     {entries.map((entry) => {
                                         const isActive = entry.endTime === null
-                                        const elapsed =
-                                            isActive
-                                                ? Math.floor(
-                                                      (currentTime.getTime() -
-                                                          entry.startTime.getTime()) /
-                                                          1000
-                                                  )
-                                                : null
+                                        const elapsed = isActive
+                                            ? Math.floor(
+                                                  (currentTime.getTime() -
+                                                      entry.startTime.getTime()) /
+                                                      1000
+                                              )
+                                            : null
 
                                         const duration =
                                             isActive && elapsed !== null
@@ -281,7 +278,9 @@ export function TimeEntriesDialog() {
                                                             variant="destructive"
                                                             size="sm"
                                                             onClick={() => {
-                                                                stopMutation.mutate({ id: entry.id })
+                                                                stopMutation.mutate({
+                                                                    id: entry.id,
+                                                                })
                                                             }}
                                                             disabled={stopMutation.isPending}
                                                             className="h-8 w-8 p-0"

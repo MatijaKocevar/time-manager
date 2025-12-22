@@ -188,9 +188,14 @@ export function TimeSheetsTable({
                                         const isHovered = hoveredCell === cellKey
                                         const isLoadingThis = loadingTask === task.taskId
 
-                                        const displayDuration = isTracking && isTodayDay && activeTimer
-                                            ? Math.floor((currentTime.getTime() - activeTimer.startTime.getTime()) / 1000)
-                                            : durationInSeconds
+                                        const displayDuration =
+                                            isTracking && isTodayDay && activeTimer
+                                                ? Math.floor(
+                                                      (currentTime.getTime() -
+                                                          activeTimer.startTime.getTime()) /
+                                                          1000
+                                                  )
+                                                : durationInSeconds
 
                                         return (
                                             <TableCell
