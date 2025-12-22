@@ -99,46 +99,63 @@ export function TimeSheetsClient({
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" onClick={goToPreviousPeriod}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <div className="min-w-[200px] text-center font-semibold">{dateRange.title}</div>
-                    <Button variant="outline" size="icon" onClick={goToNextPeriod}>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
+            <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Button variant="outline" size="icon" onClick={goToPreviousPeriod}>
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <div className="text-center font-semibold whitespace-nowrap">
+                            {dateRange.title}
+                        </div>
+                        <Button variant="outline" size="icon" onClick={goToNextPeriod}>
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="text-sm hidden lg:block">
+                            <span className="text-muted-foreground">{translations.total}: </span>
+                            <span
+                                className={`font-semibold ${
+                                    viewMode === "week" && totalSeconds / 3600 > 40
+                                        ? "text-red-600 dark:text-red-500"
+                                        : ""
+                                }`}
+                            >
+                                {formatHoursMinutes(totalSeconds)}
+                            </span>
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                variant={viewMode === "week" ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setViewMode("week")}
+                            >
+                                {translations.week}
+                            </Button>
+                            <Button
+                                variant={viewMode === "month" ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setViewMode("month")}
+                            >
+                                {translations.month}
+                            </Button>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="text-sm">
-                        <span className="text-muted-foreground">{translations.total}: </span>
-                        <span
-                            className={`font-semibold ${
-                                viewMode === "week" && totalSeconds / 3600 > 40
-                                    ? "text-red-600 dark:text-red-500"
-                                    : ""
-                            }`}
-                        >
-                            {formatHoursMinutes(totalSeconds)}
-                        </span>
-                    </div>
-                    <div className="flex gap-2">
-                        <Button
-                            variant={viewMode === "week" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setViewMode("week")}
-                        >
-                            {translations.week}
-                        </Button>
-                        <Button
-                            variant={viewMode === "month" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setViewMode("month")}
-                        >
-                            {translations.month}
-                        </Button>
-                    </div>
+                <div className="text-sm text-center lg:hidden">
+                    <span className="text-muted-foreground">{translations.total}: </span>
+                    <span
+                        className={`font-semibold ${
+                            viewMode === "week" && totalSeconds / 3600 > 40
+                                ? "text-red-600 dark:text-red-500"
+                                : ""
+                        }`}
+                    >
+                        {formatHoursMinutes(totalSeconds)}
+                    </span>
                 </div>
             </div>
 
