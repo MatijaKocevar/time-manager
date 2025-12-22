@@ -7,21 +7,32 @@ import { updateThemePreference } from "@/app/(protected)/actions/theme-actions"
 export function ThemeProvider({
     children,
     initialTheme,
+    isAuthenticated = false,
 }: {
     children: React.ReactNode
     initialTheme: "light" | "dark"
+    isAuthenticated?: boolean
 }) {
     const theme = useThemeStore((state) => state.theme)
     const setTheme = useThemeStore((state) => state.setTheme)
+    const hasHydrated = useThemeStore((state) => state.hasHydrated)
     const isInitialMount = useRef(true)
     const hasSyncedWithServer = useRef(false)
 
     useEffect(() => {
-        if (!hasSyncedWithServer.current) {
+        if (!hasSyncedWithServer.current && isAuthenticated) {
             setTheme(initialTheme)
             hasSyncedWithServer.current = true
+        } else if (!hasSyncedWithServer.current && !isAuthenticated && hasHydrated) {
+            if (theme === "light") {
+                const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+                if (prefersDark) {
+                    setTheme("dark")
+                }
+            }
+            hasSyncedWithServer.current = true
         }
-    }, [initialTheme, setTheme])
+    }, [initialTheme, setTheme, isAuthenticated, hasHydrated, theme])
 
     useEffect(() => {
         const root = document.documentElement

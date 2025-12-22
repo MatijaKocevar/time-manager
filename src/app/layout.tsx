@@ -110,7 +110,26 @@ export default async function RootLayout({
                         __html: `
                             (function() {
                                 const serverTheme = '${userTheme}';
-                                if (serverTheme === 'dark') {
+                                const isAuthenticated = ${!!session};
+                                let theme = serverTheme;
+                                
+                                if (!isAuthenticated) {
+                                    try {
+                                        const stored = localStorage.getItem('theme-storage');
+                                        if (stored) {
+                                            const parsed = JSON.parse(stored);
+                                            theme = parsed.state?.theme || theme;
+                                        } else {
+                                            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                                            theme = prefersDark ? 'dark' : 'light';
+                                        }
+                                    } catch (e) {
+                                        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                                        theme = prefersDark ? 'dark' : 'light';
+                                    }
+                                }
+                                
+                                if (theme === 'dark') {
                                     document.documentElement.classList.add('dark');
                                 }
                             })();
@@ -124,7 +143,10 @@ export default async function RootLayout({
                 className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col`}
             >
                 <NextIntlClientProvider>
-                    <ThemeProvider initialTheme={userTheme as "light" | "dark"}>
+                    <ThemeProvider
+                        initialTheme={userTheme as "light" | "dark"}
+                        isAuthenticated={!!session}
+                    >
                         <QueryProvider>
                             <SessionWrapper>
                                 <ConditionalSidebar
