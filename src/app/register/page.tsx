@@ -89,7 +89,7 @@ export default function RegisterPage() {
                         )}
 
                         <div className="space-y-2">
-                            <Label htmlFor="name">{tCommon("labels.name")}</Label>
+                            <Label htmlFor="name">{tCommon("fields.name")}</Label>
                             <Input
                                 id="name"
                                 value={formData.name}
@@ -101,7 +101,7 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="email">{tCommon("labels.email")}</Label>
+                            <Label htmlFor="email">{tCommon("fields.email")}</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -116,7 +116,7 @@ export default function RegisterPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password">{tCommon("labels.password")}</Label>
+                            <Label htmlFor="password">{tCommon("fields.password")}</Label>
                             <Input
                                 id="password"
                                 type="password"
