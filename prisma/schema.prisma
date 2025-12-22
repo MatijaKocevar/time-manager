@@ -90,6 +90,7 @@ model User {
   image                 String?
   password              String?
   role                  UserRole  @default(USER)
+  locale                String    @default("en")
   sidebarOpen           Boolean   @default(true)
   sidebarExpandedItems  Json?     @default("[]")
   theme                 String    @default("light")

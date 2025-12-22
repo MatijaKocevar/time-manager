@@ -650,7 +650,10 @@
             "invalidToken": "Invalid or missing verification token",
             "emailVerified": "Email Verified Successfully!",
             "successMessage": "Your email has been verified. You can now sign in to your account.",
-            "redirecting": "Redirecting you to the login page...",
+            "successConfirmation": "Your email has been confirmed! You're all set to start using Time Manager.",
+            "loginInstructions": "You can now sign in to the app using your email and password in your browser or as a PWA (Progressive Web App).",
+            "pwaRecommendation": "Recommended: Install as PWA",
+            "pwaInstructions": "For the best experience, install Time Manager as a PWA. Look for the install button in your browser's address bar or menu.",
             "goToLogin": "Go to Login",
             "registerAgain": "Register Again",
             "backToLogin": "Back to Login"

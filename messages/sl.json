@@ -650,7 +650,10 @@
             "invalidToken": "Neveljaven ali manjkajoč potrditveni token",
             "emailVerified": "E-pošta uspešno potrjena!",
             "successMessage": "Vaš e-poštni naslov je bil potrjen. Sedaj se lahko prijavite v svoj račun.",
-            "redirecting": "Preusmerjamo vas na stran za prijavo...",
+            "successConfirmation": "Vaš e-poštni naslov je bil potrjen! Vse je pripravljeno za uporabo aplikacije Time Manager.",
+            "loginInstructions": "Sedaj se lahko prijavite v aplikacijo z vašim e-poštnim naslovom in geslom v brskalniku ali kot PWA (Progressive Web App).",
+            "pwaRecommendation": "Priporočeno: Namestite kot PWA",
+            "pwaInstructions": "Za najboljšo izkušnjo namestite Time Manager kot PWA. Poiščite gumb za namestitev v naslovni vrstici ali meniju vašega brskalnika.",
             "goToLogin": "Pojdi na prijavo",
             "registerAgain": "Registrirajte se znova",
             "backToLogin": "Nazaj na prijavo"

@@ -33,9 +33,6 @@ export default function VerifyEmailContent() {
                 setError(result.error)
             } else {
                 setStatus("success")
-                setTimeout(() => {
-                    router.push("/login")
-                }, 3000)
             }
         }
 
@@ -95,8 +92,21 @@ export default function VerifyEmailContent() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Alert>
-                        <AlertDescription>{t("redirecting")}</AlertDescription>
+                        <AlertDescription>{t("successConfirmation")}</AlertDescription>
                     </Alert>
+                    
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                        <p>{t("loginInstructions")}</p>
+                        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                            <p className="font-medium text-blue-900 dark:text-blue-100">
+                                💡 {t("pwaRecommendation")}
+                            </p>
+                            <p className="mt-1 text-blue-800 dark:text-blue-200">
+                                {t("pwaInstructions")}
+                            </p>
+                        </div>
+                    </div>
+                    
                     <Button className="w-full" asChild>
                         <Link href="/login">{t("goToLogin")}</Link>
                     </Button>

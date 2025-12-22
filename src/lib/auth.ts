@@ -6,6 +6,7 @@ import { prisma } from "./prisma"
 import bcrypt from "bcryptjs"
 import { UserCredentialsSchema } from "@/types/auth-schema"
 import { UserRole } from "@/types"
+import { cookies } from "next/headers"
 
 declare module "next-auth" {
     interface Session {
@@ -56,6 +57,13 @@ export const authConfig = {
                     if (!user.emailVerified) {
                         throw new Error("Please verify your email before logging in")
                     }
+
+                    const cookieStore = await cookies()
+                    cookieStore.set("NEXT_LOCALE", user.locale || "en", {
+                        path: "/",
+                        maxAge: 31536000,
+                        sameSite: "lax",
+                    })
 
                     return {
                         id: user.id,

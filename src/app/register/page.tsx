@@ -3,17 +3,19 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { LanguageToggle } from "@/components/language-toggle"
 import { registerUser } from "./actions/register-actions"
 import { PASSWORD_MIN_LENGTH } from "./schemas/register-schemas"
 
 export default function RegisterPage() {
     const router = useRouter()
+    const locale = useLocale()
     const t = useTranslations("auth.register")
     const tCommon = useTranslations("common")
 
@@ -33,7 +35,7 @@ export default function RegisterPage() {
         setIsLoading(true)
 
         try {
-            const result = await registerUser(formData)
+            const result = await registerUser({ ...formData, locale })
 
             if (result.error) {
                 setError(result.error)
@@ -51,6 +53,9 @@ export default function RegisterPage() {
     if (success) {
         return (
             <div className="flex min-h-screen items-center justify-center p-4">
+                <div className="absolute top-4 right-4">
+                    <LanguageToggle />
+                </div>
                 <Card className="w-full max-w-md">
                     <CardHeader>
                         <CardTitle>{t("checkYourEmail")}</CardTitle>
@@ -75,6 +80,9 @@ export default function RegisterPage() {
 
     return (
         <div className="flex min-h-screen items-center justify-center p-4">
+            <div className="absolute top-4 right-4">
+                <LanguageToggle />
+            </div>
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle>{t("createAccount")}</CardTitle>

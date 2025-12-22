@@ -48,7 +48,7 @@ export async function registerUser(input: unknown) {
         return { error: validation.error.issues[0].message }
     }
 
-    const { name, email, password } = validation.data
+    const { name, email, password, locale } = validation.data
 
     try {
         const existingUser = await prisma.user.findUnique({
@@ -67,6 +67,7 @@ export async function registerUser(input: unknown) {
                 email,
                 password: hashedPassword,
                 role: "USER",
+                locale: locale || "en",
                 emailVerified: null,
             },
         })
@@ -84,10 +85,10 @@ export async function registerUser(input: unknown) {
 
         const token = await createVerificationToken(email)
 
-        const locale = "en"
-        const emailHtml = verificationEmail(email, token, locale)
+        const emailLocale = (locale || "en") as "en" | "sl"
+        const emailHtml = verificationEmail(email, token, emailLocale)
         const emailSubject =
-            locale === "en"
+            emailLocale === "en"
                 ? "Verify your email - Time Manager"
                 : "Potrdite vaš email - Time Manager"
 

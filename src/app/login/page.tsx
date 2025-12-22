@@ -15,6 +15,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { LanguageToggle } from "@/components/language-toggle"
 import { useTranslations } from "next-intl"
 
 export default function LoginPage() {
@@ -56,6 +57,9 @@ export default function LoginPage() {
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-background">
+            <div className="absolute top-4 right-4">
+                <LanguageToggle />
+            </div>
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle>{t("signIn")}</CardTitle>

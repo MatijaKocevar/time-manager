@@ -13,6 +13,7 @@ export const RegisterSchema = z
                 `Password must be at least ${PASSWORD_MIN_LENGTH} characters`
             ),
         confirmPassword: z.string(),
+        locale: z.enum(["en", "sl"]).default("en"),
     })
     .refine((data) => data.password === data.confirmPassword, {
         message: "Passwords do not match",
