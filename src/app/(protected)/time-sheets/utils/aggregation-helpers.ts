@@ -29,7 +29,8 @@ export interface AggregatedTimeSheet {
 
 export function aggregateTimeEntriesByTaskAndDate(
     entries: TimeEntryWithTask[],
-    allDates: Date[]
+    allDates: Date[],
+    currentTime?: Date
 ): AggregatedTimeSheet {
     const tasks = new Map<
         string,
@@ -45,7 +46,15 @@ export function aggregateTimeEntriesByTaskAndDate(
     const dateStrings = allDates.map((date) => normalizeToDateString(date))
 
     for (const entry of entries) {
-        if (!entry.duration) continue
+        let duration = entry.duration
+
+        if (!duration && entry.endTime === null && currentTime) {
+            duration = Math.floor(
+                (currentTime.getTime() - new Date(entry.startTime).getTime()) / 1000
+            )
+        }
+
+        if (!duration) continue
 
         const dateKey = normalizeToDateString(entry.startTime)
 
@@ -61,8 +70,8 @@ export function aggregateTimeEntriesByTaskAndDate(
 
         const taskData = tasks.get(entry.taskId)!
         const currentDuration = taskData.byDate.get(dateKey) ?? 0
-        taskData.byDate.set(dateKey, currentDuration + entry.duration)
-        taskData.totalDuration += entry.duration
+        taskData.byDate.set(dateKey, currentDuration + duration)
+        taskData.totalDuration += duration
     }
 
     return {

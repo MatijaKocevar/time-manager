@@ -50,7 +50,23 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
             },
         })
 
-        return { success: true, data: entries }
+        const activeTimer = await prisma.taskTimeEntry.findFirst({
+            where: {
+                userId: session.user.id,
+                endTime: null,
+            },
+            include: {
+                task: {
+                    include: {
+                        list: true,
+                    },
+                },
+            },
+        })
+
+        const allEntries = activeTimer ? [activeTimer, ...entries] : entries
+
+        return { success: true, data: allEntries, activeTimer }
     } catch (error) {
         console.error("Error fetching time sheet entries:", error)
         return { error: "Failed to fetch time sheet entries" }

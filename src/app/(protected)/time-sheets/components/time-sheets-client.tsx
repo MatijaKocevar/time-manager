@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTimeSheetsStore } from "../stores/time-sheets-store"
+import { useTasksStore } from "../../tasks/stores/tasks-store"
 import { getDateRangeForView, type ViewMode } from "../utils/date-helpers"
 import { aggregateTimeEntriesByTaskAndDate } from "../utils/aggregation-helpers"
 import { getTimeSheetEntries } from "../actions/time-sheet-actions"
@@ -42,7 +43,12 @@ export function TimeSheetsClient({
     const goToPreviousPeriod = useTimeSheetsStore((state) => state.goToPreviousPeriod)
     const goToNextPeriod = useTimeSheetsStore((state) => state.goToNextPeriod)
 
+    const activeTimers = useTasksStore((state) => state.activeTimers)
+    const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
+    const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
+
     const [isInitialized, setIsInitialized] = useState(false)
+    const [currentTime, setCurrentTime] = useState(new Date())
 
     useEffect(() => {
         setViewMode(initialViewMode)
@@ -94,8 +100,33 @@ export function TimeSheetsClient({
         },
     })
 
+    useEffect(() => {
+        const hasActiveTimer = data.some((entry) => entry.endTime === null)
+        if (!hasActiveTimer) return
+
+        const interval = setInterval(() => {
+            setCurrentTime(new Date())
+        }, 1000)
+
+        return () => clearInterval(interval)
+    }, [data])
+
+    useEffect(() => {
+        const activeEntry = data.find((entry) => entry.endTime === null)
+
+        if (activeEntry) {
+            const currentTimer = activeTimers.get(activeEntry.taskId)
+            if (!currentTimer || currentTimer.entryId !== activeEntry.id) {
+                clearAllActiveTimers()
+                setActiveTimer(activeEntry.taskId, activeEntry.id, activeEntry.startTime)
+            }
+        } else if (activeTimers.size > 0) {
+            clearAllActiveTimers()
+        }
+    }, [data, activeTimers, setActiveTimer, clearAllActiveTimers])
+
     const aggregatedData = data
-        ? aggregateTimeEntriesByTaskAndDate(data, dateRange.dates)
+        ? aggregateTimeEntriesByTaskAndDate(data, dateRange.dates, currentTime)
         : { tasks: new Map(), dates: dateRange.dates.map((d) => d.toISOString().split("T")[0]) }
 
     const totalSeconds = Array.from(aggregatedData.tasks.values()).reduce(

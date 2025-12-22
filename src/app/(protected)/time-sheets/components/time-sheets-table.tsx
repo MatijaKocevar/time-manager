@@ -1,5 +1,8 @@
 "use client"
 
+import { useState } from "react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Play, Square } from "lucide-react"
 import {
     Table,
     TableBody,
@@ -8,9 +11,13 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { formatDuration } from "../../tasks/utils/time-helpers"
 import { useTasksStore } from "../../tasks/stores/tasks-store"
+import { startTimer, stopTimer } from "../../tasks/actions/task-time-actions"
+import { taskKeys } from "../../tasks/query-keys"
+import { timeSheetKeys } from "../query-keys"
 import { isWeekend, isToday, formatDateKey, formatDateHeader } from "../utils/date-helpers"
 import type { AggregatedTimeSheet } from "../utils/aggregation-helpers"
 
@@ -30,9 +37,44 @@ export function TimeSheetsTable({
     error,
     translations,
 }: TimeSheetsTableProps) {
+    const queryClient = useQueryClient()
     const openTimeEntriesDialog = useTasksStore((state) => state.openTimeEntriesDialog)
+    const activeTimers = useTasksStore((state) => state.activeTimers)
+    const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
+    const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
+    const [hoveredCell, setHoveredCell] = useState<string | null>(null)
+    const [loadingTask, setLoadingTask] = useState<string | null>(null)
 
     const { tasks, dates } = aggregatedData
+
+    const startMutation = useMutation({
+        mutationFn: startTimer,
+        onSuccess: (data, variables) => {
+            if (data.success && data.entryId) {
+                clearAllActiveTimers()
+                setActiveTimer(variables.taskId, data.entryId, new Date())
+                queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
+                queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
+            }
+            setLoadingTask(null)
+        },
+        onError: () => {
+            setLoadingTask(null)
+        },
+    })
+
+    const stopMutation = useMutation({
+        mutationFn: stopTimer,
+        onSuccess: () => {
+            clearAllActiveTimers()
+            queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
+            queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
+            setLoadingTask(null)
+        },
+        onError: () => {
+            setLoadingTask(null)
+        },
+    })
 
     const tasksArray = Array.from(tasks.values())
 
@@ -136,26 +178,71 @@ export function TimeSheetsTable({
                                         const durationInSeconds = task.byDate.get(dateKey)
                                         const isWeekendDay = isWeekend(date)
                                         const isTodayDay = isToday(date)
+                                        const activeTimer = activeTimers.get(task.taskId)
+                                        const isTracking = !!activeTimer
+                                        const cellKey = `${task.taskId}-${dateStr}`
+                                        const isHovered = hoveredCell === cellKey
+                                        const isLoadingThis = loadingTask === task.taskId
 
                                         return (
                                             <TableCell
                                                 key={dateStr}
-                                                className={`text-center tabular-nums ${
-                                                    durationInSeconds
-                                                        ? "cursor-pointer hover:underline hover:bg-accent"
-                                                        : ""
-                                                } ${isWeekendDay ? "bg-muted/50" : ""} ${
+                                                className={`text-center tabular-nums relative group ${
+                                                    isWeekendDay ? "bg-muted/50" : ""
+                                                } ${
                                                     isTodayDay ? "bg-blue-50 dark:bg-blue-950" : ""
                                                 }`}
-                                                onClick={() => {
-                                                    if (durationInSeconds) {
-                                                        openTimeEntriesDialog(task.taskId)
-                                                    }
-                                                }}
+                                                onMouseEnter={() => setHoveredCell(cellKey)}
+                                                onMouseLeave={() => setHoveredCell(null)}
                                             >
-                                                {durationInSeconds
-                                                    ? formatDuration(durationInSeconds)
-                                                    : "-"}
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <span
+                                                        className={`${
+                                                            durationInSeconds
+                                                                ? "cursor-pointer hover:underline"
+                                                                : ""
+                                                        }`}
+                                                        onClick={() => {
+                                                            if (durationInSeconds) {
+                                                                openTimeEntriesDialog(task.taskId)
+                                                            }
+                                                        }}
+                                                    >
+                                                        {durationInSeconds
+                                                            ? formatDuration(durationInSeconds)
+                                                            : "-"}
+                                                    </span>
+                                                    {(isHovered || isTracking) && isTodayDay && (
+                                                        <Button
+                                                            variant={
+                                                                isTracking ? "destructive" : "ghost"
+                                                            }
+                                                            size="sm"
+                                                            className="h-6 w-6 p-0"
+                                                            disabled={isLoadingThis}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation()
+                                                                if (isTracking && activeTimer) {
+                                                                    setLoadingTask(task.taskId)
+                                                                    stopMutation.mutate({
+                                                                        id: activeTimer.entryId,
+                                                                    })
+                                                                } else {
+                                                                    setLoadingTask(task.taskId)
+                                                                    startMutation.mutate({
+                                                                        taskId: task.taskId,
+                                                                    })
+                                                                }
+                                                            }}
+                                                        >
+                                                            {isTracking ? (
+                                                                <Square className="h-3 w-3" />
+                                                            ) : (
+                                                                <Play className="h-3 w-3" />
+                                                            )}
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                         )
                                     })}
