@@ -52,7 +52,7 @@ export default async function RootLayout({
 }>) {
     const session = await getServerSession(authConfig)
     const lists = session ? await getLists().catch(() => []) : []
-    
+
     let pendingRequestsCount = 0
     if (session?.user?.role === "ADMIN") {
         const { getNotifications } = await import("@/app/(protected)/actions/notification-actions")

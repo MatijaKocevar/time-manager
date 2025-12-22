@@ -1,17 +1,6 @@
 "use client"
 
-import {
-    Users,
-    LogOut,
-    UserCircle,
-    ChevronUp,
-    MoreHorizontal,
-    Edit,
-    Trash,
-    ChevronRight,
-    ChevronDown,
-} from "lucide-react"
-import { signOut } from "next-auth/react"
+import { Users, MoreHorizontal, Edit, Trash, ChevronRight, ChevronDown } from "lucide-react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
@@ -33,8 +22,6 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { UserAvatar } from "@/components/user-avatar"
@@ -307,13 +294,17 @@ export function AppSidebar({
                                                                         <span className="text-sm">
                                                                             {t(child.title)}
                                                                         </span>
-                                                                        {child.url === "/admin/pending-requests" &&
-                                                                            pendingRequestsCount > 0 && (
+                                                                        {child.url ===
+                                                                            "/admin/pending-requests" &&
+                                                                            pendingRequestsCount >
+                                                                                0 && (
                                                                                 <Badge
                                                                                     variant="destructive"
                                                                                     className="ml-auto h-5 px-1.5 text-xs"
                                                                                 >
-                                                                                    {pendingRequestsCount}
+                                                                                    {
+                                                                                        pendingRequestsCount
+                                                                                    }
                                                                                 </Badge>
                                                                             )}
                                                                     </a>
@@ -333,41 +324,16 @@ export function AppSidebar({
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton size="lg">
-                                    <UserAvatar role={userRole} className="h-8 w-8" />
-                                    <div className="grid flex-1 text-left text-sm leading-tight">
-                                        <span className="truncate font-semibold">{userName}</span>
-                                        <span className="truncate text-xs">{userEmail}</span>
-                                    </div>
-                                    <ChevronUp className="ml-auto size-4" />
-                                </SidebarMenuButton>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                side="top"
-                                align="end"
-                                className="w-[--radix-dropdown-menu-trigger-width] min-w-56"
-                            >
-                                <DropdownMenuLabel className="text-xs text-muted-foreground">
-                                    {userEmail}
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem asChild>
-                                    <a href="/profile">
-                                        <UserCircle className="mr-2 h-4 w-4" />
-                                        {tNav("profile")}
-                                    </a>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onClick={() => signOut({ callbackUrl: "/login" })}
-                                >
-                                    <LogOut className="mr-2 h-4 w-4" />
-                                    {tCommon("actions.logOut")}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <SidebarMenuButton
+                            size="lg"
+                            className="cursor-default hover:bg-transparent"
+                        >
+                            <UserAvatar role={userRole} className="h-8 w-8" />
+                            <div className="grid flex-1 text-left text-sm leading-tight">
+                                <span className="truncate font-semibold">{userName}</span>
+                                <span className="truncate text-xs">{userEmail}</span>
+                            </div>
+                        </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>

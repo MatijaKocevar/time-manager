@@ -12,6 +12,8 @@ interface AppHeaderProps {
 export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
     const t = await getTranslations("header")
     const tRequests = await getTranslations("requests.types")
+    const tNav = await getTranslations("navigation")
+    const tCommon = await getTranslations("common.actions")
 
     const notifications = await getNotifications()
 
@@ -19,6 +21,8 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
         settings: t("menu.settings"),
         language: t("menu.language"),
         theme: t("menu.theme"),
+        profile: tNav("profile"),
+        logout: tCommon("logOut"),
     }
 
     const notificationsTranslations = {
