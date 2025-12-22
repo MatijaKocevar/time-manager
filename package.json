@@ -4,7 +4,7 @@
     "private": true,
     "scripts": {
         "dev": "next dev --hostname 0.0.0.0",
-        "dev:https": "next dev --hostname 0.0.0.0 --experimental-https --experimental-https-key certs/key.pem --experimental-https-cert certs/cert.pem",
+        "dev:https": "./scripts/dev-https.sh",
         "build": "next build",
         "start": "next start --hostname 0.0.0.0",
         "lint": "eslint",
