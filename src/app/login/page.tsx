@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { signIn, useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,11 +15,13 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LanguageToggle } from "@/components/language-toggle"
 import { useTranslations } from "next-intl"
 
 export default function LoginPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const { status } = useSession()
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
@@ -27,6 +29,13 @@ export default function LoginPage() {
     const [error, setError] = useState("")
     const t = useTranslations("auth")
     const tCommon = useTranslations("common")
+
+    useEffect(() => {
+        const errorParam = searchParams.get("error")
+        if (errorParam) {
+            setError(t("loginFailed"))
+        }
+    }, [searchParams, t])
 
     useEffect(() => {
         if (status === "authenticated") {
@@ -44,11 +53,19 @@ export default function LoginPage() {
         setError("")
 
         try {
-            await signIn("credentials", {
+            const result = await signIn("credentials", {
                 email,
                 password,
-                callbackUrl: "/",
+                redirect: false,
             })
+
+            if (result?.error) {
+                setError(result.error || t("loginFailed"))
+                setIsLoading(false)
+            } else if (result?.ok) {
+                router.push("/")
+                router.refresh()
+            }
         } catch {
             setError(tCommon("messages.somethingWentWrong"))
             setIsLoading(false)
@@ -68,9 +85,9 @@ export default function LoginPage() {
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-4">
                         {error && (
-                            <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                                {error}
-                            </div>
+                            <Alert variant="destructive">
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
                         )}
                         <div className="space-y-2">
                             <Label htmlFor="email">{tCommon("fields.email")}</Label>
