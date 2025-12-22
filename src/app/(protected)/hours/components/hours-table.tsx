@@ -157,7 +157,7 @@ export function HoursTable({
                     </colgroup>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="sticky left-0 bg-background z-20">
+                            <TableHead>
                                 {t("columnType")}
                             </TableHead>
                             {dates.map((date) => {
@@ -188,7 +188,7 @@ export function HoursTable({
                     </TableHeader>
                     <TableBody>
                         <TableRow>
-                            <TableCell className="font-medium sticky left-0 z-20 bg-background">
+                            <TableCell className="font-medium">
                                 <span
                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor("GRAND_TOTAL")}`}
                                 >

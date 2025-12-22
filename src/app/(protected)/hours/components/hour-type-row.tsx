@@ -98,7 +98,7 @@ export function HourTypeRow({
     return (
         <>
             <TableRow>
-                <TableCell className="font-medium sticky left-0 z-20 bg-background">
+                <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                         <button onClick={handleToggle} className="p-1 hover:bg-muted rounded">
                             {isExpanded ? (
@@ -146,7 +146,7 @@ export function HourTypeRow({
             {isExpanded && (
                 <Fragment key={`expanded-${hourType}`}>
                     <TableRow>
-                        <TableCell className="font-medium sticky left-0 z-20 bg-background">
+                        <TableCell className="font-medium">
                             <div className="pl-8">
                                 <span
                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(trackedKey)}`}
@@ -185,7 +185,7 @@ export function HourTypeRow({
                     </TableRow>
 
                     <TableRow>
-                        <TableCell className="font-medium sticky left-0 z-20 bg-background">
+                        <TableCell className="font-medium">
                             <div className="pl-8">
                                 <span
                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(manualKey)}`}
