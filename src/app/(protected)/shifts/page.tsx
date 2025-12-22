@@ -52,10 +52,16 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
     const shifts = shiftsResult.shifts || []
     const users = usersResult.users || []
 
-    const shiftsWithParsedDates = shifts.map((shift) => ({
-        ...shift,
-        date: new Date(shift.date),
-    }))
+    const shiftsWithNormalizedDates = shifts.map((shift) => {
+        const date = new Date(shift.date)
+        const year = date.getUTCFullYear()
+        const month = String(date.getUTCMonth() + 1).padStart(2, "0")
+        const day = String(date.getUTCDate()).padStart(2, "0")
+        return {
+            ...shift,
+            dateString: `${year}-${month}-${day}`,
+        }
+    })
 
     return (
         <>
@@ -63,7 +69,7 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
             <div className="flex flex-col gap-4 h-full">
                 <div className="flex-1 min-h-0">
                     <ShiftsCalendar
-                        initialShifts={shiftsWithParsedDates}
+                        initialShifts={shiftsWithNormalizedDates}
                         users={users}
                         initialHolidays={holidays}
                         initialViewMode={viewMode}

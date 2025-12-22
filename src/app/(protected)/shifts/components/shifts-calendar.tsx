@@ -28,7 +28,7 @@ interface User {
 interface Shift {
     id: string
     userId: string
-    date: Date
+    dateString: string
     location: ShiftLocation
     notes: string | null
     user: User
@@ -100,7 +100,7 @@ export function ShiftsCalendar({
     const shiftsByUserAndDate = useMemo(() => {
         const map = new Map<string, Shift>()
         initialShifts.forEach((shift) => {
-            const key = `${shift.userId}-${shift.date.toISOString().split("T")[0]}`
+            const key = `${shift.userId}-${shift.dateString}`
             map.set(key, shift)
         })
         return map
@@ -128,7 +128,11 @@ export function ShiftsCalendar({
     }
 
     const getShift = (userId: string, date: Date) => {
-        const key = `${userId}-${date.toISOString().split("T")[0]}`
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        const dateString = `${year}-${month}-${day}`
+        const key = `${userId}-${dateString}`
         return shiftsByUserAndDate.get(key)
     }
 
