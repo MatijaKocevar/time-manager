@@ -110,6 +110,23 @@
             "sun": "Sun"
         }
     },
+    "header": {
+        "menu": {
+            "settings": "Settings",
+            "language": "Language",
+            "theme": "Theme"
+        },
+        "notifications": {
+            "title": "Notifications",
+            "noNotifications": "No notifications",
+            "markAllRead": "Mark all as read",
+            "viewAll": "View all requests",
+            "sections": {
+                "notifications": "Notifications",
+                "pendingRequests": "Pending Requests"
+            }
+        }
+    },
     "navigation": {
         "timeTracker": "Time Tracker",
         "tasks": "Tasks",

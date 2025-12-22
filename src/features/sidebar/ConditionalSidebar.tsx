@@ -2,7 +2,6 @@
 
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "./app-sidebar"
-import { AppHeader } from "./app-header"
 import { UserRole } from "@/types"
 import type { ListDisplay } from "@/app/(protected)/tasks/schemas/list-schemas"
 import { updateSidebarState } from "@/app/(protected)/actions/sidebar-actions"
@@ -19,7 +18,8 @@ interface ConditionalSidebarProps {
     userName?: string | null
     userEmail?: string | null
     lists?: ListDisplay[]
-    breadcrumbTranslations?: Record<string, string>
+    header?: React.ReactNode
+    pendingRequestsCount?: number
 }
 
 function SidebarStateSync() {
@@ -41,7 +41,8 @@ export function ConditionalSidebar({
     userName,
     userEmail,
     lists = [],
-    breadcrumbTranslations = {},
+    header,
+    pendingRequestsCount = 0,
 }: ConditionalSidebarProps) {
     if (hasSession) {
         return (
@@ -54,9 +55,10 @@ export function ConditionalSidebar({
                         userEmail={userEmail}
                         lists={lists}
                         initialExpandedItems={sidebarExpandedItems}
+                        pendingRequestsCount={pendingRequestsCount}
                     />
                     <main className="flex flex-1 flex-col min-w-0 w-full h-full overflow-hidden">
-                        <AppHeader breadcrumbTranslations={breadcrumbTranslations} />
+                        {header}
                         <PullToRefreshContainer>{children}</PullToRefreshContainer>
                     </main>
                 </div>

@@ -157,9 +157,7 @@ export function HoursTable({
                     </colgroup>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>
-                                {t("columnType")}
-                            </TableHead>
+                            <TableHead>{t("columnType")}</TableHead>
                             {dates.map((date) => {
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
                                 const holiday = isHoliday(date)

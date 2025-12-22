@@ -252,9 +252,7 @@ export function ShiftsCalendar({
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="min-w-[150px]">
-                                {t("table.employee")}
-                            </TableHead>
+                            <TableHead className="min-w-[150px]">{t("table.employee")}</TableHead>
                             {days.map((date) => {
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
                                 const holiday = isHoliday(date)

@@ -44,6 +44,7 @@ import type { ListDisplay } from "@/app/(protected)/tasks/schemas/list-schemas"
 import { Folder } from "lucide-react"
 import { NewListButton } from "./new-list-button"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
 import { deleteList } from "@/app/(protected)/tasks/actions/list-actions"
 import { updateSidebarExpandedItems } from "@/app/(protected)/actions/sidebar-actions"
@@ -56,6 +57,7 @@ interface AppSidebarProps {
     userEmail?: string | null
     lists?: ListDisplay[]
     initialExpandedItems?: string[]
+    pendingRequestsCount?: number
 }
 
 export function AppSidebar({
@@ -64,6 +66,7 @@ export function AppSidebar({
     userEmail,
     lists = [],
     initialExpandedItems = [],
+    pendingRequestsCount = 0,
 }: AppSidebarProps) {
     const pathname = usePathname()
     const queryClient = useQueryClient()
@@ -304,6 +307,15 @@ export function AppSidebar({
                                                                         <span className="text-sm">
                                                                             {t(child.title)}
                                                                         </span>
+                                                                        {child.url === "/admin/pending-requests" &&
+                                                                            pendingRequestsCount > 0 && (
+                                                                                <Badge
+                                                                                    variant="destructive"
+                                                                                    className="ml-auto h-5 px-1.5 text-xs"
+                                                                                >
+                                                                                    {pendingRequestsCount}
+                                                                                </Badge>
+                                                                            )}
                                                                     </a>
                                                                 </SidebarMenuButton>
                                                             </SidebarMenuItem>

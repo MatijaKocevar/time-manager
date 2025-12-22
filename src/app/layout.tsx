@@ -6,6 +6,7 @@ import "./globals.css"
 import SessionWrapper from "@/providers/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
 import { ConditionalSidebar } from "@/features/sidebar"
+import { AppHeader } from "@/features/sidebar"
 import { authConfig } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getLists } from "./(protected)/tasks/actions/list-actions"
@@ -51,6 +52,13 @@ export default async function RootLayout({
 }>) {
     const session = await getServerSession(authConfig)
     const lists = session ? await getLists().catch(() => []) : []
+    
+    let pendingRequestsCount = 0
+    if (session?.user?.role === "ADMIN") {
+        const { getNotifications } = await import("@/app/(protected)/actions/notification-actions")
+        const notifications = await getNotifications()
+        pendingRequestsCount = notifications.count
+    }
 
     let defaultOpen = true
     let userTheme = "light"
@@ -127,7 +135,14 @@ export default async function RootLayout({
                                     userName={session?.user?.name}
                                     userEmail={session?.user?.email}
                                     lists={lists}
-                                    breadcrumbTranslations={breadcrumbTranslations}
+                                    pendingRequestsCount={pendingRequestsCount}
+                                    header={
+                                        session ? (
+                                            <AppHeader
+                                                breadcrumbTranslations={breadcrumbTranslations}
+                                            />
+                                        ) : null
+                                    }
                                 >
                                     {children}
                                 </ConditionalSidebar>

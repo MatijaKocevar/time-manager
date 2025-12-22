@@ -110,6 +110,23 @@
             "sun": "Ned"
         }
     },
+    "header": {
+        "menu": {
+            "settings": "Nastavitve",
+            "language": "Jezik",
+            "theme": "Tema"
+        },
+        "notifications": {
+            "title": "Obvestila",
+            "noNotifications": "Ni obvestil",
+            "markAllRead": "Označi vse kot prebrano",
+            "viewAll": "Prikaži vse zahtevke",
+            "sections": {
+                "notifications": "Obvestila",
+                "pendingRequests": "Čakajoči zahtevki"
+            }
+        }
+    },
     "navigation": {
         "timeTracker": "Sledenje času",
         "tasks": "Naloge",
