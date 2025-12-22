@@ -40,8 +40,8 @@ export function TrackerDisplay({ tasks, initialActiveTimer }: TrackerDisplayProp
     const { data: activeTimerData } = useQuery({
         queryKey: taskKeys.activeTimer(),
         queryFn: getActiveTimer,
-        refetchInterval: 5000,
         initialData: initialActiveTimer,
+        refetchOnWindowFocus: true,
     })
 
     const startMutation = useMutation({

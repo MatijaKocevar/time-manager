@@ -39,9 +39,9 @@ export const authConfig = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
+                console.log("🔐 Authorize called with email:", credentials?.email)
+
                 try {
-                    console.log("🔐 Authorize called with email:", credentials?.email)
-                    
                     const { email, password } = UserCredentialsSchema.parse(credentials)
                     console.log("✅ Credentials validated")
 
@@ -53,7 +53,7 @@ export const authConfig = {
 
                     if (!user || !user.password) {
                         console.log("❌ No user or no password")
-                        return null
+                        throw new Error("Invalid email or password")
                     }
 
                     const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -61,14 +61,16 @@ export const authConfig = {
 
                     if (!isPasswordValid) {
                         console.log("❌ Invalid password")
-                        return null
+                        throw new Error("Invalid email or password")
                     }
 
                     console.log("📧 Email verified:", user.emailVerified ? "Yes" : "No")
-                    
+
                     if (!user.emailVerified) {
                         console.log("❌ Email not verified")
-                        throw new Error("Please verify your email before logging in")
+                        throw new Error(
+                            "Please verify your email before logging in. Check your inbox for the verification link."
+                        )
                     }
 
                     console.log("✅ Authorization successful, returning user data")
@@ -87,7 +89,10 @@ export const authConfig = {
                     }
                 } catch (error) {
                     console.log("💥 Error in authorize:", error)
-                    return null
+                    if (error instanceof Error) {
+                        throw error
+                    }
+                    throw new Error("Authentication failed")
                 }
             },
         }),

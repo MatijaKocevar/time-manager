@@ -33,7 +33,7 @@ export default function LoginPage() {
     useEffect(() => {
         const errorParam = searchParams.get("error")
         if (errorParam) {
-            setError(t("loginFailed"))
+            setTimeout(() => setError(t("loginFailed")), 0)
         }
     }, [searchParams, t])
 
@@ -52,22 +52,18 @@ export default function LoginPage() {
         setIsLoading(true)
         setError("")
 
-        try {
-            const result = await signIn("credentials", {
-                email,
-                password,
-                redirect: false,
-            })
+        const result = await signIn("credentials", {
+            email,
+            password,
+            callbackUrl: "/",
+        })
 
-            if (result?.error) {
-                setError(result.error || t("loginFailed"))
-                setIsLoading(false)
-            } else if (result?.ok) {
-                router.push("/")
-                router.refresh()
+        if (result?.error) {
+            if (result.error === "CredentialsSignin") {
+                setError("Invalid email or password")
+            } else {
+                setError(result.error)
             }
-        } catch {
-            setError(tCommon("messages.somethingWentWrong"))
             setIsLoading(false)
         }
     }

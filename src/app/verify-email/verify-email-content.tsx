@@ -94,7 +94,7 @@ export default function VerifyEmailContent() {
                     <Alert>
                         <AlertDescription>{t("successConfirmation")}</AlertDescription>
                     </Alert>
-                    
+
                     <div className="space-y-3 text-sm text-muted-foreground">
                         <p>{t("loginInstructions")}</p>
                         <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
@@ -106,7 +106,7 @@ export default function VerifyEmailContent() {
                             </p>
                         </div>
                     </div>
-                    
+
                     <Button className="w-full" asChild>
                         <Link href="/login">{t("goToLogin")}</Link>
                     </Button>

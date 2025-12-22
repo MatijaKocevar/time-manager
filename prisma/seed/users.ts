@@ -39,8 +39,8 @@ export async function seedUsers(
         for (const userData of users) {
             const user = await tx.user.upsert({
                 where: { email: userData.email },
-                update: { 
-                    password: userData.password, 
+                update: {
+                    password: userData.password,
                     role: userData.role,
                     emailVerified: new Date(),
                 },
