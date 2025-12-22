@@ -8,6 +8,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { formatDuration } from "../../tasks/utils/time-helpers"
 import { useTasksStore } from "../../tasks/stores/tasks-store"
 import { isWeekend, isToday, formatDateKey, formatDateHeader } from "../utils/date-helpers"
@@ -15,13 +16,20 @@ import type { AggregatedTimeSheet } from "../utils/aggregation-helpers"
 
 interface TimeSheetsTableProps {
     aggregatedData: AggregatedTimeSheet
+    isLoading: boolean
+    error: string | null
     translations: {
         task: string
         noData: string
     }
 }
 
-export function TimeSheetsTable({ aggregatedData, translations }: TimeSheetsTableProps) {
+export function TimeSheetsTable({
+    aggregatedData,
+    isLoading,
+    error,
+    translations,
+}: TimeSheetsTableProps) {
     const openTimeEntriesDialog = useTasksStore((state) => state.openTimeEntriesDialog)
 
     const { tasks, dates } = aggregatedData
@@ -42,9 +50,9 @@ export function TimeSheetsTable({ aggregatedData, translations }: TimeSheetsTabl
     return (
         <div className="border rounded-lg overflow-auto h-full">
             <Table>
-                <TableHeader>
+                <TableHeader className="sticky top-0 z-30 bg-background">
                     <TableRow>
-                        <TableHead className="sticky left-0 z-20 bg-background border-r font-semibold min-w-[250px]">
+                        <TableHead className="sticky left-0 z-40 bg-background border-r font-semibold min-w-[250px]">
                             {translations.task}
                         </TableHead>
                         {dates.map((dateStr) => {
@@ -86,47 +94,75 @@ export function TimeSheetsTable({ aggregatedData, translations }: TimeSheetsTabl
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {tasksArray.map((task) => (
-                        <TableRow key={task.taskId}>
-                            <TableCell className="sticky left-0 z-10 bg-background border-r">
-                                <div className="flex flex-col">
-                                    <span className="font-medium">{task.taskTitle}</span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {task.listName}
-                                    </span>
-                                </div>
+                    {isLoading ? (
+                        <TableRow>
+                            <TableCell colSpan={dates.length + 1} className="h-64">
+                                <LoadingSpinner size="lg" />
                             </TableCell>
-                            {dates.map((dateStr) => {
-                                const date = new Date(dateStr)
-                                const dateKey = formatDateKey(date)
-                                const durationInSeconds = task.byDate.get(dateKey)
-                                const isWeekendDay = isWeekend(date)
-                                const isTodayDay = isToday(date)
-
-                                return (
-                                    <TableCell
-                                        key={dateStr}
-                                        className={`text-center tabular-nums ${
-                                            durationInSeconds
-                                                ? "cursor-pointer hover:underline hover:bg-accent"
-                                                : ""
-                                        } ${isWeekendDay ? "bg-muted/50" : ""} ${
-                                            isTodayDay ? "bg-blue-50 dark:bg-blue-950" : ""
-                                        }`}
-                                        onClick={() => {
-                                            if (durationInSeconds) {
-                                                openTimeEntriesDialog(task.taskId)
-                                            }
-                                        }}
-                                    >
-                                        {durationInSeconds
-                                            ? formatDuration(durationInSeconds)
-                                            : "-"}
-                                    </TableCell>
-                                )
-                            })}
                         </TableRow>
-                    ))}
+                    ) : error ? (
+                        <TableRow>
+                            <TableCell
+                                colSpan={dates.length + 1}
+                                className="h-64 text-center text-destructive"
+                            >
+                                {error}
+                            </TableCell>
+                        </TableRow>
+                    ) : tasksArray.length === 0 ? (
+                        <TableRow>
+                            <TableCell
+                                colSpan={dates.length + 1}
+                                className="h-64 text-center text-muted-foreground"
+                            >
+                                {translations.noData}
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                        <>
+                            {tasksArray.map((task) => (
+                                <TableRow key={task.taskId}>
+                                    <TableCell className="sticky left-0 z-10 bg-background border-r">
+                                        <div className="flex flex-col">
+                                            <span className="font-medium">{task.taskTitle}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {task.listName}
+                                            </span>
+                                        </div>
+                                    </TableCell>
+                                    {dates.map((dateStr) => {
+                                        const date = new Date(dateStr)
+                                        const dateKey = formatDateKey(date)
+                                        const durationInSeconds = task.byDate.get(dateKey)
+                                        const isWeekendDay = isWeekend(date)
+                                        const isTodayDay = isToday(date)
+
+                                        return (
+                                            <TableCell
+                                                key={dateStr}
+                                                className={`text-center tabular-nums ${
+                                                    durationInSeconds
+                                                        ? "cursor-pointer hover:underline hover:bg-accent"
+                                                        : ""
+                                                } ${isWeekendDay ? "bg-muted/50" : ""} ${
+                                                    isTodayDay ? "bg-blue-50 dark:bg-blue-950" : ""
+                                                }`}
+                                                onClick={() => {
+                                                    if (durationInSeconds) {
+                                                        openTimeEntriesDialog(task.taskId)
+                                                    }
+                                                }}
+                                            >
+                                                {durationInSeconds
+                                                    ? formatDuration(durationInSeconds)
+                                                    : "-"}
+                                            </TableCell>
+                                        )
+                                    })}
+                                </TableRow>
+                            ))}
+                        </>
+                    )}
                 </TableBody>
             </Table>
         </div>

@@ -250,7 +250,7 @@ export function ShiftsCalendar({
 
             <div className="rounded-md border overflow-auto flex-1 min-h-0">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 z-10 bg-background">
                         <TableRow>
                             <TableHead className="min-w-[150px]">{t("table.employee")}</TableHead>
                             {days.map((date) => {

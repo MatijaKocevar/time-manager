@@ -22,7 +22,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar, Edit, Plus, Trash2, Sparkles } from "lucide-react"
+import { Calendar, Edit, Plus, Trash2, Sparkles, ChevronLeft, ChevronRight } from "lucide-react"
 import { createHoliday, updateHoliday, deleteHoliday } from "../actions/holiday-actions"
 import { autoGenerateUpcomingHolidays } from "../actions/generate-holidays"
 import { holidayKeys } from "../query-keys"
@@ -73,6 +73,7 @@ interface HolidaysTableProps {
 export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
     const tActions = useTranslations("admin.holidays.actions")
     const queryClient = useQueryClient()
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null)
     const [formData, setFormData] = useState({
@@ -198,14 +199,37 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
         }
     }
 
-    const sortedHolidays = [...holidays].sort(
+    const filteredHolidays = holidays.filter((holiday) => {
+        const holidayYear = new Date(holiday.date).getFullYear()
+        return holidayYear === selectedYear
+    })
+
+    const sortedHolidays = [...filteredHolidays].sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     )
 
     return (
         <div className="flex flex-col gap-4 h-full">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">{translations.title}</h2>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setSelectedYear(selectedYear - 1)}
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <div className="text-lg font-semibold min-w-[80px] text-center">
+                        {selectedYear}
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setSelectedYear(selectedYear + 1)}
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
                 <div className="flex gap-2">
                     <Button
                         variant="secondary"
@@ -314,9 +338,9 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
                     </Dialog>
                 </div>
             </div>
-            <div className="rounded-md border overflow-auto flex-1">
+            <div className="rounded-md border overflow-auto flex-1 min-h-0">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 z-10 bg-background">
                         <TableRow>
                             <TableHead className="min-w-[120px]">
                                 {translations.table.date}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -35,18 +35,24 @@ export function TimeSheetsClient({
     translations,
 }: TimeSheetsClientProps) {
     const router = useRouter()
-    const viewMode = useTimeSheetsStore((state) => state.viewMode)
-    const selectedDate = useTimeSheetsStore((state) => state.selectedDate)
+    const storeViewMode = useTimeSheetsStore((state) => state.viewMode)
+    const storeSelectedDate = useTimeSheetsStore((state) => state.selectedDate)
     const setViewMode = useTimeSheetsStore((state) => state.setViewMode)
     const setSelectedDate = useTimeSheetsStore((state) => state.setSelectedDate)
     const goToPreviousPeriod = useTimeSheetsStore((state) => state.goToPreviousPeriod)
     const goToNextPeriod = useTimeSheetsStore((state) => state.goToNextPeriod)
 
+    const [isInitialized, setIsInitialized] = useState(false)
+
     useEffect(() => {
         setViewMode(initialViewMode)
         setSelectedDate(initialSelectedDate)
+        setIsInitialized(true)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    const viewMode = isInitialized ? storeViewMode : initialViewMode
+    const selectedDate = isInitialized ? storeSelectedDate : initialSelectedDate
 
     useEffect(() => {
         const params = new URLSearchParams()
@@ -114,7 +120,7 @@ export function TimeSheetsClient({
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="text-sm hidden lg:block">
+                        <div className="text-sm hidden md:block">
                             <span className="text-muted-foreground">{translations.total}: </span>
                             <span
                                 className={`font-semibold ${
@@ -145,7 +151,7 @@ export function TimeSheetsClient({
                     </div>
                 </div>
 
-                <div className="text-sm text-center lg:hidden">
+                <div className="text-sm text-center md:hidden">
                     <span className="text-muted-foreground">{translations.total}: </span>
                     <span
                         className={`font-semibold ${
@@ -159,29 +165,17 @@ export function TimeSheetsClient({
                 </div>
             </div>
 
-            {isLoading && (
-                <div className="flex items-center justify-center h-64 text-muted-foreground">
-                    {translations.loading}
-                </div>
-            )}
-
-            {error && (
-                <div className="flex items-center justify-center h-64 text-destructive">
-                    {translations.error}
-                </div>
-            )}
-
-            {!isLoading && !error && (
-                <div className="flex-1 overflow-hidden">
-                    <TimeSheetsTable
-                        aggregatedData={aggregatedData}
-                        translations={{
-                            task: translations.task,
-                            noData: translations.noData,
-                        }}
-                    />
-                </div>
-            )}
+            <div className="flex-1 overflow-hidden">
+                <TimeSheetsTable
+                    aggregatedData={aggregatedData}
+                    isLoading={isLoading}
+                    error={error ? translations.error : null}
+                    translations={{
+                        task: translations.task,
+                        noData: translations.noData,
+                    }}
+                />
+            </div>
         </div>
     )
 }

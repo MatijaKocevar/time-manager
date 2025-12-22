@@ -1,4 +1,3 @@
-import { Card, CardContent } from "@/components/ui/card"
 import { getTranslations } from "next-intl/server"
 import { getHolidays } from "./actions/holiday-actions"
 import { HolidaysTable } from "./components/holidays-table"
@@ -43,12 +42,8 @@ export default async function HolidaysPage() {
     }
 
     return (
-        <div className="flex flex-col gap-6">
-            <Card className="flex-1 flex flex-col">
-                <CardContent className="flex-1 flex flex-col p-6">
-                    <HolidaysTable holidays={holidays} translations={translations} />
-                </CardContent>
-            </Card>
+        <div className="flex flex-col gap-4 min-w-0 h-full">
+            <HolidaysTable holidays={holidays} translations={translations} />
         </div>
     )
 }
