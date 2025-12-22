@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTranslations } from "next-intl"
-import { Trash2 } from "lucide-react"
+import { Trash2, Square } from "lucide-react"
 import {
     Dialog,
     DialogContent,
@@ -27,6 +27,7 @@ import {
     getTaskTimeEntries,
     updateTaskTimeEntry,
     deleteTaskTimeEntry,
+    stopTimer,
 } from "../actions/task-time-actions"
 import { taskKeys } from "../query-keys"
 import { hourKeys } from "@/app/(protected)/hours/query-keys"
@@ -52,6 +53,7 @@ interface EditedEntry {
 export function TimeEntriesDialog() {
     const t = useTranslations("tasks.form")
     const tCommon = useTranslations("common.actions")
+    const tStatus = useTranslations("common.status")
     const queryClient = useQueryClient()
     const timeEntriesDialog = useTasksStore((state) => state.timeEntriesDialog)
     const closeTimeEntriesDialog = useTasksStore((state) => state.closeTimeEntriesDialog)
@@ -157,6 +159,15 @@ export function TimeEntriesDialog() {
         },
     })
 
+    const stopMutation = useMutation({
+        mutationFn: stopTimer,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: taskKeys.all })
+            queryClient.invalidateQueries({ queryKey: hourKeys.all })
+            queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
+        },
+    })
+
     const handleDelete = (entryId: string) => {
         if (confirm(t("deleteTimeEntryConfirm"))) {
             deleteMutation.mutate({ id: entryId })
@@ -164,8 +175,10 @@ export function TimeEntriesDialog() {
     }
 
     const totalDuration = entries.reduce((sum, entry) => {
-        if (entry.endTime === null && timeEntriesDialog.taskId) {
-            const elapsed = elapsedTimes.get(timeEntriesDialog.taskId) ?? 0
+        if (entry.endTime === null) {
+            const elapsed = Math.floor(
+                (currentTime.getTime() - entry.startTime.getTime()) / 1000
+            )
             return sum + elapsed
         }
         return sum + (entry.duration ?? 0)
@@ -203,8 +216,12 @@ export function TimeEntriesDialog() {
                                     {entries.map((entry) => {
                                         const isActive = entry.endTime === null
                                         const elapsed =
-                                            isActive && timeEntriesDialog.taskId
-                                                ? (elapsedTimes.get(timeEntriesDialog.taskId) ?? 0)
+                                            isActive
+                                                ? Math.floor(
+                                                      (currentTime.getTime() -
+                                                          entry.startTime.getTime()) /
+                                                          1000
+                                                  )
                                                 : null
 
                                         const duration =
@@ -259,18 +276,33 @@ export function TimeEntriesDialog() {
                                                     {formatDuration(duration)}
                                                 </TableCell>
                                                 <TableCell className="p-2">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleDelete(entry.id)}
-                                                        disabled={
-                                                            isSaving || deleteMutation.isPending
-                                                        }
-                                                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                        <span className="sr-only">Delete</span>
-                                                    </Button>
+                                                    {isActive ? (
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                stopMutation.mutate({ id: entry.id })
+                                                            }}
+                                                            disabled={stopMutation.isPending}
+                                                            className="h-8 w-8 p-0"
+                                                        >
+                                                            <Square className="h-4 w-4" />
+                                                            <span className="sr-only">Stop</span>
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleDelete(entry.id)}
+                                                            disabled={
+                                                                isSaving || deleteMutation.isPending
+                                                            }
+                                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                            <span className="sr-only">Delete</span>
+                                                        </Button>
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         )
@@ -290,7 +322,7 @@ export function TimeEntriesDialog() {
                                     onClick={handleSaveAll}
                                     disabled={isSaving || deleteMutation.isPending}
                                 >
-                                    {isSaving ? tCommon("saving") : tCommon("save")}{" "}
+                                    {isSaving ? tStatus("saving") : tCommon("save")}{" "}
                                     {editedEntries.size > 1 && `(${editedEntries.size})`}
                                 </Button>
                             )}

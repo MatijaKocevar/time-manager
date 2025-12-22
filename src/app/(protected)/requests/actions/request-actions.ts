@@ -502,60 +502,6 @@ export async function approveRequest(input: ApproveRequestInput) {
                         })
                     }
                 }
-
-                // Then, create entries for dates that have no hour entries at all
-                const currentDate = new Date(request.startDate)
-                currentDate.setHours(0, 0, 0, 0)
-                const endDate = new Date(request.endDate)
-                endDate.setHours(23, 59, 59, 999)
-
-                while (currentDate <= endDate) {
-                    const isHol = holidays.some((h) => {
-                        const holidayDate = new Date(h.date)
-                        holidayDate.setHours(0, 0, 0, 0)
-                        const checkDate = new Date(currentDate)
-                        checkDate.setHours(0, 0, 0, 0)
-                        return holidayDate.getTime() === checkDate.getTime()
-                    })
-
-                    if (isWeekday(currentDate) && !isHol) {
-                        // Use same date range as migration for consistency
-                        const dayStart = new Date(currentDate)
-                        dayStart.setHours(0, 0, 0, 0)
-                        const dayEnd = new Date(currentDate)
-                        dayEnd.setHours(23, 59, 59, 999)
-
-                        // Check if any hour entry exists for this date (using range to catch any timezone variations)
-                        const existingEntry = await tx.hourEntry.findFirst({
-                            where: {
-                                userId: request.userId,
-                                date: {
-                                    gte: dayStart,
-                                    lte: dayEnd,
-                                },
-                                taskId: null,
-                            },
-                        })
-
-                        // Only create if no entry exists
-                        if (!existingEntry) {
-                            const normalizedDate = new Date(currentDate)
-                            normalizedDate.setHours(0, 0, 0, 0)
-
-                            await tx.hourEntry.create({
-                                data: {
-                                    userId: request.userId,
-                                    date: normalizedDate,
-                                    hours: 8,
-                                    type: targetHourType,
-                                    taskId: null,
-                                },
-                            })
-                        }
-                    }
-
-                    currentDate.setDate(currentDate.getDate() + 1)
-                }
             }
         })
 

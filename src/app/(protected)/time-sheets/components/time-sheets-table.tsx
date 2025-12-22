@@ -118,6 +118,7 @@ export function TimeSheetsTable({
                                                 style={{
                                                     width: `${Math.min((totalHours / 8) * 100, 100)}%`,
                                                 }}
+                                                suppressHydrationWarning
                                             />
                                             {totalHours > 8 && (
                                                 <div
@@ -125,6 +126,7 @@ export function TimeSheetsTable({
                                                     style={{
                                                         width: `${((totalHours - 8) / 8) * 100}%`,
                                                     }}
+                                                    suppressHydrationWarning
                                                 />
                                             )}
                                         </div>
@@ -207,6 +209,7 @@ export function TimeSheetsTable({
                                                                 openTimeEntriesDialog(task.taskId)
                                                             }
                                                         }}
+                                                        suppressHydrationWarning
                                                     >
                                                         {durationInSeconds
                                                             ? formatDuration(durationInSeconds)
