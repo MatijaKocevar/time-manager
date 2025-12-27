@@ -102,7 +102,7 @@ model User {
   hourEntries       HourEntry[]
   tasks             Task[]
   taskTimeEntries   TaskTimeEntry[]
-  dailyHourSummary  DailyHourSummary[]
+  dailyHourSummary  DailyHourSummary[] @ignore
   requests          Request[]
   approvedRequests  Request[]         @relation("ApprovedRequests")
   rejectedRequests  Request[]         @relation("RejectedRequests")

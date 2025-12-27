@@ -114,9 +114,11 @@ async function main() {
         hourEntries: await prisma.hourEntry.count(),
         requests: await prisma.request.count(),
         shifts: await prisma.shift.count(),
-        summaries: await prisma.dailyHourSummary.count(),
+        summaries: (await prisma.$queryRaw`SELECT COUNT(*) as count FROM daily_hour_summary`) as any,
         holidays: await prisma.holiday.count(),
     }
+
+    const summaryCount = Number((stats.summaries as any)[0]?.count || 0)
 
     console.log("\n" + "=".repeat(60))
     console.log("🎉 DATABASE SEEDING COMPLETED!")
@@ -129,7 +131,7 @@ async function main() {
     console.log(`   Hour Entries:        ${stats.hourEntries.toLocaleString()}`)
     console.log(`   Requests:            ${stats.requests.toLocaleString()}`)
     console.log(`   Shifts:              ${stats.shifts.toLocaleString()}`)
-    console.log(`   Daily Summaries:     ${stats.summaries.toLocaleString()}`)
+    console.log(`   Daily Summaries:     ${summaryCount.toLocaleString()}`)
     console.log(`   Holidays:            ${stats.holidays.toLocaleString()}`)
     console.log("\n🔐 Default password for all users: password123")
     console.log("=".repeat(60) + "\n")

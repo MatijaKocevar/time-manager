@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
 import type { HourType } from "@/../../prisma/generated/client"
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
+import { Prisma } from "../../../../../prisma/generated/client"
 import {
     CreateHourEntrySchema,
     UpdateHourEntrySchema,
@@ -284,23 +285,37 @@ export async function getHourEntriesForUser(
             return date
         }
 
-        const summaries = await prisma.dailyHourSummary.findMany({
-            where: {
-                userId,
-                ...(startDate && endDate
-                    ? {
-                          date: {
-                              gte: parseDate(startDate),
-                              lte: parseDate(endDate),
-                          },
-                      }
-                    : {}),
-                ...(type ? { type: type as HourType } : {}),
-            },
-            orderBy: {
-                date: "desc",
-            },
-        })
+        let summaryQuery = Prisma.sql`
+            SELECT * FROM daily_hour_summary
+            WHERE "userId" = ${userId}`
+
+        if (startDate && endDate) {
+            summaryQuery = Prisma.sql`${summaryQuery} AND date >= ${parseDate(startDate)}::timestamp AND date <= ${parseDate(endDate)}::timestamp`
+        }
+        if (type) {
+            summaryQuery = Prisma.sql`${summaryQuery} AND type = ${type}::"HourType"`
+        }
+
+        summaryQuery = Prisma.sql`${summaryQuery} ORDER BY date DESC`
+
+        const summariesRaw = (await prisma.$queryRaw(summaryQuery)) as Array<{
+            id: string
+            userId: string
+            date: Date
+            type: HourType
+            manualHours: number
+            trackedHours: number
+            totalHours: number
+            createdAt: Date
+            updatedAt: Date
+        }>
+
+        const summaries = summariesRaw.map((s) => ({
+            ...s,
+            manualHours: Number(s.manualHours),
+            trackedHours: Number(s.trackedHours),
+            totalHours: Number(s.totalHours),
+        }))
 
         const manualEntries = await prisma.hourEntry.findMany({
             where: {
@@ -436,23 +451,50 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
             return nextDay
         }
 
-        const summaries = await prisma.dailyHourSummary.findMany({
-            where: {
-                userId: session.user.id,
-                ...(startDate && endDate
-                    ? {
-                          date: {
-                              gte: parseDate(startDate),
-                              lt: parseEndDate(endDate),
-                          },
-                      }
-                    : {}),
-                ...(type ? { type: type as HourType } : {}),
-            },
-            orderBy: {
-                date: "desc",
-            },
-        })
+        const whereClause = {
+            userId: session.user.id,
+            ...(startDate && endDate
+                ? {
+                      date: {
+                          gte: parseDate(startDate),
+                          lt: parseEndDate(endDate),
+                      },
+                  }
+                : {}),
+            ...(type ? { type: type as HourType } : {}),
+        }
+
+        let summaryQuery = Prisma.sql`
+            SELECT * FROM daily_hour_summary
+            WHERE "userId" = ${session.user.id}`
+
+        if (startDate && endDate) {
+            summaryQuery = Prisma.sql`${summaryQuery} AND date >= ${parseDate(startDate)}::timestamp AND date < ${parseEndDate(endDate)}::timestamp`
+        }
+        if (type) {
+            summaryQuery = Prisma.sql`${summaryQuery} AND type = ${type}::"HourType"`
+        }
+
+        summaryQuery = Prisma.sql`${summaryQuery} ORDER BY date DESC`
+
+        const summariesRaw = (await prisma.$queryRaw(summaryQuery)) as Array<{
+            id: string
+            userId: string
+            date: Date
+            type: HourType
+            manualHours: number
+            trackedHours: number
+            totalHours: number
+            createdAt: Date
+            updatedAt: Date
+        }>
+
+        const summaries = summariesRaw.map((s) => ({
+            ...s,
+            manualHours: Number(s.manualHours),
+            trackedHours: Number(s.trackedHours),
+            totalHours: Number(s.totalHours),
+        }))
 
         const manualEntries = await prisma.hourEntry.findMany({
             where: {
