@@ -26,8 +26,13 @@ interface TimeSheetsTableProps {
     isLoading: boolean
     error: string | null
     currentTime: Date
+    formatHoursMinutes: (seconds: number) => string
     translations: {
         task: string
+        total: string
+        dailyTotal: string
+        overtime: string
+        undertime: string
         noData: string
     }
 }
@@ -37,6 +42,7 @@ export function TimeSheetsTable({
     isLoading,
     error,
     currentTime,
+    formatHoursMinutes,
     translations,
 }: TimeSheetsTableProps) {
     const queryClient = useQueryClient()
@@ -133,23 +139,31 @@ export function TimeSheetsTable({
                                             )}
                                         </div>
                                     )}
-                                    {formatDateHeader(date)}
+                                    <div className="flex flex-col gap-0.5 items-center">
+                                        <div>{formatDateHeader(date)}</div>
+                                        <div className="text-xs font-normal text-muted-foreground h-4" suppressHydrationWarning>
+                                            {totalSeconds > 0 ? formatHoursMinutes(totalSeconds) : ""}
+                                        </div>
+                                    </div>
                                 </TableHead>
                             )
                         })}
+                        <TableHead className="text-center min-w-[100px] font-semibold sticky right-0 z-40 bg-background border-l">
+                            {translations.total}
+                        </TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {isLoading ? (
                         <TableRow>
-                            <TableCell colSpan={dates.length + 1} className="h-64">
+                            <TableCell colSpan={dates.length + 2} className="h-64">
                                 <LoadingSpinner size="lg" />
                             </TableCell>
                         </TableRow>
                     ) : error ? (
                         <TableRow>
                             <TableCell
-                                colSpan={dates.length + 1}
+                                colSpan={dates.length + 2}
                                 className="h-64 text-center text-destructive"
                             >
                                 {error}
@@ -158,7 +172,7 @@ export function TimeSheetsTable({
                     ) : tasksArray.length === 0 ? (
                         <TableRow>
                             <TableCell
-                                colSpan={dates.length + 1}
+                                colSpan={dates.length + 2}
                                 className="h-64 text-center text-muted-foreground"
                             >
                                 {translations.noData}
@@ -260,6 +274,9 @@ export function TimeSheetsTable({
                                             </TableCell>
                                         )
                                     })}
+                                    <TableCell className="text-center font-semibold tabular-nums sticky right-0 z-10 bg-background border-l" suppressHydrationWarning>
+                                        {formatHoursMinutes(task.totalDuration)}
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </>

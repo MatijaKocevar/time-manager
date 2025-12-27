@@ -153,7 +153,10 @@
         },
         "table": {
             "task": "Task",
-            "total": "Total"
+            "total": "Total",
+            "dailyTotal": "Daily Total",
+            "overtime": "Overtime",
+            "undertime": "Undertime"
         },
         "messages": {
             "noData": "No time entries found for this period",

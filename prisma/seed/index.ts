@@ -114,7 +114,8 @@ async function main() {
         hourEntries: await prisma.hourEntry.count(),
         requests: await prisma.request.count(),
         shifts: await prisma.shift.count(),
-        summaries: (await prisma.$queryRaw`SELECT COUNT(*) as count FROM daily_hour_summary`) as any,
+        summaries:
+            (await prisma.$queryRaw`SELECT COUNT(*) as count FROM daily_hour_summary`) as any,
         holidays: await prisma.holiday.count(),
     }
 

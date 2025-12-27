@@ -23,6 +23,9 @@ interface TimeSheetsClientProps {
         month: string
         task: string
         total: string
+        dailyTotal: string
+        overtime: string
+        undertime: string
         noData: string
         loading: string
         error: string
@@ -202,8 +205,13 @@ export function TimeSheetsClient({
                     isLoading={isLoading}
                     error={error ? translations.error : null}
                     currentTime={currentTime}
+                    formatHoursMinutes={formatHoursMinutes}
                     translations={{
                         task: translations.task,
+                        total: translations.total,
+                        dailyTotal: translations.dailyTotal,
+                        overtime: translations.overtime,
+                        undertime: translations.undertime,
                         noData: translations.noData,
                     }}
                 />

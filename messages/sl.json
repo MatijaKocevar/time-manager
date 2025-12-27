@@ -153,7 +153,10 @@
         },
         "table": {
             "task": "Naloga",
-            "total": "Skupaj"
+            "total": "Skupaj",
+            "dailyTotal": "Dnevni skupaj",
+            "overtime": "Nadure",
+            "undertime": "Manjkajoče ure"
         },
         "messages": {
             "noData": "Ni najdenih vnosov časa za to obdobje",
