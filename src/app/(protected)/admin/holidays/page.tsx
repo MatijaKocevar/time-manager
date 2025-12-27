@@ -2,6 +2,8 @@ import { getTranslations } from "next-intl/server"
 import { getHolidays } from "./actions/holiday-actions"
 import { HolidaysTable } from "./components/holidays-table"
 
+export const dynamic = "force-dynamic"
+
 export default async function HolidaysPage() {
     const result = await getHolidays()
     const holidays = result.success && result.data ? result.data : []
