@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight } from "lucide-react"
@@ -128,9 +128,16 @@ export function TimeSheetsClient({
         }
     }, [data, activeTimers, setActiveTimer, clearAllActiveTimers])
 
-    const aggregatedData = data
-        ? aggregateTimeEntriesByTaskAndDate(data, dateRange.dates, currentTime)
-        : { tasks: new Map(), dates: dateRange.dates.map((d) => d.toISOString().split("T")[0]) }
+    const aggregatedData = useMemo(
+        () =>
+            data
+                ? aggregateTimeEntriesByTaskAndDate(data, dateRange.dates, currentTime)
+                : {
+                      tasks: new Map(),
+                      dates: dateRange.dates.map((d) => d.toISOString().split("T")[0]),
+                  },
+        [data, dateRange.dates, currentTime]
+    )
 
     const totalSeconds = Array.from(aggregatedData.tasks.values()).reduce(
         (sum, task) => sum + task.totalDuration,
