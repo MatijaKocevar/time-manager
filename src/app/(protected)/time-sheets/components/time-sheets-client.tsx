@@ -90,17 +90,25 @@ export function TimeSheetsClient({
             endDate: dateRange.endDate.toISOString(),
         }),
         queryFn: async () => {
-            const result = await getTimeSheetEntries({
-                startDate: dateRange.startDate.toISOString(),
-                endDate: dateRange.endDate.toISOString(),
-            })
+            try {
+                const result = await getTimeSheetEntries({
+                    startDate: dateRange.startDate.toISOString(),
+                    endDate: dateRange.endDate.toISOString(),
+                })
 
-            if ("error" in result) {
-                throw new Error(result.error)
+                if ("error" in result) {
+                    console.error("Time sheet error:", result.error)
+                    throw new Error(result.error)
+                }
+
+                return result.data
+            } catch (err) {
+                console.error("Query error:", err)
+                throw err
             }
-
-            return result.data
         },
+        staleTime: 30000,
+        retry: 1,
     })
 
     useEffect(() => {
