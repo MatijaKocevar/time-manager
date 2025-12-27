@@ -39,41 +39,41 @@ export const authConfig = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-                console.log("🔐 Authorize called with email:", credentials?.email)
+                console.log("Authorize called with email:", credentials?.email)
 
                 try {
                     const { email, password } = UserCredentialsSchema.parse(credentials)
-                    console.log("✅ Credentials validated")
+                    console.log("Credentials validated")
 
                     const user = await prisma.user.findUnique({
                         where: { email },
                     })
 
-                    console.log("👤 User found:", user ? `${user.email} (ID: ${user.id})` : "null")
+                    console.log("User found:", user ? `${user.email} (ID: ${user.id})` : "null")
 
                     if (!user || !user.password) {
-                        console.log("❌ No user or no password")
+                        console.log("No user or no password")
                         throw new Error("Invalid email or password")
                     }
 
                     const isPasswordValid = await bcrypt.compare(password, user.password)
-                    console.log("🔑 Password valid:", isPasswordValid)
+                    console.log("Password valid:", isPasswordValid)
 
                     if (!isPasswordValid) {
-                        console.log("❌ Invalid password")
+                        console.log("Invalid password")
                         throw new Error("Invalid email or password")
                     }
 
-                    console.log("📧 Email verified:", user.emailVerified ? "Yes" : "No")
+                    console.log("Email verified:", user.emailVerified ? "Yes" : "No")
 
                     if (!user.emailVerified) {
-                        console.log("❌ Email not verified")
+                        console.log("Email not verified")
                         throw new Error(
                             "Please verify your email before logging in. Check your inbox for the verification link."
                         )
                     }
 
-                    console.log("✅ Authorization successful, returning user data")
+                    console.log("Authorization successful, returning user data")
                     console.log("   - ID:", user.id)
                     console.log("   - Email:", user.email)
                     console.log("   - Role:", user.role)
@@ -88,7 +88,7 @@ export const authConfig = {
                         locale: user.locale || "en",
                     }
                 } catch (error) {
-                    console.log("💥 Error in authorize:", error)
+                    console.log("Error in authorize:", error)
                     if (error instanceof Error) {
                         throw error
                     }

@@ -9,7 +9,7 @@ import {
 const prisma = new PrismaClient()
 
 async function testEmail(userEmail: string) {
-    console.log("\n🧪 Testing Email Notification")
+    console.log("\nTesting Email Notification")
     console.log("================================")
     console.log(`Sending test email to: ${userEmail}`)
 
@@ -29,16 +29,16 @@ async function testEmail(userEmail: string) {
     )
 
     if (result.success) {
-        console.log("✅ Email sent successfully!")
+        console.log("Email sent successfully!")
     } else {
-        console.log(`❌ Email failed: ${result.error}`)
+        console.log(`Email failed: ${result.error}`)
     }
 
     return result
 }
 
 async function testPushNotification(userId: string) {
-    console.log("\n🧪 Testing Push Notification")
+    console.log("\nTesting Push Notification")
     console.log("================================")
     console.log(`Sending push notification to user: ${userId}`)
 
@@ -49,16 +49,16 @@ async function testPushNotification(userId: string) {
     })
 
     if (result.success) {
-        console.log(`✅ Push notification sent to ${result.sent} subscription(s)`)
+        console.log(`Push notification sent to ${result.sent} subscription(s)`)
     } else {
-        console.log(`❌ Push notification failed: ${result.error}`)
+        console.log(`Push notification failed: ${result.error}`)
     }
 
     return result
 }
 
 async function testPushToAllAdmins() {
-    console.log("\n🧪 Testing Push to All Admins")
+    console.log("\nTesting Push to All Admins")
     console.log("================================")
 
     const admins = await prisma.user.findMany({
@@ -78,16 +78,16 @@ async function testPushToAllAdmins() {
     })
 
     if (result.success) {
-        console.log(`✅ Sent to ${result.sent} admin(s)`)
+        console.log(`Sent to ${result.sent} admin(s)`)
     } else {
-        console.log(`❌ Failed: ${result.error}`)
+        console.log(`Failed: ${result.error}`)
     }
 
     return result
 }
 
 async function simulateRequestFlow(testUserEmail: string) {
-    console.log("\n🧪 Simulating Complete Request Flow")
+    console.log("\nSimulating Complete Request Flow")
     console.log("=====================================")
 
     const testUser = await prisma.user.findUnique({
@@ -96,13 +96,13 @@ async function simulateRequestFlow(testUserEmail: string) {
     })
 
     if (!testUser) {
-        console.log(`❌ User with email ${testUserEmail} not found`)
+        console.log(`User with email ${testUserEmail} not found`)
         return
     }
 
     console.log(`User found: ${testUser.name || testUser.email}`)
 
-    console.log("\n1️⃣ Simulating request creation notification to admins...")
+    console.log("\n1. Simulating request creation notification to admins...")
     await sendEmail(
         testUserEmail,
         "Test: New Request Created",
@@ -122,29 +122,29 @@ async function simulateRequestFlow(testUserEmail: string) {
         body: `${testUser.name || testUser.email} has submitted a test vacation request`,
         url: "/admin/pending-requests",
     })
-    console.log("✅ Admin notifications sent")
+    console.log("Admin notifications sent")
 
-    console.log("\n2️⃣ Simulating approval notification to user...")
+    console.log("\n2. Simulating approval notification to user...")
     await sendPushNotification(testUser.id, {
         title: "Request Approved ✓ (Test)",
         body: "Your test vacation request has been approved",
         url: "/requests",
     })
-    console.log("✅ User approval notification sent")
+    console.log("User approval notification sent")
 
-    console.log("\n3️⃣ Simulating rejection notification to user...")
+    console.log("\n3. Simulating rejection notification to user...")
     await sendPushNotification(testUser.id, {
         title: "Request Rejected (Test)",
         body: "Your test vacation request has been rejected",
         url: "/requests",
     })
-    console.log("✅ User rejection notification sent")
+    console.log("User rejection notification sent")
 
-    console.log("\n✅ Complete flow simulation finished!")
+    console.log("\nComplete flow simulation finished!")
 }
 
 async function listPushSubscriptions() {
-    console.log("\n📋 Current Push Subscriptions")
+    console.log("\nCurrent Push Subscriptions")
     console.log("================================")
 
     const subscriptions = await prisma.pushSubscription.findMany({
@@ -179,7 +179,7 @@ async function main() {
     const args = process.argv.slice(2)
     const command = args[0]
 
-    console.log("🔔 Time Manager - Notification Testing Script")
+    console.log("Time Manager - Notification Testing Script")
     console.log("==============================================\n")
 
     if (!command) {
@@ -203,7 +203,7 @@ async function main() {
             case "test-email": {
                 const email = args[1]
                 if (!email) {
-                    console.error("❌ Error: Email address required")
+                    console.error("Error: Email address required")
                     console.log("Usage: npx tsx scripts/test-notifications.ts test-email <email>")
                     process.exit(1)
                 }
@@ -214,7 +214,7 @@ async function main() {
             case "test-push": {
                 const userId = args[1]
                 if (!userId) {
-                    console.error("❌ Error: User ID required")
+                    console.error("Error: User ID required")
                     console.log("Usage: npx tsx scripts/test-notifications.ts test-push <userId>")
                     process.exit(1)
                 }
@@ -230,7 +230,7 @@ async function main() {
             case "simulate": {
                 const email = args[1]
                 if (!email) {
-                    console.error("❌ Error: User email required")
+                    console.error("Error: User email required")
                     console.log("Usage: npx tsx scripts/test-notifications.ts simulate <userEmail>")
                     process.exit(1)
                 }
@@ -244,12 +244,12 @@ async function main() {
             }
 
             default:
-                console.error(`❌ Unknown command: ${command}`)
+                console.error(`Unknown command: ${command}`)
                 console.log("Run without arguments to see available commands")
                 process.exit(1)
         }
     } catch (error) {
-        console.error("\n❌ Error:", error)
+        console.error("\nError:", error)
         process.exit(1)
     } finally {
         await prisma.$disconnect()

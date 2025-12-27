@@ -2,7 +2,7 @@ import { PrismaClient } from "../generated/client"
 import { normalizeDate } from "./utils"
 
 export async function seedHolidays(prisma: PrismaClient): Promise<Date[]> {
-    console.log("\n🎉 Seeding holidays...")
+    console.log("\nSeeding holidays...")
 
     const currentYear = new Date().getFullYear()
     const years = [currentYear - 1, currentYear, currentYear + 1]
@@ -30,16 +30,16 @@ export async function seedHolidays(prisma: PrismaClient): Promise<Date[]> {
                     })
                 }
 
-                console.log(`✅ Imported holidays for Slovenia ${year}`)
+                console.log(`Imported holidays for Slovenia ${year}`)
             }
         } catch (error) {
-            console.warn(`⚠️  Failed to fetch holidays for ${year}:`, error)
+            console.warn(`Failed to fetch holidays for ${year}:`, error)
         }
     }
 
     const holidays = await prisma.holiday.findMany()
     const holidayDates = holidays.map((h) => normalizeDate(h.date))
-    console.log(`✅ Loaded ${holidayDates.length} holidays`)
+    console.log(`Loaded ${holidayDates.length} holidays`)
 
     return holidayDates
 }

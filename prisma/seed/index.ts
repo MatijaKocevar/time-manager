@@ -12,8 +12,8 @@ const prisma = new PrismaClient()
 const random = new SeededRandom(42)
 
 async function main() {
-    console.log("🌱 Starting comprehensive database seeding...")
-    console.log("📅 Seeding 3 months of data for 10 users\n")
+    console.log("Starting comprehensive database seeding...")
+    console.log("Seeding 3 months of data for 10 users\n")
 
     const totalUsers = 10
     const adminCount = 2
@@ -36,20 +36,20 @@ async function main() {
         const totalBatches = Math.ceil(allUsers.length / batchSize)
 
         console.log(
-            `\n📦 Processing batch ${batchNum}/${totalBatches} (users ${batchIndex + 1}-${batchIndex + batch.length})`
+            `\nProcessing batch ${batchNum}/${totalBatches} (users ${batchIndex + 1}-${batchIndex + batch.length})`
         )
 
         for (const user of batch) {
             try {
-                console.log(`\n  👤 Seeding data for ${user.name}...`)
+                console.log(`\n  Seeding data for ${user.name}...`)
 
                 // Lists
                 const lists = await seedListsForUser(prisma, random, user.id)
-                console.log(`    ✓ Created ${lists.length} lists`)
+                console.log(`    Created ${lists.length} lists`)
 
                 // Tasks
                 const tasks = await seedTasksForUser(prisma, random, user.id, lists)
-                console.log(`    ✓ Created ~${tasks.length} tasks`)
+                console.log(`    Created ~${tasks.length} tasks`)
 
                 // Time entries
                 const timeEntries = await seedTimeEntriesForUser(
@@ -59,7 +59,7 @@ async function main() {
                     tasks,
                     endDate
                 )
-                console.log(`    ✓ Created ${timeEntries} time entries`)
+                console.log(`    Created ${timeEntries} time entries`)
 
                 // Hour entries
                 const hourEntries = await seedHourEntriesForUser(
@@ -71,7 +71,7 @@ async function main() {
                     endDate,
                     holidayDates
                 )
-                console.log(`    ✓ Created ~${hourEntries} hour entries`)
+                console.log(`    Created ~${hourEntries} hour entries`)
 
                 // Requests
                 const requests = await seedRequestsForUser(
@@ -82,7 +82,7 @@ async function main() {
                     endDate,
                     holidayDates
                 )
-                console.log(`    ✓ Created ${requests} requests`)
+                console.log(`    Created ${requests} requests`)
 
                 // Shifts
                 const shifts = await seedShiftsForUser(
@@ -99,12 +99,12 @@ async function main() {
             }
         }
 
-        console.log(`\n✅ Completed batch ${batchNum}/${totalBatches}`)
+        console.log(`\nCompleted batch ${batchNum}/${totalBatches}`)
     }
 
-    console.log(`    ⏳ Refreshing materialized view...`)
+    console.log(`    Refreshing materialized view...`)
     const summaries = await recalculateSummariesForUser(prisma, "", startDate, endDate)
-    console.log(`    ✓ Refreshed daily summaries`)
+    console.log(`    Refreshed daily summaries`)
 
     const stats = {
         users: await prisma.user.count(),
@@ -122,9 +122,9 @@ async function main() {
     const summaryCount = Number((stats.summaries as any)[0]?.count || 0)
 
     console.log("\n" + "=".repeat(60))
-    console.log("🎉 DATABASE SEEDING COMPLETED!")
+    console.log("DATABASE SEEDING COMPLETED!")
     console.log("=".repeat(60))
-    console.log("\n📊 Final Statistics:")
+    console.log("\nFinal Statistics:")
     console.log(`   Users:               ${stats.users.toLocaleString()}`)
     console.log(`   Lists:               ${stats.lists.toLocaleString()}`)
     console.log(`   Tasks:               ${stats.tasks.toLocaleString()}`)
@@ -134,7 +134,7 @@ async function main() {
     console.log(`   Shifts:              ${stats.shifts.toLocaleString()}`)
     console.log(`   Daily Summaries:     ${summaryCount.toLocaleString()}`)
     console.log(`   Holidays:            ${stats.holidays.toLocaleString()}`)
-    console.log("\n🔐 Default password for all users: password123")
+    console.log("\nDefault password for all users: password123")
     console.log("=".repeat(60) + "\n")
 }
 
@@ -143,7 +143,7 @@ main()
         await prisma.$disconnect()
     })
     .catch(async (e) => {
-        console.error("❌ Error seeding database:", e)
+        console.error("Error seeding database:", e)
         await prisma.$disconnect()
         process.exit(1)
     })

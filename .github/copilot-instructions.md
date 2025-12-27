@@ -25,6 +25,7 @@
 - Use descriptive variable and function names
 - Prefer functional programming patterns where applicable
 - Use modern ES6+ syntax and React patterns
+- Never use emojis in console logs, code, or any output - use plain text only
 
 ## Internationalization (i18n) with next-intl
 
