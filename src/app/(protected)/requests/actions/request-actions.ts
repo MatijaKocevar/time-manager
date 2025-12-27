@@ -31,10 +31,7 @@ import {
     type CancelApprovedRequestInput,
     type RequestDisplay,
 } from "../schemas/request-schemas"
-import {
-    recalculateDailySummary,
-    recalculateDailySummaryStandalone,
-} from "../../hours/utils/summary-helpers"
+import { refreshDailyHourSummary } from "@/lib/materialized-views"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -261,10 +258,6 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
 
                     currentDate.setDate(currentDate.getDate() + 1)
                 }
-
-                for (const date of datesToRecalculate) {
-                    await recalculateDailySummary(tx, request.userId, date, hourType)
-                }
             }
 
             console.log(`Starting shift deletion for request type: ${request.type}`)
@@ -355,25 +348,11 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
             const recalcEndDate = new Date(request.endDate)
 
             while (recalcDate <= recalcEndDate) {
-                const dayOfWeek = recalcDate.getDay()
-                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-
-                if (!isWeekend) {
-                    const normalizedDate = new Date(recalcDate)
-                    normalizedDate.setHours(0, 0, 0, 0)
-
-                    await recalculateDailySummaryStandalone(
-                        request.userId,
-                        normalizedDate,
-                        originalHourType
-                    )
-                    await recalculateDailySummaryStandalone(request.userId, normalizedDate, "WORK")
-                }
-
                 recalcDate.setDate(recalcDate.getDate() + 1)
             }
         }
 
+        await refreshDailyHourSummary()
         revalidatePath("/requests")
         revalidatePath("/hours")
         revalidatePath("/shifts")
@@ -533,9 +512,9 @@ export async function approveRequest(input: ApproveRequestInput) {
 
                 recalcDate.setDate(recalcDate.getDate() + 1)
             }
-
-            await Promise.all(recalcPromises)
         }
+
+        await refreshDailyHourSummary()
 
         const requestUser = await prisma.user.findUnique({
             where: { id: request.userId },

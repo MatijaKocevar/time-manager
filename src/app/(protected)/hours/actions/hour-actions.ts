@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
 import type { HourType } from "@/../../prisma/generated/client"
-import { recalculateDailySummary } from "../utils/summary-helpers"
+import { refreshDailyHourSummary } from "@/lib/materialized-views"
 import {
     CreateHourEntrySchema,
     UpdateHourEntrySchema,
@@ -82,10 +82,9 @@ export async function createHourEntry(input: CreateHourEntryInput) {
                     },
                 })
             }
-
-            await recalculateDailySummary(tx, session.user.id, date, type)
         })
 
+        await refreshDailyHourSummary()
         revalidatePath("/hours")
         return { success: true }
     } catch (error) {
@@ -125,17 +124,9 @@ export async function updateHourEntry(input: UpdateHourEntryInput) {
                     description,
                 },
             })
-
-            await recalculateDailySummary(tx, session.user.id, existing.date, existing.type)
-
-            const dateChanged = date.getTime() !== existing.date.getTime()
-            const typeChanged = type !== existing.type
-
-            if (dateChanged || typeChanged) {
-                await recalculateDailySummary(tx, session.user.id, date, type)
-            }
         })
 
+        await refreshDailyHourSummary()
         revalidatePath("/hours")
         return { success: true }
     } catch (error) {
@@ -169,10 +160,9 @@ export async function deleteHourEntry(input: DeleteHourEntryInput) {
             await tx.hourEntry.delete({
                 where: { id },
             })
-
-            await recalculateDailySummary(tx, session.user.id, existing.date, existing.type)
         })
 
+        await refreshDailyHourSummary()
         revalidatePath("/hours")
         return { success: true }
     } catch (error) {
@@ -264,19 +254,9 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
                         data: entry,
                     })
                 }
-
-                const uniqueCombinations = new Map<string, { date: Date; type: HourType }>()
-                for (const entry of entries) {
-                    const key = `${entry.date.toISOString()}-${entry.type}`
-                    if (!uniqueCombinations.has(key)) {
-                        uniqueCombinations.set(key, { date: entry.date, type: entry.type })
-                    }
-                }
-
-                for (const { date, type } of uniqueCombinations.values()) {
-                    await recalculateDailySummary(tx, session.user.id, date, type)
-                }
             })
+
+            await refreshDailyHourSummary()
         }
 
         revalidatePath("/hours")
@@ -665,20 +645,9 @@ export async function batchUpdateHourEntries(input: BatchUpdateHourEntriesInput)
                     })
                 }
             }
-
-            for (const key of affectedDates) {
-                const lastDashIndex = key.lastIndexOf("-")
-                const dateStr = key.substring(0, lastDashIndex)
-                const type = key.substring(lastDashIndex + 1)
-                await recalculateDailySummary(
-                    tx,
-                    session.user.id,
-                    parseDateString(dateStr),
-                    type as HourType
-                )
-            }
         })
 
+        await refreshDailyHourSummary()
         revalidatePath("/hours")
         return { success: true }
     } catch (error) {

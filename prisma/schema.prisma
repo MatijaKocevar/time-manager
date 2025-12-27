@@ -194,6 +194,8 @@ model DailyHourSummary {
   @@index([userId])
   @@index([date])
   @@index([userId, date])
+  @@map("daily_hour_summary")
+  @@ignore
 }
 
 model Request {

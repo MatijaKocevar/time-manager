@@ -94,26 +94,18 @@ async function main() {
                     holidayDates
                 )
                 console.log(`    ✓ Created ~${shifts} shifts`)
-
-                // Recalculate summaries
-                console.log(`    ⏳ Calculating daily summaries...`)
-                const summaries = await recalculateSummariesForUser(
-                    prisma,
-                    user.id,
-                    startDate,
-                    endDate
-                )
-                console.log(`    ✓ Created ${summaries} daily summaries`)
             } catch (error) {
                 console.error(`    ❌ Error seeding user ${user.name}:`, error)
-                // Continue with next user
             }
         }
 
         console.log(`\n✅ Completed batch ${batchNum}/${totalBatches}`)
     }
 
-    // Final statistics
+    console.log(`    ⏳ Refreshing materialized view...`)
+    const summaries = await recalculateSummariesForUser(prisma, "", startDate, endDate)
+    console.log(`    ✓ Refreshed daily summaries`)
+
     const stats = {
         users: await prisma.user.count(),
         lists: await prisma.list.count(),

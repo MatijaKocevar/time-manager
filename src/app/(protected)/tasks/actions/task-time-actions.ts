@@ -15,7 +15,7 @@ import {
     type DeleteTaskTimeEntryInput,
     type TaskTimeEntryDisplay,
 } from "../schemas/task-time-entry-schemas"
-import { recalculateDailySummaryStandalone } from "@/app/(protected)/hours/utils/summary-helpers"
+import { refreshDailyHourSummary } from "@/lib/materialized-views"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -109,7 +109,6 @@ export async function startTimer(input: StartTimerInput) {
                 if (approvedRequest) {
                     hourType = approvedRequest.type
                 }
-                await recalculateDailySummaryStandalone(session.user.id, entryDateLocal, hourType)
             }
 
             return await tx.taskTimeEntry.create({
@@ -121,6 +120,7 @@ export async function startTimer(input: StartTimerInput) {
             })
         })
 
+        await refreshDailyHourSummary()
         revalidatePath("/tasks")
         revalidatePath("/hours")
         return { success: true, entryId: newEntry.id }
@@ -191,8 +191,8 @@ export async function stopTimer(input: StopTimerInput) {
         if (approvedRequest) {
             hourType = approvedRequest.type
         }
-        await recalculateDailySummaryStandalone(session.user.id, entryDateLocal, hourType)
 
+        await refreshDailyHourSummary()
         revalidatePath("/tasks")
         revalidatePath("/hours")
         return { success: true }
@@ -339,16 +339,9 @@ export async function updateTaskTimeEntry(input: UpdateTaskTimeEntryInput) {
                     duration,
                 },
             })
-
-            const oldHourType = await getHourTypeForDate(session.user.id, oldDate)
-            await recalculateDailySummaryStandalone(session.user.id, oldDate, oldHourType)
-
-            if (dateChanged) {
-                const newHourType = await getHourTypeForDate(session.user.id, newDate)
-                await recalculateDailySummaryStandalone(session.user.id, newDate, newHourType)
-            }
         })
 
+        await refreshDailyHourSummary()
         revalidatePath("/tasks")
         revalidatePath("/hours")
         revalidatePath("/time-sheets")
@@ -388,11 +381,9 @@ export async function deleteTaskTimeEntry(input: DeleteTaskTimeEntryInput) {
             await tx.taskTimeEntry.delete({
                 where: { id },
             })
-
-            const hourType = await getHourTypeForDate(session.user.id, entryDate)
-            await recalculateDailySummaryStandalone(session.user.id, entryDate, hourType)
         })
 
+        await refreshDailyHourSummary()
         revalidatePath("/tasks")
         revalidatePath("/hours")
         revalidatePath("/time-sheets")
