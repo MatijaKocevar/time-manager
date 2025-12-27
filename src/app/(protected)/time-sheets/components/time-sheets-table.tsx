@@ -141,8 +141,13 @@ export function TimeSheetsTable({
                                     )}
                                     <div className="flex flex-col gap-0.5 items-center">
                                         <div>{formatDateHeader(date)}</div>
-                                        <div className="text-xs font-normal text-muted-foreground h-4" suppressHydrationWarning>
-                                            {totalSeconds > 0 ? formatHoursMinutes(totalSeconds) : ""}
+                                        <div
+                                            className="text-xs font-normal text-muted-foreground h-4"
+                                            suppressHydrationWarning
+                                        >
+                                            {totalSeconds > 0
+                                                ? formatHoursMinutes(totalSeconds)
+                                                : ""}
                                         </div>
                                     </div>
                                 </TableHead>
@@ -274,7 +279,10 @@ export function TimeSheetsTable({
                                             </TableCell>
                                         )
                                     })}
-                                    <TableCell className="text-center font-semibold tabular-nums sticky right-0 z-10 bg-background border-l" suppressHydrationWarning>
+                                    <TableCell
+                                        className="text-center font-semibold tabular-nums sticky right-0 z-10 bg-background border-l"
+                                        suppressHydrationWarning
+                                    >
                                         {formatHoursMinutes(task.totalDuration)}
                                     </TableCell>
                                 </TableRow>
