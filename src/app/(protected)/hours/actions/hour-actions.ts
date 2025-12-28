@@ -201,12 +201,9 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
               })
             : []
 
-        const entries: Array<{
-            userId: string
+        const entriesToUpsert: Array<{
             date: Date
             hours: number
-            type: HourType
-            description: string | null
         }> = []
         const currentDate = new Date(startDate)
 
@@ -224,36 +221,46 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
                 })
 
             if ((!skipWeekends || !isWeekend) && !isHol) {
-                const entryDate = new Date(currentDate)
-
-                const existing = await prisma.hourEntry.findFirst({
-                    where: {
-                        userId: session.user.id,
-                        date: entryDate,
-                        type,
-                    },
+                entriesToUpsert.push({
+                    date: new Date(currentDate),
+                    hours,
                 })
-
-                if (!existing) {
-                    entries.push({
-                        userId: session.user.id,
-                        date: entryDate,
-                        hours,
-                        type,
-                        description: description ?? null,
-                    })
-                }
             }
 
             currentDate.setDate(currentDate.getDate() + 1)
         }
 
-        if (entries.length > 0) {
+        if (entriesToUpsert.length > 0) {
             await prisma.$transaction(async (tx) => {
-                for (const entry of entries) {
-                    await tx.hourEntry.create({
-                        data: entry,
+                for (const entry of entriesToUpsert) {
+                    const existing = await tx.hourEntry.findFirst({
+                        where: {
+                            userId: session.user.id,
+                            date: entry.date,
+                            type,
+                            taskId: null,
+                        },
                     })
+
+                    if (existing) {
+                        await tx.hourEntry.update({
+                            where: { id: existing.id },
+                            data: {
+                                hours: entry.hours,
+                                description,
+                            },
+                        })
+                    } else {
+                        await tx.hourEntry.create({
+                            data: {
+                                userId: session.user.id,
+                                date: entry.date,
+                                hours: entry.hours,
+                                type,
+                                description,
+                            },
+                        })
+                    }
                 }
             })
 
@@ -261,7 +268,7 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
         }
 
         revalidatePath("/hours")
-        return { success: true, count: entries.length }
+        return { success: true, count: entriesToUpsert.length }
     } catch (error) {
         if (error instanceof Error) {
             return { error: error.message }
