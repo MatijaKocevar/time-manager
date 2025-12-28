@@ -13,6 +13,7 @@ interface CreateColumnsParams {
     locale: string
     isApproving: boolean
     isRejecting: boolean
+    approvingId: string | null
     onApprove: (id: string) => void
     onReject: (id: string) => void
 }
@@ -23,6 +24,7 @@ export function createColumns({
     locale,
     isApproving,
     isRejecting,
+    approvingId,
     onApprove,
     onReject,
 }: CreateColumnsParams): ColumnDef<RequestDisplay>[] {
@@ -103,31 +105,34 @@ export function createColumns({
         {
             id: "actions",
             header: () => <div className="text-right w-[170px]">{translations.table.actions}</div>,
-            cell: ({ row }) => (
-                <div className="flex gap-2 justify-end w-[170px]">
-                    <Button
-                        size="sm"
-                        onClick={() => onApprove(row.original.id)}
-                        disabled={isApproving}
-                        className="w-[84px]"
-                    >
-                        {isApproving ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            translations.table.approve
-                        )}
-                    </Button>
-                    <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => onReject(row.original.id)}
-                        disabled={isRejecting}
-                        className="w-[76px]"
-                    >
-                        {translations.table.reject}
-                    </Button>
-                </div>
-            ),
+            cell: ({ row }) => {
+                const isThisRowApproving = approvingId === row.original.id
+                return (
+                    <div className="flex gap-2 justify-end w-[170px]">
+                        <Button
+                            size="sm"
+                            onClick={() => onApprove(row.original.id)}
+                            disabled={isApproving || isThisRowApproving}
+                            className="w-[84px]"
+                        >
+                            {isThisRowApproving ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                translations.table.approve
+                            )}
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => onReject(row.original.id)}
+                            disabled={isRejecting || isApproving}
+                            className="w-[76px]"
+                        >
+                            {translations.table.reject}
+                        </Button>
+                    </div>
+                )
+            },
             enableColumnFilter: false,
             size: 170,
             minSize: 170,

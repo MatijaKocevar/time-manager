@@ -58,9 +58,12 @@ export function PendingRequestsTable({
     const setRejectDialogOpen = usePendingRequestsStore((state) => state.setRejectDialogOpen)
     const resetRejectDialog = usePendingRequestsStore((state) => state.resetRejectDialog)
 
+    const [approvingId, setApprovingId] = useState<string | null>(null)
+
     const approveMutation = useMutation({
         mutationFn: approveRequest,
         onMutate: async (variables) => {
+            setApprovingId(variables.id)
             await queryClient.cancelQueries({ queryKey: requestKeys.all })
             const previousRequests = queryClient.getQueryData(requestKeys.all)
             queryClient.setQueryData(requestKeys.all, (old: RequestDisplay[] | undefined) => {
@@ -84,6 +87,7 @@ export function PendingRequestsTable({
             }
         },
         onSettled: () => {
+            setApprovingId(null)
             queryClient.invalidateQueries({ queryKey: requestKeys.adminRequests() })
         },
     })
@@ -104,12 +108,15 @@ export function PendingRequestsTable({
                 locale,
                 isApproving: approveMutation.isPending,
                 isRejecting: rejectMutation.isPending,
+                approvingId,
                 onApprove: (requestId: string) => approveMutation.mutate({ id: requestId }),
                 onReject: openRejectDialog,
             }),
         [
-            approveMutation,
+            approveMutation.isPending,
+            approveMutation.mutate,
             rejectMutation.isPending,
+            approvingId,
             holidays,
             translations,
             locale,
