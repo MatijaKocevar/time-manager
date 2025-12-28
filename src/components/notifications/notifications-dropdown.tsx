@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Bell, Check, X, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { WorkTypeBadge } from "@/components/work-type-badge"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,6 +17,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { approveRequest, rejectRequest } from "@/app/(protected)/requests/actions/request-actions"
 import { requestKeys } from "@/app/(protected)/requests/query-keys"
 import type { NotificationData } from "@/app/(protected)/actions/notification-actions"
+import type { WorkType } from "@/lib/work-type-styles"
 
 interface NotificationsDropdownProps {
     notifications: NotificationData
@@ -202,10 +204,14 @@ export function NotificationsDropdown({ notifications, translations }: Notificat
                                                                     </span>
                                                                 </div>
                                                             )}
-                                                            <p className="text-sm text-muted-foreground mb-1">
-                                                                {translations.requestTypes[
-                                                                    request.type as keyof typeof translations.requestTypes
-                                                                ] || request.type}
+                                                            <p className="text-sm mb-1">
+                                                                <WorkTypeBadge
+                                                                    type={request.type as WorkType}
+                                                                >
+                                                                    {translations.requestTypes[
+                                                                        request.type as keyof typeof translations.requestTypes
+                                                                    ] || request.type}
+                                                                </WorkTypeBadge>
                                                             </p>
                                                             <p className="text-xs text-muted-foreground mb-2">
                                                                 {formatDate(request.startDate)} -{" "}

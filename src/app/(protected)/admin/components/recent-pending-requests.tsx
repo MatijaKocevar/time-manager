@@ -1,9 +1,10 @@
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { WorkTypeBadge } from "@/components/work-type-badge"
 import type { Request } from "../types"
 import { formatRequestDateRange } from "../utils"
+import type { WorkType } from "@/lib/work-type-styles"
 
 interface RecentPendingRequestsProps {
     requests: Request[]
@@ -50,7 +51,9 @@ export function RecentPendingRequests({
                                 </p>
                                 <p className="text-sm text-muted-foreground">
                                     {translations.type}:{" "}
-                                    <Badge variant="outline">{request.type}</Badge>
+                                    <WorkTypeBadge type={request.type as WorkType}>
+                                        {request.type.replace("_", " ")}
+                                    </WorkTypeBadge>
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                     {translations.period}:{" "}

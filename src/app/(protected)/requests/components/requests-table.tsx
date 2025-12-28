@@ -13,12 +13,14 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Edit, Search, Plus } from "lucide-react"
+import { WorkTypeBadge } from "@/components/work-type-badge"
 import type { RequestDisplay } from "../schemas/request-schemas"
 import { REQUEST_TYPE_LABELS, REQUEST_STATUS_COLORS, REQUEST_STATUS } from "../constants"
 import {
     getRequestTypeTranslationKey,
     getRequestStatusTranslationKey,
 } from "../utils/translation-helpers"
+import type { WorkType } from "@/lib/work-type-styles"
 
 interface RequestsTableProps {
     requests: RequestDisplay[]
@@ -139,7 +141,9 @@ export function RequestsTable({
                                         </TableCell>
                                     )}
                                     <TableCell>
-                                        {tTypes(getRequestTypeTranslationKey(request.type))}
+                                        <WorkTypeBadge type={request.type as WorkType}>
+                                            {tTypes(getRequestTypeTranslationKey(request.type))}
+                                        </WorkTypeBadge>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
                                         {formatDate(request.startDate)}

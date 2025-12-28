@@ -77,6 +77,6 @@ export async function getNotifications(): Promise<NotificationData> {
         return { count, pendingRequests: notifications, isAdmin }
     } catch (error) {
         console.error("Error fetching notifications:", error)
-        return { count: 0, pendingRequests: [] }
+        return { count: 0, pendingRequests: [], isAdmin: false }
     }
 }

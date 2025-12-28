@@ -12,12 +12,14 @@ export const REQUEST_TYPE_LABELS: Record<string, string> = {
     OTHER: "Other",
 }
 
-export const REQUEST_STATUS_COLORS = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    APPROVED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
-    CANCELLED: "bg-gray-100 text-gray-800",
-} as const
+import { getRequestStatusColor, type RequestStatus } from "@/lib/work-type-styles"
+
+export const REQUEST_STATUS_COLORS: Record<RequestStatus, string> = {
+    PENDING: getRequestStatusColor("PENDING"),
+    APPROVED: getRequestStatusColor("APPROVED"),
+    REJECTED: getRequestStatusColor("REJECTED"),
+    CANCELLED: getRequestStatusColor("CANCELLED"),
+}
 
 export const REQUEST_STATUS = {
     PENDING: "PENDING",

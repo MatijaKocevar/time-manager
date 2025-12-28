@@ -1,4 +1,5 @@
 import type { ShiftLocation } from "../schemas/shift-schemas"
+import { getWorkTypeColor } from "@/lib/work-type-styles"
 
 export const SHIFT_LOCATIONS = [
     { value: "OFFICE" as const, label: "Office" },
@@ -29,28 +30,28 @@ export const SHIFT_LOCATION_COLORS: Record<
     { bg: string; text: string; label: string }
 > = {
     OFFICE: {
-        bg: "bg-blue-100 dark:bg-blue-950",
-        text: "text-blue-800 dark:text-blue-200",
+        bg: getWorkTypeColor("OFFICE", "default").split(" ").slice(0, 2).join(" "),
+        text: getWorkTypeColor("OFFICE", "default").split(" ").slice(2).join(" "),
         label: "Office",
     },
     HOME: {
-        bg: "bg-green-100 dark:bg-green-950",
-        text: "text-green-800 dark:text-green-200",
+        bg: getWorkTypeColor("HOME", "default").split(" ").slice(0, 2).join(" "),
+        text: getWorkTypeColor("HOME", "default").split(" ").slice(2).join(" "),
         label: "Work from Home",
     },
     VACATION: {
-        bg: "bg-orange-100 dark:bg-orange-950",
-        text: "text-orange-800 dark:text-orange-200",
+        bg: getWorkTypeColor("VACATION", "default").split(" ").slice(0, 2).join(" "),
+        text: getWorkTypeColor("VACATION", "default").split(" ").slice(2).join(" "),
         label: "Vacation",
     },
     SICK_LEAVE: {
-        bg: "bg-red-100 dark:bg-red-950",
-        text: "text-red-800 dark:text-red-200",
+        bg: getWorkTypeColor("SICK_LEAVE", "default").split(" ").slice(0, 2).join(" "),
+        text: getWorkTypeColor("SICK_LEAVE", "default").split(" ").slice(2).join(" "),
         label: "Sick Leave",
     },
     OTHER: {
-        bg: "bg-gray-100 dark:bg-gray-800",
-        text: "text-gray-800 dark:text-gray-200",
+        bg: getWorkTypeColor("OTHER", "default").split(" ").slice(0, 2).join(" "),
+        text: getWorkTypeColor("OTHER", "default").split(" ").slice(2).join(" "),
         label: "Other",
     },
 }

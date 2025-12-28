@@ -1,3 +1,5 @@
+import { getWorkTypeColor, type WorkType } from "@/lib/work-type-styles"
+
 export const HOUR_TYPES = [
     { value: "WORK", label: "Work" },
     { value: "WORK_FROM_HOME", label: "Work From Home" },
@@ -8,26 +10,26 @@ export const HOUR_TYPES = [
 
 export const HOUR_TYPE_COLORS = {
     GRAND_TOTAL: "bg-slate-300 text-slate-950 dark:bg-slate-700 dark:text-slate-50",
-    WORK: "bg-blue-100 text-blue-800",
-    WORK_TRACKED: "bg-blue-100 text-blue-800",
-    WORK_MANUAL: "bg-blue-50 text-blue-700",
-    WORK_TOTAL: "bg-blue-200 text-blue-900",
-    VACATION: "bg-green-100 text-green-800",
-    VACATION_TRACKED: "bg-green-100 text-green-800",
-    VACATION_MANUAL: "bg-green-50 text-green-700",
-    VACATION_TOTAL: "bg-green-200 text-green-900",
-    SICK_LEAVE: "bg-red-100 text-red-800",
-    SICK_LEAVE_TRACKED: "bg-red-100 text-red-800",
-    SICK_LEAVE_MANUAL: "bg-red-50 text-red-700",
-    SICK_LEAVE_TOTAL: "bg-red-200 text-red-900",
-    WORK_FROM_HOME: "bg-purple-100 text-purple-800",
-    WORK_FROM_HOME_TRACKED: "bg-purple-100 text-purple-800",
-    WORK_FROM_HOME_MANUAL: "bg-purple-50 text-purple-700",
-    WORK_FROM_HOME_TOTAL: "bg-purple-200 text-purple-900",
-    OTHER: "bg-gray-100 text-gray-800",
-    OTHER_TRACKED: "bg-gray-100 text-gray-800",
-    OTHER_MANUAL: "bg-gray-50 text-gray-700",
-    OTHER_TOTAL: "bg-gray-200 text-gray-900",
+    WORK: getWorkTypeColor("WORK", "default"),
+    WORK_TRACKED: getWorkTypeColor("WORK", "default"),
+    WORK_MANUAL: getWorkTypeColor("WORK", "light"),
+    WORK_TOTAL: getWorkTypeColor("WORK", "strong"),
+    VACATION: getWorkTypeColor("VACATION", "default"),
+    VACATION_TRACKED: getWorkTypeColor("VACATION", "default"),
+    VACATION_MANUAL: getWorkTypeColor("VACATION", "light"),
+    VACATION_TOTAL: getWorkTypeColor("VACATION", "strong"),
+    SICK_LEAVE: getWorkTypeColor("SICK_LEAVE", "default"),
+    SICK_LEAVE_TRACKED: getWorkTypeColor("SICK_LEAVE", "default"),
+    SICK_LEAVE_MANUAL: getWorkTypeColor("SICK_LEAVE", "light"),
+    SICK_LEAVE_TOTAL: getWorkTypeColor("SICK_LEAVE", "strong"),
+    WORK_FROM_HOME: getWorkTypeColor("WORK_FROM_HOME", "default"),
+    WORK_FROM_HOME_TRACKED: getWorkTypeColor("WORK_FROM_HOME", "default"),
+    WORK_FROM_HOME_MANUAL: getWorkTypeColor("WORK_FROM_HOME", "light"),
+    WORK_FROM_HOME_TOTAL: getWorkTypeColor("WORK_FROM_HOME", "strong"),
+    OTHER: getWorkTypeColor("OTHER", "default"),
+    OTHER_TRACKED: getWorkTypeColor("OTHER", "default"),
+    OTHER_MANUAL: getWorkTypeColor("OTHER", "light"),
+    OTHER_TOTAL: getWorkTypeColor("OTHER", "strong"),
 } as const
 
 export const ROW_BG_COLORS = {

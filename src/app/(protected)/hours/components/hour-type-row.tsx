@@ -39,16 +39,14 @@ export function HourTypeRow({
             return `${tLabels("grandTotal")} (${tTypes("work")})`
         }
         if (type.endsWith("_TRACKED")) {
-            const baseType = type.replace("_TRACKED", "") as HourType
-            return `${tTypes(getHourTypeTranslationKey(baseType))} (${tLabels("tracked")})`
+            return tLabels("tracked")
         }
         if (type.endsWith("_MANUAL")) {
-            const baseType = type.replace("_MANUAL", "") as HourType
-            return `${tTypes(getHourTypeTranslationKey(baseType))} (${tLabels("manual")})`
+            return tLabels("manual")
         }
         if (type.endsWith("_TOTAL")) {
             const baseType = type.replace("_TOTAL", "") as HourType
-            return `${tTypes(getHourTypeTranslationKey(baseType))} (${tLabels("total")})`
+            return tTypes(getHourTypeTranslationKey(baseType))
         }
         return tTypes(getHourTypeTranslationKey(type))
     }

@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { WorkTypeBadge } from "@/components/work-type-badge"
 import {
     Select,
     SelectContent,
@@ -17,6 +18,7 @@ import { bulkCreateHourEntries } from "../actions/hour-actions"
 import { HOUR_TYPES, MAX_HOURS_PER_DAY } from "../constants/hour-types"
 import { hourKeys } from "../query-keys"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
+import type { WorkType } from "@/lib/work-type-styles"
 
 interface HourEntryFormProps {
     onSuccess?: () => void
@@ -124,12 +126,20 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
                     }
                 >
                     <SelectTrigger id="type">
-                        <SelectValue placeholder={tCommon("placeholders.selectType")} />
+                        {bulkEntryForm.data.type ? (
+                            <WorkTypeBadge type={bulkEntryForm.data.type as WorkType}>
+                                {tTypes(getHourTypeTranslationKey(bulkEntryForm.data.type))}
+                            </WorkTypeBadge>
+                        ) : (
+                            <SelectValue placeholder={tCommon("placeholders.selectType")} />
+                        )}
                     </SelectTrigger>
                     <SelectContent>
                         {HOUR_TYPES.map((hourType) => (
                             <SelectItem key={hourType.value} value={hourType.value}>
-                                {tTypes(getHourTypeTranslationKey(hourType.value))}
+                                <WorkTypeBadge type={hourType.value as WorkType}>
+                                    {tTypes(getHourTypeTranslationKey(hourType.value))}
+                                </WorkTypeBadge>
                             </SelectItem>
                         ))}
                     </SelectContent>

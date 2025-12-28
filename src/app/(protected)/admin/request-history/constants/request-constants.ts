@@ -1,13 +1,15 @@
+import { getWorkTypeColor, getRequestStatusColor } from "@/lib/work-type-styles"
+
 export const TYPE_COLORS: Record<string, string> = {
-    VACATION: "bg-blue-100 text-blue-800",
-    SICK_LEAVE: "bg-red-100 text-red-800",
-    WORK_FROM_HOME: "bg-green-100 text-green-800",
-    REMOTE_WORK: "bg-purple-100 text-purple-800",
-    OTHER: "bg-gray-100 text-gray-800",
+    VACATION: getWorkTypeColor("VACATION", "default"),
+    SICK_LEAVE: getWorkTypeColor("SICK_LEAVE", "default"),
+    WORK_FROM_HOME: getWorkTypeColor("WORK_FROM_HOME", "default"),
+    REMOTE_WORK: getWorkTypeColor("WORK_FROM_HOME", "default"),
+    OTHER: getWorkTypeColor("OTHER", "default"),
 }
 
 export const STATUS_COLORS: Record<string, string> = {
-    APPROVED: "bg-green-100 text-green-800",
-    REJECTED: "bg-red-100 text-red-800",
-    CANCELLED: "bg-gray-100 text-gray-800",
+    APPROVED: getRequestStatusColor("APPROVED"),
+    REJECTED: getRequestStatusColor("REJECTED"),
+    CANCELLED: getRequestStatusColor("CANCELLED"),
 }

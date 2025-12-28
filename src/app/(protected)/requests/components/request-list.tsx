@@ -5,6 +5,7 @@ import { getUserRequests, cancelRequest } from "../actions/request-actions"
 import { requestKeys } from "../query-keys"
 import { REQUEST_STATUS_COLORS, REQUEST_TYPE_LABELS, REQUEST_STATUS } from "../constants"
 import { Button } from "@/components/ui/button"
+import { WorkTypeBadge } from "@/components/work-type-badge"
 import {
     Table,
     TableBody,
@@ -14,6 +15,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Card, CardContent } from "@/components/ui/card"
+import type { WorkType } from "@/lib/work-type-styles"
 
 export function RequestList() {
     const queryClient = useQueryClient()
@@ -58,7 +60,11 @@ export function RequestList() {
                         <TableBody>
                             {requests.map((request) => (
                                 <TableRow key={request.id}>
-                                    <TableCell>{REQUEST_TYPE_LABELS[request.type]}</TableCell>
+                                    <TableCell>
+                                        <WorkTypeBadge type={request.type as WorkType}>
+                                            {REQUEST_TYPE_LABELS[request.type]}
+                                        </WorkTypeBadge>
+                                    </TableCell>
                                     <TableCell>{formatDate(request.startDate)}</TableCell>
                                     <TableCell>{formatDate(request.endDate)}</TableCell>
                                     <TableCell>
