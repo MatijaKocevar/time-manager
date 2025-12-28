@@ -45,7 +45,6 @@ export function TasksOverviewClient({ groups, lists: initialLists }: TasksOvervi
     const { data: activeTimerData } = useQuery({
         queryKey: taskKeys.activeTimer(),
         queryFn: getActiveTimer,
-        refetchInterval: 5000,
     })
 
     useEffect(() => {
@@ -105,7 +104,7 @@ export function TasksOverviewClient({ groups, lists: initialLists }: TasksOvervi
                             </div>
                             <OverviewNewTaskButton listId={group.listId} />
                         </div>
-                        <TasksFlatTable tasks={group.tasks} />
+                        <TasksFlatTable tasks={group.tasks} lists={lists} />
                     </div>
                 )
             })}

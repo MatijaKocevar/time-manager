@@ -10,13 +10,15 @@ import { getTaskStatusLabel } from "../utils/task-status-labels"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { useTasksStore } from "../stores/tasks-store"
 import type { TaskDisplay } from "../schemas"
+import type { ListDisplay } from "../schemas/list-schemas"
 
 interface TasksTableProps {
     tasks: TaskDisplay[]
     listId: string | null
+    lists: ListDisplay[]
 }
 
-export function TasksTable({ tasks, listId }: TasksTableProps) {
+export function TasksTable({ tasks, listId, lists }: TasksTableProps) {
     const [isMounted, setIsMounted] = useState(false)
     const t = useTranslations("tasks.table")
     const tCommon = useTranslations("common")
@@ -87,7 +89,7 @@ export function TasksTable({ tasks, listId }: TasksTableProps) {
                                 </TableHeader>
                                 <TableBody>
                                     {group.tasks.map((task) => (
-                                        <TaskRow key={task.id} task={task} />
+                                        <TaskRow key={task.id} task={task} lists={lists} />
                                     ))}
                                 </TableBody>
                             </Table>

@@ -54,7 +54,6 @@ export function TasksView({ initialTasks, listId }: TasksViewProps) {
     const { data: activeTimerData } = useQuery({
         queryKey: taskKeys.activeTimer(),
         queryFn: getActiveTimer,
-        refetchInterval: 5000,
     })
 
     useEffect(() => {
@@ -98,7 +97,7 @@ export function TasksView({ initialTasks, listId }: TasksViewProps) {
                     {t("newTask")}
                 </Button>
             </div>
-            <TasksTable tasks={tasks} listId={listId} />
+            <TasksTable tasks={tasks} listId={listId} lists={lists} />
             <CreateTaskDialog />
             <DeleteTaskDialog />
             <TimeEntriesDialog />

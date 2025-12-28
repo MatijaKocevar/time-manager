@@ -6,11 +6,14 @@ import { buildTaskTree } from "../utils/task-tree-helpers"
 import { TaskRow } from "./task-row"
 import type { TaskDisplay } from "../schemas"
 
+import type { ListDisplay } from "../schemas/list-schemas"
+
 interface TasksFlatTableProps {
     tasks: TaskDisplay[]
+    lists: ListDisplay[]
 }
 
-export function TasksFlatTable({ tasks }: TasksFlatTableProps) {
+export function TasksFlatTable({ tasks, lists }: TasksFlatTableProps) {
     const t = useTranslations("tasks.table")
     const tCommon = useTranslations("common")
     const taskTree = buildTaskTree(tasks)
@@ -40,7 +43,7 @@ export function TasksFlatTable({ tasks }: TasksFlatTableProps) {
                 </TableHeader>
                 <TableBody>
                     {taskTree.map((task) => (
-                        <TaskRow key={task.id} task={task} />
+                        <TaskRow key={task.id} task={task} lists={lists} />
                     ))}
                 </TableBody>
             </Table>

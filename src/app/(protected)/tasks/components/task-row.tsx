@@ -12,22 +12,23 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { useQueryClient, useQuery } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { useTasksStore } from "../stores/tasks-store"
 import { toggleTaskExpanded } from "../actions/task-actions"
 import { moveTaskToList } from "../actions/list-actions"
-import { getLists } from "../actions/list-actions"
 import { taskKeys, listKeys } from "../query-keys"
 import { EditableTaskTitle } from "./editable-task-title"
 import { TaskStatusSelect } from "./task-status-select"
 import { TaskTimeTracker } from "./task-time-tracker"
 import type { TaskTreeNode } from "../schemas"
+import type { ListDisplay } from "../schemas/list-schemas"
 
 interface TaskRowProps {
     task: TaskTreeNode
+    lists: ListDisplay[]
 }
 
-export function TaskRow({ task }: TaskRowProps) {
+export function TaskRow({ task, lists }: TaskRowProps) {
     const queryClient = useQueryClient()
     const t = useTranslations("tasks.form")
     const tList = useTranslations("tasks.list")
@@ -38,11 +39,6 @@ export function TaskRow({ task }: TaskRowProps) {
     const isOperationLoading = useTasksStore(
         (state) => state.taskOperations.get(task.id)?.isLoading ?? false
     )
-
-    const { data: lists = [] } = useQuery({
-        queryKey: listKeys.all,
-        queryFn: getLists,
-    })
 
     const isExpanded = task.isExpanded
     const hasSubtasks = task.subtasks && task.subtasks.length > 0
@@ -227,7 +223,7 @@ export function TaskRow({ task }: TaskRowProps) {
                 hasSubtasks &&
                 task.subtasks.map((subtask) => (
                     <Fragment key={subtask.id}>
-                        <TaskRow task={subtask} />
+                        <TaskRow task={subtask} lists={lists} />
                     </Fragment>
                 ))}
         </>
