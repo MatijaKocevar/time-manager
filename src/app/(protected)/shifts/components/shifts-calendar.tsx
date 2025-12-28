@@ -1,9 +1,10 @@
 "use client"
 
-import { useMemo } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations, useLocale } from "next-intl"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -13,11 +14,24 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { EditShiftDialog } from "./edit-shift-dialog"
 import { SHIFT_LOCATION_COLORS } from "../constants"
-import { useShiftCalendarStore } from "../stores"
 import type { ShiftLocation } from "../schemas/shift-schemas"
 import { getShiftLocationTranslationKey } from "../utils/translation-helpers"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { useRequestStore } from "../../requests/stores/request-store"
+import { createRequest } from "../../requests/actions/request-actions"
+import { REQUEST_TYPES, REQUEST_TYPE } from "../../requests/constants"
+import { type RequestType } from "../../requests/schemas/request-schemas"
+import { getRequestTypeTranslationKey } from "../../requests/utils/translation-helpers"
 
 interface User {
     id: string
@@ -52,14 +66,31 @@ export function ShiftsCalendar({
     const t = useTranslations("shifts")
     const tCommon = useTranslations("common")
     const tLocations = useTranslations("shifts.locations")
+    const tRequestForm = useTranslations("requests.form")
+    const tRequestTypes = useTranslations("requests.types")
     const locale = useLocale()
     const dateLocale = locale === "sl" ? "sl-SI" : "en-US"
     const router = useRouter()
+    const queryClient = useQueryClient()
     const viewMode = initialViewMode
     const currentDate = initialSelectedDate
-    const editDialog = useShiftCalendarStore((state) => state.editDialog)
-    const openEditDialog = useShiftCalendarStore((state) => state.openEditDialog)
-    const closeEditDialog = useShiftCalendarStore((state) => state.closeEditDialog)
+    const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false)
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null)
+
+    const formData = useRequestStore((state) => state.formData)
+    const setFormData = useRequestStore((state) => state.setFormData)
+    const resetForm = useRequestStore((state) => state.resetForm)
+
+    const mutation = useMutation({
+        mutationFn: createRequest,
+        onSuccess: (result) => {
+            if (result.success) {
+                queryClient.invalidateQueries()
+                resetForm()
+                setIsRequestDialogOpen(false)
+            }
+        },
+    })
 
     const { startDate, days } = useMemo(() => {
         if (viewMode === "week") {
@@ -136,16 +167,35 @@ export function ShiftsCalendar({
         return shiftsByUserAndDate.get(key)
     }
 
-    const handleCellClick = (userId: string, userName: string | null, date: Date) => {
-        const shift = getShift(userId, date)
-        openEditDialog({
-            date,
-            userId,
-            userName: userName || undefined,
-            currentLocation: shift?.location,
-            currentNotes: shift?.notes || undefined,
+    const handleCellClick = (date: Date) => {
+        resetForm()
+        const dateString = date.toISOString().split("T")[0]
+        setFormData({ startDate: dateString, endDate: dateString })
+        setSelectedDate(date)
+        setIsRequestDialogOpen(true)
+    }
+
+    const handleDialogClose = (open: boolean) => {
+        if (!open) {
+            setIsRequestDialogOpen(false)
+            resetForm()
+        }
+    }
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!formData.type || !formData.startDate || !formData.endDate) return
+
+        mutation.mutate({
+            type: formData.type as RequestType,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            reason: formData.reason,
+            location: formData.type === REQUEST_TYPE.WORK_FROM_HOME ? formData.location : undefined,
         })
     }
+
+    const needsLocation = formData.type === REQUEST_TYPE.WORK_FROM_HOME
 
     const isToday = (date: Date) => {
         const today = new Date()
@@ -311,9 +361,7 @@ export function ShiftsCalendar({
                                             className={`text-center p-2 cursor-pointer ${
                                                 isWeekend ? "bg-muted/50" : ""
                                             } ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
-                                            onClick={() =>
-                                                handleCellClick(user.id, user.name, date)
-                                            }
+                                            onClick={() => handleCellClick(date)}
                                         >
                                             {location && (
                                                 <div
@@ -333,15 +381,90 @@ export function ShiftsCalendar({
                 </Table>
             </div>
 
-            <EditShiftDialog
-                isOpen={editDialog.isOpen}
-                onClose={closeEditDialog}
-                date={editDialog.date}
-                userId={editDialog.userId}
-                userName={editDialog.userName}
-                currentLocation={editDialog.currentLocation}
-                currentNotes={editDialog.currentNotes}
-            />
+            <Dialog open={isRequestDialogOpen} onOpenChange={handleDialogClose}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{tRequestForm("newRequest")}</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="type">{tCommon("fields.type")}</Label>
+                            <Select
+                                value={formData.type}
+                                onValueChange={(value) =>
+                                    setFormData({ type: value as RequestType })
+                                }
+                            >
+                                <SelectTrigger id="type">
+                                    <SelectValue placeholder={tRequestForm("selectType")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {REQUEST_TYPES.map((rt) => (
+                                        <SelectItem key={rt.value} value={rt.value}>
+                                            {tRequestTypes(getRequestTypeTranslationKey(rt.value))}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
+                                <Input
+                                    id="startDate"
+                                    type="date"
+                                    value={formData.startDate}
+                                    onChange={(e) => setFormData({ startDate: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
+                                <Input
+                                    id="endDate"
+                                    type="date"
+                                    value={formData.endDate}
+                                    onChange={(e) => setFormData({ endDate: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        {needsLocation && (
+                            <div className="space-y-2">
+                                <Label htmlFor="location">{tCommon("fields.location")}</Label>
+                                <Input
+                                    id="location"
+                                    type="text"
+                                    placeholder={tRequestForm("enterLocation")}
+                                    value={formData.location}
+                                    onChange={(e) => setFormData({ location: e.target.value })}
+                                />
+                            </div>
+                        )}
+
+                        <div className="space-y-2">
+                            <Label htmlFor="reason">{tRequestForm("reasonOptional")}</Label>
+                            <Input
+                                id="reason"
+                                type="text"
+                                placeholder={tRequestForm("enterReason")}
+                                value={formData.reason}
+                                onChange={(e) => setFormData({ reason: e.target.value })}
+                            />
+                        </div>
+
+                        {mutation.data?.error && (
+                            <div className="text-sm text-red-600">{mutation.data.error}</div>
+                        )}
+
+                        <Button type="submit" disabled={mutation.isPending}>
+                            {mutation.isPending
+                                ? tCommon("status.submitting")
+                                : tRequestForm("submitRequest")}
+                        </Button>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
