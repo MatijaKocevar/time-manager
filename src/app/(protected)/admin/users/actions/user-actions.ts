@@ -97,17 +97,7 @@ export async function createUser(input: CreateUserInput) {
                 email,
                 password: hashedPassword,
                 role,
-            },
-        })
-
-        await prisma.list.create({
-            data: {
-                userId: newUser.id,
-                name: "No List",
-                description: "Tasks without a specific list",
-                color: "#6b7280",
-                isDefault: true,
-                order: 0,
+                emailVerified: new Date(),
             },
         })
 

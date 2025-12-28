@@ -80,19 +80,6 @@ export async function registerUser(input: unknown) {
         })
         console.log("User created:", newUser.id)
 
-        console.log("Creating default list...")
-        await prisma.list.create({
-            data: {
-                userId: newUser.id,
-                name: "No List",
-                description: "Tasks without a specific list",
-                color: "#6b7280",
-                isDefault: true,
-                order: 0,
-            },
-        })
-        console.log("Default list created")
-
         console.log("Creating verification token...")
         const token = await createVerificationToken(email)
         console.log("Token created:", token.substring(0, 10) + "...")

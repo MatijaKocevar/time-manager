@@ -2,6 +2,7 @@
     "common": {
         "actions": {
             "save": "Shrani",
+            "saving": "Shranjevanje...",
             "cancel": "Prekliči",
             "delete": "Izbriši",
             "edit": "Uredi",

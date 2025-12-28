@@ -33,7 +33,11 @@ export default function LoginPage() {
     useEffect(() => {
         const errorParam = searchParams.get("error")
         if (errorParam) {
-            setTimeout(() => setError(t("loginFailed")), 0)
+            const errorMessage =
+                errorParam === "CredentialsSignin"
+                    ? t("invalidCredentials")
+                    : decodeURIComponent(errorParam)
+            setTimeout(() => setError(errorMessage), 0)
         }
     }, [searchParams, t])
 
