@@ -9,5 +9,5 @@ export default async function Home() {
         redirect("/login")
     }
 
-    redirect("/tracker")
+    redirect("/time-sheets")
 }
