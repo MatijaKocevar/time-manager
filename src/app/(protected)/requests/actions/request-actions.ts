@@ -9,7 +9,6 @@ import {
     mapRequestTypeToShiftLocation,
     mapShiftLocationToHourType,
     mapRequestTypeToHourType,
-    isWeekday,
 } from "../../shifts/utils/request-shift-mapping"
 import {
     notifyAdminsNewRequest,
@@ -58,7 +57,7 @@ export async function createRequest(input: CreateRequestInput) {
             return { error: validation.error.issues[0].message }
         }
 
-        const { startDate, endDate, type, reason, location, affectsHourType } = validation.data
+        const { startDate, endDate, type, reason, location } = validation.data
 
         if (startDate > endDate) {
             return { error: "Start date must be before or equal to end date" }
@@ -72,7 +71,7 @@ export async function createRequest(input: CreateRequestInput) {
                 endDate,
                 reason,
                 location,
-                affectsHourType,
+                affectsHourType: true,
             },
         })
 
@@ -244,24 +243,19 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                     const currentDay = new Date(startDay)
                     currentDay.setUTCDate(startDay.getUTCDate() + i)
 
-                    const dayOfWeek = currentDay.getDay()
-                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+                    datesToRecalculate.push(new Date(currentDay))
 
-                    if (!isWeekend) {
-                        datesToRecalculate.push(new Date(currentDay))
-
-                        await tx.hourEntry.deleteMany({
-                            where: {
-                                userId: request.userId,
-                                date: currentDay,
-                                type: hourType,
-                                description: {
-                                    startsWith: "Auto-generated from",
-                                },
-                                taskId: null,
+                    await tx.hourEntry.deleteMany({
+                        where: {
+                            userId: request.userId,
+                            date: currentDay,
+                            type: hourType,
+                            description: {
+                                startsWith: "Auto-generated from",
                             },
-                        })
-                    }
+                            taskId: null,
+                        },
+                    })
                 }
             }
 
@@ -281,35 +275,27 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                 const currentDay = new Date(startDay)
                 currentDay.setUTCDate(startDay.getUTCDate() + i)
 
-                const dayOfWeek = currentDay.getDay()
-                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+                console.log(`Attempting to delete shifts for date: ${currentDay.toISOString()}`)
 
-                if (!isWeekend) {
-                    console.log(`Attempting to delete shifts for date: ${currentDay.toISOString()}`)
+                const existingShifts = await tx.shift.findMany({
+                    where: {
+                        userId: request.userId,
+                        date: currentDay,
+                    },
+                })
+                console.log(`Found ${existingShifts.length} shifts for this date:`, existingShifts)
 
-                    const existingShifts = await tx.shift.findMany({
-                        where: {
-                            userId: request.userId,
-                            date: currentDay,
+                const deleteResult = await tx.shift.deleteMany({
+                    where: {
+                        userId: request.userId,
+                        date: currentDay,
+                        notes: {
+                            contains: "Auto-generated from",
                         },
-                    })
-                    console.log(
-                        `Found ${existingShifts.length} shifts for this date:`,
-                        existingShifts
-                    )
+                    },
+                })
 
-                    const deleteResult = await tx.shift.deleteMany({
-                        where: {
-                            userId: request.userId,
-                            date: currentDay,
-                            notes: {
-                                contains: "Auto-generated from",
-                            },
-                        },
-                    })
-
-                    console.log(`Deleted ${deleteResult.count} shifts`)
-                }
+                console.log(`Deleted ${deleteResult.count} shifts`)
             }
 
             // Reverse migrate hour entries if request affected hour type
@@ -448,7 +434,7 @@ export async function approveRequest(input: ApproveRequestInput) {
                     return holidayDate.getTime() === currentDay.getTime()
                 })
 
-                if (isWeekday(currentDay) && !isHol) {
+                if (!isHol) {
                     console.log(`  Creating shift for day ${i + 1}: ${currentDay.toISOString()}`)
 
                     await tx.shift.upsert({
@@ -471,7 +457,7 @@ export async function approveRequest(input: ApproveRequestInput) {
                     })
                 } else {
                     console.log(
-                        `  Skipping day ${i + 1}: ${currentDay.toISOString()} (weekend: ${!isWeekday(currentDay)}, holiday: ${isHol})`
+                        `  Skipping day ${i + 1}: ${currentDay.toISOString()} (holiday: ${isHol})`
                     )
                 }
             }
