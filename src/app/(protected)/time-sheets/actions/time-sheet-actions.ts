@@ -38,10 +38,29 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
                     not: null,
                 },
             },
-            include: {
+            select: {
+                id: true,
+                taskId: true,
+                userId: true,
+                startTime: true,
+                endTime: true,
+                duration: true,
+                createdAt: true,
+                updatedAt: true,
                 task: {
-                    include: {
-                        list: true,
+                    select: {
+                        id: true,
+                        title: true,
+                        status: true,
+                        listId: true,
+                        list: {
+                            select: {
+                                id: true,
+                                name: true,
+                                color: true,
+                                icon: true,
+                            },
+                        },
                     },
                 },
             },
@@ -55,10 +74,29 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
                 userId: session.user.id,
                 endTime: null,
             },
-            include: {
+            select: {
+                id: true,
+                taskId: true,
+                userId: true,
+                startTime: true,
+                endTime: true,
+                duration: true,
+                createdAt: true,
+                updatedAt: true,
                 task: {
-                    include: {
-                        list: true,
+                    select: {
+                        id: true,
+                        title: true,
+                        status: true,
+                        listId: true,
+                        list: {
+                            select: {
+                                id: true,
+                                name: true,
+                                color: true,
+                                icon: true,
+                            },
+                        },
                     },
                 },
             },

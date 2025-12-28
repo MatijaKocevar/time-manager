@@ -36,11 +36,13 @@ export function TasksViewClient({ listId }: TasksViewClientProps) {
     const { data: lists = [] } = useQuery({
         queryKey: listKeys.all,
         queryFn: getLists,
+        staleTime: 30000,
     })
 
     const { data: activeTimerData } = useQuery({
         queryKey: taskKeys.activeTimer(),
         queryFn: getActiveTimer,
+        staleTime: 5000,
     })
 
     useEffect(() => {

@@ -12,10 +12,10 @@ import { aggregateTimeEntriesByTaskAndDate } from "../utils/aggregation-helpers"
 import { getTimeSheetEntries } from "../actions/time-sheet-actions"
 import { timeSheetKeys } from "../query-keys"
 import { TimeSheetsTable } from "./time-sheets-table"
-import type { TimeEntryWithTask } from "../utils/aggregation-helpers"
+import type { TimeEntryDisplay } from "../schemas/time-sheet-schemas"
 
 interface TimeSheetsClientProps {
-    initialData: TimeEntryWithTask[]
+    initialData: TimeEntryDisplay[]
     initialViewMode: ViewMode
     initialSelectedDate: Date
     translations: {
@@ -107,7 +107,7 @@ export function TimeSheetsClient({
                 throw err
             }
         },
-        staleTime: 30000,
+        staleTime: 10000,
         retry: 1,
     })
 

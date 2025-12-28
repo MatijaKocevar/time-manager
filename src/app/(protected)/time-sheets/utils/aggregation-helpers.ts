@@ -1,4 +1,5 @@
 import type { TaskTimeEntry, Task, List } from "../../../../../prisma/generated/client"
+import type { TimeEntryDisplay } from "../schemas/time-sheet-schemas"
 
 export type TimeEntryWithTask = TaskTimeEntry & {
     task: Task & {
@@ -28,7 +29,7 @@ export interface AggregatedTimeSheet {
 }
 
 export function aggregateTimeEntriesByTaskAndDate(
-    entries: TimeEntryWithTask[],
+    entries: TimeEntryWithTask[] | TimeEntryDisplay[],
     allDates: Date[],
     currentTime?: Date
 ): AggregatedTimeSheet {

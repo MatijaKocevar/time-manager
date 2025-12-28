@@ -43,17 +43,20 @@ export function TasksView({ initialTasks, listId }: TasksViewProps) {
     const { data: lists = [] } = useQuery({
         queryKey: listKeys.all,
         queryFn: getLists,
+        staleTime: 30000,
     })
 
     const { data: tasks = initialTasks } = useQuery({
         queryKey: taskKeys.byList(selectedListId ?? null),
         queryFn: () => getTasks({ listId: selectedListId ?? null }),
         initialData: initialTasks,
+        staleTime: 10000,
     })
 
     const { data: activeTimerData } = useQuery({
         queryKey: taskKeys.activeTimer(),
         queryFn: getActiveTimer,
+        staleTime: 5000,
     })
 
     useEffect(() => {
