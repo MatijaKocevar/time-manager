@@ -159,10 +159,10 @@ export function AppSidebar({
                                                     isActive={isActive}
                                                     className="w-full"
                                                 >
-                                                    <a href={item.url}>
+                                                    <Link href={item.url}>
                                                         <item.icon />
                                                         <span>{t(item.title)}</span>
-                                                    </a>
+                                                    </Link>
                                                 </SidebarMenuButton>
                                                 {hasChildren && (
                                                     <button
@@ -209,7 +209,7 @@ export function AppSidebar({
                                                                     className="flex-1"
                                                                     disabled={isDeleting}
                                                                 >
-                                                                    <a href={listUrl}>
+                                                                    <Link href={listUrl}>
                                                                         <Folder className="h-3 w-3" />
                                                                         <span className="text-sm flex items-center gap-1">
                                                                             {list.color && (
@@ -223,7 +223,7 @@ export function AppSidebar({
                                                                             )}
                                                                             {list.name}
                                                                         </span>
-                                                                    </a>
+                                                                    </Link>
                                                                 </SidebarMenuButton>
                                                                 <DropdownMenu>
                                                                     <DropdownMenuTrigger asChild>
@@ -289,7 +289,7 @@ export function AppSidebar({
                                                                     size="sm"
                                                                     isActive={isChildActive}
                                                                 >
-                                                                    <a href={child.url}>
+                                                                    <Link href={child.url}>
                                                                         <child.icon className="h-3 w-3" />
                                                                         <span className="text-sm">
                                                                             {t(child.title)}
@@ -307,7 +307,7 @@ export function AppSidebar({
                                                                                     }
                                                                                 </Badge>
                                                                             )}
-                                                                    </a>
+                                                                    </Link>
                                                                 </SidebarMenuButton>
                                                             </SidebarMenuItem>
                                                         )

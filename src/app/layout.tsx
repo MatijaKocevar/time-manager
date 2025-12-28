@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma"
 import { getLists } from "./(protected)/tasks/actions/list-actions"
 import { NextIntlClientProvider } from "next-intl"
 import { ThemeProvider } from "@/providers/theme-provider"
+import { NavigationProgress } from "@/components/navigation-progress"
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -147,6 +148,7 @@ export default async function RootLayout({
                         initialTheme={userTheme as "light" | "dark"}
                         isAuthenticated={!!session}
                     >
+                        <NavigationProgress />
                         <QueryProvider>
                             <SessionWrapper>
                                 <ConditionalSidebar

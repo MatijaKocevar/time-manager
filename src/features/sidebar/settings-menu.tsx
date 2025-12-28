@@ -97,7 +97,7 @@ export function SettingsMenu({ translations }: SettingsMenuProps) {
                         ))}
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem onClick={() => (window.location.href = "/profile")}>
+                <DropdownMenuItem onClick={() => router.push("/profile")}>
                     <UserCircle className="mr-2 h-4 w-4" />
                     <span>{translations.profile}</span>
                 </DropdownMenuItem>

@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query"
 import { usePathname } from "next/navigation"
+import Link from "next/link"
 import { Folder, Plus } from "lucide-react"
 import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
 import { getLists } from "@/app/(protected)/tasks/actions/list-actions"
@@ -25,7 +26,7 @@ export function DynamicListItems() {
                 return (
                     <SidebarMenuItem key={list.id}>
                         <SidebarMenuButton asChild size="sm" isActive={isActive}>
-                            <a href={listUrl}>
+                            <Link href={listUrl}>
                                 <Folder className="h-3 w-3" />
                                 <span className="text-sm flex items-center gap-1">
                                     {list.color && (
@@ -36,7 +37,7 @@ export function DynamicListItems() {
                                     )}
                                     {list.name}
                                 </span>
-                            </a>
+                            </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 )
