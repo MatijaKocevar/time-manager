@@ -19,25 +19,39 @@ export function NavigationProgress() {
     }, [pathname, searchParams, setNavigating])
 
     useEffect(() => {
-        const handleStart = () => {
-            NProgress.start()
-            setNavigating(true)
+        const handleAnchorClick = (event: MouseEvent) => {
+            const target = event.currentTarget as HTMLAnchorElement
+            const targetUrl = new URL(target.href)
+            const currentUrl = new URL(window.location.href)
+
+            if (targetUrl.pathname !== currentUrl.pathname) {
+                NProgress.start()
+                setNavigating(true)
+            }
         }
 
-        const handleComplete = () => {
-            NProgress.done()
-            setNavigating(false)
+        const handleMutation = () => {
+            const anchorElements = document.querySelectorAll('a[href^="/"]')
+            anchorElements.forEach((anchor) => {
+                anchor.removeEventListener("click", handleAnchorClick as EventListener)
+                anchor.addEventListener("click", handleAnchorClick as EventListener)
+            })
         }
 
-        const handleError = () => {
-            NProgress.done()
-            setNavigating(false)
-        }
+        handleMutation()
 
-        window.addEventListener("beforeunload", handleStart)
+        const observer = new MutationObserver(handleMutation)
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+        })
 
         return () => {
-            window.removeEventListener("beforeunload", handleStart)
+            observer.disconnect()
+            const anchorElements = document.querySelectorAll('a[href^="/"]')
+            anchorElements.forEach((anchor) => {
+                anchor.removeEventListener("click", handleAnchorClick as EventListener)
+            })
         }
     }, [setNavigating])
 
