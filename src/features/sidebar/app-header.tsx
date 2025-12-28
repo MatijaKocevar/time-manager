@@ -39,6 +39,8 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
             WORK_FROM_HOME: tRequests("workFromHome"),
             OTHER: tRequests("other"),
         },
+        approve: tCommon("approve"),
+        reject: tCommon("reject"),
     }
 
     return (

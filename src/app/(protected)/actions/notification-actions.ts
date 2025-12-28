@@ -25,19 +25,18 @@ export interface PendingRequestNotification {
 export interface NotificationData {
     count: number
     pendingRequests: PendingRequestNotification[]
+    isAdmin: boolean
 }
 
 export async function getNotifications(): Promise<NotificationData> {
     try {
         const session = await requireAuth()
-
-        if (session.user.role !== "ADMIN") {
-            return { count: 0, pendingRequests: [] }
-        }
+        const isAdmin = session.user.role === "ADMIN"
 
         const pendingRequests = await prisma.request.findMany({
             where: {
                 status: "PENDING",
+                ...(!isAdmin && { userId: session.user.id }),
             },
             select: {
                 id: true,
@@ -71,10 +70,11 @@ export async function getNotifications(): Promise<NotificationData> {
         const count = await prisma.request.count({
             where: {
                 status: "PENDING",
+                ...(!isAdmin && { userId: session.user.id }),
             },
         })
 
-        return { count, pendingRequests: notifications }
+        return { count, pendingRequests: notifications, isAdmin }
     } catch (error) {
         console.error("Error fetching notifications:", error)
         return { count: 0, pendingRequests: [] }

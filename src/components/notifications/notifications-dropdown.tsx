@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Bell } from "lucide-react"
+import { Bell, Check, X, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,6 +12,9 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { approveRequest, rejectRequest } from "@/app/(protected)/requests/actions/request-actions"
+import { requestKeys } from "@/app/(protected)/requests/query-keys"
 import type { NotificationData } from "@/app/(protected)/actions/notification-actions"
 
 interface NotificationsDropdownProps {
@@ -30,6 +33,8 @@ interface NotificationsDropdownProps {
             WORK_FROM_HOME: string
             OTHER: string
         }
+        approve?: string
+        reject?: string
     }
 }
 
@@ -41,8 +46,61 @@ function formatDate(date: Date): string {
 }
 
 export function NotificationsDropdown({ notifications, translations }: NotificationsDropdownProps) {
-    const { count, pendingRequests } = notifications
+    const { count, pendingRequests, isAdmin } = notifications
     const [activeTab, setActiveTab] = useState<"notifications" | "pending">("notifications")
+    const [processingId, setProcessingId] = useState<string | null>(null)
+    const queryClient = useQueryClient()
+
+    const approveMutation = useMutation({
+        mutationFn: approveRequest,
+        onMutate: (variables) => {
+            setProcessingId(variables.id)
+        },
+        onSuccess: (data) => {
+            if (data.error) {
+                alert(`Error: ${data.error}`)
+            }
+            queryClient.invalidateQueries({ queryKey: requestKeys.all })
+        },
+        onError: (error) => {
+            alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
+        },
+        onSettled: () => {
+            setProcessingId(null)
+        },
+    })
+
+    const rejectMutation = useMutation({
+        mutationFn: rejectRequest,
+        onMutate: (variables) => {
+            setProcessingId(variables.id)
+        },
+        onSuccess: (data) => {
+            if (data.error) {
+                alert(`Error: ${data.error}`)
+            }
+            queryClient.invalidateQueries({ queryKey: requestKeys.all })
+        },
+        onError: (error) => {
+            alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
+        },
+        onSettled: () => {
+            setProcessingId(null)
+        },
+    })
+
+    const handleApprove = (e: React.MouseEvent, requestId: string) => {
+        e.preventDefault()
+        e.stopPropagation()
+        approveMutation.mutate({ id: requestId })
+    }
+
+    const handleReject = (e: React.MouseEvent, requestId: string) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const reason = prompt("Rejection reason (optional):")
+        rejectMutation.mutate({ id: requestId, rejectionReason: reason || "" })
+    }
 
     return (
         <DropdownMenu>
@@ -113,54 +171,111 @@ export function NotificationsDropdown({ notifications, translations }: Notificat
                                 </div>
                             ) : (
                                 <>
-                                    {pendingRequests.map((request, index) => (
-                                        <div key={request.id}>
-                                            <Link
-                                                href="/admin/pending-requests"
-                                                className="block px-4 py-3 hover:bg-accent transition-colors"
-                                            >
-                                                <div className="flex items-start gap-3">
-                                                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                                        <span className="text-sm font-semibold text-primary">
-                                                            {request.userName
-                                                                .split(" ")
-                                                                .map((n) => n[0])
-                                                                .join("")
-                                                                .toUpperCase()
-                                                                .slice(0, 2)}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center justify-between gap-2 mb-1">
-                                                            <span className="font-medium text-sm truncate">
-                                                                {request.userName}
-                                                            </span>
-                                                            <span className="text-xs text-muted-foreground flex-shrink-0">
-                                                                {formatDate(request.createdAt)}
-                                                            </span>
+                                    {pendingRequests.map((request, index) => {
+                                        const isProcessing = processingId === request.id
+                                        return (
+                                            <div key={request.id}>
+                                                <div className="px-4 py-3 hover:bg-accent transition-colors">
+                                                    <div className="flex items-start gap-3">
+                                                        {isAdmin && (
+                                                            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                                                                <span className="text-sm font-semibold text-primary">
+                                                                    {request.userName
+                                                                        .split(" ")
+                                                                        .map((n) => n[0])
+                                                                        .join("")
+                                                                        .toUpperCase()
+                                                                        .slice(0, 2)}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            {isAdmin && (
+                                                                <div className="flex items-center justify-between gap-2 mb-1">
+                                                                    <span className="font-medium text-sm truncate">
+                                                                        {request.userName}
+                                                                    </span>
+                                                                    <span className="text-xs text-muted-foreground flex-shrink-0">
+                                                                        {formatDate(
+                                                                            request.createdAt
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                            <p className="text-sm text-muted-foreground mb-1">
+                                                                {translations.requestTypes[
+                                                                    request.type as keyof typeof translations.requestTypes
+                                                                ] || request.type}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground mb-2">
+                                                                {formatDate(request.startDate)} -{" "}
+                                                                {formatDate(request.endDate)}
+                                                            </p>
+                                                            {isAdmin && (
+                                                                <div className="flex gap-2">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        onClick={(e) =>
+                                                                            handleApprove(
+                                                                                e,
+                                                                                request.id
+                                                                            )
+                                                                        }
+                                                                        disabled={!!processingId}
+                                                                        className="h-7 px-3 text-xs"
+                                                                    >
+                                                                        {isProcessing &&
+                                                                        approveMutation.isPending ? (
+                                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                                        ) : (
+                                                                            <>
+                                                                                <Check className="h-3 w-3 mr-1" />
+                                                                                {translations.approve ||
+                                                                                    "Approve"}
+                                                                            </>
+                                                                        )}
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="destructive"
+                                                                        onClick={(e) =>
+                                                                            handleReject(
+                                                                                e,
+                                                                                request.id
+                                                                            )
+                                                                        }
+                                                                        disabled={!!processingId}
+                                                                        className="h-7 px-3 text-xs"
+                                                                    >
+                                                                        {isProcessing &&
+                                                                        rejectMutation.isPending ? (
+                                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                                        ) : (
+                                                                            <>
+                                                                                <X className="h-3 w-3 mr-1" />
+                                                                                {translations.reject ||
+                                                                                    "Reject"}
+                                                                            </>
+                                                                        )}
+                                                                    </Button>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                        <p className="text-sm text-muted-foreground mb-1">
-                                                            {translations.requestTypes[
-                                                                request.type as keyof typeof translations.requestTypes
-                                                            ] || request.type}
-                                                        </p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {formatDate(request.startDate)} -{" "}
-                                                            {formatDate(request.endDate)}
-                                                        </p>
                                                     </div>
                                                 </div>
-                                            </Link>
-                                            {index < pendingRequests.length - 1 && <Separator />}
-                                        </div>
-                                    ))}
+                                                {index < pendingRequests.length - 1 && (
+                                                    <Separator />
+                                                )}
+                                            </div>
+                                        )
+                                    })}
                                 </>
                             )}
                         </div>
                     )}
                 </ScrollArea>
 
-                {activeTab === "pending" && count > 0 && (
+                {activeTab === "pending" && count > 0 && isAdmin && (
                     <>
                         <Separator />
                         <div className="p-3 bg-muted/50">
