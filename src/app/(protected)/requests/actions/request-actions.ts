@@ -230,23 +230,30 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
 
             if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
                 const hourType = request.type === "VACATION" ? "VACATION" : "SICK_LEAVE"
-                const currentDate = new Date(request.startDate)
-                const endDate = new Date(request.endDate)
+                const startDay = new Date(request.startDate)
+                startDay.setUTCHours(0, 0, 0, 0)
+                const endDay = new Date(request.endDate)
+                endDay.setUTCHours(0, 0, 0, 0)
                 const datesToRecalculate: Date[] = []
 
-                while (currentDate <= endDate) {
-                    const dayOfWeek = currentDate.getDay()
+                const daysDiff = Math.round(
+                    (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
+                )
+
+                for (let i = 0; i <= daysDiff; i++) {
+                    const currentDay = new Date(startDay)
+                    currentDay.setUTCDate(startDay.getUTCDate() + i)
+
+                    const dayOfWeek = currentDay.getDay()
                     const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
 
                     if (!isWeekend) {
-                        const normalizedDate = new Date(currentDate)
-                        normalizedDate.setHours(0, 0, 0, 0)
-                        datesToRecalculate.push(new Date(normalizedDate))
+                        datesToRecalculate.push(new Date(currentDay))
 
                         await tx.hourEntry.deleteMany({
                             where: {
                                 userId: request.userId,
-                                date: normalizedDate,
+                                date: currentDay,
                                 type: hourType,
                                 description: {
                                     startsWith: "Auto-generated from",
@@ -255,33 +262,35 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                             },
                         })
                     }
-
-                    currentDate.setDate(currentDate.getDate() + 1)
                 }
             }
 
             console.log(`Starting shift deletion for request type: ${request.type}`)
             console.log(`Request date range: ${request.startDate} to ${request.endDate}`)
 
-            const shiftDeleteDate = new Date(request.startDate)
-            const shiftEndDate = new Date(request.endDate)
+            const startDay = new Date(request.startDate)
+            startDay.setUTCHours(0, 0, 0, 0)
+            const endDay = new Date(request.endDate)
+            endDay.setUTCHours(0, 0, 0, 0)
 
-            while (shiftDeleteDate <= shiftEndDate) {
-                const dayOfWeek = shiftDeleteDate.getDay()
+            const daysDiff = Math.round(
+                (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
+            )
+
+            for (let i = 0; i <= daysDiff; i++) {
+                const currentDay = new Date(startDay)
+                currentDay.setUTCDate(startDay.getUTCDate() + i)
+
+                const dayOfWeek = currentDay.getDay()
                 const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
 
                 if (!isWeekend) {
-                    const normalizedDate = new Date(shiftDeleteDate)
-                    normalizedDate.setHours(0, 0, 0, 0)
-
-                    console.log(
-                        `Attempting to delete shifts for date: ${normalizedDate.toISOString()}`
-                    )
+                    console.log(`Attempting to delete shifts for date: ${currentDay.toISOString()}`)
 
                     const existingShifts = await tx.shift.findMany({
                         where: {
                             userId: request.userId,
-                            date: normalizedDate,
+                            date: currentDay,
                         },
                     })
                     console.log(
@@ -292,7 +301,7 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                     const deleteResult = await tx.shift.deleteMany({
                         where: {
                             userId: request.userId,
-                            date: normalizedDate,
+                            date: currentDay,
                             notes: {
                                 contains: "Auto-generated from",
                             },
@@ -301,8 +310,6 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
 
                     console.log(`Deleted ${deleteResult.count} shifts`)
                 }
-
-                shiftDeleteDate.setDate(shiftDeleteDate.getDate() + 1)
             }
 
             // Reverse migrate hour entries if request affected hour type
@@ -411,34 +418,49 @@ export async function approveRequest(input: ApproveRequestInput) {
             }
 
             const shiftLocation = mapRequestTypeToShiftLocation(request.type)
-            const shiftDate = new Date(request.startDate)
-            shiftDate.setHours(0, 0, 0, 0)
-            const shiftEndDate = new Date(request.endDate)
-            shiftEndDate.setHours(0, 0, 0, 0)
 
-            while (shiftDate <= shiftEndDate) {
+            const startDay = new Date(request.startDate)
+            startDay.setUTCHours(0, 0, 0, 0)
+            const endDay = new Date(request.endDate)
+            endDay.setUTCHours(0, 0, 0, 0)
+
+            console.log(
+                `Request dates: startDate=${request.startDate.toISOString()}, endDate=${request.endDate.toISOString()}`
+            )
+            console.log(
+                `Normalized: startDay=${startDay.toISOString()}, endDay=${endDay.toISOString()}`
+            )
+
+            const daysDiff = Math.round(
+                (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
+            )
+            console.log(
+                `Days difference calculated: ${daysDiff}, will create ${daysDiff + 1} iterations`
+            )
+
+            for (let i = 0; i <= daysDiff; i++) {
+                const currentDay = new Date(startDay)
+                currentDay.setUTCDate(startDay.getUTCDate() + i)
+
                 const isHol = holidays.some((h) => {
                     const holidayDate = new Date(h.date)
                     holidayDate.setHours(0, 0, 0, 0)
-                    const checkDate = new Date(shiftDate)
-                    checkDate.setHours(0, 0, 0, 0)
-                    return holidayDate.getTime() === checkDate.getTime()
+                    return holidayDate.getTime() === currentDay.getTime()
                 })
 
-                if (isWeekday(shiftDate) && !isHol) {
-                    const normalizedDate = new Date(shiftDate)
-                    normalizedDate.setHours(0, 0, 0, 0)
+                if (isWeekday(currentDay) && !isHol) {
+                    console.log(`  Creating shift for day ${i + 1}: ${currentDay.toISOString()}`)
 
                     await tx.shift.upsert({
                         where: {
                             userId_date: {
                                 userId: request.userId,
-                                date: normalizedDate,
+                                date: currentDay,
                             },
                         },
                         create: {
                             userId: request.userId,
-                            date: normalizedDate,
+                            date: currentDay,
                             location: shiftLocation,
                             notes: `Auto-generated from ${request.type.toLowerCase()} request`,
                         },
@@ -447,8 +469,11 @@ export async function approveRequest(input: ApproveRequestInput) {
                             notes: `Auto-generated from ${request.type.toLowerCase()} request`,
                         },
                     })
+                } else {
+                    console.log(
+                        `  Skipping day ${i + 1}: ${currentDay.toISOString()} (weekend: ${!isWeekday(currentDay)}, holiday: ${isHol})`
+                    )
                 }
-                shiftDate.setDate(shiftDate.getDate() + 1)
             }
 
             // Migrate or create hour entries for the request date range
