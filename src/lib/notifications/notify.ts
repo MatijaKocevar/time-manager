@@ -4,11 +4,48 @@ import {
     newRequestForAdminsEmail,
     requestApprovedEmail,
     requestRejectedEmail,
+    requestCancelledEmail,
 } from "./email-templates"
-import {
-    sendPushNotification,
-    sendPushToAdmins,
-} from "@/app/(protected)/profile/actions/notification-actions"
+import { sendPushNotification } from "@/app/(protected)/profile/actions/notification-actions"
+import type { NotificationType } from "../../../prisma/generated/client"
+
+async function getOrCreatePreferences(userId: string) {
+    let preferences = await prisma.notificationPreference.findUnique({
+        where: { userId },
+    })
+
+    if (!preferences) {
+        preferences = await prisma.notificationPreference.create({
+            data: { userId },
+        })
+    }
+
+    return preferences
+}
+
+async function createNotificationRecord(
+    userId: string,
+    type: NotificationType,
+    title: string,
+    message: string,
+    url?: string,
+    metadata?: Record<string, unknown>
+) {
+    try {
+        await prisma.notification.create({
+            data: {
+                userId,
+                type,
+                title,
+                message,
+                url,
+                metadata: metadata ? JSON.parse(JSON.stringify(metadata)) : undefined,
+            },
+        })
+    } catch (error) {
+        console.error("Failed to create notification record:", error)
+    }
+}
 
 interface NotifyAdminsNewRequestParams {
     requestId: string
@@ -23,7 +60,7 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
     try {
         const admins = await prisma.user.findMany({
             where: { role: "ADMIN" },
-            select: { id: true, email: true, name: true },
+            select: { id: true, email: true, name: true, locale: true },
         })
 
         if (admins.length === 0) {
@@ -40,15 +77,41 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
 
         const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
 
-        await sendPushToAdmins({
-            title: "New Time-Off Request",
-            body: `${params.userName} has submitted a new ${requestTypeLabel} request`,
-            url: "/admin/pending-requests",
-        })
+        let pushSent = 0
+        let emailsSent = 0
 
-        const emailResults = await Promise.allSettled(
-            admins.map((admin) =>
-                sendEmail(
+        for (const admin of admins) {
+            const preferences = await getOrCreatePreferences(admin.id)
+
+            if (preferences.pushNewRequest) {
+                try {
+                    await sendPushNotification(admin.id, {
+                        title: "New Time-Off Request",
+                        body: `${params.userName} has submitted a new ${requestTypeLabel} request`,
+                        url: "/admin/pending-requests",
+                    })
+                    pushSent++
+                } catch (error) {
+                    console.error(`Failed to send push to admin ${admin.id}:`, error)
+                }
+            }
+
+            await createNotificationRecord(
+                admin.id,
+                "REQUEST_SUBMITTED",
+                "New Time-Off Request",
+                `${params.userName} has submitted a new ${requestTypeLabel} request`,
+                "/admin/pending-requests",
+                {
+                    requestId: params.requestId,
+                    requestType: params.requestType,
+                    userName: params.userName,
+                }
+            )
+
+            if (preferences.emailNewRequest) {
+                const locale = (admin.locale === "sl" ? "sl" : "en") as "en" | "sl"
+                const emailResult = await sendEmail(
                     admin.email,
                     `New Request: ${params.userName} - ${requestTypeLabel}`,
                     newRequestForAdminsEmail(
@@ -59,15 +122,16 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
                             endDate: params.endDate,
                             reason: params.reason,
                         },
-                        "en"
+                        locale
                     )
                 )
-            )
-        )
+                if (emailResult.success) {
+                    emailsSent++
+                }
+            }
+        }
 
-        const emailsSent = emailResults.filter((r) => r.status === "fulfilled").length
-
-        return { success: true, emailsSent, notified: admins.length }
+        return { success: true, emailsSent, pushSent, notified: admins.length }
     } catch (error) {
         console.error("Error notifying admins:", error)
         return { success: false, error: "Failed to notify admins" }
@@ -88,13 +152,15 @@ export async function notifyUserApproval(params: NotifyUserApprovalParams) {
     try {
         const user = await prisma.user.findUnique({
             where: { id: params.userId },
-            select: { email: true },
+            select: { email: true, locale: true },
         })
 
         if (!user) {
             console.warn("User not found for approval notification")
             return { success: false, error: "User not found" }
         }
+
+        const preferences = await getOrCreatePreferences(params.userId)
 
         const requestTypeLabels: Record<string, string> = {
             VACATION: "Vacation",
@@ -104,28 +170,45 @@ export async function notifyUserApproval(params: NotifyUserApprovalParams) {
         }
 
         const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
+        const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
 
-        await sendPushNotification(params.userId, {
-            title: "Request Approved ✓",
-            body: `Your ${requestTypeLabel} request has been approved`,
-            url: "/requests",
-        })
+        if (preferences.pushRequestApproved) {
+            await sendPushNotification(params.userId, {
+                title: "Request Approved ✓",
+                body: `Your ${requestTypeLabel} request has been approved`,
+                url: "/requests",
+            })
+        }
 
-        await sendEmail(
-            user.email,
-            `Request Approved: ${requestTypeLabel}`,
-            requestApprovedEmail(
-                {
-                    userName: params.userName,
-                    requestType: params.requestType,
-                    startDate: params.startDate,
-                    endDate: params.endDate,
-                    reason: params.reason,
-                },
-                params.approvedByName,
-                "en"
-            )
+        await createNotificationRecord(
+            params.userId,
+            "REQUEST_APPROVED",
+            "Request Approved ✓",
+            `Your ${requestTypeLabel} request has been approved by ${params.approvedByName}`,
+            "/requests",
+            {
+                requestType: params.requestType,
+                approvedByName: params.approvedByName,
+            }
         )
+
+        if (preferences.emailRequestApproved) {
+            await sendEmail(
+                user.email,
+                `Request Approved: ${requestTypeLabel}`,
+                requestApprovedEmail(
+                    {
+                        userName: params.userName,
+                        requestType: params.requestType,
+                        startDate: params.startDate,
+                        endDate: params.endDate,
+                        reason: params.reason,
+                    },
+                    params.approvedByName,
+                    locale
+                )
+            )
+        }
 
         return { success: true }
     } catch (error) {
@@ -149,13 +232,15 @@ export async function notifyUserRejection(params: NotifyUserRejectionParams) {
     try {
         const user = await prisma.user.findUnique({
             where: { id: params.userId },
-            select: { email: true },
+            select: { email: true, locale: true },
         })
 
         if (!user) {
             console.warn("User not found for rejection notification")
             return { success: false, error: "User not found" }
         }
+
+        const preferences = await getOrCreatePreferences(params.userId)
 
         const requestTypeLabels: Record<string, string> = {
             VACATION: "Vacation",
@@ -165,33 +250,138 @@ export async function notifyUserRejection(params: NotifyUserRejectionParams) {
         }
 
         const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
+        const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
 
-        await sendPushNotification(params.userId, {
-            title: "Request Rejected",
-            body: `Your ${requestTypeLabel} request has been rejected`,
-            url: "/requests",
-        })
+        if (preferences.pushRequestRejected) {
+            await sendPushNotification(params.userId, {
+                title: "Request Rejected",
+                body: `Your ${requestTypeLabel} request has been rejected`,
+                url: "/requests",
+            })
+        }
 
-        await sendEmail(
-            user.email,
-            `Request Rejected: ${requestTypeLabel}`,
-            requestRejectedEmail(
-                {
-                    userName: params.userName,
-                    requestType: params.requestType,
-                    startDate: params.startDate,
-                    endDate: params.endDate,
-                    reason: params.reason,
-                },
-                params.rejectedByName,
-                params.rejectionReason,
-                "en"
-            )
+        await createNotificationRecord(
+            params.userId,
+            "REQUEST_REJECTED",
+            "Request Rejected",
+            `Your ${requestTypeLabel} request has been rejected by ${params.rejectedByName}`,
+            "/requests",
+            {
+                requestType: params.requestType,
+                rejectedByName: params.rejectedByName,
+                rejectionReason: params.rejectionReason,
+            }
         )
+
+        if (preferences.emailRequestRejected) {
+            await sendEmail(
+                user.email,
+                `Request Rejected: ${requestTypeLabel}`,
+                requestRejectedEmail(
+                    {
+                        userName: params.userName,
+                        requestType: params.requestType,
+                        startDate: params.startDate,
+                        endDate: params.endDate,
+                        reason: params.reason,
+                    },
+                    params.rejectedByName,
+                    params.rejectionReason,
+                    locale
+                )
+            )
+        }
 
         return { success: true }
     } catch (error) {
         console.error("Error notifying user of rejection:", error)
+        return { success: false, error: "Failed to notify user" }
+    }
+}
+
+interface NotifyUserCancellationParams {
+    userId: string
+    userName: string
+    requestType: string
+    startDate: Date
+    endDate: Date
+    reason?: string
+    cancelledByName: string
+    cancellationReason: string
+    cancelledByAdmin: boolean
+}
+
+export async function notifyUserCancellation(params: NotifyUserCancellationParams) {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: params.userId },
+            select: { email: true, locale: true },
+        })
+
+        if (!user) {
+            console.warn("User not found for cancellation notification")
+            return { success: false, error: "User not found" }
+        }
+
+        const preferences = await getOrCreatePreferences(params.userId)
+
+        const requestTypeLabels: Record<string, string> = {
+            VACATION: "Vacation",
+            SICK_LEAVE: "Sick Leave",
+            WORK_FROM_HOME: "Work from Home",
+            OTHER: "Other",
+        }
+
+        const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
+        const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
+
+        if (preferences.pushRequestCancelled) {
+            await sendPushNotification(params.userId, {
+                title: "Request Cancelled",
+                body: `Your ${requestTypeLabel} request has been cancelled`,
+                url: "/requests",
+            })
+        }
+
+        await createNotificationRecord(
+            params.userId,
+            "REQUEST_CANCELLED",
+            "Request Cancelled",
+            params.cancelledByAdmin
+                ? `Your ${requestTypeLabel} request has been cancelled by ${params.cancelledByName}`
+                : `Your ${requestTypeLabel} request has been cancelled`,
+            "/requests",
+            {
+                requestType: params.requestType,
+                cancelledByName: params.cancelledByName,
+                cancellationReason: params.cancellationReason,
+                cancelledByAdmin: params.cancelledByAdmin,
+            }
+        )
+
+        if (preferences.emailRequestCancelled) {
+            await sendEmail(
+                user.email,
+                `Request Cancelled: ${requestTypeLabel}`,
+                requestCancelledEmail(
+                    {
+                        userName: params.userName,
+                        requestType: params.requestType,
+                        startDate: params.startDate,
+                        endDate: params.endDate,
+                        reason: params.reason,
+                    },
+                    params.cancelledByName,
+                    params.cancellationReason,
+                    params.cancelledByAdmin,
+                    locale
+                )
+            )
+        }
+
+        return { success: true }
+    } catch (error) {
+        console.error("Error notifying user of cancellation:", error)
         return { success: false, error: "Failed to notify user" }
     }
 }

@@ -14,6 +14,7 @@ import {
     notifyAdminsNewRequest,
     notifyUserApproval,
     notifyUserRejection,
+    notifyUserCancellation,
 } from "@/lib/notifications/notify"
 import {
     CreateRequestSchema,
@@ -174,13 +175,30 @@ export async function cancelRequest(input: CancelRequestInput) {
             return { error: "Can only cancel pending requests" }
         }
 
-        await prisma.request.update({
+        const updatedRequest = await prisma.request.update({
             where: { id },
             data: {
                 status: "CANCELLED",
                 cancelledBy: session.user.id,
                 cancelledAt: new Date(),
             },
+            include: {
+                user: {
+                    select: { name: true },
+                },
+            },
+        })
+
+        await notifyUserCancellation({
+            userId: updatedRequest.userId,
+            userName: updatedRequest.user.name || "User",
+            requestType: updatedRequest.type,
+            startDate: updatedRequest.startDate,
+            endDate: updatedRequest.endDate,
+            reason: updatedRequest.reason || undefined,
+            cancelledByName: session.user.name || "You",
+            cancellationReason: "Cancelled by user",
+            cancelledByAdmin: false,
         })
 
         revalidatePath("/requests")
@@ -346,6 +364,30 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
         }
 
         await refreshDailyHourSummary()
+
+        const requestWithUser = await prisma.request.findUnique({
+            where: { id },
+            include: {
+                user: {
+                    select: { name: true },
+                },
+            },
+        })
+
+        if (requestWithUser) {
+            await notifyUserCancellation({
+                userId: requestWithUser.userId,
+                userName: requestWithUser.user.name || "User",
+                requestType: requestWithUser.type,
+                startDate: requestWithUser.startDate,
+                endDate: requestWithUser.endDate,
+                reason: requestWithUser.reason || undefined,
+                cancelledByName: session.user.name || "Administrator",
+                cancellationReason: cancellationReason || "Cancelled by administrator",
+                cancelledByAdmin: true,
+            })
+        }
+
         revalidatePath("/requests")
         revalidatePath("/hours")
         revalidatePath("/shifts")

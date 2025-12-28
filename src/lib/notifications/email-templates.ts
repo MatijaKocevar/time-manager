@@ -427,3 +427,101 @@ export function verificationEmail(
 </html>
     `.trim()
 }
+
+export function requestCancelledEmail(
+    data: RequestEmailData,
+    cancelledByName: string,
+    cancellationReason: string,
+    cancelledByAdmin: boolean,
+    locale: "en" | "sl" = "en"
+): string {
+    const dateRange = formatDateRange(data.startDate, data.endDate)
+    const requestType = getRequestTypeLabel(data.requestType, locale)
+
+    const content = {
+        en: {
+            subject: `Request Cancelled: ${requestType}`,
+            title: "Request Cancelled",
+            introUser: `Your ${requestType.toLowerCase()} request has been cancelled.`,
+            introAdmin: `Your ${requestType.toLowerCase()} request has been cancelled by ${cancelledByName}.`,
+            detailsTitle: "Cancelled Request",
+            typeLabel: "Type",
+            datesLabel: "Dates",
+            cancelledByLabel: "Cancelled by",
+            reasonLabel: "Cancellation Reason",
+            footerUser: "If you need to request time off again, please submit a new request.",
+            footerAdmin:
+                "If you have questions about this cancellation, please contact your administrator.",
+        },
+        sl: {
+            subject: `Zahteva preklicana: ${requestType}`,
+            title: "Zahteva preklicana",
+            introUser: `Vaša zahteva za ${requestType.toLowerCase()} je bila preklicana.`,
+            introAdmin: `Vašo zahtevo za ${requestType.toLowerCase()} je preklical/a ${cancelledByName}.`,
+            detailsTitle: "Preklicana zahteva",
+            typeLabel: "Tip",
+            datesLabel: "Datumi",
+            cancelledByLabel: "Preklical/a",
+            reasonLabel: "Razlog preklica",
+            footerUser: "Če potrebujete ponovno zahtevati odsotnost, prosimo oddajte novo zahtevo.",
+            footerAdmin:
+                "Če imate vprašanja o tem preklicu, se obrnite na svojega administratorja.",
+        },
+    }
+
+    const t = content[locale]
+    const intro = cancelledByAdmin ? t.introAdmin : t.introUser
+    const footer = cancelledByAdmin ? t.footerAdmin : t.footerUser
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #ea580c; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .details { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .detail-row { margin: 10px 0; }
+        .label { font-weight: bold; color: #6b7280; }
+        .warning { background-color: #ffedd5; padding: 15px; border-radius: 6px; border-left: 4px solid #ea580c; margin: 20px 0; }
+        .reason-box { background-color: #ffedd5; padding: 15px; border-radius: 6px; margin: 15px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${t.title}</h1>
+        </div>
+        <div class="content">
+            <div class="warning">
+                <p style="margin: 0;">${intro}</p>
+            </div>
+            
+            <div class="details">
+                <h3>${t.detailsTitle}</h3>
+                <div class="detail-row">
+                    <span class="label">${t.typeLabel}:</span> ${requestType}
+                </div>
+                <div class="detail-row">
+                    <span class="label">${t.datesLabel}:</span> ${dateRange}
+                </div>
+                ${cancelledByAdmin ? `<div class="detail-row"><span class="label">${t.cancelledByLabel}:</span> ${cancelledByName}</div>` : ""}
+            </div>
+            
+            ${cancellationReason ? `<div class="reason-box"><p style="margin: 0;"><strong>${t.reasonLabel}:</strong></p><p style="margin: 10px 0 0 0;">${cancellationReason}</p></div>` : ""}
+            
+            <p style="font-style: italic;">${footer}</p>
+            
+            <div class="footer">
+                <p>Time Manager - ${locale === "en" ? "Time & Request Management System" : "Sistem za upravljanje časa in zahtev"}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim()
+}
