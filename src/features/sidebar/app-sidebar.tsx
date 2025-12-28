@@ -17,6 +17,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     SidebarHeader,
+    useSidebar,
 } from "@/components/ui/sidebar"
 import {
     DropdownMenu,
@@ -37,6 +38,7 @@ import { deleteList } from "@/app/(protected)/tasks/actions/list-actions"
 import { updateSidebarExpandedItems } from "@/app/(protected)/actions/sidebar-actions"
 import { useQueryClient } from "@tanstack/react-query"
 import { listKeys } from "@/app/(protected)/tasks/query-keys"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface AppSidebarProps {
     userRole?: UserRole
@@ -57,6 +59,8 @@ export function AppSidebar({
 }: AppSidebarProps) {
     const pathname = usePathname()
     const queryClient = useQueryClient()
+    const { setOpenMobile } = useSidebar()
+    const isMobile = useIsMobile()
     const openListDialog = useTasksStore((state) => state.openListDialog)
     const [deletingListId, setDeletingListId] = useState<string | null>(null)
     const [expandedItemsSet, setExpandedItemsSet] = useState(() => new Set(initialExpandedItems))
@@ -65,6 +69,12 @@ export function AppSidebar({
     const tNav = useTranslations("navigation")
     const tCommon = useTranslations("common")
     const tTasks = useTranslations("tasks")
+
+    const handleNavigationClick = () => {
+        if (isMobile) {
+            setOpenMobile(false)
+        }
+    }
 
     useEffect(() => {
         if (!hasInitialized) {
@@ -125,15 +135,17 @@ export function AppSidebar({
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg">
-                            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                                <Users className="size-4" />
-                            </div>
-                            <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-semibold">
-                                    {t("metadata.title")}
-                                </span>
-                            </div>
+                        <SidebarMenuButton asChild size="lg">
+                            <Link href="/time-sheets" onClick={handleNavigationClick}>
+                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                                    <Users className="size-4" />
+                                </div>
+                                <div className="grid flex-1 text-left text-sm leading-tight">
+                                    <span className="truncate font-semibold">
+                                        {t("metadata.title")}
+                                    </span>
+                                </div>
+                            </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
@@ -159,7 +171,10 @@ export function AppSidebar({
                                                     isActive={isActive}
                                                     className="w-full"
                                                 >
-                                                    <Link href={item.url}>
+                                                    <Link
+                                                        href={item.url}
+                                                        onClick={handleNavigationClick}
+                                                    >
                                                         <item.icon />
                                                         <span>{t(item.title)}</span>
                                                     </Link>
@@ -187,7 +202,10 @@ export function AppSidebar({
                                                         size="sm"
                                                         isActive={pathname === "/tasks/no-list"}
                                                     >
-                                                        <Link href="/tasks/no-list">
+                                                        <Link
+                                                            href="/tasks/no-list"
+                                                            onClick={handleNavigationClick}
+                                                        >
                                                             <Folder className="h-3 w-3 text-muted-foreground" />
                                                             <span className="text-sm">
                                                                 {tTasks("list.noList")}
@@ -209,7 +227,12 @@ export function AppSidebar({
                                                                     className="flex-1"
                                                                     disabled={isDeleting}
                                                                 >
-                                                                    <Link href={listUrl}>
+                                                                    <Link
+                                                                        href={listUrl}
+                                                                        onClick={
+                                                                            handleNavigationClick
+                                                                        }
+                                                                    >
                                                                         <Folder className="h-3 w-3" />
                                                                         <span className="text-sm flex items-center gap-1">
                                                                             {list.color && (
@@ -289,7 +312,12 @@ export function AppSidebar({
                                                                     size="sm"
                                                                     isActive={isChildActive}
                                                                 >
-                                                                    <Link href={child.url}>
+                                                                    <Link
+                                                                        href={child.url}
+                                                                        onClick={
+                                                                            handleNavigationClick
+                                                                        }
+                                                                    >
                                                                         <child.icon className="h-3 w-3" />
                                                                         <span className="text-sm">
                                                                             {t(child.title)}

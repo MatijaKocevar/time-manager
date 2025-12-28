@@ -25,24 +25,6 @@ export interface NavigationItem {
 
 export const navigationItems: NavigationItem[] = [
     {
-        title: "navigation.timeTracker",
-        url: "/tracker",
-        icon: Timer,
-        roles: ["USER", "ADMIN"],
-    },
-    {
-        title: "navigation.tasks",
-        url: "/tasks",
-        icon: Calendar,
-        roles: ["USER", "ADMIN"],
-    },
-    {
-        title: "navigation.hours",
-        url: "/hours",
-        icon: Clock,
-        roles: ["USER", "ADMIN"],
-    },
-    {
         title: "navigation.timeSheets",
         url: "/time-sheets",
         icon: FileSpreadsheet,
@@ -52,6 +34,24 @@ export const navigationItems: NavigationItem[] = [
         title: "navigation.shifts",
         url: "/shifts",
         icon: CalendarDays,
+        roles: ["USER", "ADMIN"],
+    },
+    {
+        title: "navigation.tasks",
+        url: "/tasks",
+        icon: Calendar,
+        roles: ["USER", "ADMIN"],
+    },
+    {
+        title: "navigation.timeTracker",
+        url: "/tracker",
+        icon: Timer,
+        roles: ["USER", "ADMIN"],
+    },
+    {
+        title: "navigation.hours",
+        url: "/hours",
+        icon: Clock,
         roles: ["USER", "ADMIN"],
     },
     {
