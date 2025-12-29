@@ -4,8 +4,8 @@ import bcrypt from "bcryptjs"
 import crypto from "crypto"
 import { prisma } from "@/lib/prisma"
 import { RegisterSchema } from "../schemas/register-schemas"
-import { sendEmail } from "@/lib/notifications/email"
-import { verificationEmail } from "@/lib/notifications/email-templates"
+import { sendEmail } from "@/features/notifications/lib/email"
+import { verificationEmail } from "@/features/notifications/lib/email-templates"
 
 function generateVerificationToken(): string {
     return crypto.randomBytes(32).toString("hex")

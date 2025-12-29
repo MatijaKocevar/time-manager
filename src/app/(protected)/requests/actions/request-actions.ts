@@ -15,7 +15,7 @@ import {
     notifyUserApproval,
     notifyUserRejection,
     notifyUserCancellation,
-} from "@/lib/notifications/notify"
+} from "@/features/notifications/lib/notify"
 import {
     CreateRequestSchema,
     UpdateRequestSchema,

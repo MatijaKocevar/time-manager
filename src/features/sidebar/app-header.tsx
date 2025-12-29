@@ -2,8 +2,8 @@ import { getTranslations } from "next-intl/server"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Breadcrumbs } from "@/features/breadcrumbs"
 import { SettingsMenu } from "./settings-menu"
-import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown"
-import { getNotifications } from "@/app/(protected)/actions/notification-actions"
+import { NotificationsDropdown } from "@/features/notifications/components/notifications-dropdown"
+import { getNotifications } from "@/features/notifications/actions/notification-actions"
 
 interface AppHeaderProps {
     breadcrumbTranslations: Record<string, string>

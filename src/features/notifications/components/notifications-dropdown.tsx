@@ -20,7 +20,7 @@ import {
     getNotifications,
     markNotificationsAsRead,
     type NotificationData,
-} from "@/app/(protected)/actions/notification-actions"
+} from "../actions/notification-actions"
 import type { WorkType } from "@/lib/work-type-styles"
 
 interface NotificationsDropdownProps {

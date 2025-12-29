@@ -2,7 +2,7 @@ import { create } from "zustand"
 import {
     subscribeUser,
     unsubscribeUser,
-} from "@/app/(protected)/profile/actions/notification-actions"
+} from "@/features/notifications/actions/notification-actions"
 
 function urlBase64ToUint8Array(base64String: string) {
     const padding = "=".repeat((4 - (base64String.length % 4)) % 4)

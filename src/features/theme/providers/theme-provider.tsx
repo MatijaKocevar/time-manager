@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { useThemeStore } from "@/stores/theme-store"
-import { updateThemePreference } from "@/app/(protected)/actions/theme-actions"
+import { useThemeStore } from "../stores/theme-store"
+import { updateThemePreference } from "../actions/theme-actions"
 
 export function ThemeProvider({
     children,

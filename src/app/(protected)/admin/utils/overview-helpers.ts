@@ -1,4 +1,4 @@
-import type { Holiday } from "../types"
+import type { Holiday } from "../schemas"
 
 export function getUpcomingHolidays(holidays: Holiday[]): Holiday[] {
     const today = new Date()

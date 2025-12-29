@@ -12,7 +12,7 @@ import { QuickActions } from "./components/quick-actions"
 import { RecentPendingRequests } from "./components/recent-pending-requests"
 import { UpcomingHolidays } from "./components/upcoming-holidays"
 import { getUpcomingHolidays } from "./utils"
-import type { Request } from "./types"
+import type { Request } from "./schemas"
 
 export default async function AdminOverviewPage() {
     const session = await getServerSession(authConfig)

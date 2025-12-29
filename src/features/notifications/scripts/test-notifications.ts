@@ -1,10 +1,7 @@
-import { PrismaClient } from "@/../../prisma/generated/client"
-import { sendEmail } from "../src/lib/notifications/email"
-import { newRequestForAdminsEmail } from "../src/lib/notifications/email-templates"
-import {
-    sendPushNotification,
-    sendPushToAdmins,
-} from "../src/app/(protected)/profile/actions/notification-actions"
+import { PrismaClient } from "../../../../prisma/generated/client"
+import { sendEmail } from "../lib/email"
+import { newRequestForAdminsEmail } from "../lib/email-templates"
+import { sendPushNotification, sendPushToAdmins } from "../actions/notification-actions"
 
 const prisma = new PrismaClient()
 

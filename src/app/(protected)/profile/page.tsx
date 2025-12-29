@@ -3,7 +3,10 @@ import { ProfileForm } from "./components/profile-form"
 import { PushNotificationManager } from "./components/push-notification-manager"
 import { NotificationPreferences } from "./components/notification-preferences"
 import { getCurrentUser } from "./actions/profile-actions"
-import { hasUserSubscription, getNotificationPreferences } from "./actions/notification-actions"
+import {
+    hasUserSubscription,
+    getNotificationPreferences,
+} from "@/features/notifications/actions/notification-actions"
 
 export default async function ProfilePage() {
     const user = await getCurrentUser()

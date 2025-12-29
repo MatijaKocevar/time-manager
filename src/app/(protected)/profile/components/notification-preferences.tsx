@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { updateNotificationPreferences } from "../actions/notification-actions"
+import { updateNotificationPreferences } from "@/features/notifications/actions/notification-actions"
 import type { NotificationPreference, UserRole } from "../../../../../prisma/generated/client"
 
 interface NotificationPreferencesProps {

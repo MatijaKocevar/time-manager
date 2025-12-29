@@ -11,8 +11,8 @@ import { authConfig } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getLists } from "./(protected)/tasks/actions/list-actions"
 import { NextIntlClientProvider } from "next-intl"
-import { ThemeProvider } from "@/providers/theme-provider"
-import { NavigationProgress } from "@/components/navigation-progress"
+import { ThemeProvider } from "@/features/theme/providers/theme-provider"
+import { NavigationProgress } from "@/features/navigation/components/navigation-progress"
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -56,7 +56,8 @@ export default async function RootLayout({
 
     let pendingRequestsCount = 0
     if (session?.user?.role === "ADMIN") {
-        const { getNotifications } = await import("@/app/(protected)/actions/notification-actions")
+        const { getNotifications } =
+            await import("@/features/notifications/actions/notification-actions")
         const notifications = await getNotifications()
         pendingRequestsCount = notifications.count
     }

@@ -2,12 +2,12 @@
 
 import { getServerSession } from "next-auth"
 import { prisma } from "@/lib/prisma"
-import { sendEmail } from "@/lib/notifications/email"
-import { newRequestForAdminsEmail } from "@/lib/notifications/email-templates"
+import { sendEmail } from "@/features/notifications/lib/email"
+import { newRequestForAdminsEmail } from "@/features/notifications/lib/email-templates"
 import {
     sendPushNotification,
     sendPushToAdmins,
-} from "@/app/(protected)/profile/actions/notification-actions"
+} from "@/features/notifications/actions/notification-actions"
 import { authConfig } from "@/lib/auth"
 
 async function requireAdmin() {

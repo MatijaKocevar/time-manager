@@ -13,9 +13,9 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useThemeStore } from "@/stores/theme-store"
+import { useThemeStore } from "@/features/theme/stores/theme-store"
 import { signOut } from "next-auth/react"
-import { locales, localeNames, type Locale } from "@/i18n/config"
+import { locales, localeNames, type Locale } from "@/features/locale/config"
 
 interface SettingsMenuProps {
     translations: {

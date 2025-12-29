@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { WorkTypeBadge } from "@/components/work-type-badge"
-import type { Request } from "../types"
+import type { Request } from "../schemas"
 import { formatRequestDateRange } from "../utils"
 import type { WorkType } from "@/lib/work-type-styles"
 

@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslations, useLocale } from "next-intl"
@@ -9,9 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { LanguageToggle } from "@/components/language-toggle"
+import { LanguageToggle } from "@/features/locale/components/language-toggle"
 import { registerUser } from "./actions/register-actions"
 import { PASSWORD_MIN_LENGTH } from "./schemas/register-schemas"
+import { useRegisterStore } from "./stores/register-store"
 
 export default function RegisterPage() {
     const router = useRouter()
@@ -19,34 +19,33 @@ export default function RegisterPage() {
     const t = useTranslations("auth.register")
     const tCommon = useTranslations("common")
 
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-    })
-    const [error, setError] = useState("")
-    const [isLoading, setIsLoading] = useState(false)
-    const [success, setSuccess] = useState(false)
+    const formData = useRegisterStore((state) => state.formData)
+    const error = useRegisterStore((state) => state.error)
+    const isLoading = useRegisterStore((state) => state.isLoading)
+    const success = useRegisterStore((state) => state.success)
+    const setFormData = useRegisterStore((state) => state.setFormData)
+    const setError = useRegisterStore((state) => state.setError)
+    const setLoading = useRegisterStore((state) => state.setLoading)
+    const setSuccess = useRegisterStore((state) => state.setSuccess)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError("")
-        setIsLoading(true)
+        setLoading(true)
 
         try {
             const result = await registerUser({ ...formData, locale })
 
             if (result.error) {
                 setError(result.error)
-                setIsLoading(false)
+                setLoading(false)
                 return
             }
 
             setSuccess(true)
         } catch {
             setError(t("registrationFailed"))
-            setIsLoading(false)
+            setLoading(false)
         }
     }
 
@@ -101,7 +100,7 @@ export default function RegisterPage() {
                             <Input
                                 id="name"
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                onChange={(e) => setFormData({ name: e.target.value })}
                                 required
                                 disabled={isLoading}
                                 autoComplete="name"
@@ -114,9 +113,7 @@ export default function RegisterPage() {
                                 id="email"
                                 type="email"
                                 value={formData.email}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, email: e.target.value })
-                                }
+                                onChange={(e) => setFormData({ email: e.target.value })}
                                 required
                                 disabled={isLoading}
                                 autoComplete="email"
@@ -129,9 +126,7 @@ export default function RegisterPage() {
                                 id="password"
                                 type="password"
                                 value={formData.password}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, password: e.target.value })
-                                }
+                                onChange={(e) => setFormData({ password: e.target.value })}
                                 required
                                 minLength={PASSWORD_MIN_LENGTH}
                                 disabled={isLoading}
@@ -150,7 +145,6 @@ export default function RegisterPage() {
                                 value={formData.confirmPassword}
                                 onChange={(e) =>
                                     setFormData({
-                                        ...formData,
                                         confirmPassword: e.target.value,
                                     })
                                 }

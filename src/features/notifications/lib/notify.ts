@@ -6,8 +6,8 @@ import {
     requestRejectedEmail,
     requestCancelledEmail,
 } from "./email-templates"
-import { sendPushNotification } from "@/app/(protected)/profile/actions/notification-actions"
-import type { NotificationType } from "../../../prisma/generated/client"
+import { sendPushNotification } from "../actions/notification-actions"
+import type { NotificationType } from "../../../../prisma/generated/client"
 
 async function getOrCreatePreferences(userId: string) {
     let preferences = await prisma.notificationPreference.findUnique({

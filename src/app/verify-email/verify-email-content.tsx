@@ -1,20 +1,22 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { verifyEmail } from "./actions/verify-actions"
+import { useVerifyEmailStore } from "./stores/verify-store"
 
 export default function VerifyEmailContent() {
-    const router = useRouter()
     const searchParams = useSearchParams()
     const t = useTranslations("auth.verification")
-    const [status, setStatus] = useState<"loading" | "success" | "error">("loading")
-    const [error, setError] = useState("")
+    const status = useVerifyEmailStore((state) => state.status)
+    const error = useVerifyEmailStore((state) => state.error)
+    const setStatus = useVerifyEmailStore((state) => state.setStatus)
+    const setError = useVerifyEmailStore((state) => state.setError)
 
     useEffect(() => {
         const token = searchParams.get("token")
@@ -37,7 +39,7 @@ export default function VerifyEmailContent() {
         }
 
         verify()
-    }, [searchParams, router, t])
+    }, [searchParams, t, setStatus, setError])
 
     if (status === "loading") {
         return (
@@ -99,7 +101,7 @@ export default function VerifyEmailContent() {
                         <p>{t("loginInstructions")}</p>
                         <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                             <p className="font-medium text-blue-900 dark:text-blue-100">
-                                💡 {t("pwaRecommendation")}
+                                {t("pwaRecommendation")}
                             </p>
                             <p className="mt-1 text-blue-800 dark:text-blue-200">
                                 {t("pwaInstructions")}

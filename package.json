@@ -19,7 +19,7 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "postinstall": "prisma generate",
-        "cleanup:notifications": "tsx scripts/cleanup-notifications.ts"
+        "cleanup:notifications": "tsx src/features/notifications/scripts/cleanup-notifications.ts"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.2",

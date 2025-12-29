@@ -1,3 +1,7 @@
 export { AppSidebar } from "./app-sidebar"
 export { ConditionalSidebar } from "./ConditionalSidebar"
 export { AppHeader } from "./app-header"
+export { SettingsMenu } from "./settings-menu"
+export { DynamicListItems } from "./dynamic-list-items"
+export { NewListButton } from "./new-list-button"
+export { updateSidebarState, updateSidebarExpandedItems } from "./actions/sidebar-actions"

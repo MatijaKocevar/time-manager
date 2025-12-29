@@ -1,15 +1,20 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
+import { VerifyEmailSchema } from "../schemas/verify-schemas"
 
 export async function verifyEmail(token: string) {
-    if (!token) {
+    const validation = VerifyEmailSchema.safeParse({ token })
+
+    if (!validation.success) {
         return { error: "Invalid verification token" }
     }
 
+    const { token: validatedToken } = validation.data
+
     try {
         const verificationToken = await prisma.verificationToken.findUnique({
-            where: { token },
+            where: { token: validatedToken },
         })
 
         if (!verificationToken) {
@@ -18,7 +23,7 @@ export async function verifyEmail(token: string) {
 
         if (verificationToken.expires < new Date()) {
             await prisma.verificationToken.delete({
-                where: { token },
+                where: { token: validatedToken },
             })
             return { error: "Verification token has expired" }
         }
@@ -33,7 +38,7 @@ export async function verifyEmail(token: string) {
 
         if (user.emailVerified) {
             await prisma.verificationToken.delete({
-                where: { token },
+                where: { token: validatedToken },
             })
             return { error: "Email already verified" }
         }
@@ -44,7 +49,7 @@ export async function verifyEmail(token: string) {
                 data: { emailVerified: new Date() },
             }),
             prisma.verificationToken.delete({
-                where: { token },
+                where: { token: validatedToken },
             }),
         ])
 

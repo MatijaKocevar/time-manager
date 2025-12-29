@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { usePathname, useSearchParams } from "next/navigation"
 import NProgress from "nprogress"
 import "nprogress/nprogress.css"
-import { useNavigationStore } from "@/stores/navigation-store"
+import { useNavigationStore } from "../stores/navigation-store"
 
 NProgress.configure({ showSpinner: false })
 

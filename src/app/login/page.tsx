@@ -16,7 +16,7 @@ import {
     CardTitle,
 } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { LanguageToggle } from "@/components/language-toggle"
+import { LanguageToggle } from "@/features/locale/components/language-toggle"
 import { useTranslations } from "next-intl"
 
 export default function LoginPage() {

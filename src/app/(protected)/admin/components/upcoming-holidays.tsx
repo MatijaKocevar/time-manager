@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import type { Holiday } from "../types"
+import type { Holiday } from "../schemas"
 import { formatHolidayDate } from "../utils"
 
 interface UpcomingHolidaysProps {
