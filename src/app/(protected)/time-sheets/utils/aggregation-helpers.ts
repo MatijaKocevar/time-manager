@@ -1,4 +1,4 @@
-import type { TaskTimeEntry, Task, List } from "../../../../../prisma/generated/client"
+import type { TaskTimeEntry, Task, List, TaskStatus } from "../../../../../prisma/generated/client"
 import type { TimeEntryDisplay } from "../schemas/time-sheet-schemas"
 
 export type TimeEntryWithTask = TaskTimeEntry & {
@@ -21,6 +21,9 @@ export interface AggregatedTimeSheet {
             taskId: string
             taskTitle: string
             listName: string
+            status: TaskStatus
+            listColor: string | null
+            listIcon: string | null
             byDate: Map<string, number>
             totalDuration: number
         }
@@ -39,6 +42,9 @@ export function aggregateTimeEntriesByTaskAndDate(
             taskId: string
             taskTitle: string
             listName: string
+            status: TaskStatus
+            listColor: string | null
+            listIcon: string | null
             byDate: Map<string, number>
             totalDuration: number
         }
@@ -64,6 +70,9 @@ export function aggregateTimeEntriesByTaskAndDate(
                 taskId: entry.taskId,
                 taskTitle: entry.task.title,
                 listName: entry.task.list?.name ?? "No List",
+                status: entry.task.status,
+                listColor: entry.task.list?.color ?? null,
+                listIcon: entry.task.list?.icon ?? null,
                 byDate: new Map(),
                 totalDuration: 0,
             })

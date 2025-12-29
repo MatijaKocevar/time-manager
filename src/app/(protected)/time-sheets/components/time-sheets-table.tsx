@@ -11,9 +11,11 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { formatDuration } from "../../tasks/utils/time-helpers"
+import { getStatusColor } from "../../tasks/constants/task-statuses"
 import { useTasksStore } from "../../tasks/stores/tasks-store"
 import { startTimer, stopTimer } from "../../tasks/actions/task-time-actions"
 import { taskKeys } from "../../tasks/query-keys"
@@ -102,7 +104,7 @@ export function TimeSheetsTable({
             <Table>
                 <TableHeader className="sticky top-0 z-30 bg-background">
                     <TableRow>
-                        <TableHead className="sticky left-0 z-40 bg-background border-r font-semibold min-w-[250px]">
+                        <TableHead className="sticky left-0 z-40 bg-background border-r font-semibold min-w-[250px] py-2">
                             {translations.task}
                         </TableHead>
                         {dates.map((dateStr) => {
@@ -115,7 +117,7 @@ export function TimeSheetsTable({
                             return (
                                 <TableHead
                                     key={dateStr}
-                                    className={`text-center min-w-[100px] relative ${
+                                    className={`text-center min-w-[100px] relative py-2 ${
                                         isWeekendDay ? "bg-muted/50" : ""
                                     } ${isTodayDay ? "bg-blue-50 dark:bg-blue-950" : ""}`}
                                 >
@@ -153,7 +155,7 @@ export function TimeSheetsTable({
                                 </TableHead>
                             )
                         })}
-                        <TableHead className="text-center min-w-[100px] font-semibold sticky right-0 z-40 bg-background border-l">
+                        <TableHead className="text-center min-w-[100px] font-semibold sticky right-0 z-40 bg-background border-l py-2">
                             {translations.total}
                         </TableHead>
                     </TableRow>
@@ -185,108 +187,178 @@ export function TimeSheetsTable({
                         </TableRow>
                     ) : (
                         <>
-                            {tasksArray.map((task) => (
-                                <TableRow key={task.taskId}>
-                                    <TableCell className="sticky left-0 z-10 bg-background border-r">
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">{task.taskTitle}</span>
-                                            <span className="text-xs text-muted-foreground">
-                                                {task.listName}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    {dates.map((dateStr) => {
-                                        const date = new Date(dateStr)
-                                        const dateKey = formatDateKey(date)
-                                        const durationInSeconds = task.byDate.get(dateKey)
-                                        const isWeekendDay = isWeekend(date)
-                                        const isTodayDay = isToday(date)
-                                        const activeTimer = activeTimers.get(task.taskId)
-                                        const isTracking = !!activeTimer
-                                        const cellKey = `${task.taskId}-${dateStr}`
-                                        const isHovered = hoveredCell === cellKey
-                                        const isLoadingThis = loadingTask === task.taskId
+                            {tasksArray.map((task) => {
+                                const statusColor = getStatusColor(task.status)
+                                const dotColor =
+                                    task.status === "DONE"
+                                        ? "bg-green-500"
+                                        : task.status === "IN_PROGRESS"
+                                          ? "bg-blue-500"
+                                          : task.status === "ON_HOLD"
+                                            ? "bg-yellow-500"
+                                            : task.status === "CANCELED"
+                                              ? "bg-red-500"
+                                              : "bg-gray-400"
 
-                                        const displayDuration =
-                                            isTracking && isTodayDay && activeTimer
-                                                ? Math.floor(
-                                                      (currentTime.getTime() -
-                                                          activeTimer.startTime.getTime()) /
-                                                          1000
-                                                  )
-                                                : durationInSeconds
-
-                                        return (
-                                            <TableCell
-                                                key={dateStr}
-                                                className={`text-center tabular-nums relative group ${
-                                                    isWeekendDay ? "bg-muted/50" : ""
-                                                } ${
-                                                    isTodayDay ? "bg-blue-50 dark:bg-blue-950" : ""
-                                                }`}
-                                                onMouseEnter={() => setHoveredCell(cellKey)}
-                                                onMouseLeave={() => setHoveredCell(null)}
-                                            >
-                                                <div className="flex items-center justify-center gap-1">
-                                                    <span
-                                                        className={`${
-                                                            displayDuration
-                                                                ? "cursor-pointer hover:underline"
-                                                                : ""
-                                                        }`}
-                                                        onClick={() => {
-                                                            if (displayDuration) {
-                                                                openTimeEntriesDialog(task.taskId)
-                                                            }
-                                                        }}
-                                                        suppressHydrationWarning
-                                                    >
-                                                        {displayDuration
-                                                            ? formatDuration(displayDuration)
-                                                            : "-"}
+                                return (
+                                    <TableRow key={task.taskId}>
+                                        <TableCell className="sticky left-0 z-10 bg-background border-r py-2">
+                                            <div className="flex items-start gap-2">
+                                                <div
+                                                    className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`}
+                                                />
+                                                <div className="flex flex-col gap-1 min-w-0">
+                                                    <span className="font-medium text-sm leading-tight">
+                                                        {task.taskTitle}
                                                     </span>
-                                                    {(isHovered || isTracking) && isTodayDay && (
-                                                        <Button
-                                                            variant={
-                                                                isTracking ? "destructive" : "ghost"
-                                                            }
-                                                            size="sm"
-                                                            className="h-6 w-6 p-0"
-                                                            disabled={isLoadingThis}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation()
-                                                                if (isTracking && activeTimer) {
-                                                                    setLoadingTask(task.taskId)
-                                                                    stopMutation.mutate({
-                                                                        id: activeTimer.entryId,
-                                                                    })
-                                                                } else {
-                                                                    setLoadingTask(task.taskId)
-                                                                    startMutation.mutate({
-                                                                        taskId: task.taskId,
-                                                                    })
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className={`text-[10px] h-5 px-1.5 py-0 rounded ${statusColor}`}
+                                                        >
+                                                            {task.status === "IN_PROGRESS"
+                                                                ? "In Progress"
+                                                                : task.status === "DONE"
+                                                                  ? "Complete"
+                                                                  : task.status === "ON_HOLD"
+                                                                    ? "On Hold"
+                                                                    : task.status === "CANCELED"
+                                                                      ? "Canceled"
+                                                                      : "To Do"}
+                                                        </Badge>
+                                                        {task.listName &&
+                                                            task.listName !== "No List" && (
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="text-[10px] h-5 px-1.5 py-0 rounded text-muted-foreground"
+                                                                    style={{
+                                                                        borderColor:
+                                                                            task.listColor ??
+                                                                            undefined,
+                                                                        color:
+                                                                            task.listColor ??
+                                                                            undefined,
+                                                                    }}
+                                                                >
+                                                                    {task.listIcon && (
+                                                                        <span className="mr-0.5">
+                                                                            {task.listIcon}
+                                                                        </span>
+                                                                    )}
+                                                                    {task.listName}
+                                                                </Badge>
+                                                            )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        {dates.map((dateStr) => {
+                                            const date = new Date(dateStr)
+                                            const dateKey = formatDateKey(date)
+                                            const durationInSeconds = task.byDate.get(dateKey)
+                                            const isWeekendDay = isWeekend(date)
+                                            const isTodayDay = isToday(date)
+                                            const activeTimer = activeTimers.get(task.taskId)
+                                            const isTracking = !!activeTimer
+                                            const cellKey = `${task.taskId}-${dateStr}`
+                                            const isHovered = hoveredCell === cellKey
+                                            const isLoadingThis = loadingTask === task.taskId
+
+                                            const displayDuration =
+                                                isTracking && isTodayDay && activeTimer
+                                                    ? Math.floor(
+                                                          (currentTime.getTime() -
+                                                              activeTimer.startTime.getTime()) /
+                                                              1000
+                                                      )
+                                                    : durationInSeconds
+
+                                            return (
+                                                <TableCell
+                                                    key={dateStr}
+                                                    className={`text-center tabular-nums relative group ${
+                                                        isWeekendDay ? "bg-muted/50" : ""
+                                                    } ${
+                                                        isTodayDay
+                                                            ? "bg-blue-50 dark:bg-blue-950"
+                                                            : ""
+                                                    }`}
+                                                    onMouseEnter={() => setHoveredCell(cellKey)}
+                                                    onMouseLeave={() => setHoveredCell(null)}
+                                                >
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        <span
+                                                            className={`${
+                                                                displayDuration
+                                                                    ? "cursor-pointer hover:underline"
+                                                                    : ""
+                                                            }`}
+                                                            onClick={() => {
+                                                                if (displayDuration) {
+                                                                    openTimeEntriesDialog(
+                                                                        task.taskId
+                                                                    )
                                                                 }
                                                             }}
+                                                            suppressHydrationWarning
                                                         >
-                                                            {isTracking ? (
-                                                                <Square className="h-3 w-3" />
-                                                            ) : (
-                                                                <Play className="h-3 w-3" />
+                                                            {displayDuration
+                                                                ? formatDuration(displayDuration)
+                                                                : "-"}
+                                                        </span>
+                                                        {(isHovered || isTracking) &&
+                                                            isTodayDay && (
+                                                                <Button
+                                                                    variant={
+                                                                        isTracking
+                                                                            ? "destructive"
+                                                                            : "ghost"
+                                                                    }
+                                                                    size="sm"
+                                                                    className="h-6 w-6 p-0"
+                                                                    disabled={isLoadingThis}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation()
+                                                                        if (
+                                                                            isTracking &&
+                                                                            activeTimer
+                                                                        ) {
+                                                                            setLoadingTask(
+                                                                                task.taskId
+                                                                            )
+                                                                            stopMutation.mutate({
+                                                                                id: activeTimer.entryId,
+                                                                            })
+                                                                        } else {
+                                                                            setLoadingTask(
+                                                                                task.taskId
+                                                                            )
+                                                                            startMutation.mutate({
+                                                                                taskId: task.taskId,
+                                                                            })
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    {isTracking ? (
+                                                                        <Square className="h-3 w-3" />
+                                                                    ) : (
+                                                                        <Play className="h-3 w-3" />
+                                                                    )}
+                                                                </Button>
                                                             )}
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                        )
-                                    })}
-                                    <TableCell
-                                        className="text-center font-semibold tabular-nums sticky right-0 z-10 bg-background border-l"
-                                        suppressHydrationWarning
-                                    >
-                                        {formatHoursMinutes(task.totalDuration)}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                                                    </div>
+                                                </TableCell>
+                                            )
+                                        })}
+                                        <TableCell
+                                            className="text-center font-semibold tabular-nums sticky right-0 z-10 bg-background border-l"
+                                            suppressHydrationWarning
+                                        >
+                                            {formatHoursMinutes(task.totalDuration)}
+                                        </TableCell>
+                                    </TableRow>
+                                )
+                            })}
                         </>
                     )}
                 </TableBody>
