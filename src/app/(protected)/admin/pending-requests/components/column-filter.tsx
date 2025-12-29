@@ -60,7 +60,7 @@ export function ColumnFilter({ column, translations }: ColumnFilterProps) {
                         }`}
                     />
                 </button>
-                {hasActiveFilter && (
+                {hasActiveFilter ? (
                     <button
                         onClick={(e) => {
                             e.stopPropagation()
@@ -71,7 +71,7 @@ export function ColumnFilter({ column, translations }: ColumnFilterProps) {
                     >
                         <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
                     </button>
-                )}
+                ) : null}
             </div>
             <Dialog open={filterDialogOpen} onOpenChange={handleDialogOpen}>
                 <DialogContent>

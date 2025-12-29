@@ -102,9 +102,19 @@ export function TimeSheetsTable({
     return (
         <div className="border rounded-lg overflow-auto h-full">
             <Table>
+                <colgroup>
+                    <col style={{ width: "180px", minWidth: "150px", maxWidth: "200px" }} />
+                    {dates.map((dateStr) => (
+                        <col
+                            key={dateStr}
+                            style={{ width: "100px", minWidth: "100px" }}
+                        />
+                    ))}
+                    <col style={{ width: "100px", minWidth: "100px" }} />
+                </colgroup>
                 <TableHeader className="sticky top-0 z-30 bg-background">
                     <TableRow>
-                        <TableHead className="sticky left-0 z-40 bg-background border-r font-semibold min-w-[250px] py-2">
+                        <TableHead className="sticky left-0 z-40 bg-background border-r font-semibold min-w-[150px] max-w-[200px] py-2">
                             {translations.task}
                         </TableHead>
                         {dates.map((dateStr) => {
@@ -155,7 +165,7 @@ export function TimeSheetsTable({
                                 </TableHead>
                             )
                         })}
-                        <TableHead className="text-center min-w-[100px] font-semibold sticky right-0 z-40 bg-background border-l py-2">
+                        <TableHead className="text-center min-w-[100px] font-semibold bg-background border-l py-2">
                             {translations.total}
                         </TableHead>
                     </TableRow>
@@ -202,13 +212,13 @@ export function TimeSheetsTable({
 
                                 return (
                                     <TableRow key={task.taskId}>
-                                        <TableCell className="sticky left-0 z-10 bg-background border-r py-2">
+                                        <TableCell className="sticky left-0 z-10 bg-background border-r py-2 min-w-[150px] max-w-[200px]">
                                             <div className="flex items-start gap-2">
                                                 <div
                                                     className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`}
                                                 />
                                                 <div className="flex flex-col gap-1 min-w-0">
-                                                    <span className="font-medium text-sm leading-tight">
+                                                    <span className="font-medium text-sm leading-tight truncate">
                                                         {task.taskTitle}
                                                     </span>
                                                     <div className="flex items-center gap-1.5 flex-wrap">
@@ -351,7 +361,7 @@ export function TimeSheetsTable({
                                             )
                                         })}
                                         <TableCell
-                                            className="text-center font-semibold tabular-nums sticky right-0 z-10 bg-background border-l"
+                                            className="text-center font-semibold tabular-nums bg-background border-l"
                                             suppressHydrationWarning
                                         >
                                             {formatHoursMinutes(task.totalDuration)}
