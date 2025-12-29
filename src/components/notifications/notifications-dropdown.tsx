@@ -188,13 +188,16 @@ export function NotificationsDropdown({
     }
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={(open) => {
-            if (!open) {
-                handleDropdownClose()
-            } else {
-                setIsOpen(true)
-            }
-        }}>
+        <DropdownMenu
+            open={isOpen}
+            onOpenChange={(open) => {
+                if (!open) {
+                    handleDropdownClose()
+                } else {
+                    setIsOpen(true)
+                }
+            }}
+        >
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
@@ -271,7 +274,9 @@ export function NotificationsDropdown({
                                         >
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="flex-1 space-y-1">
-                                                    <p className={`text-sm ${!notif.read ? "font-bold" : ""}`}>
+                                                    <p
+                                                        className={`text-sm ${!notif.read ? "font-bold" : ""}`}
+                                                    >
                                                         {notif.title}
                                                     </p>
                                                     <p className="text-xs text-muted-foreground">
