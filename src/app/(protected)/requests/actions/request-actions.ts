@@ -433,14 +433,16 @@ export async function approveRequest(input: ApproveRequestInput) {
                 },
             })
 
-            const holidays = await tx.holiday.findMany({
-                where: {
-                    date: {
-                        gte: request.startDate,
-                        lte: request.endDate,
-                    },
-                },
-            })
+            const holidays = request.skipHolidays
+                ? await tx.holiday.findMany({
+                      where: {
+                          date: {
+                              gte: request.startDate,
+                              lte: request.endDate,
+                          },
+                      },
+                  })
+                : []
 
             if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
             }
@@ -470,13 +472,18 @@ export async function approveRequest(input: ApproveRequestInput) {
                 const currentDay = new Date(startDay)
                 currentDay.setUTCDate(startDay.getUTCDate() + i)
 
-                const isHol = holidays.some((h) => {
-                    const holidayDate = new Date(h.date)
-                    holidayDate.setHours(0, 0, 0, 0)
-                    return holidayDate.getTime() === currentDay.getTime()
-                })
+                const dayOfWeek = currentDay.getDay()
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
 
-                if (!isHol) {
+                const isHol =
+                    request.skipHolidays &&
+                    holidays.some((h) => {
+                        const holidayDate = new Date(h.date)
+                        holidayDate.setHours(0, 0, 0, 0)
+                        return holidayDate.getTime() === currentDay.getTime()
+                    })
+
+                if ((!request.skipWeekends || !isWeekend) && !isHol) {
                     console.log(`  Creating shift for day ${i + 1}: ${currentDay.toISOString()}`)
 
                     await tx.shift.upsert({
@@ -499,7 +506,7 @@ export async function approveRequest(input: ApproveRequestInput) {
                     })
                 } else {
                     console.log(
-                        `  Skipping day ${i + 1}: ${currentDay.toISOString()} (holiday: ${isHol})`
+                        `  Skipping day ${i + 1}: ${currentDay.toISOString()} (weekend: ${isWeekend}, holiday: ${isHol})`
                     )
                 }
             }

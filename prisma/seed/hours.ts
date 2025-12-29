@@ -11,20 +11,53 @@ export async function seedHourEntriesForUser(
     endDate: Date,
     holidays: Date[]
 ) {
+    const approvedRequests = await prisma.request.findMany({
+        where: {
+            userId,
+            status: "APPROVED",
+            affectsHourType: true,
+            startDate: { lte: endDate },
+            endDate: { gte: startDate },
+        },
+        select: {
+            startDate: true,
+            endDate: true,
+            type: true,
+            skipWeekends: true,
+            skipHolidays: true,
+        },
+    })
+
+    const requestDateMap = new Map<string, string>()
+    for (const req of approvedRequests) {
+        for (const date of dateRange(req.startDate, req.endDate)) {
+            const dayOfWeek = date.getDay()
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+            const isHoliday = holidays.some((h) => h.getTime() === date.getTime())
+
+            if ((req.skipWeekends && isWeekend) || (req.skipHolidays && isHoliday)) continue
+
+            const dateKey = normalizeDate(date).toISOString().split("T")[0]
+            requestDateMap.set(dateKey, req.type)
+        }
+    }
+
     const entries = []
 
     for (const date of dateRange(startDate, endDate)) {
         if (!isWeekday(date)) continue
         if (holidays.some((h) => h.getTime() === date.getTime())) continue
 
+        const dateKey = normalizeDate(date).toISOString().split("T")[0]
+        if (requestDateMap.has(dateKey)) continue
+
         if (random.next() > 0.7) continue
 
         const rand = random.next()
         let type: HourType
         if (rand < 0.8) type = "WORK"
-        else if (rand < 0.9) type = "WORK_FROM_HOME"
-        else if (rand < 0.95) type = "VACATION"
-        else type = random.choice(["SICK_LEAVE", "OTHER"] as HourType[])
+        else if (rand < 0.95) type = "WORK_FROM_HOME"
+        else type = "OTHER"
 
         const hours = random.nextInt(4, 10)
         const isTaskLinked = random.next() < 0.3 && tasks.length > 0

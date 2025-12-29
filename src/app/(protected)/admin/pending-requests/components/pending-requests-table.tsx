@@ -1,7 +1,8 @@
 "use client"
 
-import { Fragment, useMemo, useState } from "react"
+import { Fragment, useMemo, useState, useEffect } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useSearchParams, useRouter } from "next/navigation"
 import {
     ColumnFiltersState,
     flexRender,
@@ -15,7 +16,6 @@ import {
     useReactTable,
 } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
-import { useIsMobile } from "@/hooks/use-mobile"
 import {
     Table,
     TableBody,
@@ -47,9 +47,19 @@ export function PendingRequestsTable({
     locale,
 }: PendingRequestsTableProps) {
     const queryClient = useQueryClient()
-    const isMobile = useIsMobile()
+    const searchParams = useSearchParams()
+    const router = useRouter()
     const [sorting, setSorting] = useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
+        const filters: ColumnFiltersState = []
+        searchParams.forEach((value, key) => {
+            if (key.startsWith("filter_")) {
+                const columnId = key.replace("filter_", "")
+                filters.push({ id: columnId, value })
+            }
+        })
+        return filters
+    })
 
     const rejectDialogOpen = usePendingRequestsStore((state) => state.rejectDialogOpen)
     const selectedRequestId = usePendingRequestsStore((state) => state.selectedRequestId)
@@ -147,6 +157,29 @@ export function PendingRequestsTable({
         },
     })
 
+    useEffect(() => {
+        const params = new URLSearchParams(searchParams.toString())
+
+        Array.from(params.keys()).forEach((key) => {
+            if (key.startsWith("filter_")) {
+                params.delete(key)
+            }
+        })
+
+        columnFilters.forEach((filter) => {
+            if (filter.value) {
+                params.set(`filter_${filter.id}`, String(filter.value))
+            }
+        })
+
+        const newSearch = params.toString()
+        const currentSearch = searchParams.toString()
+
+        if (newSearch !== currentSearch) {
+            router.replace(`?${newSearch}`, { scroll: false })
+        }
+    }, [columnFilters, router, searchParams])
+
     return (
         <>
             <div className="flex flex-col gap-4 h-full min-w-0">
@@ -172,7 +205,7 @@ export function PendingRequestsTable({
                                                               header.column.columnDef.header,
                                                               header.getContext()
                                                           )}
-                                                    {isMobile && header.column.getCanFilter() && (
+                                                    {header.column.getCanFilter() && (
                                                         <ColumnFilter
                                                             column={header.column}
                                                             translations={translations}
@@ -182,23 +215,6 @@ export function PendingRequestsTable({
                                             </TableHead>
                                         ))}
                                     </TableRow>
-                                    {!isMobile && (
-                                        <TableRow>
-                                            {headerGroup.headers.map((header) => (
-                                                <TableHead
-                                                    key={`${header.id}-filter`}
-                                                    className="py-2"
-                                                >
-                                                    {header.column.getCanFilter() ? (
-                                                        <ColumnFilter
-                                                            column={header.column}
-                                                            translations={translations}
-                                                        />
-                                                    ) : null}
-                                                </TableHead>
-                                            ))}
-                                        </TableRow>
-                                    )}
                                 </Fragment>
                             ))}
                         </TableHeader>

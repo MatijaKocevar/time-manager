@@ -7,6 +7,8 @@ interface RequestFormState {
     endDate: string
     reason: string
     location: string
+    skipWeekends: boolean
+    skipHolidays: boolean
 }
 
 interface RequestStoreState {
@@ -29,6 +31,8 @@ export const useRequestStore = create<RequestStoreState & RequestStoreActions>((
         endDate: "",
         reason: "",
         location: "",
+        skipWeekends: true,
+        skipHolidays: true,
     },
     isLoading: false,
     error: null,
@@ -44,6 +48,8 @@ export const useRequestStore = create<RequestStoreState & RequestStoreActions>((
                 endDate: "",
                 reason: "",
                 location: "",
+                skipWeekends: true,
+                skipHolidays: true,
             },
             error: null,
         }),

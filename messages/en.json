@@ -333,7 +333,9 @@
             "enterReason": "Enter reason",
             "enterLocation": "Enter location",
             "selectType": "Select request type",
-            "requestDetails": "Request Details"
+            "requestDetails": "Request Details",
+            "skipWeekends": "Skip weekends",
+            "skipHolidays": "Skip holidays"
         },
         "table": {
             "approvedBy": "Approved/Rejected By",

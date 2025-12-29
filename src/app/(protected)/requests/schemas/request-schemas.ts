@@ -10,6 +10,8 @@ const CreateRequestInputSchema = z.object({
     endDate: z.string(),
     reason: z.string().optional(),
     location: z.string().optional(),
+    skipWeekends: z.boolean().default(true),
+    skipHolidays: z.boolean().default(true),
 })
 
 export const CreateRequestSchema = CreateRequestInputSchema.transform((data) => ({
@@ -17,6 +19,8 @@ export const CreateRequestSchema = CreateRequestInputSchema.transform((data) => 
     startDate: new Date(data.startDate),
     endDate: new Date(data.endDate),
     affectsHourType: true,
+    skipWeekends: data.skipWeekends,
+    skipHolidays: data.skipHolidays,
 }))
 
 const UpdateRequestInputSchema = z.object({

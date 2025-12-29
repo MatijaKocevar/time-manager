@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Column } from "@tanstack/react-table"
-import { Search } from "lucide-react"
+import { Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
@@ -13,8 +13,6 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { DebouncedInput } from "./debounced-input"
 import type { RequestDisplay, PendingRequestTranslations } from "../types"
 
 interface ColumnFilterProps {
@@ -25,7 +23,6 @@ interface ColumnFilterProps {
 export function ColumnFilter({ column, translations }: ColumnFilterProps) {
     const columnFilterValue = column.getFilterValue()
     const uniqueValues = column.getFacetedUniqueValues()
-    const isMobile = useIsMobile()
     const [filterDialogOpen, setFilterDialogOpen] = useState(false)
     const [filterValue, setFilterValue] = useState((columnFilterValue ?? "") as string)
 
@@ -49,9 +46,9 @@ export function ColumnFilter({ column, translations }: ColumnFilterProps) {
         }
     }
 
-    if (isMobile) {
-        return (
-            <>
+    return (
+        <>
+            <div className="inline-flex items-center gap-1">
                 <button
                     onClick={() => setFilterDialogOpen(true)}
                     className="inline-flex items-center justify-center"
@@ -63,41 +60,43 @@ export function ColumnFilter({ column, translations }: ColumnFilterProps) {
                         }`}
                     />
                 </button>
-                <Dialog open={filterDialogOpen} onOpenChange={handleDialogOpen}>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>{translations.filter.title}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="filter-input">{translations.filter.search}</Label>
-                                <Input
-                                    id="filter-input"
-                                    value={filterValue}
-                                    onChange={(e) => setFilterValue(e.target.value)}
-                                    placeholder={`${translations.table.searchPlaceholder} (${uniqueValues.size})`}
-                                />
-                            </div>
+                {hasActiveFilter && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation()
+                            handleClearFilter()
+                        }}
+                        className="inline-flex items-center justify-center hover:bg-accent rounded-sm p-0.5"
+                        aria-label="Clear filter"
+                    >
+                        <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                    </button>
+                )}
+            </div>
+            <Dialog open={filterDialogOpen} onOpenChange={handleDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{translations.filter.title}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="filter-input">{translations.filter.search}</Label>
+                            <Input
+                                id="filter-input"
+                                value={filterValue}
+                                onChange={(e) => setFilterValue(e.target.value)}
+                                placeholder={`${translations.table.searchPlaceholder} (${uniqueValues.size})`}
+                            />
                         </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={handleClearFilter}>
-                                {translations.filter.clear}
-                            </Button>
-                            <Button onClick={handleApplyFilter}>{translations.filter.apply}</Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            </>
-        )
-    }
-
-    return (
-        <DebouncedInput
-            type="text"
-            value={(columnFilterValue ?? "") as string}
-            onChange={(value) => column.setFilterValue(value)}
-            placeholder={`${translations.table.searchPlaceholder} (${uniqueValues.size})`}
-            className="h-8"
-        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={handleClearFilter}>
+                            {translations.filter.clear}
+                        </Button>
+                        <Button onClick={handleApplyFilter}>{translations.filter.apply}</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }

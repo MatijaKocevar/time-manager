@@ -49,6 +49,8 @@ export function RequestForm() {
             endDate: formData.endDate,
             reason: formData.reason,
             location: formData.type === REQUEST_TYPE.WORK_FROM_HOME ? formData.location : undefined,
+            skipWeekends: formData.skipWeekends,
+            skipHolidays: formData.skipHolidays,
         })
     }
 
@@ -96,6 +98,32 @@ export function RequestForm() {
                                 onChange={(e) => setFormData({ endDate: e.target.value })}
                             />
                         </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                        <input
+                            id="skip-weekends"
+                            type="checkbox"
+                            checked={formData.skipWeekends}
+                            onChange={(e) => setFormData({ skipWeekends: e.target.checked })}
+                            className="h-4 w-4 rounded border-gray-300"
+                        />
+                        <Label htmlFor="skip-weekends" className="cursor-pointer">
+                            {t("skipWeekends")}
+                        </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                        <input
+                            id="skip-holidays"
+                            type="checkbox"
+                            checked={formData.skipHolidays}
+                            onChange={(e) => setFormData({ skipHolidays: e.target.checked })}
+                            className="h-4 w-4 rounded border-gray-300"
+                        />
+                        <Label htmlFor="skip-holidays" className="cursor-pointer">
+                            {t("skipHolidays")}
+                        </Label>
                     </div>
 
                     {needsLocation && (

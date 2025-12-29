@@ -333,7 +333,9 @@
             "enterReason": "Vnesite razlog",
             "enterLocation": "Vnesite lokacijo",
             "selectType": "Izberite tip zahtevka",
-            "requestDetails": "Podrobnosti zahtevka"
+            "requestDetails": "Podrobnosti zahtevka",
+            "skipWeekends": "Preskoči vikende",
+            "skipHolidays": "Preskoči praznike"
         },
         "table": {
             "approvedBy": "Odobril/Zavrnil",

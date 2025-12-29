@@ -212,6 +212,8 @@ model Request {
   reason             String?
   location           String?
   affectsHourType    Boolean       @default(false)
+  skipWeekends       Boolean       @default(true)
+  skipHolidays       Boolean       @default(true)
   approvedBy         String?
   approvedAt         DateTime?
   rejectedBy         String?
