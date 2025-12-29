@@ -22,9 +22,21 @@ export interface PendingRequestNotification {
     createdAt: Date
 }
 
+export interface UserNotification {
+    id: string
+    type: string
+    title: string
+    message: string
+    url: string | null
+    read: boolean
+    createdAt: Date
+}
+
 export interface NotificationData {
     count: number
     pendingRequests: PendingRequestNotification[]
+    notifications: UserNotification[]
+    unreadCount: number
     isAdmin: boolean
 }
 
@@ -57,7 +69,7 @@ export async function getNotifications(): Promise<NotificationData> {
             take: 5,
         })
 
-        const notifications: PendingRequestNotification[] = pendingRequests.map((req) => ({
+        const pendingNotifications: PendingRequestNotification[] = pendingRequests.map((req) => ({
             id: req.id,
             type: req.type,
             startDate: req.startDate,
@@ -67,16 +79,118 @@ export async function getNotifications(): Promise<NotificationData> {
             createdAt: req.createdAt,
         }))
 
-        const count = await prisma.request.count({
+        const pendingCount = await prisma.request.count({
             where: {
                 status: "PENDING",
                 ...(!isAdmin && { userId: session.user.id }),
             },
         })
 
-        return { count, pendingRequests: notifications, isAdmin }
+        const userNotifications = await prisma.notification.findMany({
+            where: {
+                userId: session.user.id,
+            },
+            select: {
+                id: true,
+                type: true,
+                title: true,
+                message: true,
+                url: true,
+                read: true,
+                createdAt: true,
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
+            take: 50,
+        })
+
+        const notifications: UserNotification[] = userNotifications.map((notif) => ({
+            id: notif.id,
+            type: notif.type,
+            title: notif.title,
+            message: notif.message,
+            url: notif.url,
+            read: notif.read,
+            createdAt: notif.createdAt,
+        }))
+
+        const unreadCount = await prisma.notification.count({
+            where: {
+                userId: session.user.id,
+                read: false,
+            },
+        })
+
+        return {
+            count: pendingCount,
+            pendingRequests: pendingNotifications,
+            notifications,
+            unreadCount,
+            isAdmin,
+        }
     } catch (error) {
         console.error("Error fetching notifications:", error)
-        return { count: 0, pendingRequests: [], isAdmin: false }
+        return { count: 0, pendingRequests: [], notifications: [], unreadCount: 0, isAdmin: false }
+    }
+}
+
+export async function getUnreadNotificationCount(): Promise<{ count: number }> {
+    try {
+        const session = await requireAuth()
+
+        const count = await prisma.notification.count({
+            where: {
+                userId: session.user.id,
+                read: false,
+            },
+        })
+
+        return { count }
+    } catch (error) {
+        console.error("Error fetching unread count:", error)
+        return { count: 0 }
+    }
+}
+
+export async function markNotificationsAsRead(notificationIds: string[]) {
+    try {
+        const session = await requireAuth()
+
+        await prisma.notification.updateMany({
+            where: {
+                id: { in: notificationIds },
+                userId: session.user.id,
+            },
+            data: {
+                read: true,
+            },
+        })
+
+        return { success: true }
+    } catch (error) {
+        console.error("Error marking notifications as read:", error)
+        return { error: "Failed to mark notifications as read" }
+    }
+}
+
+export async function cleanupOldNotifications() {
+    try {
+        const ninetyDaysAgo = new Date()
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
+
+        const result = await prisma.notification.deleteMany({
+            where: {
+                createdAt: {
+                    lt: ninetyDaysAgo,
+                },
+            },
+        })
+
+        console.log(`Cleaned up ${result.count} old notifications`)
+        return { success: true, deleted: result.count }
+    } catch (error) {
+        console.error("Error cleaning up old notifications:", error)
+        return { error: "Failed to cleanup notifications" }
     }
 }

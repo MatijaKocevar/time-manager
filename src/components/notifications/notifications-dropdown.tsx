@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Bell, Check, X, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -13,14 +13,18 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { approveRequest, rejectRequest } from "@/app/(protected)/requests/actions/request-actions"
 import { requestKeys } from "@/app/(protected)/requests/query-keys"
-import type { NotificationData } from "@/app/(protected)/actions/notification-actions"
+import {
+    getNotifications,
+    markNotificationsAsRead,
+    type NotificationData,
+} from "@/app/(protected)/actions/notification-actions"
 import type { WorkType } from "@/lib/work-type-styles"
 
 interface NotificationsDropdownProps {
-    notifications: NotificationData
+    initialNotifications: NotificationData
     translations: {
         title: string
         noNotifications: string
@@ -47,11 +51,88 @@ function formatDate(date: Date): string {
     })
 }
 
-export function NotificationsDropdown({ notifications, translations }: NotificationsDropdownProps) {
-    const { count, pendingRequests, isAdmin } = notifications
+function formatRelativeTime(date: Date): string {
+    const now = new Date()
+    const diff = now.getTime() - new Date(date).getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 1) return "Just now"
+    if (minutes < 60) return `${minutes}m ago`
+    if (hours < 24) return `${hours}h ago`
+    if (days < 7) return `${days}d ago`
+    return formatDate(date)
+}
+
+export function NotificationsDropdown({
+    initialNotifications,
+    translations,
+}: NotificationsDropdownProps) {
     const [activeTab, setActiveTab] = useState<"notifications" | "pending">("notifications")
     const [processingId, setProcessingId] = useState<string | null>(null)
+    const [isOpen, setIsOpen] = useState(false)
+    const [visibleNotificationIds, setVisibleNotificationIds] = useState<Set<string>>(new Set())
+    const scrollAreaRef = useRef<HTMLDivElement>(null)
     const queryClient = useQueryClient()
+
+    const { data: notifications = initialNotifications, refetch } = useQuery({
+        queryKey: ["notifications"],
+        queryFn: getNotifications,
+        initialData: initialNotifications,
+        refetchInterval: 60000,
+        refetchIntervalInBackground: true,
+    })
+
+    const {
+        count,
+        pendingRequests,
+        notifications: userNotifications,
+        unreadCount,
+        isAdmin,
+    } = notifications
+
+    const totalBadgeCount = unreadCount + count
+
+    useEffect(() => {
+        if (isOpen && scrollAreaRef.current && userNotifications.length > 0) {
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    entries.forEach((entry) => {
+                        const notifId = entry.target.getAttribute("data-notification-id")
+                        if (notifId && entry.isIntersecting) {
+                            setVisibleNotificationIds((prev) => new Set(prev).add(notifId))
+                        }
+                    })
+                },
+                {
+                    root: scrollAreaRef.current,
+                    threshold: 0.5,
+                }
+            )
+
+            const notifElements = scrollAreaRef.current.querySelectorAll("[data-notification-id]")
+            notifElements.forEach((el) => observer.observe(el))
+
+            return () => observer.disconnect()
+        }
+    }, [isOpen, userNotifications])
+
+    const handleDropdownClose = useCallback(async () => {
+        if (visibleNotificationIds.size > 0) {
+            const unreadVisible = Array.from(visibleNotificationIds).filter((id) => {
+                const notif = userNotifications.find((n) => n.id === id)
+                return notif && !notif.read
+            })
+
+            if (unreadVisible.length > 0) {
+                await markNotificationsAsRead(unreadVisible)
+                refetch()
+            }
+        }
+        setVisibleNotificationIds(new Set())
+        setIsOpen(false)
+    }, [visibleNotificationIds, userNotifications, refetch])
 
     const approveMutation = useMutation({
         mutationFn: approveRequest,
@@ -63,6 +144,7 @@ export function NotificationsDropdown({ notifications, translations }: Notificat
                 alert(`Error: ${data.error}`)
             }
             queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            refetch()
         },
         onError: (error) => {
             alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
@@ -82,6 +164,7 @@ export function NotificationsDropdown({ notifications, translations }: Notificat
                 alert(`Error: ${data.error}`)
             }
             queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            refetch()
         },
         onError: (error) => {
             alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
@@ -105,16 +188,22 @@ export function NotificationsDropdown({ notifications, translations }: Notificat
     }
 
     return (
-        <DropdownMenu>
+        <DropdownMenu open={isOpen} onOpenChange={(open) => {
+            if (!open) {
+                handleDropdownClose()
+            } else {
+                setIsOpen(true)
+            }
+        }}>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
-                    {count > 0 && (
+                    {totalBadgeCount > 0 && (
                         <Badge
                             variant="destructive"
                             className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
                         >
-                            {count > 9 ? "9+" : count}
+                            {totalBadgeCount > 9 ? "9+" : totalBadgeCount}
                         </Badge>
                     )}
                 </Button>
@@ -134,33 +223,69 @@ export function NotificationsDropdown({ notifications, translations }: Notificat
                         }`}
                     >
                         {translations.sections.notifications}
-                    </button>
-                    <button
-                        onClick={() => setActiveTab("pending")}
-                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors relative ${
-                            activeTab === "pending"
-                                ? "border-b-2 border-primary text-primary"
-                                : "text-muted-foreground hover:text-foreground"
-                        }`}
-                    >
-                        {translations.sections.pendingRequests}
-                        {count > 0 && (
+                        {unreadCount > 0 && (
                             <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-xs">
-                                {count}
+                                {unreadCount}
                             </Badge>
                         )}
                     </button>
+                    {isAdmin && (
+                        <button
+                            onClick={() => setActiveTab("pending")}
+                            className={`flex-1 px-4 py-3 text-sm font-medium transition-colors relative ${
+                                activeTab === "pending"
+                                    ? "border-b-2 border-primary text-primary"
+                                    : "text-muted-foreground hover:text-foreground"
+                            }`}
+                        >
+                            {translations.sections.pendingRequests}
+                            {count > 0 && (
+                                <Badge variant="destructive" className="ml-2 h-5 px-1.5 text-xs">
+                                    {count}
+                                </Badge>
+                            )}
+                        </button>
+                    )}
                 </div>
 
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-[400px]" ref={scrollAreaRef}>
                     {activeTab === "notifications" ? (
                         <div className="p-4">
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <Bell className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                                <p className="text-sm text-muted-foreground">
-                                    {translations.noNotifications}
-                                </p>
-                            </div>
+                            {userNotifications.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-12 text-center">
+                                    <Bell className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                                    <p className="text-sm text-muted-foreground">
+                                        {translations.noNotifications}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {userNotifications.map((notif) => (
+                                        <Link
+                                            key={notif.id}
+                                            href={notif.url || "#"}
+                                            data-notification-id={notif.id}
+                                            className={`block rounded-lg p-3 transition-colors hover:bg-accent ${
+                                                !notif.read ? "bg-blue-50 dark:bg-blue-950/20" : ""
+                                            }`}
+                                        >
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="flex-1 space-y-1">
+                                                    <p className={`text-sm ${!notif.read ? "font-bold" : ""}`}>
+                                                        {notif.title}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {notif.message}
+                                                    </p>
+                                                </div>
+                                                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                                                    {formatRelativeTime(notif.createdAt)}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="py-2">

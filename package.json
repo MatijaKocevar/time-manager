@@ -18,7 +18,8 @@
         "dev:db": "npm run db:push && npm run db:seed && npm run dev",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "postinstall": "prisma generate"
+        "postinstall": "prisma generate",
+        "cleanup:notifications": "tsx scripts/cleanup-notifications.ts"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.2",

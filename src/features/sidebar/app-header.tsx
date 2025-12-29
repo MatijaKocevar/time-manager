@@ -51,7 +51,7 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
             </div>
             <div className="flex items-center gap-2">
                 <NotificationsDropdown
-                    notifications={notifications}
+                    initialNotifications={notifications}
                     translations={notificationsTranslations}
                 />
                 <SettingsMenu translations={menuTranslations} />
