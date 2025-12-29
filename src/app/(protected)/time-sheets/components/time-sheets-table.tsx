@@ -105,10 +105,7 @@ export function TimeSheetsTable({
                 <colgroup>
                     <col style={{ width: "180px", minWidth: "150px", maxWidth: "200px" }} />
                     {dates.map((dateStr) => (
-                        <col
-                            key={dateStr}
-                            style={{ width: "100px", minWidth: "100px" }}
-                        />
+                        <col key={dateStr} style={{ width: "100px", minWidth: "100px" }} />
                     ))}
                     <col style={{ width: "100px", minWidth: "100px" }} />
                 </colgroup>
