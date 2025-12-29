@@ -24,6 +24,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { approveRequest, rejectRequest } from "../../../requests/actions/request-actions"
 import { requestKeys } from "../../../requests/query-keys"
 import { ColumnFilter } from "./column-filter"
@@ -151,12 +152,19 @@ export function PendingRequestsTable({
             <div className="flex flex-col gap-4 h-full min-w-0">
                 <div className="rounded-md border flex-1 min-h-0">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className="sticky top-0 z-30 bg-background">
                             {table.getHeaderGroups().map((headerGroup) => (
                                 <Fragment key={headerGroup.id}>
                                     <TableRow>
-                                        {headerGroup.headers.map((header) => (
-                                            <TableHead key={header.id} className="font-semibold">
+                                        {headerGroup.headers.map((header, index) => (
+                                            <TableHead
+                                                key={header.id}
+                                                className={`font-semibold ${
+                                                    index === 0
+                                                        ? "sticky top-0 left-0 z-40 bg-background min-w-[150px] max-w-[200px] border-r"
+                                                        : ""
+                                                }`}
+                                            >
                                                 <div className="flex items-center gap-2">
                                                     {header.isPlaceholder
                                                         ? null
@@ -198,11 +206,37 @@ export function PendingRequestsTable({
                             {table.getRowModel().rows?.length ? (
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow key={row.id}>
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext()
+                                        {row.getVisibleCells().map((cell, index) => (
+                                            <TableCell
+                                                key={cell.id}
+                                                className={`${
+                                                    index === 0
+                                                        ? "sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r"
+                                                        : ""
+                                                }`}
+                                            >
+                                                {index === 0 ? (
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <div className="cursor-default truncate">
+                                                                {flexRender(
+                                                                    cell.column.columnDef.cell,
+                                                                    cell.getContext()
+                                                                )}
+                                                            </div>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <div className="text-sm">
+                                                                {row.original.user.name ||
+                                                                    row.original.user.email}
+                                                            </div>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                ) : (
+                                                    flexRender(
+                                                        cell.column.columnDef.cell,
+                                                        cell.getContext()
+                                                    )
                                                 )}
                                             </TableCell>
                                         ))}

@@ -14,6 +14,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { SHIFT_LOCATION_COLORS } from "../constants"
 import type { ShiftLocation } from "../schemas/shift-schemas"
 import { getShiftLocationTranslationKey } from "../utils/translation-helpers"
@@ -304,9 +305,11 @@ export function ShiftsCalendar({
 
             <div className="rounded-md border overflow-auto flex-1 min-h-0">
                 <Table>
-                    <TableHeader className="sticky top-0 z-10 bg-background">
+                    <TableHeader className="sticky top-0 z-30 bg-background">
                         <TableRow>
-                            <TableHead className="min-w-[150px]">{t("table.employee")}</TableHead>
+                            <TableHead className="sticky top-0 left-0 z-40 bg-background min-w-[150px] max-w-[200px] border-r">
+                                {t("table.employee")}
+                            </TableHead>
                             {days.map((date) => {
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
                                 const holiday = isHoliday(date)
@@ -341,11 +344,29 @@ export function ShiftsCalendar({
                     <TableBody>
                         {users.map((user) => (
                             <TableRow key={user.id} className="hover:bg-muted/50">
-                                <TableCell className="font-medium">
-                                    <div>{user.name || t("table.unknown")}</div>
-                                    <div className="text-xs text-muted-foreground">
-                                        {user.email}
-                                    </div>
+                                <TableCell className="font-medium sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="cursor-default">
+                                                <div className="truncate">
+                                                    {user.name || t("table.unknown")}
+                                                </div>
+                                                <div className="text-xs text-muted-foreground truncate">
+                                                    {user.email}
+                                                </div>
+                                            </div>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <div className="text-sm">
+                                                <div className="font-medium">
+                                                    {user.name || t("table.unknown")}
+                                                </div>
+                                                <div className="text-xs text-muted-foreground">
+                                                    {user.email}
+                                                </div>
+                                            </div>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 </TableCell>
                                 {days.map((date) => {
                                     const shift = getShift(user.id, date)

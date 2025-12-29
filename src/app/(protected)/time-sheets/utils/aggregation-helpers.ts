@@ -70,7 +70,7 @@ export function aggregateTimeEntriesByTaskAndDate(
                 taskId: entry.taskId,
                 taskTitle: entry.task.title,
                 listName: entry.task.list?.name ?? "No List",
-                status: entry.task.status,
+                status: entry.task.status as TaskStatus,
                 listColor: entry.task.list?.color ?? null,
                 listIcon: entry.task.list?.icon ?? null,
                 byDate: new Map(),

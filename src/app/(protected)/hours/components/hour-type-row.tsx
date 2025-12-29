@@ -5,6 +5,7 @@ import { Fragment, useMemo, useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
 import type { HourType } from "@/../../prisma/generated/client"
 import { TableCell, TableRow } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useHoursStore } from "../stores/hours-store"
 import { EditableHourCell } from "./editable-hour-cell"
 import { getTypeLabel, getTypeColor } from "../utils/table-helpers"
@@ -96,21 +97,31 @@ export function HourTypeRow({
     return (
         <>
             <TableRow>
-                <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                        <button onClick={handleToggle} className="p-1 hover:bg-muted rounded">
-                            {isExpanded ? (
-                                <ChevronDown className="h-4 w-4" />
-                            ) : (
-                                <ChevronRight className="h-4 w-4" />
-                            )}
-                        </button>
-                        <span
-                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(totalKey)}`}
-                        >
-                            {getTranslatedTypeLabel(totalKey)}
-                        </span>
-                    </div>
+                <TableCell className="font-medium sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="cursor-default flex items-center gap-2">
+                                <button
+                                    onClick={handleToggle}
+                                    className="p-1 hover:bg-muted rounded flex-shrink-0"
+                                >
+                                    {isExpanded ? (
+                                        <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                        <ChevronRight className="h-4 w-4" />
+                                    )}
+                                </button>
+                                <span
+                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold truncate ${getTypeColor(totalKey)}`}
+                                >
+                                    {getTranslatedTypeLabel(totalKey)}
+                                </span>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <div className="text-sm">{getTranslatedTypeLabel(totalKey)}</div>
+                        </TooltipContent>
+                    </Tooltip>
                 </TableCell>
                 {dates.map((date) => {
                     const year = date.getFullYear()
@@ -144,14 +155,23 @@ export function HourTypeRow({
             {isExpanded && (
                 <Fragment key={`expanded-${hourType}`}>
                     <TableRow>
-                        <TableCell className="font-medium">
-                            <div className="pl-8">
-                                <span
-                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(trackedKey)}`}
-                                >
-                                    {getTranslatedTypeLabel(trackedKey)}
-                                </span>
-                            </div>
+                        <TableCell className="font-medium sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="cursor-default pl-8">
+                                        <span
+                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold truncate ${getTypeColor(trackedKey)}`}
+                                        >
+                                            {getTranslatedTypeLabel(trackedKey)}
+                                        </span>
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <div className="text-sm">
+                                        {getTranslatedTypeLabel(trackedKey)}
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
                         </TableCell>
                         {dates.map((date) => {
                             const year = date.getFullYear()
@@ -183,14 +203,23 @@ export function HourTypeRow({
                     </TableRow>
 
                     <TableRow>
-                        <TableCell className="font-medium">
-                            <div className="pl-8">
-                                <span
-                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor(manualKey)}`}
-                                >
-                                    {getTranslatedTypeLabel(manualKey)}
-                                </span>
-                            </div>
+                        <TableCell className="font-medium sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="cursor-default pl-8">
+                                        <span
+                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold truncate ${getTypeColor(manualKey)}`}
+                                        >
+                                            {getTranslatedTypeLabel(manualKey)}
+                                        </span>
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <div className="text-sm">
+                                        {getTranslatedTypeLabel(manualKey)}
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
                         </TableCell>
                         {dates.map((date) => {
                             const year = date.getFullYear()

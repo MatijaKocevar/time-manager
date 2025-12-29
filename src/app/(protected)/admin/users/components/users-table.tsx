@@ -13,6 +13,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -102,9 +103,11 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
             </div>
             <div className="rounded-md border overflow-auto flex-1 min-h-0">
                 <Table>
-                    <TableHeader className="sticky top-0 z-10 bg-background">
+                    <TableHeader className="sticky top-0 z-30 bg-background">
                         <TableRow>
-                            <TableHead className="min-w-[150px]">{t("name")}</TableHead>
+                            <TableHead className="sticky top-0 left-0 z-40 bg-background min-w-[150px] max-w-[200px] border-r">
+                                {t("name")}
+                            </TableHead>
                             <TableHead className="min-w-[200px]">{t("email")}</TableHead>
                             <TableHead className="min-w-[100px]">{t("role")}</TableHead>
                             <TableHead className="min-w-[120px]">{t("created")}</TableHead>
@@ -130,13 +133,29 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                     onDoubleClick={() => handleRowDoubleClick(user.id)}
                                     className="cursor-pointer"
                                 >
-                                    <TableCell className="font-medium">
-                                        {user.name}
-                                        {user.id === currentUserId && (
-                                            <span className="ml-2 text-xs text-muted-foreground">
-                                                ({t("you")})
-                                            </span>
-                                        )}
+                                    <TableCell className="font-medium sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r">
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <div className="cursor-default truncate">
+                                                    {user.name}
+                                                    {user.id === currentUserId && (
+                                                        <span className="ml-2 text-xs text-muted-foreground">
+                                                            ({t("you")})
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <div className="text-sm">
+                                                    {user.name}
+                                                    {user.id === currentUserId && (
+                                                        <span className="ml-2 text-xs text-muted-foreground">
+                                                            ({t("you")})
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </TooltipContent>
+                                        </Tooltip>
                                     </TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>

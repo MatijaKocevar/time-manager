@@ -10,18 +10,14 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { HOUR_TYPES } from "../constants/hour-types"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { EditableHourCell } from "./editable-hour-cell"
 import { HourTypeRow } from "./hour-type-row"
 import { useHoursBatchStore } from "../stores/hours-batch-store"
-import {
-    generateDateColumns,
-    groupEntriesByType,
-    getTypeLabel,
-    getTypeColor,
-} from "../utils/table-helpers"
+import { generateDateColumns, groupEntriesByType, getTypeColor } from "../utils/table-helpers"
 
 interface HoursTableProps {
     entries: HourEntryDisplay[]
@@ -147,7 +143,7 @@ export function HoursTable({
             <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <colgroup>
-                        <col style={{ width: "300px", minWidth: "300px", maxWidth: "300px" }} />
+                        <col style={{ width: "200px", minWidth: "150px", maxWidth: "200px" }} />
                         {dates.map((date) => (
                             <col
                                 key={date.toISOString()}
@@ -155,9 +151,11 @@ export function HoursTable({
                             />
                         ))}
                     </colgroup>
-                    <TableHeader>
+                    <TableHeader className="sticky top-0 z-30 bg-background">
                         <TableRow>
-                            <TableHead>{t("columnType")}</TableHead>
+                            <TableHead className="sticky top-0 left-0 z-40 bg-background min-w-[150px] max-w-[200px] border-r">
+                                {t("columnType")}
+                            </TableHead>
                             {dates.map((date) => {
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
                                 const holiday = isHoliday(date)
@@ -186,12 +184,23 @@ export function HoursTable({
                     </TableHeader>
                     <TableBody>
                         <TableRow>
-                            <TableCell className="font-medium">
-                                <span
-                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${getTypeColor("GRAND_TOTAL")}`}
-                                >
-                                    {tLabels("grandTotal")} ({tMessages("allTypes")})
-                                </span>
+                            <TableCell className="font-medium sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="cursor-default">
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold truncate ${getTypeColor("GRAND_TOTAL")}`}
+                                            >
+                                                {tLabels("grandTotal")} ({tMessages("allTypes")})
+                                            </span>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <div className="text-sm">
+                                            {tLabels("grandTotal")} ({tMessages("allTypes")})
+                                        </div>
+                                    </TooltipContent>
+                                </Tooltip>
                             </TableCell>
                             {dates.map((date) => {
                                 const year = date.getFullYear()
