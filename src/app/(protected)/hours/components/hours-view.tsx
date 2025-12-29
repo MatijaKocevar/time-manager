@@ -13,11 +13,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronLeft, ChevronRight, Plus, MoreVertical, Save, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, MoreVertical, Save, X, Download } from "lucide-react"
 import { HoursTable } from "./hours-table"
 import { HoursSummary } from "./hours-summary"
 import { HourEntryForm } from "./bulk-hour-entry-form"
 import { getHourEntries, batchUpdateHourEntries } from "../actions/hour-actions"
+import { exportHoursData } from "../actions/export-actions"
+import { ExportDialog, type ExportFormat } from "@/features/export"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { getDateRange, getViewTitle } from "../utils/view-helpers"
@@ -57,6 +59,7 @@ export function HoursView({
     const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode)
     const [currentDate, setCurrentDate] = useState<Date>(initialSelectedDate)
     const [isFormOpen, setIsFormOpen] = useState(false)
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
 
     useEffect(() => {
         const initializeExpandedTypes = useHoursStore.getState().initializeExpandedTypes
@@ -199,6 +202,10 @@ export function HoursView({
         router.push(`/hours?view=${viewMode.toLowerCase()}&date=${dateStr}`)
     }
 
+    const handleExport = async (format: ExportFormat, startDate: string, endDate: string) => {
+        return await exportHoursData({ format, startDate, endDate })
+    }
+
     return (
         <>
             <HoursSummary
@@ -284,6 +291,15 @@ export function HoursView({
                             <Plus className="h-4 w-4 mr-1" />
                             {t("addNewEntry")}
                         </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsExportDialogOpen(true)}
+                            disabled={isDirty}
+                        >
+                            <Download className="h-4 w-4 mr-1" />
+                            {tCommon("actions.export")}
+                        </Button>
                     </div>
                     <div className="md:hidden">
                         <DropdownMenu>
@@ -302,6 +318,10 @@ export function HoursView({
                                 <DropdownMenuItem onClick={() => setIsFormOpen(true)}>
                                     <Plus className="h-4 w-4 mr-2" />
                                     {t("addNewEntry")}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)}>
+                                    <Download className="h-4 w-4 mr-2" />
+                                    {tCommon("actions.export")}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -328,6 +348,15 @@ export function HoursView({
                     <HourEntryForm onSuccess={() => setIsFormOpen(false)} />
                 </DialogContent>
             </Dialog>
+
+            <ExportDialog
+                open={isExportDialogOpen}
+                onOpenChange={setIsExportDialogOpen}
+                defaultStartDate={dateRange.startDate}
+                defaultEndDate={dateRange.endDate}
+                onExport={handleExport}
+                filenamePrefix="hours"
+            />
         </>
     )
 }

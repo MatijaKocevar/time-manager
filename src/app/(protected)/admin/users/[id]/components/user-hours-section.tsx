@@ -5,11 +5,13 @@ import { useQuery } from "@tanstack/react-query"
 import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Download } from "lucide-react"
 import { HoursSummary } from "@/app/(protected)/hours/components/hours-summary"
 import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
 import { getDateRange, getViewTitle } from "@/app/(protected)/hours/utils/view-helpers"
 import { getHolidaysInRange } from "@/app/(protected)/admin/holidays/actions/holiday-actions"
+import { exportUserDetailsWithHours } from "../../actions/export-actions"
+import { ExportDialog, type ExportFormat } from "@/features/export"
 import { userHourKeys } from "../../query-keys"
 
 interface UserHoursSectionProps {
@@ -24,7 +26,9 @@ export function UserHoursSection({
     initialHolidays = [],
 }: UserHoursSectionProps) {
     const t = useTranslations("admin.users.detail")
+    const tCommon = useTranslations("common.actions")
     const [currentDate, setCurrentDate] = useState(new Date())
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
 
     const { startDate, endDate, start, end } = getDateRange("MONTHLY", currentDate)
     const monthTitle = getViewTitle("MONTHLY", { start, end }, currentDate)
@@ -45,6 +49,10 @@ export function UserHoursSection({
         const newDate = new Date(currentDate)
         newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : -1))
         setCurrentDate(newDate)
+    }
+
+    const handleExport = async (format: ExportFormat, startDate: string, endDate: string) => {
+        return await exportUserDetailsWithHours({ format, startDate, endDate, userId })
     }
 
     return (
@@ -73,6 +81,14 @@ export function UserHoursSection({
                         >
                             <ChevronRight className="h-4 w-4" />
                         </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsExportDialogOpen(true)}
+                        >
+                            <Download className="h-4 w-4 mr-1" />
+                            {tCommon("export")}
+                        </Button>
                     </div>
                 </div>
             </CardHeader>
@@ -87,6 +103,15 @@ export function UserHoursSection({
                     holidays={holidays}
                 />
             </CardContent>
+
+            <ExportDialog
+                open={isExportDialogOpen}
+                onOpenChange={setIsExportDialogOpen}
+                defaultStartDate={startDate}
+                defaultEndDate={endDate}
+                onExport={handleExport}
+                filenamePrefix={`user-${userId}-hours`}
+            />
         </Card>
     )
 }

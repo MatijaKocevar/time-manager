@@ -31,13 +31,15 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Edit, Search, Plus } from "lucide-react"
+import { Edit, Search, Plus, Download } from "lucide-react"
 import type { UserTableItem } from "../schemas/user-table-schemas"
 import { USER_ROLE_COLORS } from "../constants/user-constants"
 import { getUserRoleTranslationKey } from "../utils/translation-helpers"
 import { createUser } from "../actions/user-actions"
+import { exportUsersData } from "../actions/export-actions"
 import { useUserFormStore } from "../stores/user-form-store"
 import { type UserRole } from "../schemas/user-action-schemas"
+import { downloadFile, base64ToBuffer, type ExportFormat } from "@/features/export"
 
 interface UsersTableProps {
     users: UserTableItem[]
@@ -54,6 +56,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
     const tCommon = useTranslations("common.actions")
     const [searchQuery, setSearchQuery] = useState("")
     const [isNewUserOpen, setIsNewUserOpen] = useState(false)
+    const [isExporting, setIsExporting] = useState(false)
 
     const { createForm, setCreateFormData, resetCreateForm, setCreateLoading, setCreateError } =
         useUserFormStore()
@@ -84,6 +87,27 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
         },
     })
 
+    const handleExportUsers = async (format: ExportFormat) => {
+        setIsExporting(true)
+        try {
+            const result = await exportUsersData({ format })
+            if (result.error) {
+                console.error("Export error:", result.error)
+            } else if (result.data) {
+                const extension = format === "excel" ? "xlsx" : format
+                const filename = `users-export.${extension}`
+                const fileData = format === "excel" && typeof result.data === "string" 
+                    ? base64ToBuffer(result.data) 
+                    : result.data
+                downloadFile(fileData, filename, format)
+            }
+        } catch (error) {
+            console.error("Export failed:", error)
+        } finally {
+            setIsExporting(false)
+        }
+    }
+
     return (
         <>
             <div className="flex items-center justify-between gap-4">
@@ -96,10 +120,20 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                         className="pl-9"
                     />
                 </div>
-                <Button onClick={() => setIsNewUserOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    {tUsers("createUser")}
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => handleExportUsers("excel")}
+                        disabled={isExporting}
+                    >
+                        <Download className="h-4 w-4 mr-2" />
+                        {tCommon("export")}
+                    </Button>
+                    <Button onClick={() => setIsNewUserOpen(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        {tUsers("createUser")}
+                    </Button>
+                </div>
             </div>
             <div className="rounded-md border overflow-auto flex-1 min-h-0">
                 <Table>

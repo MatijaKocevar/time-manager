@@ -25,7 +25,8 @@
             "approve": "Odobri",
             "reject": "Zavrni",
             "signIn": "Prijava",
-            "logOut": "Odjava"
+            "logOut": "Odjava",
+            "export": "Izvozi"
         },
         "status": {
             "loading": "Nalaganje...",
@@ -750,6 +751,26 @@
             "newRequestBody": "{userName} je oddal/a novo zahtevo tipa {requestType}",
             "approvedBody": "Vaša zahteva za {requestType} je bila odobrena",
             "rejectedBody": "Vaša zahteva za {requestType} je bila zavrnjena"
+        }
+    },
+    "export": {
+        "dialog": {
+            "title": "Izvoz podatkov",
+            "format": "Format izvoza",
+            "startDate": "Začetni datum",
+            "endDate": "Končni datum",
+            "exporting": "Izvažanje...",
+            "excelInfo": "Izvozi za več mesecev bodo ustvarili ločene zavihke za vsak mesec"
+        },
+        "formats": {
+            "excel": "Excel (XLSX)",
+            "csv": "CSV",
+            "json": "JSON"
+        },
+        "messages": {
+            "success": "Podatki uspešno izvoženi",
+            "noData": "Ni podatkov za izbrano časovno obdobje",
+            "error": "Izvoz podatkov ni uspel"
         }
     },
     "metadata": {

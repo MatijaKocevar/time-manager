@@ -25,7 +25,8 @@
             "approve": "Approve",
             "reject": "Reject",
             "signIn": "Sign in",
-            "logOut": "Log out"
+            "logOut": "Log out",
+            "export": "Export"
         },
         "status": {
             "loading": "Loading...",
@@ -750,6 +751,26 @@
             "newRequestBody": "{userName} has submitted a new {requestType} request",
             "approvedBody": "Your {requestType} request has been approved",
             "rejectedBody": "Your {requestType} request has been rejected"
+        }
+    },
+    "export": {
+        "dialog": {
+            "title": "Export Data",
+            "format": "Export Format",
+            "startDate": "Start Date",
+            "endDate": "End Date",
+            "exporting": "Exporting...",
+            "excelInfo": "Multi-month exports will create separate tabs for each month"
+        },
+        "formats": {
+            "excel": "Excel (XLSX)",
+            "csv": "CSV",
+            "json": "JSON"
+        },
+        "messages": {
+            "success": "Data exported successfully",
+            "noData": "No data found for the selected date range",
+            "error": "Failed to export data"
         }
     },
     "metadata": {
