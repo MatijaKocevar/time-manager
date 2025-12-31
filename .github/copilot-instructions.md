@@ -18,6 +18,24 @@
 - Making code changes does NOT imply committing them
 - Let the user decide when changes are ready to be committed
 
+### Commit Message Format
+
+**CRITICAL: Always use conventional commits format with proper capitalization**
+
+- **ALWAYS** use conventional commit format: `type: Description`
+- **ALWAYS** capitalize the first letter after the colon: `feat: Add feature` not `feat: add feature`
+- Use these commit types:
+  - `feat:` - New features
+  - `fix:` - Bug fixes
+  - `perf:` - Performance improvements
+  - `refactor:` - Code refactoring
+  - `docs:` - Documentation changes
+  - `style:` - Code style changes (formatting, no logic changes)
+  - `test:` - Adding or updating tests
+  - `chore:` - Maintenance tasks
+- Keep commit messages clear and descriptive
+- Use imperative mood: "Add feature" not "Added feature" or "Adds feature"
+
 ## Code Quality Standards
 
 ### TypeScript Requirements
