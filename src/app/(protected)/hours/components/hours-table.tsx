@@ -18,6 +18,8 @@ import { EditableHourCell } from "./editable-hour-cell"
 import { HourTypeRow } from "./hour-type-row"
 import { useHoursBatchStore } from "../stores/hours-batch-store"
 import { generateDateColumns, groupEntriesByType, getTypeColor } from "../utils/table-helpers"
+import { formatDateKey, isToday, buildHolidayMap } from "../utils/date-helpers"
+import { mergeEntriesWithPendingChanges } from "../utils/entry-helpers"
 
 interface HoursTableProps {
     entries: HourEntryDisplay[]
@@ -44,81 +46,14 @@ export function HoursTable({
     const locale = useLocale()
     const dateLocale = locale === "sl" ? "sl-SI" : "en-US"
 
-    const holidaysByDate = useMemo(() => {
-        const map = new Map<string, { name: string }>()
-        holidays.forEach((holiday) => {
-            const holidayDate = new Date(holiday.date)
-            const year = holidayDate.getFullYear()
-            const month = String(holidayDate.getMonth() + 1).padStart(2, "0")
-            const day = String(holidayDate.getDate()).padStart(2, "0")
-            const key = `${year}-${month}-${day}`
-            map.set(key, { name: holiday.name })
-        })
-        return map
-    }, [holidays])
+    const holidaysByDate = useMemo(() => buildHolidayMap(holidays), [holidays])
 
     const isHoliday = (date: Date) => {
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, "0")
-        const day = String(date.getDate()).padStart(2, "0")
-        const key = `${year}-${month}-${day}`
+        const key = formatDateKey(date)
         return holidaysByDate.get(key)
     }
 
-    const formatDateKey = (date: Date): string => {
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, "0")
-        const day = String(date.getDate()).padStart(2, "0")
-        return `${year}-${month}-${day}`
-    }
-
-    const isToday = (date: Date) => {
-        const today = new Date()
-        return (
-            date.getDate() === today.getDate() &&
-            date.getMonth() === today.getMonth() &&
-            date.getFullYear() === today.getFullYear()
-        )
-    }
-
-    const displayEntries = entries.map((entry) => {
-        const cellKey = `${formatDateKey(entry.date)}-${entry.type}`
-        const pendingChange = pendingChanges.get(cellKey)
-
-        if (pendingChange && entry.taskId === null) {
-            return {
-                ...entry,
-                hours: pendingChange.hours,
-            }
-        }
-
-        return entry
-    })
-
-    Array.from(pendingChanges.values()).forEach((change) => {
-        if (change.action === "create") {
-            const entryExists = displayEntries.some(
-                (e) =>
-                    formatDateKey(e.date) === change.date &&
-                    e.type === change.type &&
-                    e.taskId === null
-            )
-
-            if (!entryExists) {
-                displayEntries.push({
-                    id: `pending-${change.cellKey}`,
-                    userId,
-                    date: new Date(change.date),
-                    hours: change.hours,
-                    type: change.type,
-                    description: null,
-                    taskId: null,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                })
-            }
-        }
-    })
+    const displayEntries = mergeEntriesWithPendingChanges(entries, pendingChanges, userId)
 
     const renderWeeklyOrMonthlyView = () => {
         const dates = generateDateColumns(startDate, endDate)

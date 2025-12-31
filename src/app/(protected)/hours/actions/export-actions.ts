@@ -1,7 +1,5 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import type { HourType } from "@/../../prisma/generated/client"
 import { Prisma } from "../../../../../prisma/generated/client"
@@ -14,45 +12,22 @@ import {
     type ExportMetadata,
 } from "@/features/export"
 import { ExportOptionsSchema, type ExportOptions } from "@/features/export"
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
-
-async function requireAdmin() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user || session.user.role !== "ADMIN") {
-        throw new Error("Unauthorized - Admin access required")
-    }
-    return session
-}
-
-function formatDateKey(date: Date): string {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, "0")
-    const day = String(date.getDate()).padStart(2, "0")
-    return `${year}-${month}-${day}`
-}
+import { requireAuth, requireAdmin } from "../utils/auth-helpers"
+import { formatDateKey, parseDate } from "../utils/date-helpers"
 
 async function fetchHourSummaries(
     userId: string,
     startDate: string,
     endDate: string
 ): Promise<HourEntryExportData[]> {
-    const parseDate = (dateStr: string) => {
-        const [year, month, day] = dateStr.split("-").map(Number)
-        return new Date(Date.UTC(year, month - 1, day))
-    }
+    const startDateObj = parseDate(startDate)
+    const endDateObj = parseDate(endDate)
 
     const summaryQuery = Prisma.sql`
         SELECT * FROM daily_hour_summary
         WHERE "userId" = ${userId}
-        AND date >= ${parseDate(startDate)}::timestamp
-        AND date <= ${parseDate(endDate)}::timestamp
+        AND date >= ${startDateObj}::timestamp
+        AND date <= ${endDateObj}::timestamp
         ORDER BY date ASC`
 
     const summariesRaw = (await prisma.$queryRaw(summaryQuery)) as Array<{
@@ -77,8 +52,8 @@ async function fetchHourSummaries(
             userId,
             taskId: null,
             date: {
-                gte: parseDate(startDate),
-                lte: parseDate(endDate),
+                gte: startDateObj,
+                lte: endDateObj,
             },
         },
     })

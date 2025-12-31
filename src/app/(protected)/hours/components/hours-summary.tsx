@@ -6,16 +6,9 @@ import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { HOUR_TYPES, HOUR_TYPE_COLORS } from "../constants/hour-types"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
-
-function formatHoursMinutes(hours: number): string {
-    const isNegative = hours < 0
-    const absHours = Math.abs(hours)
-    const h = Math.floor(absHours)
-    const m = Math.round((absHours - h) * 60)
-    const sign = isNegative ? "-" : ""
-    if (m === 0) return `${sign}${h}h`
-    return `${sign}${h}h ${m}m`
-}
+import { formatHoursMinutes } from "../utils/time-helpers"
+import { calculateWorkingDaysSync, calculateOvertime } from "../utils/calculation-helpers"
+import { isHolidayFromList } from "../utils/holiday-helpers"
 
 interface HoursSummaryProps {
     entries: HourEntryDisplay[]
@@ -50,33 +43,9 @@ export function HoursSummary({
     let workingDays = 0
 
     if (viewMode === "MONTHLY" && dateRange) {
-        const start = new Date(dateRange.start)
-        const end = new Date(dateRange.end)
-        const current = new Date(start)
-
-        while (current <= end) {
-            const dayOfWeek = current.getDay()
-            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-
-            if (!isWeekend) {
-                const isHol = holidays.some((h) => {
-                    const holidayDate = new Date(h.date)
-                    holidayDate.setHours(0, 0, 0, 0)
-                    const checkDate = new Date(current)
-                    checkDate.setHours(0, 0, 0, 0)
-                    return holidayDate.getTime() === checkDate.getTime()
-                })
-
-                if (!isHol) {
-                    workingDays++
-                }
-            }
-
-            current.setDate(current.getDate() + 1)
-        }
-
+        workingDays = calculateWorkingDaysSync(dateRange.start, dateRange.end, holidays)
         expectedHours = workingDays * 8
-        overtime = monthlyGrandTotal - expectedHours
+        overtime = calculateOvertime(monthlyGrandTotal, workingDays)
     }
 
     const weeklyTypeTotals = weeklyEntries.filter((entry) => entry.taskId === "total")

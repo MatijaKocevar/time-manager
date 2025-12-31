@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import type { HourType } from "@/../../prisma/generated/client"
+import { batchUpdateHourEntries } from "../actions/hour-actions"
 
 export interface PendingChange {
     cellKey: string
@@ -35,6 +36,7 @@ interface HoursBatchActions {
     getPendingChange: (cellKey: string) => PendingChange | undefined
     getAllChanges: () => PendingChange[]
     getChangeCount: () => number
+    saveChanges: (invalidateQueries: () => Promise<void>) => Promise<void>
 }
 
 export const useHoursBatchStore = create<HoursBatchState & HoursBatchActions>((set, get) => ({
@@ -95,5 +97,35 @@ export const useHoursBatchStore = create<HoursBatchState & HoursBatchActions>((s
 
     getChangeCount: () => {
         return get().pendingChanges.size
+    },
+
+    saveChanges: async (invalidateQueries) => {
+        set({ isSaving: true, error: null })
+
+        try {
+            const pendingChanges = get().getAllChanges()
+            const result = await batchUpdateHourEntries({
+                changes: pendingChanges.map((c) => ({
+                    entryId: c.entryId,
+                    date: c.date,
+                    type: c.type,
+                    hours: c.hours,
+                    action: c.action,
+                })),
+            })
+
+            if (result.error) {
+                set({ error: result.error, isSaving: false })
+            } else {
+                get().clearChanges()
+                await invalidateQueries()
+                set({ isSaving: false })
+            }
+        } catch (error) {
+            set({
+                error: error instanceof Error ? error.message : "Failed to save changes",
+                isSaving: false,
+            })
+        }
     },
 }))

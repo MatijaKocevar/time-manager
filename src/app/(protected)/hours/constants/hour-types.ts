@@ -1,11 +1,11 @@
 import { getWorkTypeColor, type WorkType } from "@/lib/work-type-styles"
 
 export const HOUR_TYPES = [
-    { value: "WORK", label: "Work" },
-    { value: "WORK_FROM_HOME", label: "Work From Home" },
-    { value: "VACATION", label: "Vacation" },
-    { value: "SICK_LEAVE", label: "Sick Leave" },
-    { value: "OTHER", label: "Other" },
+    { value: "WORK" },
+    { value: "WORK_FROM_HOME" },
+    { value: "VACATION" },
+    { value: "SICK_LEAVE" },
+    { value: "OTHER" },
 ] as const
 
 export const HOUR_TYPE_COLORS = {
@@ -49,17 +49,6 @@ export const ROW_BG_COLORS = {
     OTHER_TOTAL: "bg-gray-500/10 dark:bg-gray-500/15",
     OTHER_TRACKED: "bg-gray-500/5 dark:bg-gray-500/10",
     OTHER_MANUAL: "bg-gray-500/5 dark:bg-gray-500/10",
-} as const
-
-export const HOUR_TYPE_LABELS = {
-    WORK: "Work",
-    WORK_FROM_HOME: "Work From Home",
-    VACATION: "Vacation",
-    SICK_LEAVE: "Sick Leave",
-    OTHER: "Other",
-    GRAND_TOTAL: "TOTAL",
-    TOTAL: "TOTAL",
-    TRACKED: "TRACKED",
 } as const
 
 export const DEFAULT_HOURS = 8

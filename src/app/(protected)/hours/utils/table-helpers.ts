@@ -1,5 +1,5 @@
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
-import { HOUR_TYPE_LABELS, HOUR_TYPE_COLORS, ROW_BG_COLORS } from "../constants/hour-types"
+import { HOUR_TYPE_COLORS, ROW_BG_COLORS } from "../constants/hour-types"
 
 export function generateDateColumns(startDate: string, endDate: string): Date[] {
     const [startYear, startMonth, startDay] = startDate.split("-").map(Number)
@@ -70,29 +70,6 @@ export function formatEntryDate(date: Date | string): string {
         return `${year}-${month}-${day}`
     }
     return date
-}
-
-export function getTypeLabel(type: string): string {
-    if (type === "GRAND_TOTAL") {
-        return `${HOUR_TYPE_LABELS.GRAND_TOTAL} (All Types)`
-    }
-    if (type.endsWith("_TRACKED")) {
-        const baseType = type.replace("_TRACKED", "") as keyof typeof HOUR_TYPE_LABELS
-        const baseLabel = HOUR_TYPE_LABELS[baseType] || baseType
-        return `${baseLabel} (${HOUR_TYPE_LABELS.TRACKED})`
-    }
-    if (type.endsWith("_MANUAL")) {
-        const baseType = type.replace("_MANUAL", "") as keyof typeof HOUR_TYPE_LABELS
-        const baseLabel = HOUR_TYPE_LABELS[baseType] || baseType
-        return `${baseLabel} (Manual)`
-    }
-    if (type.endsWith("_TOTAL")) {
-        const baseType = type.replace("_TOTAL", "") as keyof typeof HOUR_TYPE_LABELS
-        const baseLabel = HOUR_TYPE_LABELS[baseType] || baseType
-        return `${baseLabel} (${HOUR_TYPE_LABELS.TOTAL})`
-    }
-    const hourType = type as keyof typeof HOUR_TYPE_LABELS
-    return HOUR_TYPE_LABELS[hourType] || type
 }
 
 export function getTypeColor(type: string): string {

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useTranslations, useLocale } from "next-intl"
 import { useHoursStore } from "../stores/hours-store"
+import { useHoursBatchStore } from "../stores/hours-batch-store"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
@@ -17,14 +18,13 @@ import { ChevronLeft, ChevronRight, Plus, MoreVertical, Save, X, Download } from
 import { HoursTable } from "./hours-table"
 import { HoursSummary } from "./hours-summary"
 import { HourEntryForm } from "./bulk-hour-entry-form"
-import { getHourEntries, batchUpdateHourEntries } from "../actions/hour-actions"
+import { getHourEntries } from "../actions/hour-actions"
 import { exportHoursData } from "../actions/export-actions"
 import { ExportDialog, type ExportFormat } from "@/features/export"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { getDateRange, getViewTitle } from "../utils/view-helpers"
 import { hourKeys } from "../query-keys"
-import { useHoursBatchStore } from "../stores/hours-batch-store"
 
 interface HoursViewProps {
     initialEntries: HourEntryDisplay[]
@@ -64,48 +64,18 @@ export function HoursView({
     useEffect(() => {
         const initializeExpandedTypes = useHoursStore.getState().initializeExpandedTypes
         initializeExpandedTypes(initialExpandedTypes)
-    }, [])
+    }, [initialExpandedTypes])
 
     const isDirty = useHoursBatchStore((state) => state.isDirty)
     const isSaving = useHoursBatchStore((state) => state.isSaving)
-    const changeCount = useHoursBatchStore((state) => state.pendingChanges.size)
+    const changeCount = useHoursBatchStore((state) => state.getChangeCount())
     const clearChanges = useHoursBatchStore((state) => state.clearChanges)
-    const setIsSaving = useHoursBatchStore((state) => state.setIsSaving)
-    const setError = useHoursBatchStore((state) => state.setError)
-    const getAllChanges = useHoursBatchStore((state) => state.getAllChanges)
+    const saveChanges = useHoursBatchStore((state) => state.saveChanges)
 
     const handleSave = async () => {
-        setIsSaving(true)
-        setError(null)
-
-        try {
-            const pendingChanges = getAllChanges()
-            console.log("Saving changes:", pendingChanges)
-
-            const result = await batchUpdateHourEntries({
-                changes: pendingChanges.map((c) => ({
-                    entryId: c.entryId,
-                    date: c.date,
-                    type: c.type,
-                    hours: c.hours,
-                    action: c.action,
-                })),
-            })
-
-            console.log("Save result:", result)
-
-            if (result.error) {
-                setError(result.error)
-            } else {
-                clearChanges()
-                await queryClient.invalidateQueries({ queryKey: hourKeys.all })
-            }
-        } catch (error) {
-            console.error("Save error:", error)
-            setError(error instanceof Error ? error.message : "Failed to save changes")
-        } finally {
-            setIsSaving(false)
-        }
+        await saveChanges(async () => {
+            await queryClient.invalidateQueries({ queryKey: hourKeys.all })
+        })
     }
 
     const handleCancel = () => {
@@ -122,11 +92,6 @@ export function HoursView({
             }
         }
 
-        window.addEventListener("beforeunload", handleBeforeUnload)
-        return () => window.removeEventListener("beforeunload", handleBeforeUnload)
-    }, [isDirty])
-
-    useEffect(() => {
         const handleRouteChange = (e: MouseEvent) => {
             const target = e.target as HTMLElement
             const link = target.closest("a")
@@ -142,32 +107,54 @@ export function HoursView({
             }
         }
 
+        window.addEventListener("beforeunload", handleBeforeUnload)
         document.addEventListener("click", handleRouteChange, true)
-        return () => document.removeEventListener("click", handleRouteChange, true)
-    }, [isDirty, isSaving])
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload)
+            document.removeEventListener("click", handleRouteChange, true)
+        }
+    }, [isDirty, isSaving, tCommon])
 
     const dateRange = getDateRange(viewMode, currentDate)
     const weekRange = getDateRange("WEEKLY", currentDate)
     const monthRange = getDateRange("MONTHLY", currentDate)
 
+    console.log("HoursView render:", {
+        currentDate: currentDate.toISOString(),
+        viewMode,
+        dateRange,
+        weekRange,
+    })
+
     const { data: entries = [], isLoading } = useQuery({
         queryKey: hourKeys.list({ startDate: dateRange.startDate, endDate: dateRange.endDate }),
         queryFn: () => getHourEntries(dateRange.startDate, dateRange.endDate),
-        initialData: initialEntries,
-        staleTime: 0,
+        placeholderData: initialEntries,
+        staleTime: 300000,
     })
 
-    const { data: weeklyEntries = [] } = useQuery({
+    const { data: fetchedWeeklyEntries = [] } = useQuery({
         queryKey: hourKeys.list({ startDate: weekRange.startDate, endDate: weekRange.endDate }),
         queryFn: () => getHourEntries(weekRange.startDate, weekRange.endDate),
-        initialData: initialWeeklyEntries,
-        staleTime: 0,
+        placeholderData: initialWeeklyEntries,
+        staleTime: 300000,
+        enabled: viewMode !== "WEEKLY",
+    })
+
+    const weeklyEntries = viewMode === "WEEKLY" ? entries : fetchedWeeklyEntries
+
+    console.log("Query data:", {
+        entries: entries.length,
+        fetchedWeeklyEntries: fetchedWeeklyEntries.length,
+        weeklyEntries: weeklyEntries.length,
     })
 
     const { data: monthlyEntries = [] } = useQuery({
         queryKey: hourKeys.list({ startDate: monthRange.startDate, endDate: monthRange.endDate }),
         queryFn: () => getHourEntries(monthRange.startDate, monthRange.endDate),
-        staleTime: 0,
+        placeholderData: initialMonthlyEntries,
+        staleTime: 300000,
     })
 
     const { data: holidays = initialHolidays } = useQuery({
@@ -177,7 +164,6 @@ export function HoursView({
                 await import("../../admin/holidays/actions/holiday-actions")
             return getHolidaysInRange(monthRange.startDate, monthRange.endDate)
         },
-        initialData: initialHolidays,
         staleTime: 300000,
     })
 

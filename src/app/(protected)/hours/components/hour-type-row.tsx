@@ -9,6 +9,7 @@ import { EditableHourCell } from "./editable-hour-cell"
 import { getTypeColor } from "../utils/table-helpers"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
+import { buildHolidayMap, isToday, formatDateKey } from "../utils/date-helpers"
 
 interface HourTypeRowProps {
     hourType: HourType
@@ -54,34 +55,11 @@ export function HourTypeRow({
         setIsExpanded(expandedTypes.has(hourType))
     }, [expandedTypes, hourType])
 
-    const holidaysByDate = useMemo(() => {
-        const map = new Map<string, { name: string }>()
-        holidays.forEach((holiday) => {
-            const holidayDate = new Date(holiday.date)
-            const year = holidayDate.getFullYear()
-            const month = String(holidayDate.getMonth() + 1).padStart(2, "0")
-            const day = String(holidayDate.getDate()).padStart(2, "0")
-            const key = `${year}-${month}-${day}`
-            map.set(key, { name: holiday.name })
-        })
-        return map
-    }, [holidays])
+    const holidaysByDate = useMemo(() => buildHolidayMap(holidays), [holidays])
 
     const isHoliday = (date: Date) => {
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, "0")
-        const day = String(date.getDate()).padStart(2, "0")
-        const key = `${year}-${month}-${day}`
+        const key = formatDateKey(date)
         return holidaysByDate.get(key)
-    }
-
-    const isToday = (date: Date) => {
-        const today = new Date()
-        return (
-            date.getDate() === today.getDate() &&
-            date.getMonth() === today.getMonth() &&
-            date.getFullYear() === today.getFullYear()
-        )
     }
 
     const trackedKey = `${hourType}_TRACKED`

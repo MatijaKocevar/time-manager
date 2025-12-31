@@ -1,9 +1,7 @@
 "use server"
 
-import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import { authConfig } from "@/lib/auth"
 import type { HourType } from "@/../../prisma/generated/client"
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
 import {
@@ -18,29 +16,9 @@ import {
     type BulkCreateHourEntriesInput,
     type BatchUpdateHourEntriesInput,
 } from "../schemas/hour-action-schemas"
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
-
-async function requireAdmin() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user || session.user.role !== "ADMIN") {
-        throw new Error("Unauthorized - Admin access required")
-    }
-    return session
-}
-
-function formatLocalDateKey(date: Date): string {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, "0")
-    const day = String(date.getDate()).padStart(2, "0")
-    return `${year}-${month}-${day}`
-}
+import { requireAuth, requireAdmin } from "../utils/auth-helpers"
+import { formatDateKey, parseDate, parseEndDate } from "../utils/date-helpers"
+import { buildManualEntriesMap, buildGrandTotalEntries } from "../utils/entry-helpers"
 
 export async function createHourEntry(input: CreateHourEntryInput) {
     try {
@@ -335,39 +313,9 @@ export async function getHourEntriesForUser(
             },
         })
 
-        const manualEntriesByDateAndType = new Map<string, (typeof manualEntries)[0]>()
-        for (const entry of manualEntries) {
-            const key = `${formatLocalDateKey(entry.date)}-${entry.type}`
-            manualEntriesByDateAndType.set(key, entry)
-        }
+        const manualEntriesByDateAndType = buildManualEntriesMap(manualEntries)
 
-        const grandTotalsMap = new Map<string, { date: Date; hours: number }>()
-        for (const summary of summaries) {
-            const dateKey = summary.date.toISOString()
-            const existing = grandTotalsMap.get(dateKey)
-            if (existing) {
-                existing.hours += summary.totalHours
-            } else {
-                grandTotalsMap.set(dateKey, {
-                    date: summary.date,
-                    hours: summary.totalHours,
-                })
-            }
-        }
-
-        const grandTotalEntries = Array.from(grandTotalsMap.entries())
-            .filter(([, data]) => data.hours > 0)
-            .map(([dateKey, data]) => ({
-                id: `grand-total-${dateKey}`,
-                userId,
-                date: data.date,
-                hours: data.hours,
-                type: "WORK" as const,
-                description: null,
-                taskId: "grand_total",
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            }))
+        const grandTotalEntries = buildGrandTotalEntries(summaries, userId)
 
         const entries = summaries.flatMap((summary) => {
             const baseDate = summary.date.toISOString()
@@ -401,7 +349,7 @@ export async function getHourEntriesForUser(
                 })
             }
 
-            const summaryDateKey = formatLocalDateKey(summary.date)
+            const summaryDateKey = formatDateKey(summary.date)
             const manualKey = `${summaryDateKey}-${summary.type}`
             const manualEntry = manualEntriesByDateAndType.get(manualKey)
 
@@ -433,18 +381,6 @@ export async function getHourEntriesForUser(
 export async function getHourEntries(startDate?: string, endDate?: string, type?: string) {
     try {
         const session = await requireAuth()
-
-        const parseDate = (dateStr: string) => {
-            const [year, month, day] = dateStr.split("-").map(Number)
-            const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
-            return date
-        }
-
-        const parseEndDate = (dateStr: string) => {
-            const [year, month, day] = dateStr.split("-").map(Number)
-            const date = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999))
-            return date
-        }
 
         const whereClause = {
             userId: session.user.id,
@@ -492,69 +428,9 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
             },
         })
 
-        const manualEntriesByDateAndType = new Map<
-            string,
-            {
-                id: string
-                userId: string
-                date: Date
-                hours: number
-                type: HourType
-                taskId: string | null
-                description: string | null
-                createdAt: Date
-                updatedAt: Date
-            }
-        >()
-        for (const entry of manualEntries) {
-            const key = `${formatLocalDateKey(entry.date)}-${entry.type}`
-            const existing = manualEntriesByDateAndType.get(key)
+        const manualEntriesByDateAndType = buildManualEntriesMap(manualEntries)
 
-            if (existing) {
-                // Multiple manual entries for same date/type - sum the hours
-                existing.hours += entry.hours
-            } else {
-                manualEntriesByDateAndType.set(key, {
-                    id: entry.id,
-                    userId: entry.userId,
-                    date: entry.date,
-                    hours: entry.hours,
-                    type: entry.type,
-                    taskId: entry.taskId,
-                    description: entry.description,
-                    createdAt: entry.createdAt,
-                    updatedAt: entry.updatedAt,
-                })
-            }
-        }
-
-        const grandTotalsMap = new Map<string, { date: Date; hours: number }>()
-        for (const summary of summaries) {
-            const dateKey = formatLocalDateKey(summary.date)
-            const existing = grandTotalsMap.get(dateKey)
-            if (existing) {
-                existing.hours += summary.totalHours
-            } else {
-                grandTotalsMap.set(dateKey, {
-                    date: summary.date,
-                    hours: summary.totalHours,
-                })
-            }
-        }
-
-        const grandTotalEntries = Array.from(grandTotalsMap.entries())
-            .filter(([, data]) => data.hours > 0)
-            .map(([dateKey, data]) => ({
-                id: `grand-total-${dateKey}`,
-                userId: session.user.id,
-                date: data.date,
-                hours: data.hours,
-                type: "WORK" as const,
-                description: null,
-                taskId: "grand_total",
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            }))
+        const grandTotalEntries = buildGrandTotalEntries(summaries, session.user.id)
 
         const entries = summaries.flatMap((summary) => {
             const baseDate = summary.date.toISOString()
@@ -588,7 +464,7 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                 })
             }
 
-            const summaryDateKey = formatLocalDateKey(summary.date)
+            const summaryDateKey = formatDateKey(summary.date)
             const manualKey = `${summaryDateKey}-${summary.type}`
             const manualEntry = manualEntriesByDateAndType.get(manualKey)
 
@@ -673,7 +549,7 @@ export async function batchUpdateHourEntries(input: BatchUpdateHourEntriesInput)
                     })
 
                     if (existingEntry) {
-                        const existingDateKey = formatLocalDateKey(existingEntry.date)
+                        const existingDateKey = formatDateKey(existingEntry.date)
                         if (existingDateKey !== change.date || existingEntry.type !== change.type) {
                             affectedDates.add(`${existingDateKey}-${existingEntry.type}`)
                         }

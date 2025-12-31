@@ -6,6 +6,7 @@ import type { HourType } from "@/../../prisma/generated/client"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { useEditableCellStore } from "../stores/editable-cell-store"
 import { useHoursBatchStore } from "../stores/hours-batch-store"
+import { formatHoursToTime, parseDuration } from "../utils/time-helpers"
 import { Button } from "@/components/ui/button"
 import {
     Command,
@@ -89,20 +90,6 @@ export function EditableHourCell({
         setActiveCellKey(null)
     }
 
-    const parseDuration = (input: string): number | null => {
-        const match = input.match(/^(\d{1,2}):(\d{2})$/)
-        if (!match) return null
-
-        const hours = parseInt(match[1])
-        const minutes = parseInt(match[2])
-
-        if (isNaN(hours) || isNaN(minutes) || hours < 0 || minutes < 0 || minutes > 59) {
-            return null
-        }
-
-        return hours + minutes / 60
-    }
-
     const handleSelectOption = (value: string) => {
         setDurationInput(value)
         const totalHours = parseDuration(value)
@@ -113,12 +100,6 @@ export function EditableHourCell({
 
     const handleClick = () => {
         setActiveCellKey(cellKey)
-    }
-
-    const formatHoursToTime = (hours: number): string => {
-        const h = Math.floor(hours)
-        const m = Math.round((hours - h) * 60)
-        return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`
     }
 
     if (entry?.taskId) {
