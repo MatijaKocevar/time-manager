@@ -102,7 +102,7 @@ model User {
   hourEntries       HourEntry[]
   tasks             Task[]
   taskTimeEntries   TaskTimeEntry[]
-  dailyHourSummary  DailyHourSummary[] @ignore
+  dailyHourSummary  DailyHourSummary[]
   requests          Request[]
   approvedRequests  Request[]         @relation("ApprovedRequests")
   rejectedRequests  Request[]         @relation("RejectedRequests")
@@ -199,7 +199,6 @@ model DailyHourSummary {
   @@index([date])
   @@index([userId, date])
   @@map("daily_hour_summary")
-  @@ignore
 }
 
 model Request {
