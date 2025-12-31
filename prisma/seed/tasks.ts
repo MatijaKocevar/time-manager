@@ -73,19 +73,21 @@ export async function seedTimeEntriesForUser(
     random: SeededRandom,
     userId: string,
     tasks: Array<{ id: string }>,
+    startDate: Date,
     endDate: Date
 ) {
     const entries = []
-    const entryCount = random.nextInt(200, 300)
+    const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
+    const entryCount = Math.floor(daysDiff * 2.5)
 
     for (let i = 0; i < entryCount; i++) {
         const task = random.choice(tasks)
-        const daysAgo = random.nextInt(0, 365)
+        const daysAgo = random.nextInt(0, daysDiff)
         const startTime = addDays(endDate, -daysAgo)
         startTime.setUTCHours(random.nextInt(8, 16), random.nextInt(0, 59), 0, 0)
 
         const isCompleted = i > 0 || random.next() > 0.05
-        const durationSeconds = isCompleted ? random.nextInt(1800, 14400) : null
+        const durationSeconds = isCompleted ? random.nextInt(900, 7200) : null
         const endTime = isCompleted ? new Date(startTime.getTime() + durationSeconds! * 1000) : null
 
         entries.push({

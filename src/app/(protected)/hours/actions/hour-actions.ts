@@ -436,18 +436,14 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
 
         const parseDate = (dateStr: string) => {
             const [year, month, day] = dateStr.split("-").map(Number)
-            const date = new Date(year, month - 1, day)
-            date.setHours(0, 0, 0, 0)
+            const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
             return date
         }
 
         const parseEndDate = (dateStr: string) => {
             const [year, month, day] = dateStr.split("-").map(Number)
-            const date = new Date(year, month - 1, day)
-            date.setHours(0, 0, 0, 0)
-            const nextDay = new Date(date)
-            nextDay.setDate(nextDay.getDate() + 1)
-            return nextDay
+            const date = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999))
+            return date
         }
 
         const whereClause = {
@@ -456,7 +452,7 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                 ? {
                       date: {
                           gte: parseDate(startDate),
-                          lt: parseEndDate(endDate),
+                          lte: parseEndDate(endDate),
                       },
                   }
                 : {}),
@@ -485,7 +481,7 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                     ? {
                           date: {
                               gte: parseDate(startDate),
-                              lt: parseEndDate(endDate),
+                              lte: parseEndDate(endDate),
                           },
                       }
                     : {}),

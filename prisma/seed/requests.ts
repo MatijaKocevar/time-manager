@@ -12,11 +12,13 @@ export async function seedRequestsForUser(
     random: SeededRandom,
     userId: string,
     adminUsers: Array<{ id: string; role: string }>,
+    startDate: Date,
     endDate: Date,
     holidays: Date[]
 ) {
     const requestCount = random.nextInt(10, 20)
     const requests = []
+    const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
 
     const types: RequestType[] = ["VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "OTHER"]
     const statuses: RequestStatus[] = ["APPROVED", "PENDING", "REJECTED", "CANCELLED"]
@@ -24,9 +26,12 @@ export async function seedRequestsForUser(
 
     for (let i = 0; i < requestCount; i++) {
         const type = random.choice(types)
-        const daysFromNow = random.nextInt(-300, 90)
+        const daysFromNow = random.nextInt(-daysDiff, 0)
         const reqStartDate = addDays(endDate, daysFromNow)
-        const duration = random.nextInt(1, 10)
+        const maxDuration = Math.floor(
+            (endDate.getTime() - reqStartDate.getTime()) / (1000 * 60 * 60 * 24)
+        )
+        const duration = random.nextInt(1, Math.min(5, Math.max(1, maxDuration)))
         const reqEndDate = addDays(reqStartDate, duration)
 
         const rand = random.nextInt(0, 99)

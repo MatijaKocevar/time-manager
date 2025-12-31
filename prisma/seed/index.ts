@@ -6,27 +6,100 @@ import { seedListsForUser } from "./lists"
 import { seedTasksForUser, seedTimeEntriesForUser } from "./tasks"
 import { seedHourEntriesForUser, recalculateSummariesForUser } from "./hours"
 import { seedRequestsForUser } from "./requests"
-import { seedShiftsForUser } from "./shifts"
+import * as readline from "readline/promises"
 
 const prisma = new PrismaClient()
 const random = new SeededRandom(42)
 
-async function main() {
-    console.log("Starting comprehensive database seeding...")
-    console.log("Seeding 3 months of data for 10 users\n")
+async function getSeederOptions(): Promise<{ months: number; userCount: number }> {
+    const args = process.argv.slice(2)
+    const monthsArg = args.find((arg) => arg.startsWith("--months="))
+    const usersArg = args.find((arg) => arg.startsWith("--users="))
 
-    const totalUsers = 10
-    const adminCount = 2
+    if (monthsArg && usersArg) {
+        const months = parseInt(monthsArg.split("=")[1])
+        const userCount = parseInt(usersArg.split("=")[1])
+
+        if ([1, 3, 6, 12].includes(months) && userCount >= 1 && userCount <= 100) {
+            return { months, userCount }
+        }
+    }
+
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    })
+
+    console.log("\n=== Database Seeder Configuration ===\n")
+
+    let months: number
+    while (true) {
+        const monthsInput = await rl.question(
+            "How much data to generate?\n  1) 1 month\n  2) 3 months\n  3) 6 months\n  4) 1 year\nEnter choice (1-4): "
+        )
+        const choice = parseInt(monthsInput)
+
+        if (choice === 1) {
+            months = 1
+            break
+        } else if (choice === 2) {
+            months = 3
+            break
+        } else if (choice === 3) {
+            months = 6
+            break
+        } else if (choice === 4) {
+            months = 12
+            break
+        }
+        console.log("Invalid choice. Please enter 1, 2, 3, or 4.\n")
+    }
+
+    let userCount: number
+    while (true) {
+        const usersInput = await rl.question("\nHow many users to create? (1-100): ")
+        const count = parseInt(usersInput)
+
+        if (count >= 1 && count <= 100) {
+            userCount = count
+            break
+        }
+        console.log("Invalid number. Please enter a number between 1 and 100.\n")
+    }
+
+    rl.close()
+    return { months, userCount }
+}
+
+async function main() {
+    const { months, userCount } = await getSeederOptions()
+
+    const adminCount = Math.max(1, Math.floor(userCount * 0.2))
     const batchSize = 5
 
     const endDate = new Date()
-    const startDate = addDays(endDate, -90)
+    const startDate = addDays(endDate, -months * 30)
+
+    console.log("\n" + "=".repeat(60))
+    console.log("SEEDING CONFIGURATION")
+    console.log("=".repeat(60))
+    console.log(`  Data period:         ${months} month${months > 1 ? "s" : ""}`)
+    console.log(
+        `  Total users:         ${userCount} (${adminCount} admin${adminCount > 1 ? "s" : ""}, ${userCount - adminCount} regular)`
+    )
+    console.log(
+        `  Date range:          ${startDate.toISOString().split("T")[0]} to ${endDate.toISOString().split("T")[0]}`
+    )
+    console.log(`  Demo account:        demo@example.com (always created)`)
+    console.log("=".repeat(60) + "\n")
+
+    console.log("Starting comprehensive database seeding...")
 
     // Step 1: Seed holidays
     const holidayDates = await seedHolidays(prisma)
 
-    // Step 2: Seed users (totalUsers - 1 because Demo Admin is always created)
-    const allUsers = await seedUsers(prisma, random, totalUsers - 1, adminCount)
+    // Step 2: Seed users (userCount - 1 because Demo Admin is always created)
+    const allUsers = await seedUsers(prisma, random, userCount - 1, adminCount)
     const adminUsers = allUsers.filter((u) => u.role === "ADMIN")
 
     // Step 3: Seed data for each user in batches
@@ -57,6 +130,7 @@ async function main() {
                     random,
                     user.id,
                     tasks,
+                    startDate,
                     endDate
                 )
                 console.log(`    Created ${timeEntries} time entries`)
@@ -79,21 +153,11 @@ async function main() {
                     random,
                     user.id,
                     adminUsers,
-                    endDate,
-                    holidayDates
-                )
-                console.log(`    Created ${requests} requests`)
-
-                // Shifts
-                const shifts = await seedShiftsForUser(
-                    prisma,
-                    random,
-                    user.id,
                     startDate,
                     endDate,
                     holidayDates
                 )
-                console.log(`    ✓ Created ~${shifts} shifts`)
+                console.log(`    Created ${requests} requests`)
             } catch (error) {
                 console.error(`    ❌ Error seeding user ${user.name}:`, error)
             }
@@ -103,7 +167,7 @@ async function main() {
     }
 
     console.log(`    Refreshing materialized view...`)
-    const summaries = await recalculateSummariesForUser(prisma, "", startDate, endDate)
+    await recalculateSummariesForUser(prisma, "", startDate, endDate)
     console.log(`    Refreshed daily summaries`)
 
     const stats = {
@@ -115,11 +179,13 @@ async function main() {
         requests: await prisma.request.count(),
         shifts: await prisma.shift.count(),
         summaries:
-            (await prisma.$queryRaw`SELECT COUNT(*) as count FROM daily_hour_summary`) as any,
+            (await prisma.$queryRaw`SELECT COUNT(*) as count FROM daily_hour_summary`) as Array<{
+                count: bigint
+            }>,
         holidays: await prisma.holiday.count(),
     }
 
-    const summaryCount = Number((stats.summaries as any)[0]?.count || 0)
+    const summaryCount = Number(stats.summaries[0]?.count || 0)
 
     console.log("\n" + "=".repeat(60))
     console.log("DATABASE SEEDING COMPLETED!")

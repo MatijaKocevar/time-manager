@@ -51,7 +51,7 @@ export async function seedHourEntriesForUser(
         const dateKey = normalizeDate(date).toISOString().split("T")[0]
         if (requestDateMap.has(dateKey)) continue
 
-        if (random.next() > 0.7) continue
+        if (random.next() > 0.3) continue
 
         const rand = random.next()
         let type: HourType
@@ -59,7 +59,7 @@ export async function seedHourEntriesForUser(
         else if (rand < 0.95) type = "WORK_FROM_HOME"
         else type = "OTHER"
 
-        const hours = random.nextInt(4, 10)
+        const hours = random.nextInt(1, 3)
         const isTaskLinked = random.next() < 0.3 && tasks.length > 0
 
         entries.push({

@@ -167,7 +167,6 @@ export function HoursView({
     const { data: monthlyEntries = [] } = useQuery({
         queryKey: hourKeys.list({ startDate: monthRange.startDate, endDate: monthRange.endDate }),
         queryFn: () => getHourEntries(monthRange.startDate, monthRange.endDate),
-        initialData: initialMonthlyEntries,
         staleTime: 0,
     })
 
