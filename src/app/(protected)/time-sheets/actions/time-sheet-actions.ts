@@ -32,7 +32,7 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
                 userId: session.user.id,
                 startTime: {
                     gte: new Date(startDate),
-                    lte: new Date(endDate),
+                    lt: new Date(new Date(endDate).getTime() + 86400000),
                 },
                 endTime: {
                     not: null,
