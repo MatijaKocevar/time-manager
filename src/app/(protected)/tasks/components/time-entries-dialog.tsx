@@ -8,18 +8,9 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTasksStore } from "../stores/tasks-store"
@@ -57,7 +48,6 @@ export function TimeEntriesDialog() {
     const queryClient = useQueryClient()
     const timeEntriesDialog = useTasksStore((state) => state.timeEntriesDialog)
     const closeTimeEntriesDialog = useTasksStore((state) => state.closeTimeEntriesDialog)
-    const elapsedTimes = useTasksStore((state) => state.elapsedTimes)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const activeTimers = useTasksStore((state) => state.activeTimers)
     const [currentTime, setCurrentTime] = useState(new Date())
@@ -184,7 +174,7 @@ export function TimeEntriesDialog() {
 
     return (
         <Dialog open={timeEntriesDialog.isOpen} onOpenChange={closeTimeEntriesDialog}>
-            <DialogContent className="!w-[95vw] !max-w-none">
+            <DialogContent className="!w-[95vw] !max-w-none max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>{t("timeEntries")}</DialogTitle>
                     <DialogDescription>{t("noTimeEntries")}</DialogDescription>
@@ -195,22 +185,24 @@ export function TimeEntriesDialog() {
                         {t("noTimeEntries")}
                     </div>
                 ) : (
-                    <>
-                        <div className="rounded-md border overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[200px]">
+                    <div className="flex flex-col gap-4">
+                        <div className="rounded-md border overflow-y-auto max-h-[60vh]">
+                            <table className="w-full caption-bottom text-sm">
+                                <thead className="sticky top-0 bg-background z-10 [&_tr]:border-b">
+                                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px] bg-background">
                                             {t("startedAt")}
-                                        </TableHead>
-                                        <TableHead className="w-[200px]">{t("endedAt")}</TableHead>
-                                        <TableHead className="text-right w-[120px]">
+                                        </th>
+                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px] bg-background">
+                                            {t("endedAt")}
+                                        </th>
+                                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right w-[120px] bg-background">
                                             {t("duration")}
-                                        </TableHead>
-                                        <TableHead className="w-[60px]"></TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
+                                        </th>
+                                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[60px] bg-background"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="[&_tr:last-child]:border-0">
                                     {entries.map((entry) => {
                                         const isActive = entry.endTime === null
                                         const elapsed = isActive
@@ -227,8 +219,11 @@ export function TimeEntriesDialog() {
                                                 : (entry.duration ?? 0)
 
                                         return (
-                                            <TableRow key={entry.id}>
-                                                <TableCell className="p-2">
+                                            <tr
+                                                key={entry.id}
+                                                className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                                            >
+                                                <td className="p-4 align-middle">
                                                     <Input
                                                         type="datetime-local"
                                                         value={getEntryValue(entry, "startTime")}
@@ -244,8 +239,8 @@ export function TimeEntriesDialog() {
                                                         }
                                                         className="h-9 text-sm"
                                                     />
-                                                </TableCell>
-                                                <TableCell className="p-2">
+                                                </td>
+                                                <td className="p-4 align-middle">
                                                     {isActive ? (
                                                         <div className="flex items-center h-9 px-3 text-sm text-muted-foreground">
                                                             {formatDateTimeLocal(currentTime)}{" "}
@@ -268,11 +263,11 @@ export function TimeEntriesDialog() {
                                                             className="h-9 text-sm"
                                                         />
                                                     )}
-                                                </TableCell>
-                                                <TableCell className="text-right font-mono">
+                                                </td>
+                                                <td className="p-4 align-middle text-right font-mono">
                                                     {formatDuration(duration)}
-                                                </TableCell>
-                                                <TableCell className="p-2">
+                                                </td>
+                                                <td className="p-4 align-middle">
                                                     {isActive ? (
                                                         <Button
                                                             variant="destructive"
@@ -302,14 +297,14 @@ export function TimeEntriesDialog() {
                                                             <span className="sr-only">Delete</span>
                                                         </Button>
                                                     )}
-                                                </TableCell>
-                                            </TableRow>
+                                                </td>
+                                            </tr>
                                         )
                                     })}
-                                </TableBody>
-                            </Table>
+                                </tbody>
+                            </table>
                         </div>
-                        <div className="flex justify-between items-center pt-4 border-t">
+                        <div className="flex justify-between items-center pt-4">
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-muted-foreground">Total:</span>
                                 <span className="text-lg font-semibold font-mono">
@@ -326,7 +321,7 @@ export function TimeEntriesDialog() {
                                 </Button>
                             )}
                         </div>
-                    </>
+                    </div>
                 )}
             </DialogContent>
         </Dialog>
