@@ -15,6 +15,7 @@
         "db:seed": "tsx prisma/seed/index.ts",
         "db:reset": "prisma migrate reset",
         "db:studio": "prisma studio",
+        "db:clear": "tsx scripts/clear-time-data.ts",
         "dev:db": "npm run db:push && npm run db:seed && npm run dev",
         "format": "prettier --write .",
         "format:check": "prettier --check .",

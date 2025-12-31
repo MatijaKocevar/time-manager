@@ -1,5 +1,3 @@
-"use client"
-
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { Fragment, useMemo, useState, useEffect } from "react"
 import { useTranslations } from "next-intl"
@@ -8,7 +6,7 @@ import { TableCell, TableRow } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useHoursStore } from "../stores/hours-store"
 import { EditableHourCell } from "./editable-hour-cell"
-import { getTypeLabel, getTypeColor } from "../utils/table-helpers"
+import { getTypeColor } from "../utils/table-helpers"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 

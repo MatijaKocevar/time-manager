@@ -86,36 +86,11 @@ export async function startTimer(input: StartTimerInput) {
                         duration,
                     },
                 })
-
-                const entryDate = new Date(existingActiveTimer.startTime)
-                const entryDateLocal = new Date(entryDate)
-                entryDateLocal.setHours(0, 0, 0, 0)
-                const entryDateUTC = new Date(
-                    Date.UTC(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate())
-                )
-
-                const approvedRequest = await tx.request.findFirst({
-                    where: {
-                        userId: session.user.id,
-                        status: "APPROVED",
-                        affectsHourType: true,
-                        cancelledAt: null,
-                        startDate: { lte: entryDateUTC },
-                        endDate: { gte: entryDateUTC },
-                    },
-                    orderBy: {
-                        approvedAt: "desc",
-                    },
-                })
-
-                let hourType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" =
-                    "WORK"
-                if (approvedRequest) {
-                    hourType = approvedRequest.type
-                }
             }
 
             // Check for approved request for the current date to set the correct type for new timer
+            // BUT: NEVER use VACATION or SICK_LEAVE for manually tracked time
+            // Those types are ONLY for automatic 8-hour entries created by request approval
             const now = new Date()
             const nowUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
 
@@ -127,6 +102,9 @@ export async function startTimer(input: StartTimerInput) {
                     cancelledAt: null,
                     startDate: { lte: nowUTC },
                     endDate: { gte: nowUTC },
+                    type: {
+                        notIn: ["VACATION", "SICK_LEAVE"],
+                    },
                 },
                 orderBy: {
                     approvedAt: "desc",
@@ -194,32 +172,6 @@ export async function stopTimer(input: StopTimerInput) {
                 duration,
             },
         })
-
-        const entryDate = new Date(entry.startTime)
-        const entryDateLocal = new Date(entryDate)
-        entryDateLocal.setHours(0, 0, 0, 0)
-        const entryDateUTC = new Date(
-            Date.UTC(entryDate.getFullYear(), entryDate.getMonth(), entryDate.getDate())
-        )
-
-        const approvedRequest = await prisma.request.findFirst({
-            where: {
-                userId: session.user.id,
-                status: "APPROVED",
-                affectsHourType: true,
-                startDate: { lte: entryDateUTC },
-                endDate: { gte: entryDateUTC },
-                cancelledAt: null,
-            },
-            orderBy: {
-                approvedAt: "desc",
-            },
-        })
-
-        let hourType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" = "WORK"
-        if (approvedRequest) {
-            hourType = approvedRequest.type
-        }
 
         await refreshDailyHourSummary()
         revalidatePath("/tasks")

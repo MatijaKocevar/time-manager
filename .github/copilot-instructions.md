@@ -1,5 +1,14 @@
 # GitHub Copilot Instructions
 
+## General Workflow
+
+**CRITICAL: Always check package.json for available scripts before running commands**
+
+- **ALWAYS** check package.json scripts section before running npm/yarn commands
+- **NEVER** assume command names - verify they exist in package.json first
+- Use the exact script name as defined in package.json
+- If unsure about a command, read package.json scripts first
+
 ## Git Workflow
 
 **CRITICAL: Never commit or push changes unless explicitly requested by the user**

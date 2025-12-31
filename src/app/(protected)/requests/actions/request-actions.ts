@@ -250,31 +250,45 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                 const startDay = new Date(request.startDate)
                 startDay.setUTCHours(0, 0, 0, 0)
                 const endDay = new Date(request.endDate)
-                endDay.setUTCHours(0, 0, 0, 0)
-                const datesToRecalculate: Date[] = []
+                endDay.setUTCHours(23, 59, 59, 999)
 
-                const daysDiff = Math.round(
-                    (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
-                )
+                // Delete auto-generated TaskTimeEntry records
+                const systemTask = await tx.task.findFirst({
+                    where: {
+                        userId: request.userId,
+                        title: `System: ${request.type}`,
+                    },
+                })
 
-                for (let i = 0; i <= daysDiff; i++) {
-                    const currentDay = new Date(startDay)
-                    currentDay.setUTCDate(startDay.getUTCDate() + i)
-
-                    datesToRecalculate.push(new Date(currentDay))
-
-                    await tx.hourEntry.deleteMany({
+                if (systemTask) {
+                    await tx.taskTimeEntry.deleteMany({
                         where: {
                             userId: request.userId,
-                            date: currentDay,
-                            type: hourType,
-                            description: {
-                                startsWith: "Auto-generated from",
+                            taskId: systemTask.id,
+                            startTime: {
+                                gte: startDay,
+                                lte: endDay,
                             },
-                            taskId: null,
+                            type: hourType,
                         },
                     })
                 }
+
+                // Also delete any old HourEntry records if they exist
+                await tx.hourEntry.deleteMany({
+                    where: {
+                        userId: request.userId,
+                        date: {
+                            gte: startDay,
+                            lte: endDay,
+                        },
+                        type: hourType,
+                        description: {
+                            startsWith: "Auto-generated from",
+                        },
+                        taskId: null,
+                    },
+                })
             }
 
             console.log(`Starting shift deletion for request type: ${request.type}`)
@@ -526,49 +540,192 @@ export async function approveRequest(input: ApproveRequestInput) {
                 }
             }
 
-            // Migrate or create hour entries for the request date range
+            // Handle hour entries based on request type
             if (request.affectsHourType) {
                 const targetHourType = mapRequestTypeToHourType(request.type)
+                console.log(`🔍 Processing hour entries for request type: ${request.type}`)
+                console.log(`🔍 Target hour type: ${targetHourType}`)
+                console.log(
+                    `🔍 Checking if VACATION or SICK_LEAVE: ${request.type === "VACATION" || request.type === "SICK_LEAVE"}`
+                )
 
-                const migrateStartDate = new Date(request.startDate)
-                migrateStartDate.setHours(0, 0, 0, 0)
-                const migrateEndDate = new Date(request.endDate)
-                migrateEndDate.setHours(23, 59, 59, 999)
+                if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
+                    console.log(
+                        `✅ ENTERING VACATION/SICK_LEAVE BRANCH - will create NEW entries only`
+                    )
 
-                // First, migrate all existing manual hour entries from any type to target type
-                const existingTypes = ["WORK", "VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "OTHER"]
+                    // FIRST: Delete any existing VACATION/SICK_LEAVE tracked hours from system tasks for this date range
+                    // This ensures VACATION and SICK_LEAVE are mutually exclusive
+                    const vacationSickLeaveTasks = await tx.task.findMany({
+                        where: {
+                            userId: request.userId,
+                            title: {
+                                in: ["System: VACATION", "System: SICK_LEAVE"],
+                            },
+                        },
+                        select: { id: true },
+                    })
 
-                for (const oldType of existingTypes) {
-                    if (oldType !== targetHourType) {
-                        await tx.hourEntry.updateMany({
+                    if (vacationSickLeaveTasks.length > 0) {
+                        const taskIds = vacationSickLeaveTasks.map((t) => t.id)
+
+                        // Set up proper date range - start at beginning of first day, end at end of last day
+                        const deleteStartDate = new Date(request.startDate)
+                        deleteStartDate.setUTCHours(0, 0, 0, 0)
+                        const deleteEndDate = new Date(request.endDate)
+                        deleteEndDate.setUTCHours(23, 59, 59, 999)
+
+                        console.log(
+                            `🗑️ Deleting existing VACATION/SICK_LEAVE entries from ${deleteStartDate.toISOString()} to ${deleteEndDate.toISOString()}`
+                        )
+
+                        const deleted = await tx.taskTimeEntry.deleteMany({
                             where: {
                                 userId: request.userId,
-                                date: {
-                                    gte: migrateStartDate,
-                                    lte: migrateEndDate,
-                                },
-                                type: oldType as HourType,
-                                taskId: null,
-                            },
-                            data: {
-                                type: targetHourType,
-                            },
-                        })
-
-                        // Also update TaskTimeEntry records
-                        await tx.taskTimeEntry.updateMany({
-                            where: {
-                                userId: request.userId,
+                                taskId: { in: taskIds },
                                 startTime: {
-                                    gte: migrateStartDate,
-                                    lte: migrateEndDate,
+                                    gte: deleteStartDate,
+                                    lte: deleteEndDate,
                                 },
-                                type: oldType as HourType,
-                            },
-                            data: {
-                                type: targetHourType,
+                                type: {
+                                    in: ["VACATION", "SICK_LEAVE"],
+                                },
                             },
                         })
+                        console.log(
+                            `🗑️ Deleted ${deleted.count} existing VACATION/SICK_LEAVE entries for date range`
+                        )
+                    }
+
+                    // For VACATION/SICK_LEAVE: Create 8-hour tracked entries (as TaskTimeEntry)
+                    const startDay = new Date(request.startDate)
+                    startDay.setUTCHours(0, 0, 0, 0)
+                    const endDay = new Date(request.endDate)
+                    endDay.setUTCHours(0, 0, 0, 0)
+
+                    const daysDiff = Math.round(
+                        (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
+                    )
+
+                    // Get or create a system task for vacation/sick leave tracking
+                    const systemTaskTitle = `System: ${request.type}`
+                    let systemTask = await tx.task.findFirst({
+                        where: {
+                            userId: request.userId,
+                            title: systemTaskTitle,
+                        },
+                    })
+
+                    if (!systemTask) {
+                        systemTask = await tx.task.create({
+                            data: {
+                                userId: request.userId,
+                                title: systemTaskTitle,
+                                description: "Automatically created for request tracking",
+                                status: "DONE",
+                            },
+                        })
+                    }
+
+                    for (let i = 0; i <= daysDiff; i++) {
+                        const currentDay = new Date(startDay)
+                        currentDay.setUTCDate(startDay.getUTCDate() + i)
+
+                        const dayOfWeek = currentDay.getUTCDay()
+                        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+
+                        const isHoliday = holidays.some((h) => {
+                            const holidayDate = new Date(h.date)
+                            holidayDate.setUTCHours(0, 0, 0, 0)
+                            return holidayDate.getTime() === currentDay.getTime()
+                        })
+
+                        const shouldSkip =
+                            (request.skipWeekends && isWeekend) ||
+                            (request.skipHolidays && isHoliday)
+
+                        if (!shouldSkip) {
+                            const dayStart = new Date(currentDay)
+                            dayStart.setUTCHours(8, 0, 0, 0)
+                            const dayEnd = new Date(currentDay)
+                            dayEnd.setUTCHours(16, 0, 0, 0)
+
+                            console.log(
+                                `➕ Creating VACATION TaskTimeEntry for ${currentDay.toISOString()}`
+                            )
+                            await tx.taskTimeEntry.create({
+                                data: {
+                                    taskId: systemTask.id,
+                                    userId: request.userId,
+                                    startTime: dayStart,
+                                    endTime: dayEnd,
+                                    duration: 8 * 3600,
+                                    type: targetHourType,
+                                },
+                            })
+                        }
+                    }
+                } else {
+                    console.log(
+                        `⚠️ ENTERING ELSE BRANCH (WORK_FROM_HOME/OTHER) - will REMAP existing entries`
+                    )
+                    // For other types (WORK_FROM_HOME, OTHER): Remap existing hours, but exclude VACATION/SICK_LEAVE
+                    const migrateStartDate = new Date(request.startDate)
+                    migrateStartDate.setHours(0, 0, 0, 0)
+                    const migrateEndDate = new Date(request.endDate)
+                    migrateEndDate.setHours(23, 59, 59, 999)
+
+                    const typesToRemap = ["WORK", "WORK_FROM_HOME", "OTHER"]
+
+                    // Get system task IDs to exclude from updates
+                    const systemTasks = await tx.task.findMany({
+                        where: {
+                            userId: request.userId,
+                            title: {
+                                in: ["System: VACATION", "System: SICK_LEAVE"],
+                            },
+                        },
+                        select: { id: true },
+                    })
+                    const systemTaskIds = systemTasks.map((t) => t.id)
+
+                    for (const oldType of typesToRemap) {
+                        if (oldType !== targetHourType) {
+                            await tx.hourEntry.updateMany({
+                                where: {
+                                    userId: request.userId,
+                                    date: {
+                                        gte: migrateStartDate,
+                                        lte: migrateEndDate,
+                                    },
+                                    type: oldType as HourType,
+                                    taskId: null,
+                                },
+                                data: {
+                                    type: targetHourType,
+                                },
+                            })
+
+                            // Update TaskTimeEntry records, but exclude system task entries
+                            await tx.taskTimeEntry.updateMany({
+                                where: {
+                                    userId: request.userId,
+                                    startTime: {
+                                        gte: migrateStartDate,
+                                        lte: migrateEndDate,
+                                    },
+                                    type: oldType as HourType,
+                                    NOT: {
+                                        taskId: {
+                                            in: systemTaskIds,
+                                        },
+                                    },
+                                },
+                                data: {
+                                    type: targetHourType,
+                                },
+                            })
+                        }
                     }
                 }
             }
