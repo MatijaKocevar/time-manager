@@ -157,7 +157,17 @@ export function TimeSheetsClient({
         0
     )
 
-    const handleExport = async (format: ExportFormat, startDate: string, endDate: string) => {
+    const handleExport = async (format: ExportFormat, months: string[]) => {
+        if (!months || months.length === 0) {
+            return { error: "No months provided" }
+        }
+        const startDate = `${months[0]}-01`
+        const [endYearStr, endMonthStr] = months[months.length - 1].split("-")
+        const endYear = Number(endYearStr)
+        const endMonth = Number(endMonthStr)
+        const endDateObj = new Date(endYear, endMonth + 1, 0)
+        const endDate = endDateObj.toISOString().split("T")[0]
+
         return await exportTimeSheetData({ format, startDate, endDate })
     }
 
@@ -211,7 +221,9 @@ export function TimeSheetsClient({
                                 onClick={() => setIsExportDialogOpen(true)}
                             >
                                 <Download className="h-4 w-4 mr-1" />
-                                <span className="hidden sm:inline">{tCommon("actions.export")}</span>
+                                <span className="hidden sm:inline">
+                                    {tCommon("actions.export")}
+                                </span>
                             </Button>
                         </div>
                     </div>
@@ -252,8 +264,7 @@ export function TimeSheetsClient({
             <ExportDialog
                 open={isExportDialogOpen}
                 onOpenChange={setIsExportDialogOpen}
-                defaultStartDate={dateRange.startDate.toISOString().split("T")[0]}
-                defaultEndDate={dateRange.endDate.toISOString().split("T")[0]}
+                defaultMonth={dateRange.startDate.toISOString().slice(0, 7)}
                 onExport={handleExport}
                 filenamePrefix="timesheets"
             />
