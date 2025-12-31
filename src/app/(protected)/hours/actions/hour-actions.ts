@@ -223,7 +223,7 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
                         await tx.hourEntry.update({
                             where: { id: existing.id },
                             data: {
-                                hours: entry.hours,
+                                hours: existing.hours + entry.hours,
                                 description,
                             },
                         })

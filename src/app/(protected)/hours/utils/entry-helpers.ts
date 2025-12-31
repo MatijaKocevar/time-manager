@@ -31,23 +31,17 @@ export function buildManualEntriesMap(
     const map = new Map()
     for (const entry of manualEntries) {
         const key = `${formatDateKey(entry.date)}-${entry.type}`
-        const existing = map.get(key)
-
-        if (existing) {
-            existing.hours += entry.hours
-        } else {
-            map.set(key, {
-                id: entry.id,
-                userId: entry.userId,
-                date: entry.date,
-                hours: entry.hours,
-                type: entry.type,
-                taskId: entry.taskId,
-                description: entry.description,
-                createdAt: entry.createdAt,
-                updatedAt: entry.updatedAt,
-            })
-        }
+        map.set(key, {
+            id: entry.id,
+            userId: entry.userId,
+            date: entry.date,
+            hours: entry.hours,
+            type: entry.type,
+            taskId: entry.taskId,
+            description: entry.description,
+            createdAt: entry.createdAt,
+            updatedAt: entry.updatedAt,
+        })
     }
     return map
 }
