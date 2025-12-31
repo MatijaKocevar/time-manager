@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import * as Papa from "papaparse"
 
 export function generateCSV<T extends Record<string, unknown>>(
