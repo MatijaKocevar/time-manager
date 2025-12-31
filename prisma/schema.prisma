@@ -180,6 +180,8 @@ model TaskTimeEntry {
   @@index([taskId])
   @@index([userId])
   @@index([startTime])
+  @@index([userId, startTime])
+  @@index([userId, endTime])
 }
 
 model DailyHourSummary {
