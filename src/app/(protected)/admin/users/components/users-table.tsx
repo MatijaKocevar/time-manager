@@ -96,9 +96,10 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
             } else if (result.data) {
                 const extension = format === "excel" ? "xlsx" : format
                 const filename = `users-export.${extension}`
-                const fileData: string | Buffer = format === "excel" && typeof result.data === "string" 
-                    ? base64ToBuffer(result.data) 
-                    : result.data as string
+                const fileData: string | Buffer =
+                    format === "excel" && typeof result.data === "string"
+                        ? base64ToBuffer(result.data)
+                        : (result.data as string)
                 downloadFile(fileData, filename, format)
             }
         } catch (error) {
