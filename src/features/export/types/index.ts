@@ -22,6 +22,35 @@ export interface HourEntryExportData extends Record<string, unknown> {
     description: string | null
 }
 
+export interface MonthSummaryStats {
+    workingDays: number
+    expectedHours: number
+    totalHours: number
+    overtime: number
+    hoursByType: Record<string, number>
+}
+
+export interface DailyHourData {
+    date: string
+    isWeekend: boolean
+    isHoliday: boolean
+    holidayName?: string
+    grandTotal: number
+    byType: Record<string, number>
+}
+
+export interface MonthlyHourExportData {
+    monthKey: string
+    monthLabel: string
+    year: number
+    month: number
+    userId: string
+    userName: string | null
+    userEmail: string
+    summaryStats: MonthSummaryStats
+    dailyData: DailyHourData[]
+}
+
 export interface TimeSheetEntryExportData extends Record<string, unknown> {
     date: string
     userId: string

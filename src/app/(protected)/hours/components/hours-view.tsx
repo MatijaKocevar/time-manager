@@ -120,13 +120,6 @@ export function HoursView({
     const weekRange = getDateRange("WEEKLY", currentDate)
     const monthRange = getDateRange("MONTHLY", currentDate)
 
-    console.log("HoursView render:", {
-        currentDate: currentDate.toISOString(),
-        viewMode,
-        dateRange,
-        weekRange,
-    })
-
     const { data: entries = [], isLoading } = useQuery({
         queryKey: hourKeys.list({ startDate: dateRange.startDate, endDate: dateRange.endDate }),
         queryFn: () => getHourEntries(dateRange.startDate, dateRange.endDate),
@@ -143,12 +136,6 @@ export function HoursView({
     })
 
     const weeklyEntries = viewMode === "WEEKLY" ? entries : fetchedWeeklyEntries
-
-    console.log("Query data:", {
-        entries: entries.length,
-        fetchedWeeklyEntries: fetchedWeeklyEntries.length,
-        weeklyEntries: weeklyEntries.length,
-    })
 
     const { data: monthlyEntries = [] } = useQuery({
         queryKey: hourKeys.list({ startDate: monthRange.startDate, endDate: monthRange.endDate }),
@@ -187,8 +174,14 @@ export function HoursView({
         router.push(`/hours?view=${viewMode.toLowerCase()}&date=${dateStr}`)
     }
 
-    const handleExport = async (format: ExportFormat, startDate: string, endDate: string) => {
-        return await exportHoursData({ format, startDate, endDate })
+    const handleExport = async (format: ExportFormat, months: string[]) => {
+        return await exportHoursData({ format, months })
+    }
+
+    const getCurrentMonth = () => {
+        const year = currentDate.getFullYear()
+        const month = String(currentDate.getMonth() + 1).padStart(2, "0")
+        return `${year}-${month}`
     }
 
     return (
@@ -337,8 +330,7 @@ export function HoursView({
             <ExportDialog
                 open={isExportDialogOpen}
                 onOpenChange={setIsExportDialogOpen}
-                defaultStartDate={dateRange.startDate}
-                defaultEndDate={dateRange.endDate}
+                defaultMonth={getCurrentMonth()}
                 onExport={handleExport}
                 filenamePrefix="hours"
             />

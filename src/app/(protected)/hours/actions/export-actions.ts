@@ -8,26 +8,29 @@ import {
     generateExcel,
     generateMultiSheetExcel,
     generateJSON,
-    type HourEntryExportData,
+    type MonthlyHourExportData,
+    type DailyHourData,
     type ExportMetadata,
 } from "@/features/export"
 import { ExportOptionsSchema, type ExportOptions } from "@/features/export"
 import { requireAuth, requireAdmin } from "../utils/auth-helpers"
-import { formatDateKey, parseDate } from "../utils/date-helpers"
+import { formatDateKey } from "../utils/date-helpers"
+import { calculateWorkingDaysSync, calculateOvertime } from "../utils/calculation-helpers"
+import { HOUR_TYPES } from "../constants/hour-types"
 
-async function fetchHourSummaries(
+export async function fetchMonthlyHourData(
     userId: string,
-    startDate: string,
-    endDate: string
-): Promise<HourEntryExportData[]> {
-    const startDateObj = parseDate(startDate)
-    const endDateObj = parseDate(endDate)
+    month: string
+): Promise<MonthlyHourExportData> {
+    const [year, monthNum] = month.split("-").map(Number)
+    const startDate = new Date(year, monthNum - 1, 1)
+    const endDate = new Date(year, monthNum, 0)
 
     const summaryQuery = Prisma.sql`
         SELECT * FROM daily_hour_summary
         WHERE "userId" = ${userId}
-        AND date >= ${startDateObj}::timestamp
-        AND date <= ${endDateObj}::timestamp
+        AND date >= ${startDate}::timestamp
+        AND date <= ${endDate}::timestamp
         ORDER BY date ASC`
 
     const summariesRaw = (await prisma.$queryRaw(summaryQuery)) as Array<{
@@ -47,40 +50,92 @@ async function fetchHourSummaries(
         select: { name: true, email: true },
     })
 
-    const manualEntries = await prisma.hourEntry.findMany({
+    const holidays = await prisma.holiday.findMany({
         where: {
-            userId,
-            taskId: null,
             date: {
-                gte: startDateObj,
-                lte: endDateObj,
+                gte: startDate,
+                lte: endDate,
             },
         },
     })
 
-    const manualDescriptionMap = new Map<string, string | null>()
-    for (const entry of manualEntries) {
-        const key = `${formatDateKey(entry.date)}-${entry.type}`
-        manualDescriptionMap.set(key, entry.description)
+    const holidayMap = new Map(holidays.map((h) => [formatDateKey(h.date), h.name]))
+
+    const dataByDate = new Map<string, Map<string, number>>()
+
+    for (const summary of summariesRaw) {
+        const dateKey = formatDateKey(summary.date)
+        if (!dataByDate.has(dateKey)) {
+            dataByDate.set(dateKey, new Map())
+        }
+        const dateData = dataByDate.get(dateKey)!
+        dateData.set(summary.type, Number(summary.totalHours))
     }
 
-    return summariesRaw.map((summary) => {
-        const dateKey = formatDateKey(summary.date)
-        const descKey = `${dateKey}-${summary.type}`
-        const description = manualDescriptionMap.get(descKey) || null
+    const dailyData: DailyHourData[] = []
+    const currentDate = new Date(startDate)
 
-        return {
-            date: formatDateKey(summary.date),
-            userId: summary.userId,
-            userName: user?.name || null,
-            userEmail: user?.email || "",
-            type: summary.type,
-            manualHours: Number(summary.manualHours),
-            trackedHours: Number(summary.trackedHours),
-            totalHours: Number(summary.totalHours),
-            description,
+    while (currentDate <= endDate) {
+        const dateKey = formatDateKey(currentDate)
+        const dayOfWeek = currentDate.getDay()
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+        const isHoliday = holidayMap.has(dateKey)
+        const holidayName = holidayMap.get(dateKey)
+
+        const dateData = dataByDate.get(dateKey) || new Map()
+        const byType: Record<string, number> = {}
+        let grandTotal = 0
+
+        for (const hourType of HOUR_TYPES) {
+            const hours = dateData.get(hourType.value) || 0
+            byType[hourType.value] = hours
+            grandTotal += hours
         }
-    })
+
+        dailyData.push({
+            date: dateKey,
+            isWeekend,
+            isHoliday,
+            holidayName,
+            grandTotal,
+            byType,
+        })
+
+        currentDate.setDate(currentDate.getDate() + 1)
+    }
+
+    const workingDays = calculateWorkingDaysSync(startDate, endDate, holidays)
+    const expectedHours = workingDays * 8
+    const totalHours = dailyData.reduce((sum, day) => sum + day.grandTotal, 0)
+    const overtime = calculateOvertime(totalHours, workingDays)
+
+    const hoursByType: Record<string, number> = {}
+    for (const hourType of HOUR_TYPES) {
+        hoursByType[hourType.value] = dailyData.reduce(
+            (sum, day) => sum + (day.byType[hourType.value] || 0),
+            0
+        )
+    }
+
+    const monthLabel = startDate.toLocaleString("en-US", { month: "long", year: "numeric" })
+
+    return {
+        monthKey: month,
+        monthLabel,
+        year,
+        month: monthNum,
+        userId,
+        userName: user?.name || null,
+        userEmail: user?.email || "",
+        summaryStats: {
+            workingDays,
+            expectedHours,
+            totalHours,
+            overtime,
+            hoursByType,
+        },
+        dailyData,
+    }
 }
 
 export async function exportHoursData(input: ExportOptions) {
@@ -92,17 +147,26 @@ export async function exportHoursData(input: ExportOptions) {
             return { error: validation.error.issues[0].message }
         }
 
-        const { format, startDate, endDate } = validation.data
+        const { format, months } = validation.data
 
-        const data = await fetchHourSummaries(session.user.id, startDate, endDate)
+        const monthlyData: MonthlyHourExportData[] = []
+        for (const month of months) {
+            const data = await fetchMonthlyHourData(session.user.id, month)
+            monthlyData.push(data)
+        }
 
-        if (data.length === 0) {
-            return { error: "No data found for the selected date range" }
+        if (monthlyData.length === 0) {
+            return { error: "No data found for the selected months" }
         }
 
         const metadata: ExportMetadata = {
             exportDate: new Date().toISOString(),
-            dateRange: { start: startDate, end: endDate },
+            dateRange: {
+                start: monthlyData[0].dailyData[0].date,
+                end: monthlyData[monthlyData.length - 1].dailyData[
+                    monthlyData[monthlyData.length - 1].dailyData.length - 1
+                ].date,
+            },
             generatedBy: session.user.email || undefined,
             format,
         }
@@ -110,41 +174,15 @@ export async function exportHoursData(input: ExportOptions) {
         let result: string | Buffer
 
         if (format === "csv") {
-            result = generateCSV(data)
+            result = generateCSV(monthlyData)
         } else if (format === "excel") {
-            const columns = [
-                { header: "Date", key: "date", width: 12 },
-                { header: "Type", key: "type", width: 20 },
-                { header: "Manual Hours", key: "manualHours", width: 15 },
-                { header: "Tracked Hours", key: "trackedHours", width: 15 },
-                { header: "Total Hours", key: "totalHours", width: 15 },
-                { header: "Description", key: "description", width: 30 },
-            ]
-
-            const startMonth = new Date(startDate).getMonth()
-            const endMonth = new Date(endDate).getMonth()
-            const startYear = new Date(startDate).getFullYear()
-            const endYear = new Date(endDate).getFullYear()
-
-            const spanMultipleMonths =
-                endYear > startYear || (endYear === startYear && endMonth > startMonth)
-
-            if (spanMultipleMonths) {
-                result = await generateMultiSheetExcel(data, columns, {
-                    titlePrefix: "Hours Report",
-                    includeFormulas: true,
-                    includeSummarySheet: true,
-                })
+            if (months.length > 1) {
+                result = await generateMultiSheetExcel(monthlyData)
             } else {
-                result = await generateExcel(data, {
-                    sheetName: "Hours",
-                    columns,
-                    title: "Hours Report",
-                    includeFormulas: true,
-                })
+                result = await generateExcel(monthlyData[0])
             }
         } else {
-            result = generateJSON(data, metadata)
+            result = generateJSON(monthlyData, metadata)
         }
 
         return {
@@ -168,7 +206,7 @@ export async function exportAllUsersHours(input: ExportOptions) {
             return { error: validation.error.issues[0].message }
         }
 
-        const { format, startDate, endDate, userId } = validation.data
+        const { format, months, userId } = validation.data
 
         let userIds: string[]
 
@@ -186,26 +224,33 @@ export async function exportAllUsersHours(input: ExportOptions) {
             userIds = users.map((u) => u.id)
         }
 
-        const allData: HourEntryExportData[] = []
+        const allMonthlyData: MonthlyHourExportData[] = []
 
         for (const uid of userIds) {
-            const userData = await fetchHourSummaries(uid, startDate, endDate)
-            allData.push(...userData)
+            for (const month of months) {
+                const userData = await fetchMonthlyHourData(uid, month)
+                allMonthlyData.push(userData)
+            }
         }
 
-        if (allData.length === 0) {
-            return { error: "No data found for the selected date range" }
+        if (allMonthlyData.length === 0) {
+            return { error: "No data found for the selected months" }
         }
 
-        allData.sort((a, b) => {
-            const dateCompare = a.date.localeCompare(b.date)
-            if (dateCompare !== 0) return dateCompare
+        allMonthlyData.sort((a, b) => {
+            const monthCompare = a.monthKey.localeCompare(b.monthKey)
+            if (monthCompare !== 0) return monthCompare
             return a.userEmail.localeCompare(b.userEmail)
         })
 
         const metadata: ExportMetadata = {
             exportDate: new Date().toISOString(),
-            dateRange: { start: startDate, end: endDate },
+            dateRange: {
+                start: allMonthlyData[0].dailyData[0].date,
+                end: allMonthlyData[allMonthlyData.length - 1].dailyData[
+                    allMonthlyData[allMonthlyData.length - 1].dailyData.length - 1
+                ].date,
+            },
             generatedBy: session.user.email || undefined,
             format,
         }
@@ -213,43 +258,15 @@ export async function exportAllUsersHours(input: ExportOptions) {
         let result: string | Buffer
 
         if (format === "csv") {
-            result = generateCSV(allData)
+            result = generateCSV(allMonthlyData)
         } else if (format === "excel") {
-            const columns = [
-                { header: "Date", key: "date", width: 12 },
-                { header: "User", key: "userName", width: 20 },
-                { header: "Email", key: "userEmail", width: 25 },
-                { header: "Type", key: "type", width: 20 },
-                { header: "Manual Hours", key: "manualHours", width: 15 },
-                { header: "Tracked Hours", key: "trackedHours", width: 15 },
-                { header: "Total Hours", key: "totalHours", width: 15 },
-                { header: "Description", key: "description", width: 30 },
-            ]
-
-            const startMonth = new Date(startDate).getMonth()
-            const endMonth = new Date(endDate).getMonth()
-            const startYear = new Date(startDate).getFullYear()
-            const endYear = new Date(endDate).getFullYear()
-
-            const spanMultipleMonths =
-                endYear > startYear || (endYear === startYear && endMonth > startMonth)
-
-            if (spanMultipleMonths) {
-                result = await generateMultiSheetExcel(allData, columns, {
-                    titlePrefix: "All Users Hours Report",
-                    includeFormulas: true,
-                    includeSummarySheet: true,
-                })
+            if (months.length > 1 || userIds.length > 1) {
+                result = await generateMultiSheetExcel(allMonthlyData)
             } else {
-                result = await generateExcel(allData, {
-                    sheetName: "Hours",
-                    columns,
-                    title: "All Users Hours Report",
-                    includeFormulas: true,
-                })
+                result = await generateExcel(allMonthlyData[0])
             }
         } else {
-            result = generateJSON(allData, metadata)
+            result = generateJSON(allMonthlyData, metadata)
         }
 
         return {

@@ -51,8 +51,14 @@ export function UserHoursSection({
         setCurrentDate(newDate)
     }
 
-    const handleExport = async (format: ExportFormat, startDate: string, endDate: string) => {
-        return await exportUserDetailsWithHours({ format, startDate, endDate, userId })
+    const handleExport = async (format: ExportFormat, months: string[]) => {
+        return await exportUserDetailsWithHours({ format, months, userId })
+    }
+
+    const getCurrentMonth = () => {
+        const year = currentDate.getFullYear()
+        const month = String(currentDate.getMonth() + 1).padStart(2, "0")
+        return `${year}-${month}`
     }
 
     return (
@@ -107,8 +113,7 @@ export function UserHoursSection({
             <ExportDialog
                 open={isExportDialogOpen}
                 onOpenChange={setIsExportDialogOpen}
-                defaultStartDate={startDate}
-                defaultEndDate={endDate}
+                defaultMonth={getCurrentMonth()}
                 onExport={handleExport}
                 filenamePrefix={`user-${userId}-hours`}
             />

@@ -759,13 +759,23 @@
             "format": "Export Format",
             "startDate": "Start Date",
             "endDate": "End Date",
+            "startMonth": "Start Month",
+            "endMonth": "End Month",
             "exporting": "Exporting...",
-            "excelInfo": "Multi-month exports will create separate tabs for each month"
+            "excelInfo": "Each selected month will create a separate sheet"
         },
         "formats": {
             "excel": "Excel (XLSX)",
             "csv": "CSV",
             "json": "JSON"
+        },
+        "stats": {
+            "workingDays": "Working Days",
+            "expectedHours": "Expected Hours",
+            "totalHours": "Total Hours",
+            "overtime": "Overtime",
+            "overtimePositive": "Over hours",
+            "overtimeNegative": "Under hours"
         },
         "messages": {
             "success": "Data exported successfully",

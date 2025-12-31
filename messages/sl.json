@@ -759,13 +759,23 @@
             "format": "Format izvoza",
             "startDate": "Začetni datum",
             "endDate": "Končni datum",
-            "exporting": "Izvažanje...",
-            "excelInfo": "Izvozi za več mesecev bodo ustvarili ločene zavihke za vsak mesec"
+            "startMonth": "Začetni mesec",
+            "endMonth": "Končni mesec",
+            "exporting": "Izvažam...",
+            "excelInfo": "Vsak izbrani mesec bo ustvaril ločen list"
         },
         "formats": {
             "excel": "Excel (XLSX)",
             "csv": "CSV",
             "json": "JSON"
+        },
+        "stats": {
+            "workingDays": "Delovni dnevi",
+            "expectedHours": "Pričakovane ure",
+            "totalHours": "Skupaj ur",
+            "overtime": "Nadure",
+            "overtimePositive": "Preko ur",
+            "overtimeNegative": "Pod urami"
         },
         "messages": {
             "success": "Podatki uspešno izvoženi",

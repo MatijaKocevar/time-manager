@@ -9,8 +9,9 @@ export const DateRangeInputSchema = z.object({
 
 export const ExportOptionsSchema = z.object({
     format: ExportFormatSchema,
-    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-    endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    months: z
+        .array(z.string().regex(/^\d{4}-\d{2}$/, "Invalid month format (YYYY-MM)"))
+        .min(1, "At least one month must be selected"),
     userId: z.string().optional(),
 })
 

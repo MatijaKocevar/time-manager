@@ -3,14 +3,18 @@
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import ExcelJS from "exceljs"
 import {
     generateCSV,
     generateExcel,
+    generateMultiSheetExcel,
     generateJSON,
     type UserExportData,
     type ExportMetadata,
+    type MonthlyHourExportData,
 } from "@/features/export"
-import { ExportOptionsSchema, type ExportOptions } from "@/features/export"
+import { ExportOptionsSchema, type ExportOptions, type ExportFormat } from "@/features/export"
+import { fetchMonthlyHourData } from "@/app/(protected)/hours/actions/export-actions"
 
 async function requireAdmin() {
     const session = await getServerSession(authConfig)
@@ -20,7 +24,7 @@ async function requireAdmin() {
     return session
 }
 
-export async function exportUsersData(input: Omit<ExportOptions, "startDate" | "endDate">) {
+export async function exportUsersData(input: { format: ExportFormat }) {
     try {
         const session = await requireAdmin()
 
@@ -56,12 +60,17 @@ export async function exportUsersData(input: Omit<ExportOptions, "startDate" | "
             format: input.format,
         }
 
-        let result: string | Buffer
+        let result: string | Uint8Array
 
         if (input.format === "csv") {
-            result = generateCSV(data)
+            const headers = ["ID", "Name", "Email", "Role", "Created At"]
+            const rows = data.map((u) => [u.id, u.name, u.email, u.role, u.createdAt])
+            result = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n")
         } else if (input.format === "excel") {
-            const columns = [
+            const workbook = new ExcelJS.Workbook()
+            const worksheet = workbook.addWorksheet("Users")
+
+            worksheet.columns = [
                 { header: "ID", key: "id", width: 30 },
                 { header: "Name", key: "name", width: 20 },
                 { header: "Email", key: "email", width: 30 },
@@ -69,19 +78,19 @@ export async function exportUsersData(input: Omit<ExportOptions, "startDate" | "
                 { header: "Created At", key: "createdAt", width: 20 },
             ]
 
-            result = await generateExcel(data, {
-                sheetName: "Users",
-                columns,
-                title: "Users Report",
-                includeFormulas: false,
-            })
+            worksheet.addRows(data)
+            const buffer = await workbook.xlsx.writeBuffer()
+            result = Buffer.from(buffer)
         } else {
-            result = generateJSON(data, metadata)
+            result = JSON.stringify({ ...metadata, users: data }, null, 2)
         }
 
         return {
             success: true,
-            data: input.format === "excel" ? result.toString("base64") : result,
+            data:
+                input.format === "excel"
+                    ? Buffer.from(result as Uint8Array).toString("base64")
+                    : result,
         }
     } catch (error) {
         if (error instanceof Error) {
@@ -100,61 +109,28 @@ export async function exportUserDetailsWithHours(input: ExportOptions) {
             return { error: validation.error.issues[0].message }
         }
 
-        const { format, startDate, endDate, userId } = validation.data
+        const { format, months, userId } = validation.data
 
         if (!userId) {
             return { error: "User ID is required" }
         }
 
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                role: true,
-                createdAt: true,
-            },
-        })
-
-        if (!user) {
-            return { error: "User not found" }
+        const monthlyData: MonthlyHourExportData[] = []
+        for (const month of months) {
+            const data = await fetchMonthlyHourData(userId, month)
+            monthlyData.push(data)
         }
 
-        const hourEntries = await prisma.hourEntry.findMany({
-            where: {
-                userId,
-                date: {
-                    gte: new Date(startDate),
-                    lte: new Date(endDate),
-                },
-            },
-            orderBy: {
-                date: "asc",
-            },
-            select: {
-                date: true,
-                hours: true,
-                type: true,
-                description: true,
-            },
-        })
-
-        const data = hourEntries.map((entry) => ({
-            userId: user.id,
-            userName: user.name,
-            userEmail: user.email,
-            date: entry.date.toISOString().split("T")[0],
-            hours: entry.hours,
-            type: entry.type,
-            description: entry.description,
-        }))
-
-        const totalHours = hourEntries.reduce((sum, entry) => sum + entry.hours, 0)
+        if (monthlyData.length === 0) {
+            return { error: "No data found for selected months" }
+        }
 
         const metadata: ExportMetadata = {
             exportDate: new Date().toISOString(),
-            dateRange: { start: startDate, end: endDate },
+            dateRange: {
+                start: monthlyData[0].monthKey,
+                end: monthlyData[monthlyData.length - 1].monthKey,
+            },
             generatedBy: session.user.email || undefined,
             format,
         }
@@ -162,36 +138,14 @@ export async function exportUserDetailsWithHours(input: ExportOptions) {
         let result: string | Buffer
 
         if (format === "csv") {
-            result = generateCSV(data)
+            result = generateCSV(monthlyData)
         } else if (format === "excel") {
-            const columns = [
-                { header: "Date", key: "date", width: 12 },
-                { header: "Hours", key: "hours", width: 10 },
-                { header: "Type", key: "type", width: 20 },
-                { header: "Description", key: "description", width: 30 },
-            ]
-
-            result = await generateExcel(data, {
-                sheetName: "User Hours",
-                columns,
-                title: `${user.name || user.email} - Hours Report`,
-                includeFormulas: true,
-            })
+            result =
+                monthlyData.length > 1
+                    ? await generateMultiSheetExcel(monthlyData)
+                    : await generateExcel(monthlyData[0])
         } else {
-            const exportData = {
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.role,
-                },
-                summary: {
-                    totalHours,
-                    totalEntries: hourEntries.length,
-                },
-                hourEntries: data,
-            }
-            result = JSON.stringify({ ...metadata, ...exportData }, null, 2)
+            result = generateJSON(monthlyData, metadata)
         }
 
         return {

@@ -2,7 +2,13 @@
 
 import { useState } from "react"
 import { useTranslations } from "next-intl"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -13,9 +19,11 @@ import { downloadFile, base64ToBuffer, type ExportFormat } from "@/features/expo
 interface ExportDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    defaultStartDate: string
-    defaultEndDate: string
-    onExport: (format: ExportFormat, startDate: string, endDate: string) => Promise<{
+    defaultMonth: string
+    onExport: (
+        format: ExportFormat,
+        months: string[]
+    ) => Promise<{
         success?: boolean
         data?: string | Buffer
         error?: string
@@ -28,8 +36,7 @@ interface ExportDialogProps {
 export function ExportDialog({
     open,
     onOpenChange,
-    defaultStartDate,
-    defaultEndDate,
+    defaultMonth,
     onExport,
     filenamePrefix,
     title,
@@ -39,8 +46,8 @@ export function ExportDialog({
     const tCommon = useTranslations("common")
 
     const [format, setFormat] = useState<ExportFormat>("excel")
-    const [startDate, setStartDate] = useState(defaultStartDate)
-    const [endDate, setEndDate] = useState(defaultEndDate)
+    const [startMonth, setStartMonth] = useState(defaultMonth)
+    const [endMonth, setEndMonth] = useState(defaultMonth)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -49,7 +56,22 @@ export function ExportDialog({
         setError(null)
 
         try {
-            const result = await onExport(format, startDate, endDate)
+            const [startYear, startMonthNum] = startMonth.split("-").map(Number)
+            const [endYear, endMonthNum] = endMonth.split("-").map(Number)
+
+            const months: string[] = []
+            const start = new Date(startYear, startMonthNum - 1)
+            const end = new Date(endYear, endMonthNum - 1)
+
+            const current = new Date(start)
+            while (current <= end) {
+                const year = current.getFullYear()
+                const month = String(current.getMonth() + 1).padStart(2, "0")
+                months.push(`${year}-${month}`)
+                current.setMonth(current.getMonth() + 1)
+            }
+
+            const result = await onExport(format, months)
 
             if (result.error) {
                 setError(result.error)
@@ -57,10 +79,12 @@ export function ExportDialog({
             }
 
             if (result.data) {
-                const start = startDate.replace(/-/g, "")
-                const end = endDate.replace(/-/g, "")
+                const monthsFormatted =
+                    months.length === 1
+                        ? months[0].replace(/-/g, "")
+                        : `${months[0].replace(/-/g, "")}-to-${months[months.length - 1].replace(/-/g, "")}`
                 const extension = format === "excel" ? "xlsx" : format
-                const filename = `${filenamePrefix}-${start}-${end}.${extension}`
+                const filename = `${filenamePrefix}-${monthsFormatted}.${extension}`
 
                 let fileData: string | Buffer = result.data
 
@@ -88,31 +112,41 @@ export function ExportDialog({
 
                 <div className="space-y-4">
                     {error && (
-                        <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                            {error}
-                        </div>
+                        <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</div>
                     )}
 
                     <div className="space-y-2">
                         <Label>{t("dialog.format")}</Label>
-                        <RadioGroup value={format} onValueChange={(value: string) => setFormat(value as ExportFormat)}>
+                        <RadioGroup
+                            value={format}
+                            onValueChange={(value: string) => setFormat(value as ExportFormat)}
+                        >
                             <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="excel" id="excel" />
-                                <Label htmlFor="excel" className="flex items-center gap-2 cursor-pointer">
+                                <Label
+                                    htmlFor="excel"
+                                    className="flex items-center gap-2 cursor-pointer"
+                                >
                                     <FileSpreadsheet className="h-4 w-4" />
                                     {t("formats.excel")}
                                 </Label>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="csv" id="csv" />
-                                <Label htmlFor="csv" className="flex items-center gap-2 cursor-pointer">
+                                <Label
+                                    htmlFor="csv"
+                                    className="flex items-center gap-2 cursor-pointer"
+                                >
                                     <FileText className="h-4 w-4" />
                                     {t("formats.csv")}
                                 </Label>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="json" id="json" />
-                                <Label htmlFor="json" className="flex items-center gap-2 cursor-pointer">
+                                <Label
+                                    htmlFor="json"
+                                    className="flex items-center gap-2 cursor-pointer"
+                                >
                                     <FileJson className="h-4 w-4" />
                                     {t("formats.json")}
                                 </Label>
@@ -120,26 +154,27 @@ export function ExportDialog({
                         </RadioGroup>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="start-date">{t("dialog.startDate")}</Label>
-                        <Input
-                            id="start-date"
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            disabled={isLoading}
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="end-date">{t("dialog.endDate")}</Label>
-                        <Input
-                            id="end-date"
-                            type="date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            disabled={isLoading}
-                        />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="startMonth">{t("dialog.startMonth")}</Label>
+                            <Input
+                                id="startMonth"
+                                type="month"
+                                value={startMonth}
+                                onChange={(e) => setStartMonth(e.target.value)}
+                                disabled={isLoading}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="endMonth">{t("dialog.endMonth")}</Label>
+                            <Input
+                                id="endMonth"
+                                type="month"
+                                value={endMonth}
+                                onChange={(e) => setEndMonth(e.target.value)}
+                                disabled={isLoading}
+                            />
+                        </div>
                     </div>
 
                     {format === "excel" && (
@@ -160,7 +195,7 @@ export function ExportDialog({
                         <Button
                             type="button"
                             onClick={handleExport}
-                            disabled={isLoading || !startDate || !endDate}
+                            disabled={isLoading || !startMonth || !endMonth}
                         >
                             {isLoading ? (
                                 <>

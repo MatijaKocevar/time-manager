@@ -373,7 +373,6 @@ export async function getHourEntriesForUser(
         const allEntries = [...grandTotalEntries, ...entries]
         return allEntries.sort((a, b) => b.date.getTime() - a.date.getTime())
     } catch (error) {
-        console.error("Error fetching hour entries:", error)
         throw new Error("Failed to fetch hour entries")
     }
 }
@@ -488,7 +487,6 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
         const allEntries = [...grandTotalEntries, ...entries]
         return allEntries.sort((a, b) => b.date.getTime() - a.date.getTime())
     } catch (error) {
-        console.error("Error fetching hour entries:", error)
         throw new Error("Failed to fetch hour entries")
     }
 }
