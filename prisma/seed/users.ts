@@ -6,9 +6,14 @@ export async function seedUsers(
     prisma: PrismaClient,
     random: SeededRandom,
     count: number,
-    adminCount: number
+    adminCount: number,
+    minimal: boolean = false
 ) {
-    console.log(`\nSeeding ${count + 1} users (${adminCount} admins + Demo Admin)...`)
+    if (minimal) {
+        console.log(`\nSeeding Demo Admin account...`)
+    } else {
+        console.log(`\nSeeding ${count + 1} users (${adminCount} admins + Demo Admin)...`)
+    }
     const hashedPassword = await bcrypt.hash("password123", 12)
 
     const users: Array<{ email: string; name: string; password: string; role: "USER" | "ADMIN" }> =
@@ -21,17 +26,19 @@ export async function seedUsers(
         role: "ADMIN",
     })
 
-    for (let i = 0; i < count; i++) {
-        const firstName = random.choice(FIRST_NAMES)
-        const lastName = random.choice(LAST_NAMES)
-        const role = i < adminCount ? "ADMIN" : "USER"
+    if (!minimal) {
+        for (let i = 0; i < count; i++) {
+            const firstName = random.choice(FIRST_NAMES)
+            const lastName = random.choice(LAST_NAMES)
+            const role = i < adminCount ? "ADMIN" : "USER"
 
-        users.push({
-            email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
-            name: `${firstName} ${lastName}`,
-            password: hashedPassword,
-            role,
-        })
+            users.push({
+                email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
+                name: `${firstName} ${lastName}`,
+                password: hashedPassword,
+                role,
+            })
+        }
     }
 
     const createdUsers = await prisma.$transaction(async (tx) => {

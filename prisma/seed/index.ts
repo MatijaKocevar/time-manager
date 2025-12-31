@@ -11,17 +11,26 @@ import * as readline from "readline/promises"
 const prisma = new PrismaClient()
 const random = new SeededRandom(42)
 
-async function getSeederOptions(): Promise<{ months: number; userCount: number }> {
+async function getSeederOptions(): Promise<{
+    months: number
+    userCount: number
+    minimal: boolean
+}> {
     const args = process.argv.slice(2)
     const monthsArg = args.find((arg) => arg.startsWith("--months="))
     const usersArg = args.find((arg) => arg.startsWith("--users="))
+    const minimalArg = args.includes("--minimal")
+
+    if (minimalArg) {
+        return { months: 0, userCount: 0, minimal: true }
+    }
 
     if (monthsArg && usersArg) {
         const months = parseInt(monthsArg.split("=")[1])
         const userCount = parseInt(usersArg.split("=")[1])
 
         if ([1, 3, 6, 12].includes(months) && userCount >= 1 && userCount <= 100) {
-            return { months, userCount }
+            return { months, userCount, minimal: false }
         }
     }
 
@@ -32,10 +41,19 @@ async function getSeederOptions(): Promise<{ months: number; userCount: number }
 
     console.log("\n=== Database Seeder Configuration ===\n")
 
+    const modeInput = await rl.question(
+        "Select seeding mode:\n  1) Minimal (Demo Admin only, no test data)\n  2) Full (Generate test data)\nEnter choice (1-2): "
+    )
+
+    if (parseInt(modeInput) === 1) {
+        rl.close()
+        return { months: 0, userCount: 0, minimal: true }
+    }
+
     let months: number
     while (true) {
         const monthsInput = await rl.question(
-            "How much data to generate?\n  1) 1 month\n  2) 3 months\n  3) 6 months\n  4) 1 year\nEnter choice (1-4): "
+            "\nHow much data to generate?\n  1) 1 month\n  2) 3 months\n  3) 6 months\n  4) 1 year\nEnter choice (1-4): "
         )
         const choice = parseInt(monthsInput)
 
@@ -68,11 +86,34 @@ async function getSeederOptions(): Promise<{ months: number; userCount: number }
     }
 
     rl.close()
-    return { months, userCount }
+    return { months, userCount, minimal: false }
 }
 
 async function main() {
-    const { months, userCount } = await getSeederOptions()
+    const { months, userCount, minimal } = await getSeederOptions()
+
+    if (minimal) {
+        console.log("\n" + "=".repeat(60))
+        console.log("MINIMAL SEEDING MODE")
+        console.log("=".repeat(60))
+        console.log(`  Creating Demo Admin account only`)
+        console.log(`  Email:               demo@example.com`)
+        console.log(`  Password:            password123`)
+        console.log(`  Role:                ADMIN`)
+        console.log("=".repeat(60) + "\n")
+
+        await seedUsers(prisma, random, 0, 0, true)
+
+        console.log("\n" + "=".repeat(60))
+        console.log("MINIMAL SEEDING COMPLETED!")
+        console.log("=".repeat(60))
+        console.log("\nCreated Accounts:")
+        console.log(`   Users:               1`)
+        console.log(`   Demo Admin:          demo@example.com`)
+        console.log(`   Password:            password123`)
+        console.log("=".repeat(60) + "\n")
+        return
+    }
 
     const adminCount = Math.max(1, Math.floor(userCount * 0.2))
     const batchSize = 5
@@ -81,7 +122,7 @@ async function main() {
     const startDate = addDays(endDate, -months * 30)
 
     console.log("\n" + "=".repeat(60))
-    console.log("SEEDING CONFIGURATION")
+    console.log("FULL SEEDING CONFIGURATION")
     console.log("=".repeat(60))
     console.log(`  Data period:         ${months} month${months > 1 ? "s" : ""}`)
     console.log(
@@ -99,7 +140,7 @@ async function main() {
     const holidayDates = await seedHolidays(prisma)
 
     // Step 2: Seed users (userCount - 1 because Demo Admin is always created)
-    const allUsers = await seedUsers(prisma, random, userCount - 1, adminCount)
+    const allUsers = await seedUsers(prisma, random, userCount - 1, adminCount, false)
     const adminUsers = allUsers.filter((u) => u.role === "ADMIN")
 
     // Step 3: Seed data for each user in batches
