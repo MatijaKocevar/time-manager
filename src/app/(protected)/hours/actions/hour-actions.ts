@@ -492,11 +492,40 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
             },
         })
 
-        const manualEntriesByDateAndType = new Map<string, (typeof manualEntries)[0]>()
+        const manualEntriesByDateAndType = new Map<
+            string,
+            {
+                id: string
+                userId: string
+                date: Date
+                hours: number
+                type: HourType
+                taskId: string | null
+                description: string | null
+                createdAt: Date
+                updatedAt: Date
+            }
+        >()
         for (const entry of manualEntries) {
             const key = `${formatLocalDateKey(entry.date)}-${entry.type}`
+            const existing = manualEntriesByDateAndType.get(key)
 
-            manualEntriesByDateAndType.set(key, entry)
+            if (existing) {
+                // Multiple manual entries for same date/type - sum the hours
+                existing.hours += entry.hours
+            } else {
+                manualEntriesByDateAndType.set(key, {
+                    id: entry.id,
+                    userId: entry.userId,
+                    date: entry.date,
+                    hours: entry.hours,
+                    type: entry.type,
+                    taskId: entry.taskId,
+                    description: entry.description,
+                    createdAt: entry.createdAt,
+                    updatedAt: entry.updatedAt,
+                })
+            }
         }
 
         const grandTotalsMap = new Map<string, { date: Date; hours: number }>()
