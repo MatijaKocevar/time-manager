@@ -99,8 +99,12 @@ export async function startTimer(input: StartTimerInput) {
                         userId: session.user.id,
                         status: "APPROVED",
                         affectsHourType: true,
+                        cancelledAt: null,
                         startDate: { lte: entryDateUTC },
                         endDate: { gte: entryDateUTC },
+                    },
+                    orderBy: {
+                        approvedAt: "desc",
                     },
                 })
 
@@ -111,11 +115,35 @@ export async function startTimer(input: StartTimerInput) {
                 }
             }
 
+            // Check for approved request for the current date to set the correct type for new timer
+            const now = new Date()
+            const nowUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
+            
+            const currentApprovedRequest = await tx.request.findFirst({
+                where: {
+                    userId: session.user.id,
+                    status: "APPROVED",
+                    affectsHourType: true,
+                    cancelledAt: null,
+                    startDate: { lte: nowUTC },
+                    endDate: { gte: nowUTC },
+                },
+                orderBy: {
+                    approvedAt: "desc",
+                },
+            })
+
+            let newEntryType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" = "WORK"
+            if (currentApprovedRequest) {
+                newEntryType = currentApprovedRequest.type
+            }
+
             return await tx.taskTimeEntry.create({
                 data: {
                     taskId,
                     userId: session.user.id,
                     startTime: new Date(),
+                    type: newEntryType,
                 },
             })
         })

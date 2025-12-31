@@ -170,6 +170,7 @@ model TaskTimeEntry {
   startTime DateTime
   endTime   DateTime?
   duration  Int?
+  type      HourType  @default(WORK)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 

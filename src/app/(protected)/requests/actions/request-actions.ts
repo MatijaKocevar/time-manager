@@ -329,7 +329,7 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                 const revertEndDate = new Date(request.endDate)
                 revertEndDate.setHours(23, 59, 59, 999)
 
-                // Bulk update all entries back to WORK
+                // Bulk update all hour entries back to WORK
                 await tx.hourEntry.updateMany({
                     where: {
                         userId: request.userId,
@@ -339,6 +339,21 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                         },
                         type: originalHourType,
                         taskId: null,
+                    },
+                    data: {
+                        type: "WORK",
+                    },
+                })
+                
+                // Also revert TaskTimeEntry records back to WORK
+                await tx.taskTimeEntry.updateMany({
+                    where: {
+                        userId: request.userId,
+                        startTime: {
+                            gte: revertStartDate,
+                            lte: revertEndDate,
+                        },
+                        type: originalHourType,
                     },
                     data: {
                         type: "WORK",
@@ -520,7 +535,7 @@ export async function approveRequest(input: ApproveRequestInput) {
                 const migrateEndDate = new Date(request.endDate)
                 migrateEndDate.setHours(23, 59, 59, 999)
 
-                // First, migrate all existing hour entries from any type to target type
+                // First, migrate all existing manual hour entries from any type to target type
                 const existingTypes = ["WORK", "VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "OTHER"]
 
                 for (const oldType of existingTypes) {
@@ -534,6 +549,21 @@ export async function approveRequest(input: ApproveRequestInput) {
                                 },
                                 type: oldType as HourType,
                                 taskId: null,
+                            },
+                            data: {
+                                type: targetHourType,
+                            },
+                        })
+                        
+                        // Also update TaskTimeEntry records
+                        await tx.taskTimeEntry.updateMany({
+                            where: {
+                                userId: request.userId,
+                                startTime: {
+                                    gte: migrateStartDate,
+                                    lte: migrateEndDate,
+                                },
+                                type: oldType as HourType,
                             },
                             data: {
                                 type: targetHourType,
