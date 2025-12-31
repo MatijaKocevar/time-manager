@@ -89,9 +89,6 @@ export function TasksOverviewClient({ groups, lists: initialLists }: TasksOvervi
                     <div key={group.listId ?? "no-list"} className="space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                {group.listIcon && (
-                                    <span className="text-2xl">{group.listIcon}</span>
-                                )}
                                 {group.listColor && (
                                     <div
                                         className="w-4 h-4 rounded-full"
