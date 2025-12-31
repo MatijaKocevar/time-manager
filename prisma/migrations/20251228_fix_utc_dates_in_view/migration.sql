@@ -23,9 +23,9 @@ WITH date_range AS (
         AND duration IS NOT NULL
     
     UNION
-    
-    -- Add approved request types to ensure rows are created for them
-    SELECT DISTINCT
+
+-- Add approved request types to ensure rows are created for them
+SELECT DISTINCT
         "userId" AS user_id,
         DATE(date_in_range AT TIME ZONE 'UTC') AS normalized_date,
         CASE type

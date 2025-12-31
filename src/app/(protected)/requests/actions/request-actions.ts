@@ -344,7 +344,7 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                         type: "WORK",
                     },
                 })
-                
+
                 // Also revert TaskTimeEntry records back to WORK
                 await tx.taskTimeEntry.updateMany({
                     where: {
@@ -554,7 +554,7 @@ export async function approveRequest(input: ApproveRequestInput) {
                                 type: targetHourType,
                             },
                         })
-                        
+
                         // Also update TaskTimeEntry records
                         await tx.taskTimeEntry.updateMany({
                             where: {

@@ -3,6 +3,7 @@
 
 DROP MATERIALIZED VIEW IF EXISTS daily_hour_summary;
 
+
 CREATE MATERIALIZED VIEW daily_hour_summary AS
 WITH date_range AS (
     -- Manual hour entries
@@ -14,9 +15,9 @@ WITH date_range AS (
     WHERE "taskId" IS NULL
     
     UNION
-    
-    -- Tracked hours default to WORK type
-    SELECT DISTINCT
+
+-- Tracked hours default to WORK type
+SELECT DISTINCT
         "userId" AS user_id,
         DATE("startTime" AT TIME ZONE 'UTC') AS normalized_date,
         'WORK'::"HourType" AS type
@@ -25,9 +26,9 @@ WITH date_range AS (
         AND duration IS NOT NULL
     
     UNION
-    
-    -- Add approved request types to ensure rows are created for them
-    SELECT DISTINCT
+
+-- Add approved request types to ensure rows are created for them
+SELECT DISTINCT
         "userId" AS user_id,
         DATE(date_in_range AT TIME ZONE 'UTC') AS normalized_date,
         CASE type
@@ -139,5 +140,7 @@ ON daily_hour_summary ("userId", date, type);
 
 -- Create additional indexes for query performance
 CREATE INDEX daily_hour_summary_user_idx ON daily_hour_summary ("userId");
+
 CREATE INDEX daily_hour_summary_date_idx ON daily_hour_summary (date);
+
 CREATE INDEX daily_hour_summary_user_date_idx ON daily_hour_summary ("userId", date);

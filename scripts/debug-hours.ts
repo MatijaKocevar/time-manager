@@ -16,11 +16,19 @@ async function debugHours() {
     })
 
     console.log(`Found ${summaries.length} summary rows:`)
-    summaries.forEach((s: { date: Date; type: string; manualHours: number; trackedHours: number; totalHours: number }) => {
-        console.log(
-            `  ${s.date.toISOString().split("T")[0]} | ${s.type.padEnd(16)} | Manual: ${s.manualHours}h | Tracked: ${s.trackedHours}h | Total: ${s.totalHours}h`
-        )
-    })
+    summaries.forEach(
+        (s: {
+            date: Date
+            type: string
+            manualHours: number
+            trackedHours: number
+            totalHours: number
+        }) => {
+            console.log(
+                `  ${s.date.toISOString().split("T")[0]} | ${s.type.padEnd(16)} | Manual: ${s.manualHours}h | Tracked: ${s.trackedHours}h | Total: ${s.totalHours}h`
+            )
+        }
+    )
 
     console.log("\n=== 2. CHECKING APPROVED REQUESTS ===")
     const requests = await prisma.request.findMany({
@@ -34,11 +42,13 @@ async function debugHours() {
     })
 
     console.log(`Found ${requests.length} approved requests:`)
-    requests.forEach((r: { type: string; startDate: Date; endDate: Date; affectsHourType: boolean }) => {
-        console.log(
-            `  ${r.type} | ${r.startDate.toISOString().split("T")[0]} - ${r.endDate.toISOString().split("T")[0]} | Affects Hour Type: ${r.affectsHourType}`
-        )
-    })
+    requests.forEach(
+        (r: { type: string; startDate: Date; endDate: Date; affectsHourType: boolean }) => {
+            console.log(
+                `  ${r.type} | ${r.startDate.toISOString().split("T")[0]} - ${r.endDate.toISOString().split("T")[0]} | Affects Hour Type: ${r.affectsHourType}`
+            )
+        }
+    )
 
     console.log("\n=== 3. CHECKING TASK TIME ENTRIES ===")
     const taskEntries = await prisma.taskTimeEntry.findMany({
@@ -58,12 +68,14 @@ async function debugHours() {
     })
 
     console.log(`Found ${taskEntries.length} task time entries:`)
-    taskEntries.forEach((e: { startTime: Date; task: { title: string }; duration: number | null }) => {
-        const durationHours = e.duration ? (e.duration / 3600).toFixed(2) : "N/A"
-        console.log(
-            `  ${e.startTime.toISOString()} | Task: ${e.task.title} | Duration: ${durationHours}h`
-        )
-    })
+    taskEntries.forEach(
+        (e: { startTime: Date; task: { title: string }; duration: number | null }) => {
+            const durationHours = e.duration ? (e.duration / 3600).toFixed(2) : "N/A"
+            console.log(
+                `  ${e.startTime.toISOString()} | Task: ${e.task.title} | Duration: ${durationHours}h`
+            )
+        }
+    )
 
     console.log("\n=== 4. CHECKING HOUR ENTRIES ===")
     const hourEntries = await prisma.hourEntry.findMany({
