@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { useQuery } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -9,10 +8,8 @@ import { useTimeSheetsStore } from "../stores/time-sheets-store"
 import { useTasksStore } from "../../tasks/stores/tasks-store"
 import { getDateRangeForView, type ViewMode } from "../utils/date-helpers"
 import { aggregateTimeEntriesByTaskAndDate } from "../utils/aggregation-helpers"
-import { getTimeSheetEntries } from "../actions/time-sheet-actions"
 import { exportTimeSheetData } from "../actions/export-actions"
 import { ExportDialog, type ExportFormat } from "@/features/export"
-import { timeSheetKeys } from "../query-keys"
 import { TimeSheetsTable } from "./time-sheets-table"
 import type { TimeEntryDisplay } from "../schemas/time-sheet-schemas"
 import { useTranslations } from "next-intl"
@@ -85,36 +82,9 @@ export function TimeSheetsClient({
         return `${h}h ${m}m`
     }
 
-    const {
-        data = initialData,
-        isLoading,
-        error,
-    } = useQuery({
-        queryKey: timeSheetKeys.list({
-            startDate: dateRange.startDate.toISOString(),
-            endDate: dateRange.endDate.toISOString(),
-        }),
-        queryFn: async () => {
-            try {
-                const result = await getTimeSheetEntries({
-                    startDate: dateRange.startDate.toISOString(),
-                    endDate: dateRange.endDate.toISOString(),
-                })
-
-                if ("error" in result) {
-                    console.error("Time sheet error:", result.error)
-                    throw new Error(result.error)
-                }
-
-                return result.data
-            } catch (err) {
-                console.error("Query error:", err)
-                throw err
-            }
-        },
-        staleTime: 10000,
-        retry: 1,
-    })
+    const data = initialData
+    const isLoading = false
+    const error = null
 
     useEffect(() => {
         const hasActiveTimer = data.some((entry) => entry.endTime === null)
