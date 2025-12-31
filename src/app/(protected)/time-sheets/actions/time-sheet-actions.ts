@@ -30,68 +30,31 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
         const entries = await prisma.taskTimeEntry.findMany({
             where: {
                 userId: session.user.id,
-                startTime: {
-                    gte: new Date(startDate),
-                    lt: new Date(new Date(endDate).getTime() + 86400000),
-                },
-                endTime: {
-                    not: null,
-                },
-            },
-            select: {
-                id: true,
-                taskId: true,
-                userId: true,
-                startTime: true,
-                endTime: true,
-                duration: true,
-                createdAt: true,
-                updatedAt: true,
-                task: {
-                    select: {
-                        id: true,
-                        title: true,
-                        status: true,
-                        listId: true,
-                        list: {
-                            select: {
-                                id: true,
-                                name: true,
-                                color: true,
-                                icon: true,
-                            },
+                OR: [
+                    {
+                        startTime: {
+                            gte: new Date(startDate),
+                            lt: new Date(new Date(endDate).getTime() + 86400000),
                         },
+                        endTime: { not: null },
                     },
-                },
-            },
-            orderBy: {
-                startTime: "desc",
-            },
-        })
-
-        const activeTimer = await prisma.taskTimeEntry.findFirst({
-            where: {
-                userId: session.user.id,
-                endTime: null,
+                    {
+                        endTime: null,
+                    },
+                ],
             },
             select: {
                 id: true,
                 taskId: true,
-                userId: true,
                 startTime: true,
                 endTime: true,
                 duration: true,
-                createdAt: true,
-                updatedAt: true,
                 task: {
                     select: {
-                        id: true,
                         title: true,
                         status: true,
-                        listId: true,
                         list: {
                             select: {
-                                id: true,
                                 name: true,
                                 color: true,
                                 icon: true,
@@ -102,7 +65,13 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
             },
         })
 
-        const allEntries = activeTimer ? [activeTimer, ...entries] : entries
+        const activeTimer = entries.find((e) => e.endTime === null)
+        const allEntries = entries.map((entry) => ({
+            ...entry,
+            userId: session.user.id,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }))
 
         return { success: true, data: allEntries, activeTimer }
     } catch (error) {

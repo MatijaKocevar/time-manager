@@ -15,6 +15,11 @@ async function main() {
     )
     console.log("✓ Created TaskTimeEntry_userId_endTime_idx")
 
+    await prisma.$executeRawUnsafe(
+        'CREATE INDEX IF NOT EXISTS "Task_id_title_status_listId_idx" ON "Task"("id", "title", "status", "listId")'
+    )
+    console.log("✓ Created Task_id_title_status_listId_idx")
+
     console.log("Done!")
 }
 

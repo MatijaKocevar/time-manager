@@ -161,6 +161,7 @@ model Task {
   @@index([userId, listId])
   @@index([userId, status, listId])
   @@index([userId, listId, status])
+  @@index([id, title, status, listId])
 }
 
 model TaskTimeEntry {

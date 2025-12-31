@@ -8,13 +8,10 @@ export const GetTimeSheetEntriesSchema = z.object({
 export type GetTimeSheetEntriesInput = z.infer<typeof GetTimeSheetEntriesSchema>
 
 export const TimeEntryTaskSchema = z.object({
-    id: z.string(),
     title: z.string(),
     status: z.string(),
-    listId: z.string().nullable(),
     list: z
         .object({
-            id: z.string(),
             name: z.string(),
             color: z.string().nullable(),
             icon: z.string().nullable(),
