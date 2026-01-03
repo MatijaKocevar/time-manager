@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { updateUser, deleteUser, changeUserPassword } from "../actions/user-actions"
@@ -35,9 +35,9 @@ export function EditUserForm({ user }: EditUserFormProps) {
     const tRoles = useTranslations("admin.users.roles")
     const tCommon = useTranslations("common.actions")
 
-    const editData = useUserFormStore((state) => state.editForm.data)
-    const name = editData?.name || ""
-    const role = editData?.role || user.role
+    const [name, setName] = useState(user.name ?? "")
+    const [role, setRole] = useState<UserRole>(user.role)
+
     const newPassword = useUserFormStore(
         (state) => state.changePasswordForm.data?.newPassword || ""
     )
@@ -50,11 +50,6 @@ export function EditUserForm({ user }: EditUserFormProps) {
     const passwordError = useUserFormStore((state) => state.changePasswordForm.error)
     const deleteError = useUserFormStore((state) => state.deleteForm.error)
 
-    const initializeEditForm = useUserFormStore((state) => state.initializeEditForm)
-    const initializeChangePasswordForm = useUserFormStore(
-        (state) => state.initializeChangePasswordForm
-    )
-    const setEditFormData = useUserFormStore((state) => state.setEditFormData)
     const setChangePasswordFormData = useUserFormStore((state) => state.setChangePasswordFormData)
     const setEditLoading = useUserFormStore((state) => state.setEditLoading)
     const setChangePasswordLoading = useUserFormStore((state) => state.setChangePasswordLoading)
@@ -65,26 +60,6 @@ export function EditUserForm({ user }: EditUserFormProps) {
     const clearEditError = useUserFormStore((state) => state.clearEditError)
     const clearChangePasswordError = useUserFormStore((state) => state.clearChangePasswordError)
     const clearDeleteError = useUserFormStore((state) => state.clearDeleteError)
-    const resetEditForm = useUserFormStore((state) => state.resetEditForm)
-    const resetChangePasswordForm = useUserFormStore((state) => state.resetChangePasswordForm)
-
-    useEffect(() => {
-        initializeEditForm({ id: user.id, name: user.name, role: user.role })
-        initializeChangePasswordForm(user.id)
-
-        return () => {
-            resetEditForm()
-            resetChangePasswordForm()
-        }
-    }, [
-        user.id,
-        user.name,
-        user.role,
-        initializeEditForm,
-        initializeChangePasswordForm,
-        resetEditForm,
-        resetChangePasswordForm,
-    ])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -150,7 +125,7 @@ export function EditUserForm({ user }: EditUserFormProps) {
                     <Input
                         id="name"
                         value={name}
-                        onChange={(e) => setEditFormData({ name: e.target.value })}
+                        onChange={(e) => setName(e.target.value)}
                         disabled={isLoading}
                     />
                 </div>
@@ -161,15 +136,12 @@ export function EditUserForm({ user }: EditUserFormProps) {
                 <div className="space-y-2">
                     <Label htmlFor="role">{t("role")}</Label>
                     <Select
-                        key={user.id}
                         value={role}
-                        onValueChange={(value: string) =>
-                            setEditFormData({ role: value as UserRole })
-                        }
+                        onValueChange={(value: string) => setRole(value as UserRole)}
                         disabled={isLoading}
                     >
                         <SelectTrigger className="w-full">
-                            <SelectValue />
+                            <SelectValue>{tRoles(getUserRoleTranslationKey(role))}</SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="USER">
