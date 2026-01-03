@@ -13,6 +13,7 @@ import { getLists } from "./(protected)/tasks/actions/list-actions"
 import { NextIntlClientProvider } from "next-intl"
 import { ThemeProvider } from "@/features/theme/providers/theme-provider"
 import { NavigationProgress } from "@/features/navigation/components/navigation-progress"
+import { BreadcrumbProvider } from "@/features/breadcrumbs"
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -152,25 +153,27 @@ export default async function RootLayout({
                         <NavigationProgress />
                         <QueryProvider>
                             <SessionWrapper>
-                                <ConditionalSidebar
-                                    defaultOpen={defaultOpen}
-                                    sidebarExpandedItems={sidebarExpandedItems}
-                                    hasSession={!!session}
-                                    userRole={session?.user?.role}
-                                    userName={session?.user?.name}
-                                    userEmail={session?.user?.email}
-                                    lists={lists}
-                                    pendingRequestsCount={pendingRequestsCount}
-                                    header={
-                                        session ? (
-                                            <AppHeader
-                                                breadcrumbTranslations={breadcrumbTranslations}
-                                            />
-                                        ) : null
-                                    }
-                                >
-                                    {children}
-                                </ConditionalSidebar>
+                                <BreadcrumbProvider initialOverrides={breadcrumbTranslations}>
+                                    <ConditionalSidebar
+                                        defaultOpen={defaultOpen}
+                                        sidebarExpandedItems={sidebarExpandedItems}
+                                        hasSession={!!session}
+                                        userRole={session?.user?.role}
+                                        userName={session?.user?.name}
+                                        userEmail={session?.user?.email}
+                                        lists={lists}
+                                        pendingRequestsCount={pendingRequestsCount}
+                                        header={
+                                            session ? (
+                                                <AppHeader
+                                                    breadcrumbTranslations={breadcrumbTranslations}
+                                                />
+                                            ) : null
+                                        }
+                                    >
+                                        {children}
+                                    </ConditionalSidebar>
+                                </BreadcrumbProvider>
                             </SessionWrapper>
                         </QueryProvider>
                     </ThemeProvider>

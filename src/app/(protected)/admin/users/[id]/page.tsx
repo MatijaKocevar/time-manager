@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Separator } from "@/components/ui/separator"
 import { getUserById } from "../actions/user-actions"
 import { EditUserForm } from "../components/edit-user-form"
-import { SetBreadcrumbData } from "@/features/breadcrumbs"
 import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
 import { getHolidaysInRange } from "../../holidays/actions/holiday-actions"
 import { getUserRequestsForAdmin } from "@/app/(protected)/requests/actions/request-actions"
@@ -43,43 +42,28 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     ])
 
     return (
-        <>
-            <SetBreadcrumbData
-                data={{
-                    [`/admin/users/${id}`]: user.name || "User",
-                }}
-            />
-            <div className="flex flex-col gap-6">
-                <Card>
-                    <CardContent>
-                        <EditUserForm user={user} />
-                    </CardContent>
-                </Card>
+        <div className="flex flex-col gap-6">
+            <Card>
+                <CardContent>
+                    <EditUserForm user={user} />
+                </CardContent>
+            </Card>
 
-                <Separator />
+            <Separator />
 
-                <UserHoursSection
-                    userId={id}
-                    initialEntries={userHours}
-                    initialHolidays={holidays}
-                />
+            <UserHoursSection userId={id} initialEntries={userHours} initialHolidays={holidays} />
 
-                <Separator />
+            <Separator />
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{t("requests")}</CardTitle>
-                        <CardDescription>{t("requestsDescription")}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <RequestsTable
-                            requests={userRequests}
-                            showUser={false}
-                            showNewButton={false}
-                        />
-                    </CardContent>
-                </Card>
-            </div>
-        </>
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t("requests")}</CardTitle>
+                    <CardDescription>{t("requestsDescription")}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <RequestsTable requests={userRequests} showUser={false} showNewButton={false} />
+                </CardContent>
+            </Card>
+        </div>
     )
 }

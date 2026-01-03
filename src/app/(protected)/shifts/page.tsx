@@ -2,7 +2,6 @@ import { getTranslations } from "next-intl/server"
 import { getShiftsForPeriod, getAllUsers } from "./actions/shift-actions"
 import { getHolidaysInRange } from "../admin/holidays/actions/holiday-actions"
 import { ShiftsCalendar } from "./components/shifts-calendar"
-import { SetBreadcrumbData } from "@/features/breadcrumbs/set-breadcrumb-data"
 
 export const dynamic = "force-dynamic"
 
@@ -36,16 +35,13 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
 
     if (shiftsResult.error || usersResult.error) {
         return (
-            <>
-                <SetBreadcrumbData data={{ "/shifts": t("shifts") }} />
-                <div className="flex flex-col gap-4 h-full">
-                    <div className="text-red-500">
-                        {tShifts("failedToLoad", {
-                            error: shiftsResult.error || usersResult.error || "Unknown error",
-                        })}
-                    </div>
+            <div className="flex flex-col gap-4 h-full">
+                <div className="text-red-500">
+                    {tShifts("failedToLoad", {
+                        error: shiftsResult.error || usersResult.error || "Unknown error",
+                    })}
                 </div>
-            </>
+            </div>
         )
     }
 
@@ -64,20 +60,17 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
     })
 
     return (
-        <>
-            <SetBreadcrumbData data={{ "/shifts": t("shifts") }} />
-            <div className="flex flex-col gap-4 h-full">
-                <div className="flex-1 min-h-0">
-                    <ShiftsCalendar
-                        initialShifts={shiftsWithNormalizedDates}
-                        users={users}
-                        initialHolidays={holidays}
-                        initialViewMode={viewMode}
-                        initialSelectedDate={selectedDate}
-                    />
-                </div>
+        <div className="flex flex-col gap-4 h-full">
+            <div className="flex-1 min-h-0">
+                <ShiftsCalendar
+                    initialShifts={shiftsWithNormalizedDates}
+                    users={users}
+                    initialHolidays={holidays}
+                    initialViewMode={viewMode}
+                    initialSelectedDate={selectedDate}
+                />
             </div>
-        </>
+        </div>
     )
 }
 

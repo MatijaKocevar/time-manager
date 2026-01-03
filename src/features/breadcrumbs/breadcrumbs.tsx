@@ -10,16 +10,24 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { useBreadcrumbStore } from "./breadcrumb-store"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useBreadcrumbContext } from "./breadcrumb-context"
 
 interface BreadcrumbSegment {
     label: string
     href: string
+    isLoading?: boolean
 }
 
 interface BreadcrumbsProps {
     overrides?: Record<string, string>
+}
+
+const UUID_REGEX = /^[a-z0-9]{20,}$/i
+
+function isUUID(segment: string): boolean {
+    return UUID_REGEX.test(segment)
 }
 
 function generateBreadcrumbsFromPath(pathname: string): BreadcrumbSegment[] {
@@ -29,6 +37,8 @@ function generateBreadcrumbsFromPath(pathname: string): BreadcrumbSegment[] {
     let currentPath = ""
     for (const segment of segments) {
         currentPath += `/${segment}`
+
+        const isId = isUUID(segment)
         const label = segment
             .split("-")
             .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -37,6 +47,7 @@ function generateBreadcrumbsFromPath(pathname: string): BreadcrumbSegment[] {
         breadcrumbs.push({
             label,
             href: currentPath,
+            isLoading: isId,
         })
     }
 
@@ -45,15 +56,19 @@ function generateBreadcrumbsFromPath(pathname: string): BreadcrumbSegment[] {
 
 export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
     const pathname = usePathname()
-    const dynamicOverrides = useBreadcrumbStore((state) => state.overrides)
     const isMobile = useIsMobile()
+    const { overrides: contextOverrides } = useBreadcrumbContext()
 
     const generated = generateBreadcrumbsFromPath(pathname)
-    const allOverrides = { ...overrides, ...dynamicOverrides }
-    const breadcrumbs = generated.map((crumb) => ({
-        ...crumb,
-        label: allOverrides[crumb.href] || crumb.label,
-    }))
+    const allOverrides = { ...overrides, ...contextOverrides }
+    const breadcrumbs = generated.map((crumb) => {
+        const hasOverride = !!allOverrides[crumb.href]
+        return {
+            ...crumb,
+            label: allOverrides[crumb.href] || crumb.label,
+            isLoading: crumb.isLoading && !hasOverride,
+        }
+    })
 
     if (breadcrumbs.length === 0) {
         return null
@@ -69,7 +84,11 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
                     <Home className="h-4 w-4" />
                 </Link>
                 <ChevronRight className="h-4 w-4 mx-1" />
-                <span className="font-medium text-foreground">{breadcrumbs[0].label}</span>
+                {breadcrumbs[0].isLoading ? (
+                    <Skeleton className="h-4 w-24" />
+                ) : (
+                    <span className="font-medium text-foreground">{breadcrumbs[0].label}</span>
+                )}
             </nav>
         )
     }
@@ -84,14 +103,22 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
                     <Home className="h-4 w-4" />
                 </Link>
                 <ChevronRight className="h-4 w-4 mx-1" />
-                <Link
-                    href={breadcrumbs[0].href}
-                    className="hover:text-foreground transition-colors"
-                >
-                    {breadcrumbs[0].label}
-                </Link>
+                {breadcrumbs[0].isLoading ? (
+                    <Skeleton className="h-4 w-24" />
+                ) : (
+                    <Link
+                        href={breadcrumbs[0].href}
+                        className="hover:text-foreground transition-colors"
+                    >
+                        {breadcrumbs[0].label}
+                    </Link>
+                )}
                 <ChevronRight className="h-4 w-4 mx-1" />
-                <span className="font-medium text-foreground">{breadcrumbs[1].label}</span>
+                {breadcrumbs[1].isLoading ? (
+                    <Skeleton className="h-4 w-24" />
+                ) : (
+                    <span className="font-medium text-foreground">{breadcrumbs[1].label}</span>
+                )}
             </nav>
         )
     }
@@ -121,14 +148,22 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start">
                         {middleCrumbs.map((crumb, index) => (
-                            <DropdownMenuItem key={index} asChild>
-                                <Link href={crumb.href}>{crumb.label}</Link>
+                            <DropdownMenuItem key={index} asChild={!crumb.isLoading}>
+                                {crumb.isLoading ? (
+                                    <Skeleton className="h-4 w-24" />
+                                ) : (
+                                    <Link href={crumb.href}>{crumb.label}</Link>
+                                )}
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <ChevronRight className="h-4 w-4 mx-1" />
-                <span className="font-medium text-foreground">{lastCrumb.label}</span>
+                {lastCrumb.isLoading ? (
+                    <Skeleton className="h-4 w-24" />
+                ) : (
+                    <span className="font-medium text-foreground">{lastCrumb.label}</span>
+                )}
             </nav>
         )
     }
@@ -152,18 +187,30 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
                     {middleCrumbs.map((crumb, index) => (
-                        <DropdownMenuItem key={index} asChild>
-                            <Link href={crumb.href}>{crumb.label}</Link>
+                        <DropdownMenuItem key={index} asChild={!crumb.isLoading}>
+                            {crumb.isLoading ? (
+                                <Skeleton className="h-4 w-24" />
+                            ) : (
+                                <Link href={crumb.href}>{crumb.label}</Link>
+                            )}
                         </DropdownMenuItem>
                     ))}
                 </DropdownMenuContent>
             </DropdownMenu>
             <ChevronRight className="h-4 w-4 mx-1" />
-            <Link href={previousCrumb.href} className="hover:text-foreground transition-colors">
-                {previousCrumb.label}
-            </Link>
+            {previousCrumb.isLoading ? (
+                <Skeleton className="h-4 w-24" />
+            ) : (
+                <Link href={previousCrumb.href} className="hover:text-foreground transition-colors">
+                    {previousCrumb.label}
+                </Link>
+            )}
             <ChevronRight className="h-4 w-4 mx-1" />
-            <span className="font-medium text-foreground">{lastCrumb.label}</span>
+            {lastCrumb.isLoading ? (
+                <Skeleton className="h-4 w-24" />
+            ) : (
+                <span className="font-medium text-foreground">{lastCrumb.label}</span>
+            )}
         </nav>
     )
 }
