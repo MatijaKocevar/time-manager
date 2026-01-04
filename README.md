@@ -63,5 +63,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and log in with:
+
 - Email: `demo@example.com`
 - Password: `password123`

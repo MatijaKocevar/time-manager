@@ -1,15 +1,13 @@
 import type { ExportFormat } from "../schemas"
 import { getMimeType } from "../utils/filename"
 
-export function downloadFile(
-    data: string | Buffer,
-    filename: string,
-    format: ExportFormat
-): void {
+export function downloadFile(data: string | Buffer, filename: string, format: ExportFormat): void {
     const mimeType = getMimeType(format)
 
     const blob =
-        typeof data === "string" ? new Blob([data], { type: mimeType }) : new Blob([new Uint8Array(data)], { type: mimeType })
+        typeof data === "string"
+            ? new Blob([data], { type: mimeType })
+            : new Blob([new Uint8Array(data)], { type: mimeType })
 
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")

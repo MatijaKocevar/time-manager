@@ -1,8 +1,6 @@
 import type { MonthlyGroupedData } from "../types"
 
-export function groupDataByMonth<T extends { date: string }>(
-    data: T[]
-): MonthlyGroupedData<T>[] {
+export function groupDataByMonth<T extends { date: string }>(data: T[]): MonthlyGroupedData<T>[] {
     const grouped = new Map<string, T[]>()
 
     for (const item of data) {
