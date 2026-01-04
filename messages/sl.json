@@ -195,7 +195,10 @@
             "saveChanges": "Shrani spremembe",
             "addNotesPlaceholder": "Dodajte opombe o tem vnosu...",
             "durationFormat": "UU:MM",
-            "typeDuration": "Vnesite trajanje (UU:MM)"
+            "typeDuration": "Vnesite trajanje (UU:MM)",
+            "selectStartDate": "Izberite začetni datum",
+            "selectEndDate": "Izberite končni datum",
+            "selectDate": "Izberite datum"
         },
         "summary": {
             "weekSummary": "Tedenski povzetek",
@@ -334,6 +337,8 @@
             "enterReason": "Vnesite razlog",
             "enterLocation": "Vnesite lokacijo",
             "selectType": "Izberite tip zahtevka",
+            "selectStartDate": "Izberite začetni datum",
+            "selectEndDate": "Izberite končni datum",
             "requestDetails": "Podrobnosti zahtevka",
             "skipWeekends": "Preskoči vikende",
             "skipHolidays": "Preskoči praznike"

@@ -24,7 +24,9 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { DatePicker } from "@/components/ui/date-picker"
 import { useEffect } from "react"
+import { format } from "date-fns"
 import {
     getRequestTypeTranslationKey,
     getRequestStatusTranslationKey,
@@ -149,11 +151,14 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                 <div className="space-y-2">
                     <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
                     {isEditable ? (
-                        <Input
-                            id="startDate"
-                            type="date"
-                            value={formData.startDate}
-                            onChange={(e) => setFormData({ startDate: e.target.value })}
+                        <DatePicker
+                            date={formData.startDate ? new Date(formData.startDate) : undefined}
+                            onDateChange={(date) =>
+                                setFormData({
+                                    startDate: date ? format(date, "yyyy-MM-dd") : "",
+                                })
+                            }
+                            placeholder={t("selectStartDate")}
                         />
                     ) : (
                         <div className="text-lg">{formatDate(request.startDate)}</div>
@@ -162,11 +167,14 @@ export function RequestDetailClient({ request }: RequestDetailClientProps) {
                 <div className="space-y-2">
                     <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
                     {isEditable ? (
-                        <Input
-                            id="endDate"
-                            type="date"
-                            value={formData.endDate}
-                            onChange={(e) => setFormData({ endDate: e.target.value })}
+                        <DatePicker
+                            date={formData.endDate ? new Date(formData.endDate) : undefined}
+                            onDateChange={(date) =>
+                                setFormData({
+                                    endDate: date ? format(date, "yyyy-MM-dd") : "",
+                                })
+                            }
+                            placeholder={t("selectEndDate")}
                         />
                     ) : (
                         <div className="text-lg">{formatDate(request.endDate)}</div>

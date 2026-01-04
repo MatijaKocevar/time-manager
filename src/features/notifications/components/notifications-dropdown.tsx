@@ -91,7 +91,7 @@ export function NotificationsDropdown({
         isAdmin,
     } = notifications
 
-    const totalBadgeCount = isAdmin ? unreadCount + count : unreadCount
+    const totalBadgeCount = isAdmin ? count : unreadCount
 
     const handleDropdownClose = useCallback(async () => {
         if (activeTab === "notifications" && userNotifications.length > 0) {

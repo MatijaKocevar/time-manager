@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
+import { DatePicker } from "@/components/ui/date-picker"
 import { getRequestTypeTranslationKey } from "../utils/translation-helpers"
+import { format } from "date-fns"
 
 export function RequestForm() {
     const t = useTranslations("requests.form")
@@ -82,20 +84,26 @@ export function RequestForm() {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
-                            <Input
-                                id="startDate"
-                                type="date"
-                                value={formData.startDate}
-                                onChange={(e) => setFormData({ startDate: e.target.value })}
+                            <DatePicker
+                                date={formData.startDate ? new Date(formData.startDate) : undefined}
+                                onDateChange={(date) =>
+                                    setFormData({
+                                        startDate: date ? format(date, "yyyy-MM-dd") : "",
+                                    })
+                                }
+                                placeholder={t("selectStartDate")}
                             />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
-                            <Input
-                                id="endDate"
-                                type="date"
-                                value={formData.endDate}
-                                onChange={(e) => setFormData({ endDate: e.target.value })}
+                            <DatePicker
+                                date={formData.endDate ? new Date(formData.endDate) : undefined}
+                                onDateChange={(date) =>
+                                    setFormData({
+                                        endDate: date ? format(date, "yyyy-MM-dd") : "",
+                                    })
+                                }
+                                placeholder={t("selectEndDate")}
                             />
                         </div>
                     </div>

@@ -22,6 +22,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import { DatePicker } from "@/components/ui/date-picker"
+import { format } from "date-fns"
 
 interface RequestsTableWithDialogProps {
     requests: RequestDisplay[]
@@ -122,20 +124,30 @@ export function RequestsTableWithDialog({ requests, showUser }: RequestsTableWit
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
-                                <Input
-                                    id="startDate"
-                                    type="date"
-                                    value={formData.startDate}
-                                    onChange={(e) => setFormData({ startDate: e.target.value })}
+                                <DatePicker
+                                    date={
+                                        formData.startDate
+                                            ? new Date(formData.startDate)
+                                            : undefined
+                                    }
+                                    onDateChange={(date) =>
+                                        setFormData({
+                                            startDate: date ? format(date, "yyyy-MM-dd") : "",
+                                        })
+                                    }
+                                    placeholder={t("selectStartDate")}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
-                                <Input
-                                    id="endDate"
-                                    type="date"
-                                    value={formData.endDate}
-                                    onChange={(e) => setFormData({ endDate: e.target.value })}
+                                <DatePicker
+                                    date={formData.endDate ? new Date(formData.endDate) : undefined}
+                                    onDateChange={(date) =>
+                                        setFormData({
+                                            endDate: date ? format(date, "yyyy-MM-dd") : "",
+                                        })
+                                    }
+                                    placeholder={t("selectEndDate")}
                                 />
                             </div>
                         </div>

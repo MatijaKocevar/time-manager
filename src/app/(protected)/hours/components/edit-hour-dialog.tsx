@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { DatePicker } from "@/components/ui/date-picker"
 import { WorkTypeBadge } from "@/components/work-type-badge"
 import {
     Select,
@@ -20,6 +21,7 @@ import { HOUR_TYPES, MAX_HOURS_PER_DAY } from "../constants/hour-types"
 import { hourKeys } from "../query-keys"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 import type { WorkType } from "@/lib/work-type-styles"
+import { format } from "date-fns"
 
 interface EditHourDialogProps {
     open: boolean
@@ -85,12 +87,14 @@ export function EditHourDialog({ open, onOpenChange }: EditHourDialogProps) {
                         )}
                         <div className="space-y-2">
                             <Label htmlFor="edit-date">{tCommon("fields.date")}</Label>
-                            <Input
-                                id="edit-date"
-                                type="date"
-                                value={editFormData.date}
-                                onChange={(e) => setEditFormData({ date: e.target.value })}
-                                required
+                            <DatePicker
+                                date={editFormData.date ? new Date(editFormData.date) : undefined}
+                                onDateChange={(date) =>
+                                    setEditFormData({
+                                        date: date ? format(date, "yyyy-MM-dd") : "",
+                                    })
+                                }
+                                placeholder={t("selectDate")}
                                 disabled={isEditLoading}
                             />
                         </div>

@@ -195,7 +195,10 @@
             "saveChanges": "Save Changes",
             "addNotesPlaceholder": "Add notes about this entry...",
             "durationFormat": "HH:MM",
-            "typeDuration": "Type duration (HH:MM)"
+            "typeDuration": "Type duration (HH:MM)",
+            "selectStartDate": "Select start date",
+            "selectEndDate": "Select end date",
+            "selectDate": "Select date"
         },
         "summary": {
             "weekSummary": "Week Summary",
@@ -334,6 +337,8 @@
             "enterReason": "Enter reason",
             "enterLocation": "Enter location",
             "selectType": "Select request type",
+            "selectStartDate": "Select start date",
+            "selectEndDate": "Select end date",
             "requestDetails": "Request Details",
             "skipWeekends": "Skip weekends",
             "skipHolidays": "Skip holidays"

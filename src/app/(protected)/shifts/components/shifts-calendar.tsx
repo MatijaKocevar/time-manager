@@ -28,11 +28,13 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import { DatePicker } from "@/components/ui/date-picker"
 import { useRequestStore } from "../../requests/stores/request-store"
 import { createRequest } from "../../requests/actions/request-actions"
 import { REQUEST_TYPES, REQUEST_TYPE } from "../../requests/constants"
 import { type RequestType } from "../../requests/schemas/request-schemas"
 import { getRequestTypeTranslationKey } from "../../requests/utils/translation-helpers"
+import { format } from "date-fns"
 
 interface User {
     id: string
@@ -432,20 +434,30 @@ export function ShiftsCalendar({
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
-                                <Input
-                                    id="startDate"
-                                    type="date"
-                                    value={formData.startDate}
-                                    onChange={(e) => setFormData({ startDate: e.target.value })}
+                                <DatePicker
+                                    date={
+                                        formData.startDate
+                                            ? new Date(formData.startDate)
+                                            : undefined
+                                    }
+                                    onDateChange={(date) =>
+                                        setFormData({
+                                            startDate: date ? format(date, "yyyy-MM-dd") : "",
+                                        })
+                                    }
+                                    placeholder={tRequestForm("selectStartDate")}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
-                                <Input
-                                    id="endDate"
-                                    type="date"
-                                    value={formData.endDate}
-                                    onChange={(e) => setFormData({ endDate: e.target.value })}
+                                <DatePicker
+                                    date={formData.endDate ? new Date(formData.endDate) : undefined}
+                                    onDateChange={(date) =>
+                                        setFormData({
+                                            endDate: date ? format(date, "yyyy-MM-dd") : "",
+                                        })
+                                    }
+                                    placeholder={tRequestForm("selectEndDate")}
                                 />
                             </div>
                         </div>

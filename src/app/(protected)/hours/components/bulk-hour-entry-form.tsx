@@ -5,6 +5,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { DatePicker } from "@/components/ui/date-picker"
 import { WorkTypeBadge } from "@/components/work-type-badge"
 import {
     Select,
@@ -19,6 +20,7 @@ import { HOUR_TYPES, MAX_HOURS_PER_DAY } from "../constants/hour-types"
 import { hourKeys } from "../query-keys"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 import type { WorkType } from "@/lib/work-type-styles"
+import { format } from "date-fns"
 
 interface HourEntryFormProps {
     onSuccess?: () => void
@@ -75,23 +77,35 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="start-date">{tCommon("fields.startDate")}</Label>
-                    <Input
-                        id="start-date"
-                        type="date"
-                        value={bulkEntryForm.data.startDate}
-                        onChange={(e) => setBulkEntryFormData({ startDate: e.target.value })}
-                        required
+                    <DatePicker
+                        date={
+                            bulkEntryForm.data.startDate
+                                ? new Date(bulkEntryForm.data.startDate)
+                                : undefined
+                        }
+                        onDateChange={(date) =>
+                            setBulkEntryFormData({
+                                startDate: date ? format(date, "yyyy-MM-dd") : "",
+                            })
+                        }
+                        placeholder={t("selectStartDate")}
                     />
                 </div>
 
                 <div className="space-y-2">
                     <Label htmlFor="end-date">{tCommon("fields.endDate")}</Label>
-                    <Input
-                        id="end-date"
-                        type="date"
-                        value={bulkEntryForm.data.endDate}
-                        onChange={(e) => setBulkEntryFormData({ endDate: e.target.value })}
-                        required
+                    <DatePicker
+                        date={
+                            bulkEntryForm.data.endDate
+                                ? new Date(bulkEntryForm.data.endDate)
+                                : undefined
+                        }
+                        onDateChange={(date) =>
+                            setBulkEntryFormData({
+                                endDate: date ? format(date, "yyyy-MM-dd") : "",
+                            })
+                        }
+                        placeholder={t("selectEndDate")}
                     />
                 </div>
             </div>
