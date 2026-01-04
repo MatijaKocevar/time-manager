@@ -8,7 +8,7 @@ NEXT_PID=$!
 sleep 2
 
 # Print custom URL
-echo "   - Custom:        https://time-manager.home:3000"
+echo "   - Custom:        https://time-manager.home"
 echo ""
 
 # Wait for Next.js process
