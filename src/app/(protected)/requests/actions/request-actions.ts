@@ -11,7 +11,6 @@ import {
     mapRequestTypeToHourType,
 } from "../../shifts/utils/request-shift-mapping"
 import {
-    notifyAdminsNewRequest,
     notifyUserApproval,
     notifyUserRejection,
     notifyUserCancellation,
@@ -74,17 +73,6 @@ export async function createRequest(input: CreateRequestInput) {
                 location,
                 affectsHourType: true,
             },
-        })
-
-        notifyAdminsNewRequest({
-            requestId: createdRequest.id,
-            userName: session.user.name || session.user.email || "Unknown User",
-            requestType: type,
-            startDate,
-            endDate,
-            reason,
-        }).catch((error) => {
-            console.error("Failed to notify admins:", error)
         })
 
         revalidatePath("/requests")

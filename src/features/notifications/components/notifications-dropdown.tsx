@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { Bell, Check, X, Loader2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,7 @@ import Link from "next/link"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { approveRequest, rejectRequest } from "@/app/(protected)/requests/actions/request-actions"
 import { requestKeys } from "@/app/(protected)/requests/query-keys"
+import { notificationKeys } from "../query-keys"
 import {
     getNotifications,
     markNotificationsAsRead,
@@ -72,12 +73,10 @@ export function NotificationsDropdown({
     const [activeTab, setActiveTab] = useState<"notifications" | "pending">("notifications")
     const [processingId, setProcessingId] = useState<string | null>(null)
     const [isOpen, setIsOpen] = useState(false)
-    const [visibleNotificationIds, setVisibleNotificationIds] = useState<Set<string>>(new Set())
-    const scrollAreaRef = useRef<HTMLDivElement>(null)
     const queryClient = useQueryClient()
 
-    const { data: notifications = initialNotifications, refetch } = useQuery({
-        queryKey: ["notifications"],
+    const { data: notifications = initialNotifications } = useQuery({
+        queryKey: notificationKeys.all,
         queryFn: getNotifications,
         initialData: initialNotifications,
         refetchInterval: 60000,
@@ -92,47 +91,38 @@ export function NotificationsDropdown({
         isAdmin,
     } = notifications
 
-    const totalBadgeCount = unreadCount + count
-
-    useEffect(() => {
-        if (isOpen && scrollAreaRef.current && userNotifications.length > 0) {
-            const observer = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach((entry) => {
-                        const notifId = entry.target.getAttribute("data-notification-id")
-                        if (notifId && entry.isIntersecting) {
-                            setVisibleNotificationIds((prev) => new Set(prev).add(notifId))
-                        }
-                    })
-                },
-                {
-                    root: scrollAreaRef.current,
-                    threshold: 0.5,
-                }
-            )
-
-            const notifElements = scrollAreaRef.current.querySelectorAll("[data-notification-id]")
-            notifElements.forEach((el) => observer.observe(el))
-
-            return () => observer.disconnect()
-        }
-    }, [isOpen, userNotifications])
+    const totalBadgeCount = isAdmin ? unreadCount + count : unreadCount
 
     const handleDropdownClose = useCallback(async () => {
-        if (visibleNotificationIds.size > 0) {
-            const unreadVisible = Array.from(visibleNotificationIds).filter((id) => {
-                const notif = userNotifications.find((n) => n.id === id)
-                return notif && !notif.read
-            })
+        if (activeTab === "notifications" && userNotifications.length > 0) {
+            const unreadIds = userNotifications.filter((n) => !n.read).map((n) => n.id)
 
-            if (unreadVisible.length > 0) {
-                await markNotificationsAsRead(unreadVisible)
-                refetch()
+            if (unreadIds.length > 0) {
+                await markNotificationsAsRead(unreadIds)
+                queryClient.invalidateQueries({ queryKey: notificationKeys.all })
             }
         }
-        setVisibleNotificationIds(new Set())
         setIsOpen(false)
-    }, [visibleNotificationIds, userNotifications, refetch])
+    }, [activeTab, userNotifications, queryClient])
+
+    const handleTabChange = useCallback(
+        async (newTab: "notifications" | "pending") => {
+            if (
+                activeTab === "notifications" &&
+                newTab === "pending" &&
+                userNotifications.length > 0
+            ) {
+                const unreadIds = userNotifications.filter((n) => !n.read).map((n) => n.id)
+
+                if (unreadIds.length > 0) {
+                    await markNotificationsAsRead(unreadIds)
+                    queryClient.invalidateQueries({ queryKey: notificationKeys.all })
+                }
+            }
+            setActiveTab(newTab)
+        },
+        [activeTab, userNotifications, queryClient]
+    )
 
     const approveMutation = useMutation({
         mutationFn: approveRequest,
@@ -144,7 +134,7 @@ export function NotificationsDropdown({
                 alert(`Error: ${data.error}`)
             }
             queryClient.invalidateQueries({ queryKey: requestKeys.all })
-            refetch()
+            queryClient.invalidateQueries({ queryKey: notificationKeys.all })
         },
         onError: (error) => {
             alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
@@ -164,7 +154,7 @@ export function NotificationsDropdown({
                 alert(`Error: ${data.error}`)
             }
             queryClient.invalidateQueries({ queryKey: requestKeys.all })
-            refetch()
+            queryClient.invalidateQueries({ queryKey: notificationKeys.all })
         },
         onError: (error) => {
             alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
@@ -218,7 +208,7 @@ export function NotificationsDropdown({
 
                 <div className="flex border-b">
                     <button
-                        onClick={() => setActiveTab("notifications")}
+                        onClick={() => handleTabChange("notifications")}
                         className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
                             activeTab === "notifications"
                                 ? "border-b-2 border-primary text-primary"
@@ -234,7 +224,7 @@ export function NotificationsDropdown({
                     </button>
                     {isAdmin && (
                         <button
-                            onClick={() => setActiveTab("pending")}
+                            onClick={() => handleTabChange("pending")}
                             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors relative ${
                                 activeTab === "pending"
                                     ? "border-b-2 border-primary text-primary"
@@ -251,7 +241,7 @@ export function NotificationsDropdown({
                     )}
                 </div>
 
-                <ScrollArea className="h-[400px]" ref={scrollAreaRef}>
+                <ScrollArea className="h-[400px]">
                     {activeTab === "notifications" ? (
                         <div className="p-4">
                             {userNotifications.length === 0 ? (
@@ -267,7 +257,6 @@ export function NotificationsDropdown({
                                         <Link
                                             key={notif.id}
                                             href={notif.url || "#"}
-                                            data-notification-id={notif.id}
                                             className={`block rounded-lg p-3 transition-colors hover:bg-accent ${
                                                 !notif.read ? "bg-blue-50 dark:bg-blue-950/20" : ""
                                             }`}
