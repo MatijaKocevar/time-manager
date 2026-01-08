@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { updateUser, deleteUser, changeUserPassword } from "../actions/user-actions"
@@ -16,7 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Trash2 } from "lucide-react"
+import { Trash2, Eye, EyeOff } from "lucide-react"
 import { getUserRoleTranslationKey } from "../utils/translation-helpers"
 import { type UserRole } from "../schemas/user-action-schemas"
 
@@ -37,6 +37,8 @@ export function EditUserForm({ user }: EditUserFormProps) {
 
     const [name, setName] = useState(user.name ?? "")
     const [role, setRole] = useState<UserRole>(user.role)
+    const [showPassword, setShowPassword] = useState(false)
+    const [confirmPassword, setConfirmPassword] = useState("")
 
     const newPassword = useUserFormStore(
         (state) => state.changePasswordForm.data?.newPassword || ""
@@ -60,6 +62,11 @@ export function EditUserForm({ user }: EditUserFormProps) {
     const clearEditError = useUserFormStore((state) => state.clearEditError)
     const clearChangePasswordError = useUserFormStore((state) => state.clearChangePasswordError)
     const clearDeleteError = useUserFormStore((state) => state.clearDeleteError)
+    const initializePasswordForm = useUserFormStore((state) => state.initializeChangePasswordForm)
+
+    useEffect(() => {
+        initializePasswordForm(user.id)
+    }, [user.id, initializePasswordForm])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -84,6 +91,12 @@ export function EditUserForm({ user }: EditUserFormProps) {
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault()
         clearChangePasswordError()
+
+        if (newPassword !== confirmPassword) {
+            setChangePasswordError(t("passwordMismatch"))
+            return
+        }
+
         setChangePasswordLoading(true)
 
         const result = await changeUserPassword({
@@ -97,6 +110,7 @@ export function EditUserForm({ user }: EditUserFormProps) {
             setChangePasswordError(result.error)
         } else {
             setChangePasswordFormData({ newPassword: "" })
+            setConfirmPassword("")
         }
     }
 
@@ -173,18 +187,68 @@ export function EditUserForm({ user }: EditUserFormProps) {
             <form onSubmit={handleChangePassword} className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="newPassword">{t("changePassword")}</Label>
-                    <Input
-                        id="newPassword"
-                        type="password"
-                        placeholder={t("enterNewPassword")}
-                        value={newPassword}
-                        onChange={(e) => setChangePasswordFormData({ newPassword: e.target.value })}
-                        disabled={isPasswordLoading}
-                    />
+                    <div className="relative">
+                        <Input
+                            id="newPassword"
+                            type={showPassword ? "text" : "password"}
+                            placeholder={t("enterNewPassword")}
+                            value={newPassword}
+                            onChange={(e) =>
+                                setChangePasswordFormData({ newPassword: e.target.value })
+                            }
+                            disabled={isPasswordLoading}
+                            className="pr-10"
+                        />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                            disabled={isPasswordLoading}
+                        >
+                            {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                        </Button>
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
+                    <div className="relative">
+                        <Input
+                            id="confirmPassword"
+                            type={showPassword ? "text" : "password"}
+                            placeholder={t("confirmNewPassword")}
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            disabled={isPasswordLoading}
+                            className="pr-10"
+                        />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                            disabled={isPasswordLoading}
+                        >
+                            {showPassword ? (
+                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                                <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                        </Button>
+                    </div>
                 </div>
                 {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
                 <div className="flex justify-end">
-                    <Button type="submit" disabled={isPasswordLoading || !newPassword}>
+                    <Button
+                        type="submit"
+                        disabled={isPasswordLoading || !newPassword || !confirmPassword}
+                    >
                         {isPasswordLoading ? t("changing") : t("changePassword")}
                     </Button>
                 </div>

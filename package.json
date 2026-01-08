@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "./scripts/dev-https.sh",
         "dev:https": "next dev --hostname 0.0.0.0",
-        "build": "next build",
+        "build": "prisma migrate deploy && next build",
         "start": "next start --hostname 0.0.0.0",
         "deploy": "./scripts/deploy.sh",
         "lint": "eslint",

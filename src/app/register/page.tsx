@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslations, useLocale } from "next-intl"
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LanguageToggle } from "@/features/locale/components/language-toggle"
+import { Eye, EyeOff } from "lucide-react"
 import { registerUser } from "./actions/register-actions"
 import { PASSWORD_MIN_LENGTH } from "./schemas/register-schemas"
 import { useRegisterStore } from "./stores/register-store"
@@ -18,6 +20,7 @@ export default function RegisterPage() {
     const locale = useLocale()
     const t = useTranslations("auth.register")
     const tCommon = useTranslations("common")
+    const [showPassword, setShowPassword] = useState(false)
 
     const formData = useRegisterStore((state) => state.formData)
     const error = useRegisterStore((state) => state.error)
@@ -122,16 +125,33 @@ export default function RegisterPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="password">{tCommon("fields.password")}</Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={formData.password}
-                                onChange={(e) => setFormData({ password: e.target.value })}
-                                required
-                                minLength={PASSWORD_MIN_LENGTH}
-                                disabled={isLoading}
-                                autoComplete="new-password"
-                            />
+                            <div className="relative">
+                                <Input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ password: e.target.value })}
+                                    required
+                                    minLength={PASSWORD_MIN_LENGTH}
+                                    disabled={isLoading}
+                                    autoComplete="new-password"
+                                    className="pr-10"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    disabled={isLoading}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                </Button>
+                            </div>
                             <p className="text-sm text-muted-foreground">
                                 {t("passwordRequirement", { minLength: PASSWORD_MIN_LENGTH })}
                             </p>
@@ -139,20 +159,37 @@ export default function RegisterPage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
-                            <Input
-                                id="confirmPassword"
-                                type="password"
-                                value={formData.confirmPassword}
-                                onChange={(e) =>
-                                    setFormData({
-                                        confirmPassword: e.target.value,
-                                    })
-                                }
-                                required
-                                minLength={PASSWORD_MIN_LENGTH}
-                                disabled={isLoading}
-                                autoComplete="new-password"
-                            />
+                            <div className="relative">
+                                <Input
+                                    id="confirmPassword"
+                                    type={showPassword ? "text" : "password"}
+                                    value={formData.confirmPassword}
+                                    onChange={(e) =>
+                                        setFormData({
+                                            confirmPassword: e.target.value,
+                                        })
+                                    }
+                                    required
+                                    minLength={PASSWORD_MIN_LENGTH}
+                                    disabled={isLoading}
+                                    autoComplete="new-password"
+                                    className="pr-10"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    disabled={isLoading}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                </Button>
+                            </div>
                         </div>
 
                         <Button type="submit" className="w-full" disabled={isLoading}>
