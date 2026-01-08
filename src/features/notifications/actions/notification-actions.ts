@@ -223,7 +223,6 @@ export async function cleanupOldNotifications() {
             },
         })
 
-        console.log(`Cleaned up ${result.count} old notifications`)
         return { success: true, deleted: result.count }
     } catch (error) {
         console.error("Error cleaning up old notifications:", error)
