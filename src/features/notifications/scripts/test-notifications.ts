@@ -6,10 +6,6 @@ import { sendPushNotification, sendPushToAdmins } from "../actions/notification-
 const prisma = new PrismaClient()
 
 async function testEmail(userEmail: string) {
-    console.log("\nTesting Email Notification")
-    console.log("================================")
-    console.log(`Sending test email to: ${userEmail}`)
-
     const result = await sendEmail(
         userEmail,
         "Test Notification - Time Manager",
@@ -25,47 +21,23 @@ async function testEmail(userEmail: string) {
         )
     )
 
-    if (result.success) {
-        console.log("Email sent successfully!")
-    } else {
-        console.log(`Email failed: ${result.error}`)
-    }
-
     return result
 }
 
 async function testPushNotification(userId: string) {
-    console.log("\nTesting Push Notification")
-    console.log("================================")
-    console.log(`Sending push notification to user: ${userId}`)
-
     const result = await sendPushNotification(userId, {
         title: "Test Push Notification",
         body: "This is a test notification from the Time Manager notification system",
         url: "/requests",
     })
 
-    if (result.success) {
-        console.log(`Push notification sent to ${result.sent} subscription(s)`)
-    } else {
-        console.log(`Push notification failed: ${result.error}`)
-    }
-
     return result
 }
 
 async function testPushToAllAdmins() {
-    console.log("\nTesting Push to All Admins")
-    console.log("================================")
-
-    const admins = await prisma.user.findMany({
+    await prisma.user.findMany({
         where: { role: "ADMIN" },
         select: { id: true, email: true, name: true },
-    })
-
-    console.log(`Found ${admins.length} admin(s)`)
-    admins.forEach((admin) => {
-        console.log(`  - ${admin.name || admin.email}`)
     })
 
     const result = await sendPushToAdmins({
@@ -74,32 +46,19 @@ async function testPushToAllAdmins() {
         url: "/admin/pending-requests",
     })
 
-    if (result.success) {
-        console.log(`Sent to ${result.sent} admin(s)`)
-    } else {
-        console.log(`Failed: ${result.error}`)
-    }
-
     return result
 }
 
 async function simulateRequestFlow(testUserEmail: string) {
-    console.log("\nSimulating Complete Request Flow")
-    console.log("=====================================")
-
     const testUser = await prisma.user.findUnique({
         where: { email: testUserEmail },
         select: { id: true, name: true, email: true },
     })
 
     if (!testUser) {
-        console.log(`User with email ${testUserEmail} not found`)
         return
     }
 
-    console.log(`User found: ${testUser.name || testUser.email}`)
-
-    console.log("\n1. Simulating request creation notification to admins...")
     await sendEmail(
         testUserEmail,
         "Test: New Request Created",
@@ -119,31 +78,21 @@ async function simulateRequestFlow(testUserEmail: string) {
         body: `${testUser.name || testUser.email} has submitted a test vacation request`,
         url: "/admin/pending-requests",
     })
-    console.log("Admin notifications sent")
 
-    console.log("\n2. Simulating approval notification to user...")
     await sendPushNotification(testUser.id, {
         title: "Request Approved ✓ (Test)",
         body: "Your test vacation request has been approved",
         url: "/requests",
     })
-    console.log("User approval notification sent")
 
-    console.log("\n3. Simulating rejection notification to user...")
     await sendPushNotification(testUser.id, {
         title: "Request Rejected (Test)",
         body: "Your test vacation request has been rejected",
         url: "/requests",
     })
-    console.log("User rejection notification sent")
-
-    console.log("\nComplete flow simulation finished!")
 }
 
 async function listPushSubscriptions() {
-    console.log("\nCurrent Push Subscriptions")
-    console.log("================================")
-
     const subscriptions = await prisma.pushSubscription.findMany({
         include: {
             user: {
@@ -152,23 +101,6 @@ async function listPushSubscriptions() {
         },
     })
 
-    if (subscriptions.length === 0) {
-        console.log("No push subscriptions found")
-        console.log("\nTo subscribe:")
-        console.log("1. Navigate to /profile in your app")
-        console.log("2. Click 'Enable Notifications'")
-        console.log("3. Accept the browser notification permission")
-        console.log("\nNote: Requires HTTPS. Run: next dev --experimental-https")
-    } else {
-        console.log(`Found ${subscriptions.length} subscription(s):\n`)
-        subscriptions.forEach((sub, index) => {
-            console.log(`${index + 1}. ${sub.user.name || sub.user.email} (${sub.user.role})`)
-            console.log(`   User ID: ${sub.userId}`)
-            console.log(`   Endpoint: ${sub.endpoint.substring(0, 50)}...`)
-            console.log(`   Created: ${sub.createdAt.toISOString()}\n`)
-        })
-    }
-
     return subscriptions
 }
 
@@ -176,32 +108,12 @@ async function main() {
     const args = process.argv.slice(2)
     const command = args[0]
 
-    console.log("Time Manager - Notification Testing Script")
-    console.log("==============================================\n")
-
-    if (!command) {
-        console.log("Available commands:")
-        console.log("  test-email <email>           - Send test email")
-        console.log("  test-push <userId>           - Send test push notification to user")
-        console.log("  test-admins                  - Send test push to all admins")
-        console.log("  simulate <userEmail>         - Simulate complete request notification flow")
-        console.log("  list-subscriptions           - List all push subscriptions")
-        console.log("\nExample:")
-        console.log("  npx tsx scripts/test-notifications.ts test-email admin@example.com")
-        console.log("  npx tsx scripts/test-notifications.ts test-push clxxxxxxx")
-        console.log("  npx tsx scripts/test-notifications.ts test-admins")
-        console.log("  npx tsx scripts/test-notifications.ts simulate user@example.com")
-        console.log("  npx tsx scripts/test-notifications.ts list-subscriptions")
-        process.exit(0)
-    }
-
     try {
         switch (command) {
             case "test-email": {
                 const email = args[1]
                 if (!email) {
                     console.error("Error: Email address required")
-                    console.log("Usage: npx tsx scripts/test-notifications.ts test-email <email>")
                     process.exit(1)
                 }
                 await testEmail(email)
@@ -212,7 +124,6 @@ async function main() {
                 const userId = args[1]
                 if (!userId) {
                     console.error("Error: User ID required")
-                    console.log("Usage: npx tsx scripts/test-notifications.ts test-push <userId>")
                     process.exit(1)
                 }
                 await testPushNotification(userId)
@@ -228,7 +139,6 @@ async function main() {
                 const email = args[1]
                 if (!email) {
                     console.error("Error: User email required")
-                    console.log("Usage: npx tsx scripts/test-notifications.ts simulate <userEmail>")
                     process.exit(1)
                 }
                 await simulateRequestFlow(email)
@@ -242,7 +152,6 @@ async function main() {
 
             default:
                 console.error(`Unknown command: ${command}`)
-                console.log("Run without arguments to see available commands")
                 process.exit(1)
         }
     } catch (error) {

@@ -42,17 +42,13 @@ async function createVerificationToken(email: string, expiryHours: number = 24) 
 }
 
 export async function registerUser(input: unknown) {
-    console.log("Registration attempt:", input)
-
     const validation = RegisterSchema.safeParse(input)
 
     if (!validation.success) {
-        console.log("Validation failed:", validation.error.issues)
         return { error: validation.error.issues[0].message }
     }
 
     const { name, email, password, locale } = validation.data
-    console.log("Validation passed for:", email, "locale:", locale)
 
     try {
         const existingUser = await prisma.user.findUnique({
@@ -60,15 +56,12 @@ export async function registerUser(input: unknown) {
         })
 
         if (existingUser) {
-            console.log("User already exists:", email)
             return { error: "User with this email already exists" }
         }
 
-        console.log("Hashing password...")
         const hashedPassword = await bcrypt.hash(password, 12)
 
-        console.log("Creating user...")
-        const newUser = await prisma.user.create({
+        await prisma.user.create({
             data: {
                 name,
                 email,
@@ -78,13 +71,9 @@ export async function registerUser(input: unknown) {
                 emailVerified: null,
             },
         })
-        console.log("User created:", newUser.id)
 
-        console.log("Creating verification token...")
         const token = await createVerificationToken(email)
-        console.log("Token created:", token.substring(0, 10) + "...")
 
-        console.log("Sending verification email...")
         const emailLocale = (locale || "en") as "en" | "sl"
         const emailHtml = verificationEmail(email, token, emailLocale)
         const emailSubject =
@@ -101,7 +90,6 @@ export async function registerUser(input: unknown) {
             }
         }
 
-        console.log("Verification email sent successfully")
         return { success: true }
     } catch (error) {
         console.error("Registration error:", error)

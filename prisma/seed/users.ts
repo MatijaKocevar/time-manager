@@ -9,11 +9,6 @@ export async function seedUsers(
     adminCount: number,
     minimal: boolean = false
 ) {
-    if (minimal) {
-        console.log(`\nSeeding Demo Admin account...`)
-    } else {
-        console.log(`\nSeeding ${count + 1} users (${adminCount} admins + Demo Admin)...`)
-    }
     const hashedPassword = await bcrypt.hash("password123", 12)
 
     const users: Array<{ email: string; name: string; password: string; role: "USER" | "ADMIN" }> =
@@ -61,6 +56,5 @@ export async function seedUsers(
         return results
     })
 
-    console.log(`Created ${createdUsers.length} users`)
     return createdUsers
 }

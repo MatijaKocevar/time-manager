@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
-import type { HourType } from "@/../../prisma/generated/client"
+import type { HourType, RequestType } from "@/../../prisma/generated/client"
 import {
     mapRequestTypeToShiftLocation,
     mapShiftLocationToHourType,
@@ -266,7 +266,6 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                 const endDay = new Date(request.endDate)
                 endDay.setUTCHours(23, 59, 59, 999)
 
-                // Delete auto-generated TaskTimeEntry records
                 const systemTask = await tx.task.findFirst({
                     where: {
                         userId: request.userId,
@@ -288,7 +287,6 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                     })
                 }
 
-                // Also delete any old HourEntry records if they exist
                 await tx.hourEntry.deleteMany({
                     where: {
                         userId: request.userId,
@@ -305,9 +303,6 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                 })
             }
 
-            console.log(`Starting shift deletion for request type: ${request.type}`)
-            console.log(`Request date range: ${request.startDate} to ${request.endDate}`)
-
             const startDay = new Date(request.startDate)
             startDay.setUTCHours(0, 0, 0, 0)
             const endDay = new Date(request.endDate)
@@ -321,17 +316,14 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                 const currentDay = new Date(startDay)
                 currentDay.setUTCDate(startDay.getUTCDate() + i)
 
-                console.log(`Attempting to delete shifts for date: ${currentDay.toISOString()}`)
-
-                const existingShifts = await tx.shift.findMany({
+                await tx.shift.findMany({
                     where: {
                         userId: request.userId,
                         date: currentDay,
                     },
                 })
-                console.log(`Found ${existingShifts.length} shifts for this date:`, existingShifts)
 
-                const deleteResult = await tx.shift.deleteMany({
+                await tx.shift.deleteMany({
                     where: {
                         userId: request.userId,
                         date: currentDay,
@@ -340,11 +332,8 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                         },
                     },
                 })
-
-                console.log(`Deleted ${deleteResult.count} shifts`)
             }
 
-            // Reverse migrate hour entries if request affected hour type
             if (
                 request.affectsHourType &&
                 request.type !== "VACATION" &&
@@ -357,7 +346,6 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                 const revertEndDate = new Date(request.endDate)
                 revertEndDate.setHours(23, 59, 59, 999)
 
-                // Bulk update all hour entries back to WORK
                 await tx.hourEntry.updateMany({
                     where: {
                         userId: request.userId,
@@ -373,7 +361,6 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                     },
                 })
 
-                // Also revert TaskTimeEntry records back to WORK
                 await tx.taskTimeEntry.updateMany({
                     where: {
                         userId: request.userId,
@@ -390,14 +377,11 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
             }
         })
 
-        // Recalculate summaries outside transaction for better performance
         if (
             request.affectsHourType &&
             request.type !== "VACATION" &&
             request.type !== "SICK_LEAVE"
         ) {
-            const shiftLocation = mapRequestTypeToShiftLocation(request.type)
-            const originalHourType = mapShiftLocationToHourType(shiftLocation)
             const recalcDate = new Date(request.startDate)
             const recalcEndDate = new Date(request.endDate)
 
@@ -471,7 +455,10 @@ function getRequestDateTimeRange(request: {
 }
 
 async function findOverlappingRequests(
-    tx: any,
+    tx: Omit<
+        typeof prisma,
+        "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+    >,
     userId: string,
     startDateTime: Date,
     endDateTime: Date,
@@ -485,14 +472,17 @@ async function findOverlappingRequests(
         },
     })
 
-    return requests.filter((req: any) => {
+    return requests.filter((req) => {
         const reqRange = getRequestDateTimeRange(req)
         return reqRange.startDateTime < endDateTime && reqRange.endDateTime > startDateTime
     })
 }
 
 async function cleanupRequestDataInRange(
-    tx: any,
+    tx: Omit<
+        typeof prisma,
+        "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+    >,
     userId: string,
     startDateTime: Date,
     endDateTime: Date,
@@ -524,7 +514,7 @@ async function cleanupRequestDataInRange(
             })
         }
     } else {
-        const hourType = mapRequestTypeToHourType(requestType as any)
+        const hourType = mapRequestTypeToHourType(requestType as RequestType)
 
         await tx.hourEntry.updateMany({
             where: {
@@ -547,8 +537,25 @@ async function cleanupRequestDataInRange(
 }
 
 async function trimOverlappingRequest(
-    tx: any,
-    oldRequest: any,
+    tx: Omit<
+        typeof prisma,
+        "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+    >,
+    oldRequest: {
+        id: string
+        userId: string
+        startDate: Date
+        endDate: Date
+        startTime: string | null
+        endTime: string | null
+        isFullDay: boolean
+        type: RequestType
+        requestedHours: unknown
+        affectsHourType: boolean
+        skipWeekends: boolean
+        skipHolidays: boolean
+        approvedBy: string | null
+    },
     newStartDateTime: Date,
     newEndDateTime: Date,
     newRequestId: string
@@ -667,7 +674,7 @@ async function trimOverlappingRequest(
                 startTime: oldRequest.startTime,
                 endTime: oldRequest.endTime,
                 isFullDay: oldRequest.isFullDay,
-                requestedHours: oldRequest.requestedHours,
+                requestedHours: oldRequest.requestedHours as number | null,
                 reason: `Split from original request due to overlap`,
                 affectsHourType: oldRequest.affectsHourType,
                 skipWeekends: oldRequest.skipWeekends,
@@ -834,22 +841,10 @@ export async function approveRequest(input: ApproveRequestInput) {
                 }
             }
 
-            // Handle hour entries based on request type
             if (request.affectsHourType) {
                 const targetHourType = mapRequestTypeToHourType(request.type)
-                console.log(`🔍 Processing hour entries for request type: ${request.type}`)
-                console.log(`🔍 Target hour type: ${targetHourType}`)
-                console.log(
-                    `🔍 Checking if VACATION or SICK_LEAVE: ${request.type === "VACATION" || request.type === "SICK_LEAVE"}`
-                )
 
                 if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
-                    console.log(
-                        `✅ ENTERING VACATION/SICK_LEAVE BRANCH - will create NEW entries only`
-                    )
-
-                    // FIRST: Delete any existing VACATION/SICK_LEAVE tracked hours from system tasks for this date range
-                    // This ensures VACATION and SICK_LEAVE are mutually exclusive
                     const vacationSickLeaveTasks = await tx.task.findMany({
                         where: {
                             userId: request.userId,
@@ -863,17 +858,12 @@ export async function approveRequest(input: ApproveRequestInput) {
                     if (vacationSickLeaveTasks.length > 0) {
                         const taskIds = vacationSickLeaveTasks.map((t) => t.id)
 
-                        // Set up proper date range - start at beginning of first day, end at end of last day
                         const deleteStartDate = new Date(request.startDate)
                         deleteStartDate.setUTCHours(0, 0, 0, 0)
                         const deleteEndDate = new Date(request.endDate)
                         deleteEndDate.setUTCHours(23, 59, 59, 999)
 
-                        console.log(
-                            `🗑️ Deleting existing VACATION/SICK_LEAVE entries from ${deleteStartDate.toISOString()} to ${deleteEndDate.toISOString()}`
-                        )
-
-                        const deleted = await tx.taskTimeEntry.deleteMany({
+                        await tx.taskTimeEntry.deleteMany({
                             where: {
                                 userId: request.userId,
                                 taskId: { in: taskIds },
@@ -886,12 +876,8 @@ export async function approveRequest(input: ApproveRequestInput) {
                                 },
                             },
                         })
-                        console.log(
-                            `🗑️ Deleted ${deleted.count} existing VACATION/SICK_LEAVE entries for date range`
-                        )
                     }
 
-                    // For VACATION/SICK_LEAVE: Create tracked entries using user's work hours (as TaskTimeEntry)
                     const requestUser = await tx.user.findUnique({
                         where: { id: request.userId },
                         select: {
@@ -914,7 +900,6 @@ export async function approveRequest(input: ApproveRequestInput) {
                         (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
                     )
 
-                    // Get or create a system task for vacation/sick leave tracking
                     const systemTaskTitle = `System: ${request.type}`
                     let systemTask = await tx.task.findFirst({
                         where: {
@@ -1097,7 +1082,6 @@ export async function approveRequest(input: ApproveRequestInput) {
             }
         })
 
-        // Recalculate summaries for all hour types
         if (request.affectsHourType) {
             await refreshDailyHourSummary()
         }

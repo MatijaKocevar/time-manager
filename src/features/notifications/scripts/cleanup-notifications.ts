@@ -7,7 +7,7 @@ async function cleanup() {
         const ninetyDaysAgo = new Date()
         ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
-        const result = await prisma.notification.deleteMany({
+        await prisma.notification.deleteMany({
             where: {
                 createdAt: {
                     lt: ninetyDaysAgo,
@@ -15,7 +15,6 @@ async function cleanup() {
             },
         })
 
-        console.log(`Cleaned up ${result.count} notifications older than 90 days`)
         await prisma.$disconnect()
         process.exit(0)
     } catch (error) {

@@ -42,30 +42,23 @@ export const usePushNotificationStore = create<
         set({ isLoading: true, error: null })
 
         try {
-            console.log("Requesting notification permission...")
             const permission = await Notification.requestPermission()
-            console.log("Permission result:", permission)
 
             if (permission !== "granted") {
                 set({ error: "Notification permission denied", isLoading: false })
                 return
             }
 
-            console.log("Getting service worker registration...")
             const registration = await navigator.serviceWorker.ready
-            console.log("Service worker ready, subscribing...")
 
             const sub = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
             })
-            console.log("Push subscription created:", sub)
 
             const serializedSub = JSON.parse(JSON.stringify(sub))
-            console.log("Calling subscribeUser with:", serializedSub)
 
             const result = await subscribeUser(serializedSub)
-            console.log("subscribeUser result:", result)
 
             if (result.error) {
                 set({ error: result.error, isLoading: false })
@@ -75,7 +68,6 @@ export const usePushNotificationStore = create<
                 set({ isLoading: false })
             }
         } catch (err) {
-            console.error("Error subscribing to push notifications:", err)
             set({ error: "Failed to subscribe to notifications", isLoading: false })
             throw err
         }

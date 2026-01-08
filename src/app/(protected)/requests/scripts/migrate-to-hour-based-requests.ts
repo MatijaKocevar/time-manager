@@ -1,16 +1,12 @@
 import { prisma } from "@/lib/prisma"
 
 async function migrateToHourBasedRequests() {
-    console.log("Starting migration to hour-based requests...")
-
     try {
         const requests = await prisma.request.findMany({
             where: {
                 OR: [{ startTime: null }, { endTime: null }],
             },
         })
-
-        console.log(`Found ${requests.length} requests to update`)
 
         for (const request of requests) {
             await prisma.request.update({
@@ -23,15 +19,11 @@ async function migrateToHourBasedRequests() {
             })
         }
 
-        console.log(`Updated ${requests.length} requests with default time values`)
-
         const shiftsToUpdate = await prisma.shift.findMany({
             where: {
                 OR: [{ startDateTime: null }, { endDateTime: null }],
             },
         })
-
-        console.log(`Found ${shiftsToUpdate.length} shifts to update`)
 
         for (const shift of shiftsToUpdate) {
             const startDateTime = new Date(shift.date)
@@ -48,10 +40,6 @@ async function migrateToHourBasedRequests() {
                 },
             })
         }
-
-        console.log(`Updated ${shiftsToUpdate.length} shifts with DateTime values`)
-
-        console.log("Migration completed successfully!")
     } catch (error) {
         console.error("Migration failed:", error)
         throw error
