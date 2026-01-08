@@ -72,6 +72,8 @@ export function ShiftsCalendar({
     const t = useTranslations("shifts")
     const tCommon = useTranslations("common")
     const tLocations = useTranslations("shifts.locations")
+    const tLocationsShort = useTranslations("shifts.locationsShort")
+    const tDialog = useTranslations("shifts.dialog")
     const tRequestForm = useTranslations("requests.form")
     const tRequestTypes = useTranslations("requests.types")
     const locale = useLocale()
@@ -81,6 +83,11 @@ export function ShiftsCalendar({
     const viewMode = initialViewMode
     const currentDate = initialSelectedDate
     const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false)
+    const [selectedDayShifts, setSelectedDayShifts] = useState<{
+        date: Date
+        user: User
+        shifts: Shift[]
+    } | null>(null)
 
     const formData = useRequestStore((state) => state.formData)
     const setFormData = useRequestStore((state) => state.setFormData)
@@ -173,11 +180,15 @@ export function ShiftsCalendar({
         return holidaysByDate.get(key)
     }
 
-    const handleCellClick = (date: Date) => {
-        resetForm()
-        const dateString = date.toISOString().split("T")[0]
-        setFormData({ startDate: dateString, endDate: dateString })
-        setIsRequestDialogOpen(true)
+    const handleCellClick = (date: Date, user: User, shifts: Shift[]) => {
+        if (shifts.length > 0) {
+            setSelectedDayShifts({ date, user, shifts })
+        } else {
+            resetForm()
+            const dateString = date.toISOString().split("T")[0]
+            setFormData({ startDate: dateString, endDate: dateString })
+            setIsRequestDialogOpen(true)
+        }
     }
 
     const handleDialogClose = (open: boolean) => {
@@ -416,56 +427,78 @@ export function ShiftsCalendar({
                                             className={`text-center p-2 cursor-pointer ${
                                                 isWeekend ? "bg-muted/50" : ""
                                             } ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
-                                            onClick={() => handleCellClick(date)}
+                                            onClick={() => handleCellClick(date, user, shifts)}
                                         >
-                                            {shouldShowDefault && (
-                                                <div
-                                                    className={`rounded-md p-2 text-xs ${SHIFT_LOCATION_COLORS.OFFICE.bg} ${SHIFT_LOCATION_COLORS.OFFICE.text} min-h-10 flex items-center justify-center`}
-                                                >
-                                                    {tLocations("office")}
-                                                </div>
-                                            )}
-                                            {shifts.map((shift, idx) => {
-                                                const isPartialDay =
-                                                    shift.startDateTime &&
-                                                    shift.endDateTime &&
-                                                    (new Date(shift.startDateTime).getHours() !==
-                                                        0 ||
-                                                        new Date(
-                                                            shift.startDateTime
-                                                        ).getMinutes() !== 0 ||
-                                                        new Date(shift.endDateTime).getHours() !==
-                                                            23 ||
-                                                        new Date(shift.endDateTime).getMinutes() !==
-                                                            59)
-
-                                                const timeRange =
-                                                    isPartialDay &&
-                                                    shift.startDateTime &&
-                                                    shift.endDateTime
-                                                        ? `${new Date(shift.startDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}-${new Date(shift.endDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}`
-                                                        : null
-
-                                                return (
+                                            <div className="flex flex-wrap gap-1 justify-center items-center min-h-[40px] p-1">
+                                                {shouldShowDefault && (
                                                     <div
-                                                        key={shift.id}
-                                                        className={`rounded-md p-2 text-xs ${SHIFT_LOCATION_COLORS[shift.location].bg} ${SHIFT_LOCATION_COLORS[shift.location].text} min-h-10 flex flex-col items-center justify-center ${idx > 0 ? "mt-1" : ""}`}
+                                                        className={`rounded px-1.5 py-1 text-[10px] font-semibold ${SHIFT_LOCATION_COLORS.OFFICE.bg} ${SHIFT_LOCATION_COLORS.OFFICE.text}`}
                                                     >
-                                                        <div>
-                                                            {tLocations(
-                                                                getShiftLocationTranslationKey(
-                                                                    shift.location
-                                                                )
-                                                            )}
-                                                        </div>
-                                                        {timeRange && (
-                                                            <div className="text-[10px] opacity-80 mt-0.5">
-                                                                {timeRange}
-                                                            </div>
-                                                        )}
+                                                        {tLocationsShort("office")}
                                                     </div>
-                                                )
-                                            })}
+                                                )}
+                                                {shifts.map((shift) => {
+                                                    const isPartialDay =
+                                                        shift.startDateTime &&
+                                                        shift.endDateTime &&
+                                                        (new Date(
+                                                            shift.startDateTime
+                                                        ).getHours() !== 0 ||
+                                                            new Date(
+                                                                shift.startDateTime
+                                                            ).getMinutes() !== 0 ||
+                                                            new Date(
+                                                                shift.endDateTime
+                                                            ).getHours() !== 23 ||
+                                                            new Date(
+                                                                shift.endDateTime
+                                                            ).getMinutes() !== 59)
+
+                                                    const timeRange =
+                                                        isPartialDay &&
+                                                        shift.startDateTime &&
+                                                        shift.endDateTime
+                                                            ? `${new Date(shift.startDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}-${new Date(shift.endDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}`
+                                                            : null
+
+                                                    return (
+                                                        <Tooltip key={shift.id}>
+                                                            <TooltipTrigger asChild>
+                                                                <div
+                                                                    className={`rounded px-1.5 py-1 text-[10px] font-semibold ${SHIFT_LOCATION_COLORS[shift.location].bg} ${SHIFT_LOCATION_COLORS[shift.location].text} cursor-pointer hover:opacity-80`}
+                                                                >
+                                                                    {tLocationsShort(
+                                                                        getShiftLocationTranslationKey(
+                                                                            shift.location
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <div className="text-xs">
+                                                                    <div className="font-semibold">
+                                                                        {tLocations(
+                                                                            getShiftLocationTranslationKey(
+                                                                                shift.location
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                    {timeRange && (
+                                                                        <div className="text-muted-foreground mt-1">
+                                                                            {timeRange}
+                                                                        </div>
+                                                                    )}
+                                                                    {shift.notes && (
+                                                                        <div className="text-muted-foreground mt-1 max-w-[200px]">
+                                                                            {shift.notes}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    )
+                                                })}
+                                            </div>
                                         </TableCell>
                                     )
                                 })}
@@ -666,6 +699,87 @@ export function ShiftsCalendar({
                                 : tRequestForm("submitRequest")}
                         </Button>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={!!selectedDayShifts}
+                onOpenChange={(open) => !open && setSelectedDayShifts(null)}
+            >
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {selectedDayShifts &&
+                                tDialog("title", {
+                                    date: selectedDayShifts.date.toLocaleDateString(dateLocale, {
+                                        weekday: "long",
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                    }),
+                                })}
+                        </DialogTitle>
+                    </DialogHeader>
+                    {selectedDayShifts && (
+                        <div className="space-y-4">
+                            <div>
+                                <div className="text-sm font-medium text-muted-foreground">
+                                    {t("table.employee")}
+                                </div>
+                                <div className="text-base font-semibold">
+                                    {selectedDayShifts.user.name || selectedDayShifts.user.email}
+                                </div>
+                            </div>
+                            {selectedDayShifts.shifts.length === 0 ? (
+                                <div className="text-sm text-muted-foreground py-4 text-center">
+                                    {tDialog("noShifts")}
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {selectedDayShifts.shifts.map((shift) => {
+                                        const isPartialDay =
+                                            shift.startDateTime &&
+                                            shift.endDateTime &&
+                                            (new Date(shift.startDateTime).getHours() !== 0 ||
+                                                new Date(shift.startDateTime).getMinutes() !== 0 ||
+                                                new Date(shift.endDateTime).getHours() !== 23 ||
+                                                new Date(shift.endDateTime).getMinutes() !== 59)
+
+                                        const timeRange =
+                                            isPartialDay && shift.startDateTime && shift.endDateTime
+                                                ? `${new Date(shift.startDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })} - ${new Date(shift.endDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}`
+                                                : tCommon("time.allDay") || "All Day"
+
+                                        return (
+                                            <div
+                                                key={shift.id}
+                                                className={`rounded-lg p-3 ${SHIFT_LOCATION_COLORS[shift.location].bg} ${SHIFT_LOCATION_COLORS[shift.location].text}`}
+                                            >
+                                                <div className="font-semibold mb-1">
+                                                    {tLocations(
+                                                        getShiftLocationTranslationKey(
+                                                            shift.location
+                                                        )
+                                                    )}
+                                                </div>
+                                                <div className="text-sm opacity-90">
+                                                    {timeRange}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            )}
+                            <div className="flex justify-end">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setSelectedDayShifts(null)}
+                                >
+                                    {tDialog("close")}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

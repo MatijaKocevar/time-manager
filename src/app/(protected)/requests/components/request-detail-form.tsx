@@ -192,7 +192,7 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                         onValueChange={(value) => setFormData({ type: value as RequestType })}
                     >
                         <SelectTrigger id="type">
-                            <SelectValue>
+                            <SelectValue placeholder={t("selectType")}>
                                 {formData.type
                                     ? tTypes(
                                           getRequestTypeTranslationKey(formData.type as RequestType)

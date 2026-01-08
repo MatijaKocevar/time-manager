@@ -70,7 +70,7 @@ export function RequestsTable({
         )
     })
 
-    const columnCount = showUser ? 8 : 7
+    const columnCount = showUser ? 9 : 8
 
     return (
         <>
@@ -107,6 +107,7 @@ export function RequestsTable({
                             <TableHead className="min-w-[120px]">
                                 {tCommon("fields.endDate")}
                             </TableHead>
+                            <TableHead className="min-w-[100px]">{t("table.hours")}</TableHead>
                             <TableHead className="min-w-[100px]">
                                 {tCommon("fields.status")}
                             </TableHead>
@@ -155,6 +156,21 @@ export function RequestsTable({
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
                                         {formatDateTime(request.endDate, request.endTime)}
+                                    </TableCell>
+                                    <TableCell>
+                                        {request.requestedHours !== null &&
+                                        request.requestedHours !== undefined
+                                            ? (() => {
+                                                  const totalHours = Number(request.requestedHours)
+                                                  const hours = Math.floor(totalHours)
+                                                  const minutes = Math.round(
+                                                      (totalHours - hours) * 60
+                                                  )
+                                                  return minutes > 0
+                                                      ? `${hours}h ${minutes}m`
+                                                      : `${hours}h`
+                                              })()
+                                            : "-"}
                                     </TableCell>
                                     <TableCell>
                                         <span

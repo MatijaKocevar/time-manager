@@ -124,9 +124,9 @@ export async function startTimer(input: StartTimerInput) {
                     const [startHour, startMin] = request.startTime.split(":").map(Number)
                     const [endHour, endMin] = request.endTime.split(":").map(Number)
                     requestStart = new Date(request.startDate)
-                    requestStart.setHours(startHour, startMin, 0, 0)
+                    requestStart.setUTCHours(startHour, startMin, 0, 0)
                     requestEnd = new Date(request.endDate)
-                    requestEnd.setHours(endHour, endMin, 0, 0)
+                    requestEnd.setUTCHours(endHour, endMin, 0, 0)
                 }
 
                 if (now >= requestStart && now <= requestEnd) {

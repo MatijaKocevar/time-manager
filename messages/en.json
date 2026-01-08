@@ -93,7 +93,8 @@
             "day": "Day",
             "hour": "Hour",
             "minute": "Minute",
-            "second": "Second"
+            "second": "Second",
+            "allDay": "All Day"
         },
         "weekdays": {
             "monday": "Monday",
@@ -355,7 +356,8 @@
             "user": "User",
             "unknown": "Unknown",
             "edit": "Edit",
-            "view": "View"
+            "view": "View",
+            "hours": "Hours"
         },
         "messages": {
             "noRequestsMatch": "No requests match your search"
@@ -368,6 +370,18 @@
             "vacation": "Vacation",
             "sickLeave": "Sick Leave",
             "other": "Other"
+        },
+        "locationsShort": {
+            "office": "OFF",
+            "home": "WFH",
+            "vacation": "VAC",
+            "sickLeave": "SL",
+            "other": "OTH"
+        },
+        "dialog": {
+            "title": "Shift Details - {date}",
+            "close": "Close",
+            "noShifts": "No shifts for this day"
         },
         "table": {
             "employee": "Employee",

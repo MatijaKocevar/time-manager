@@ -93,7 +93,8 @@
             "day": "Dan",
             "hour": "Ura",
             "minute": "Minuta",
-            "second": "Sekunda"
+            "second": "Sekunda",
+            "allDay": "Cel dan"
         },
         "weekdays": {
             "monday": "Ponedeljek",
@@ -355,7 +356,8 @@
             "user": "Uporabnik",
             "unknown": "Neznano",
             "edit": "Uredi",
-            "view": "Poglej"
+            "view": "Poglej",
+            "hours": "Ure"
         },
         "messages": {
             "noRequestsMatch": "Noben zahtevek ne ustreza iskanju"
@@ -368,6 +370,18 @@
             "vacation": "Dopust",
             "sickLeave": "Bolniška",
             "other": "Drugo"
+        },
+        "locationsShort": {
+            "office": "PIS",
+            "home": "DDD",
+            "vacation": "DOP",
+            "sickLeave": "BOL",
+            "other": "DRU"
+        },
+        "dialog": {
+            "title": "Podrobnosti izmene - {date}",
+            "close": "Zapri",
+            "noShifts": "Ni izmen za ta dan"
         },
         "table": {
             "employee": "Zaposleni",

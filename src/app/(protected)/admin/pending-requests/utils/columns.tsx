@@ -83,29 +83,19 @@ export function createColumns({
         {
             accessorKey: "startDate",
             header: translations.table.startDate,
-            cell: ({ row }) => (
-                <div>
-                    <div>{formatDate(row.original.startDate, locale)}</div>
-                    {row.original.startTime && (
-                        <div className="text-xs text-muted-foreground">
-                            {row.original.startTime}
-                        </div>
-                    )}
-                </div>
-            ),
+            cell: ({ row }) => {
+                const date = formatDate(row.original.startDate, locale)
+                return row.original.startTime ? `${date} ${row.original.startTime}` : date
+            },
             enableColumnFilter: false,
         },
         {
             accessorKey: "endDate",
             header: translations.table.endDate,
-            cell: ({ row }) => (
-                <div>
-                    <div>{formatDate(row.original.endDate, locale)}</div>
-                    {row.original.endTime && (
-                        <div className="text-xs text-muted-foreground">{row.original.endTime}</div>
-                    )}
-                </div>
-            ),
+            cell: ({ row }) => {
+                const date = formatDate(row.original.endDate, locale)
+                return row.original.endTime ? `${date} ${row.original.endTime}` : date
+            },
             enableColumnFilter: false,
         },
         {
@@ -116,14 +106,12 @@ export function createColumns({
                     row.original.requestedHours !== null &&
                     row.original.requestedHours !== undefined
                 ) {
-                    return `${Number(row.original.requestedHours).toFixed(2)}h`
+                    const totalHours = Number(row.original.requestedHours)
+                    const hours = Math.floor(totalHours)
+                    const minutes = Math.round((totalHours - hours) * 60)
+                    return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
                 }
-                const workdays = calculateWorkdays(
-                    row.original.startDate,
-                    row.original.endDate,
-                    holidays
-                )
-                return `${workdays * 8}h`
+                return "-"
             },
             enableColumnFilter: false,
         },
