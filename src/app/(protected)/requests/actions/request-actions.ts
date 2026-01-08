@@ -891,7 +891,20 @@ export async function approveRequest(input: ApproveRequestInput) {
                         )
                     }
 
-                    // For VACATION/SICK_LEAVE: Create 8-hour tracked entries (as TaskTimeEntry)
+                    // For VACATION/SICK_LEAVE: Create tracked entries using user's work hours (as TaskTimeEntry)
+                    const requestUser = await tx.user.findUnique({
+                        where: { id: request.userId },
+                        select: {
+                            workStartTime: true,
+                            workEndTime: true,
+                            workHoursPerDay: true,
+                        },
+                    })
+
+                    const userWorkHours = requestUser?.workHoursPerDay || 8
+                    const userStartTime = requestUser?.workStartTime || "08:00"
+                    const userEndTime = requestUser?.workEndTime || "16:00"
+
                     const startDay = new Date(request.startDate)
                     startDay.setUTCHours(0, 0, 0, 0)
                     const endDay = new Date(request.endDate)
@@ -944,11 +957,13 @@ export async function approveRequest(input: ApproveRequestInput) {
                             let hours: number
 
                             if (request.isFullDay || !request.startTime || !request.endTime) {
-                                hours = 8
+                                hours = userWorkHours
+                                const [startHour, startMin] = userStartTime.split(":").map(Number)
+                                const [endHour, endMin] = userEndTime.split(":").map(Number)
                                 entryStart = new Date(currentDay)
-                                entryStart.setUTCHours(8, 0, 0, 0)
+                                entryStart.setUTCHours(startHour, startMin, 0, 0)
                                 entryEnd = new Date(currentDay)
-                                entryEnd.setUTCHours(16, 0, 0, 0)
+                                entryEnd.setUTCHours(endHour, endMin, 0, 0)
                             } else {
                                 const isFirstDay = i === 0
                                 const isLastDay = i === daysDiff
@@ -956,37 +971,57 @@ export async function approveRequest(input: ApproveRequestInput) {
                                 if (isFirstDay && isLastDay) {
                                     hours = request.requestedHours
                                         ? Number(request.requestedHours)
-                                        : 8
+                                        : userWorkHours
                                     const [startHour, startMin] = request.startTime
                                         .split(":")
                                         .map(Number)
                                     const [endHour, endMin] = request.endTime.split(":").map(Number)
                                     entryStart = new Date(currentDay)
-                                    entryStart.setHours(startHour, startMin, 0, 0)
+                                    entryStart.setUTCHours(startHour, startMin, 0, 0)
                                     entryEnd = new Date(currentDay)
-                                    entryEnd.setHours(endHour, endMin, 0, 0)
+                                    entryEnd.setUTCHours(endHour, endMin, 0, 0)
                                 } else if (isFirstDay) {
                                     const [startHour, startMin] = request.startTime
                                         .split(":")
                                         .map(Number)
+                                    const [userEndHour, userEndMin] = userEndTime
+                                        .split(":")
+                                        .map(Number)
                                     entryStart = new Date(currentDay)
-                                    entryStart.setHours(startHour, startMin, 0, 0)
+                                    entryStart.setUTCHours(startHour, startMin, 0, 0)
                                     entryEnd = new Date(currentDay)
-                                    entryEnd.setHours(23, 59, 59, 999)
-                                    hours = 24 - startHour - startMin / 60
+                                    entryEnd.setUTCHours(userEndHour, userEndMin, 0, 0)
+                                    hours =
+                                        (userEndHour * 60 +
+                                            userEndMin -
+                                            startHour * 60 -
+                                            startMin) /
+                                        60
                                 } else if (isLastDay) {
                                     const [endHour, endMin] = request.endTime.split(":").map(Number)
+                                    const [userStartHour, userStartMin] = userStartTime
+                                        .split(":")
+                                        .map(Number)
                                     entryStart = new Date(currentDay)
-                                    entryStart.setHours(0, 0, 0, 0)
+                                    entryStart.setUTCHours(userStartHour, userStartMin, 0, 0)
                                     entryEnd = new Date(currentDay)
-                                    entryEnd.setHours(endHour, endMin, 0, 0)
-                                    hours = endHour + endMin / 60
+                                    entryEnd.setUTCHours(endHour, endMin, 0, 0)
+                                    hours =
+                                        (endHour * 60 +
+                                            endMin -
+                                            userStartHour * 60 -
+                                            userStartMin) /
+                                        60
                                 } else {
-                                    hours = 24
+                                    hours = userWorkHours
+                                    const [startHour, startMin] = userStartTime
+                                        .split(":")
+                                        .map(Number)
+                                    const [endHour, endMin] = userEndTime.split(":").map(Number)
                                     entryStart = new Date(currentDay)
-                                    entryStart.setHours(0, 0, 0, 0)
+                                    entryStart.setUTCHours(startHour, startMin, 0, 0)
                                     entryEnd = new Date(currentDay)
-                                    entryEnd.setHours(23, 59, 59, 999)
+                                    entryEnd.setUTCHours(endHour, endMin, 0, 0)
                                 }
                             }
 

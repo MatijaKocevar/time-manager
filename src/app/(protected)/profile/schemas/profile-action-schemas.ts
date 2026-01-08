@@ -1,6 +1,8 @@
 import { z } from "zod"
 import { MIN_PASSWORD_LENGTH } from "../constants/profile-constants"
 
+const timeRegex = /^([01][0-9]|2[0-3]):[0-5][0-9]$/
+
 export const UpdateProfileSchema = z.object({
     name: z.string().min(1, "Name is required"),
     currentPassword: z.string().optional(),
@@ -8,6 +10,8 @@ export const UpdateProfileSchema = z.object({
         .string()
         .min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters`)
         .optional(),
+    workStartTime: z.string().regex(timeRegex, "Time must be in HH:MM format").optional(),
+    workEndTime: z.string().regex(timeRegex, "Time must be in HH:MM format").optional(),
 })
 
 export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>

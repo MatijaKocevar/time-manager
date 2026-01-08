@@ -52,6 +52,9 @@ model User {
   sidebarExpandedItems   Json?                   @default("[]")
   theme                  String                  @default("light")
   locale                 String                  @default("en")
+  workStartTime          String?                 @default("08:00")
+  workEndTime            String?                 @default("16:00")
+  workHoursPerDay        Float?                  @default(8.0)
   accounts               Account[]
   hourEntries            HourEntry[]
   lists                  List[]

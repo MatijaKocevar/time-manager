@@ -10,6 +10,7 @@ interface ProfileStoreState {
 
 interface ProfileStoreActions {
     setFormData: (data: Partial<ProfileFormState>) => void
+    initializeFormData: (data: ProfileFormState) => void
     resetFormData: (initialName: string) => void
     setLoading: (isLoading: boolean) => void
     setError: (error: string) => void
@@ -22,6 +23,8 @@ export const useProfileStore = create<ProfileStoreState & ProfileStoreActions>((
         name: "",
         currentPassword: "",
         newPassword: "",
+        workStartTime: "08:00",
+        workEndTime: "16:00",
     },
     isLoading: false,
     error: "",
@@ -30,12 +33,18 @@ export const useProfileStore = create<ProfileStoreState & ProfileStoreActions>((
         set((state) => ({
             formData: { ...state.formData, ...data },
         })),
+    initializeFormData: (data) =>
+        set(() => ({
+            formData: data,
+        })),
     resetFormData: (initialName) =>
         set(() => ({
             formData: {
                 name: initialName,
                 currentPassword: "",
                 newPassword: "",
+                workStartTime: "08:00",
+                workEndTime: "16:00",
             },
             error: "",
             success: false,

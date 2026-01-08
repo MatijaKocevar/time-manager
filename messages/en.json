@@ -666,6 +666,13 @@
         "title": "Profile",
         "form": {
             "saveChanges": "Save Changes"
+        },
+        "workHours": {
+            "title": "Work Hours Configuration",
+            "description": "Configure your daily work hours",
+            "startTime": "Work Start Time",
+            "endTime": "Work End Time",
+            "hoursPerDay": "Hours per day"
         }
     },
     "auth": {

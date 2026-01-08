@@ -1,6 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
+import { useQuery } from "@tanstack/react-query"
 import { Card, CardHeader } from "@/components/ui/card"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
@@ -9,6 +10,7 @@ import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 import { formatHoursMinutes } from "../utils/time-helpers"
 import { calculateWorkingDaysSync, calculateOvertime } from "../utils/calculation-helpers"
 import { isHolidayFromList } from "../utils/holiday-helpers"
+import { getCurrentUser } from "../../profile/actions/profile-actions"
 
 interface HoursSummaryProps {
     entries: HourEntryDisplay[]
@@ -30,6 +32,14 @@ export function HoursSummary({
     const t = useTranslations("hours.summary")
     const tCommon = useTranslations("common")
     const tTypes = useTranslations("hours.types")
+
+    const { data: userData } = useQuery({
+        queryKey: ["user-profile"],
+        queryFn: () => getCurrentUser(),
+    })
+
+    const hoursPerDay = userData?.workHoursPerDay || 8
+
     const weeklyGrandTotal = weeklyEntries
         .filter((entry) => entry.taskId === "total")
         .reduce((sum, entry) => sum + entry.hours, 0)
@@ -44,8 +54,8 @@ export function HoursSummary({
 
     if (viewMode === "MONTHLY" && dateRange) {
         workingDays = calculateWorkingDaysSync(dateRange.start, dateRange.end, holidays)
-        expectedHours = workingDays * 8
-        overtime = calculateOvertime(monthlyGrandTotal, workingDays)
+        expectedHours = workingDays * hoursPerDay
+        overtime = calculateOvertime(monthlyGrandTotal, workingDays, hoursPerDay)
     }
 
     const weeklyTypeTotals = weeklyEntries.filter((entry) => entry.taskId === "total")

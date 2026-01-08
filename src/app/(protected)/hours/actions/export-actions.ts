@@ -47,7 +47,7 @@ export async function fetchMonthlyHourData(
 
     const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { name: true, email: true },
+        select: { name: true, email: true, workHoursPerDay: true },
     })
 
     const holidays = await prisma.holiday.findMany({
@@ -105,9 +105,10 @@ export async function fetchMonthlyHourData(
     }
 
     const workingDays = calculateWorkingDaysSync(startDate, endDate, holidays)
-    const expectedHours = workingDays * 8
+    const hoursPerDay = user?.workHoursPerDay || 8
+    const expectedHours = workingDays * hoursPerDay
     const totalHours = dailyData.reduce((sum, day) => sum + day.grandTotal, 0)
-    const overtime = calculateOvertime(totalHours, workingDays)
+    const overtime = calculateOvertime(totalHours, workingDays, hoursPerDay)
 
     const hoursByType: Record<string, number> = {}
     for (const hourType of HOUR_TYPES) {

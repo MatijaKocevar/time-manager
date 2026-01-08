@@ -22,6 +22,9 @@ export async function getCurrentUser() {
             name: true,
             email: true,
             role: true,
+            workStartTime: true,
+            workEndTime: true,
+            workHoursPerDay: true,
         },
     })
 
@@ -41,7 +44,18 @@ export async function updateProfile(input: UpdateProfileInput) {
         return { error: validation.error.issues[0].message }
     }
 
-    const { name, currentPassword, newPassword } = validation.data
+    const { name, currentPassword, newPassword, workStartTime, workEndTime } = validation.data
+
+    let workHoursPerDay: number | undefined
+    if (workStartTime && workEndTime) {
+        const [startH, startM] = workStartTime.split(":").map(Number)
+        const [endH, endM] = workEndTime.split(":").map(Number)
+        workHoursPerDay = (endH * 60 + endM - startH * 60 - startM) / 60
+
+        if (workHoursPerDay <= 0) {
+            return { error: "Work end time must be after start time" }
+        }
+    }
 
     if (newPassword && !currentPassword) {
         return { error: "Current password is required to set a new password" }
@@ -65,9 +79,21 @@ export async function updateProfile(input: UpdateProfileInput) {
         const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS)
 
         try {
+            const updateData: {
+                name: string
+                password: string
+                workStartTime?: string
+                workEndTime?: string
+                workHoursPerDay?: number
+            } = { name, password: hashedPassword }
+
+            if (workStartTime !== undefined) updateData.workStartTime = workStartTime
+            if (workEndTime !== undefined) updateData.workEndTime = workEndTime
+            if (workHoursPerDay !== undefined) updateData.workHoursPerDay = workHoursPerDay
+
             await prisma.user.update({
                 where: { id: session.user.id },
-                data: { name, password: hashedPassword },
+                data: updateData,
             })
 
             revalidatePath("/profile")
@@ -78,9 +104,20 @@ export async function updateProfile(input: UpdateProfileInput) {
     }
 
     try {
+        const updateData: {
+            name: string
+            workStartTime?: string
+            workEndTime?: string
+            workHoursPerDay?: number
+        } = { name }
+
+        if (workStartTime !== undefined) updateData.workStartTime = workStartTime
+        if (workEndTime !== undefined) updateData.workEndTime = workEndTime
+        if (workHoursPerDay !== undefined) updateData.workHoursPerDay = workHoursPerDay
+
         await prisma.user.update({
             where: { id: session.user.id },
-            data: { name },
+            data: updateData,
         })
 
         revalidatePath("/profile")

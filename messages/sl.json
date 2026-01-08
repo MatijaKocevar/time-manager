@@ -666,6 +666,13 @@
         "title": "Profil",
         "form": {
             "saveChanges": "Shrani spremembe"
+        },
+        "workHours": {
+            "title": "Konfiguracija delovnih ur",
+            "description": "Nastavite svoje dnevne delovne ure",
+            "startTime": "Začetek delovnega časa",
+            "endTime": "Konec delovnega časa",
+            "hoursPerDay": "Ur na dan"
         }
     },
     "auth": {

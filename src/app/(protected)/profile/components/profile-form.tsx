@@ -1,12 +1,19 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { UserAvatar } from "@/components/user-avatar"
 import { Eye, EyeOff } from "lucide-react"
 import { updateProfile } from "../actions/profile-actions"
@@ -20,51 +27,79 @@ interface ProfileFormProps {
         name: string | null
         email: string
         role: UserRole
+        workStartTime: string | null
+        workEndTime: string | null
+        workHoursPerDay: number | null
+    }
+    workHoursTranslations: {
+        title: string
+        description: string
+        startTime: string
+        endTime: string
+        hoursPerDay: string
     }
 }
 
-export function ProfileForm({ user }: ProfileFormProps) {
+export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
     const router = useRouter()
     const [showPassword, setShowPassword] = useState(false)
     const [confirmPassword, setConfirmPassword] = useState("")
-    const formData = useProfileStore((state) => state.formData)
+    const [name, setName] = useState(user.name || "")
+    const [currentPassword, setCurrentPassword] = useState("")
+    const [newPassword, setNewPassword] = useState("")
+    const [workStartTime, setWorkStartTime] = useState(user.workStartTime || "08:00")
+    const [workEndTime, setWorkEndTime] = useState(user.workEndTime || "16:00")
+
     const isLoading = useProfileStore((state) => state.isLoading)
     const error = useProfileStore((state) => state.error)
     const success = useProfileStore((state) => state.success)
-    const setFormData = useProfileStore((state) => state.setFormData)
-    const resetFormData = useProfileStore((state) => state.resetFormData)
     const setLoading = useProfileStore((state) => state.setLoading)
     const setError = useProfileStore((state) => state.setError)
     const setSuccess = useProfileStore((state) => state.setSuccess)
 
-    useEffect(() => {
-        resetFormData(user.name || "")
-    }, [user.name, resetFormData])
+    const timeOptions = Array.from({ length: 96 }, (_, i) => {
+        const hours = Math.floor(i / 4)
+        const minutes = (i % 4) * 15
+        return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
+    })
+
+    const calculateHoursPerDay = (start: string, end: string): number => {
+        const [startH, startM] = start.split(":").map(Number)
+        const [endH, endM] = end.split(":").map(Number)
+        return (endH * 60 + endM - startH * 60 - startM) / 60
+    }
+
+    const hoursPerDay = calculateHoursPerDay(workStartTime, workEndTime)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
         setSuccess(false)
+        setError("")
 
-        if (formData.newPassword && formData.newPassword !== confirmPassword) {
+        if (newPassword && newPassword !== confirmPassword) {
             setError("Passwords do not match")
             setLoading(false)
             return
         }
 
         const input = {
-            name: formData.name,
-            ...(formData.currentPassword && { currentPassword: formData.currentPassword }),
-            ...(formData.newPassword && { newPassword: formData.newPassword }),
+            name,
+            ...(currentPassword && { currentPassword }),
+            ...(newPassword && { newPassword }),
+            workStartTime,
+            workEndTime,
         }
 
         const result = await updateProfile(input)
 
         if (result.error) {
             setError(result.error)
+            setLoading(false)
         } else {
             setSuccess(true)
-            setFormData({ currentPassword: "", newPassword: "" })
+            setCurrentPassword("")
+            setNewPassword("")
             setConfirmPassword("")
             setLoading(false)
             router.refresh()
@@ -104,8 +139,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
                             <Label htmlFor="name">Name</Label>
                             <Input
                                 id="name"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ name: e.target.value })}
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 required
                                 disabled={isLoading}
                             />
@@ -114,6 +149,62 @@ export function ProfileForm({ user }: ProfileFormProps) {
                             <Label htmlFor="email">Email</Label>
                             <Input id="email" value={user.email} disabled />
                             <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                        </div>
+                    </div>
+                    <Separator />
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="text-sm font-medium">{workHoursTranslations.title}</h3>
+                            <p className="text-xs text-muted-foreground">
+                                {workHoursTranslations.description}
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="work-start-time">
+                                    {workHoursTranslations.startTime}
+                                </Label>
+                                <Select
+                                    value={workStartTime}
+                                    onValueChange={setWorkStartTime}
+                                    disabled={isLoading}
+                                >
+                                    <SelectTrigger id="work-start-time">
+                                        <SelectValue>{workStartTime}</SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {timeOptions.map((time) => (
+                                            <SelectItem key={time} value={time}>
+                                                {time}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="work-end-time">
+                                    {workHoursTranslations.endTime}
+                                </Label>
+                                <Select
+                                    value={workEndTime}
+                                    onValueChange={setWorkEndTime}
+                                    disabled={isLoading}
+                                >
+                                    <SelectTrigger id="work-end-time">
+                                        <SelectValue>{workEndTime}</SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {timeOptions.map((time) => (
+                                            <SelectItem key={time} value={time}>
+                                                {time}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                            {workHoursTranslations.hoursPerDay}: {hoursPerDay.toFixed(2)} hours
                         </div>
                     </div>
                     <Separator />
@@ -130,10 +221,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                 <Input
                                     id="current-password"
                                     type={showPassword ? "text" : "password"}
-                                    value={formData.currentPassword}
-                                    onChange={(e) =>
-                                        setFormData({ currentPassword: e.target.value })
-                                    }
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
                                     disabled={isLoading}
                                     className="pr-10"
                                 />
@@ -159,8 +248,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
                                 <Input
                                     id="new-password"
                                     type={showPassword ? "text" : "password"}
-                                    value={formData.newPassword}
-                                    onChange={(e) => setFormData({ newPassword: e.target.value })}
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
                                     minLength={MIN_PASSWORD_LENGTH}
                                     disabled={isLoading}
                                     className="pr-10"
