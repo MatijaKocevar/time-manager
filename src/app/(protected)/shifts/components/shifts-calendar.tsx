@@ -15,6 +15,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Checkbox } from "@/components/ui/checkbox"
 import { SHIFT_LOCATION_COLORS } from "../constants"
 import type { ShiftLocation } from "../schemas/shift-schemas"
 import { getShiftLocationTranslationKey } from "../utils/translation-helpers"
@@ -49,6 +50,8 @@ interface Shift {
     location: ShiftLocation
     notes: string | null
     user: User
+    startDateTime: Date | null
+    endDateTime: Date | null
 }
 
 interface ShiftsCalendarProps {
@@ -78,7 +81,6 @@ export function ShiftsCalendar({
     const viewMode = initialViewMode
     const currentDate = initialSelectedDate
     const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false)
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null)
 
     const formData = useRequestStore((state) => state.formData)
     const setFormData = useRequestStore((state) => state.setFormData)
@@ -132,13 +134,23 @@ export function ShiftsCalendar({
     }, [currentDate, viewMode])
 
     const shiftsByUserAndDate = useMemo(() => {
-        const map = new Map<string, Shift>()
+        const map = new Map<string, Shift[]>()
         initialShifts.forEach((shift) => {
             const key = `${shift.userId}-${shift.dateString}`
-            map.set(key, shift)
+            const existing = map.get(key) || []
+            map.set(key, [...existing, shift])
         })
         return map
     }, [initialShifts])
+
+    const getShifts = (userId: string, date: Date) => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        const dateStr = `${year}-${month}-${day}`
+        const key = `${userId}-${dateStr}`
+        return shiftsByUserAndDate.get(key) || []
+    }
 
     const holidaysByDate = useMemo(() => {
         const map = new Map<string, { name: string }>()
@@ -161,20 +173,10 @@ export function ShiftsCalendar({
         return holidaysByDate.get(key)
     }
 
-    const getShift = (userId: string, date: Date) => {
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, "0")
-        const day = String(date.getDate()).padStart(2, "0")
-        const dateString = `${year}-${month}-${day}`
-        const key = `${userId}-${dateString}`
-        return shiftsByUserAndDate.get(key)
-    }
-
     const handleCellClick = (date: Date) => {
         resetForm()
         const dateString = date.toISOString().split("T")[0]
         setFormData({ startDate: dateString, endDate: dateString })
-        setSelectedDate(date)
         setIsRequestDialogOpen(true)
     }
 
@@ -193,10 +195,41 @@ export function ShiftsCalendar({
             type: formData.type as RequestType,
             startDate: formData.startDate,
             endDate: formData.endDate,
+            startTime: formData.isFullDay ? undefined : formData.startTime,
+            endTime: formData.isFullDay ? undefined : formData.endTime,
+            isFullDay: formData.isFullDay,
             reason: formData.reason,
             location: formData.type === REQUEST_TYPE.WORK_FROM_HOME ? formData.location : undefined,
+            skipWeekends: formData.skipWeekends,
+            skipHolidays: formData.skipHolidays,
         })
     }
+
+    const calculateRequestedHours = () => {
+        if (
+            formData.isFullDay ||
+            !formData.startDate ||
+            !formData.endDate ||
+            !formData.startTime ||
+            !formData.endTime
+        ) {
+            return null
+        }
+
+        const [startHour, startMin] = formData.startTime.split(":").map(Number)
+        const [endHour, endMin] = formData.endTime.split(":").map(Number)
+
+        const start = new Date(formData.startDate)
+        start.setHours(startHour, startMin, 0, 0)
+
+        const end = new Date(formData.endDate)
+        end.setHours(endHour, endMin, 0, 0)
+
+        const diffMs = end.getTime() - start.getTime()
+        return diffMs / (1000 * 60 * 60)
+    }
+
+    const requestedHours = calculateRequestedHours()
 
     const needsLocation = formData.type === REQUEST_TYPE.WORK_FROM_HOME
 
@@ -371,12 +404,11 @@ export function ShiftsCalendar({
                                     </Tooltip>
                                 </TableCell>
                                 {days.map((date) => {
-                                    const shift = getShift(user.id, date)
+                                    const shifts = getShifts(user.id, date)
                                     const isWeekend = date.getDay() === 0 || date.getDay() === 6
                                     const holiday = isHoliday(date)
-                                    const shouldShowDefault = !isWeekend && !holiday
-                                    const location =
-                                        shift?.location || (shouldShowDefault ? "OFFICE" : null)
+                                    const shouldShowDefault =
+                                        !isWeekend && !holiday && shifts.length === 0
 
                                     return (
                                         <TableCell
@@ -386,15 +418,54 @@ export function ShiftsCalendar({
                                             } ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                             onClick={() => handleCellClick(date)}
                                         >
-                                            {location && (
+                                            {shouldShowDefault && (
                                                 <div
-                                                    className={`rounded-md p-2 text-xs ${SHIFT_LOCATION_COLORS[location].bg} ${SHIFT_LOCATION_COLORS[location].text} min-h-10 flex items-center justify-center`}
+                                                    className={`rounded-md p-2 text-xs ${SHIFT_LOCATION_COLORS.OFFICE.bg} ${SHIFT_LOCATION_COLORS.OFFICE.text} min-h-10 flex items-center justify-center`}
                                                 >
-                                                    {tLocations(
-                                                        getShiftLocationTranslationKey(location)
-                                                    )}
+                                                    {tLocations("office")}
                                                 </div>
                                             )}
+                                            {shifts.map((shift, idx) => {
+                                                const isPartialDay =
+                                                    shift.startDateTime &&
+                                                    shift.endDateTime &&
+                                                    (new Date(shift.startDateTime).getHours() !==
+                                                        0 ||
+                                                        new Date(
+                                                            shift.startDateTime
+                                                        ).getMinutes() !== 0 ||
+                                                        new Date(shift.endDateTime).getHours() !==
+                                                            23 ||
+                                                        new Date(shift.endDateTime).getMinutes() !==
+                                                            59)
+
+                                                const timeRange =
+                                                    isPartialDay &&
+                                                    shift.startDateTime &&
+                                                    shift.endDateTime
+                                                        ? `${new Date(shift.startDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}-${new Date(shift.endDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}`
+                                                        : null
+
+                                                return (
+                                                    <div
+                                                        key={shift.id}
+                                                        className={`rounded-md p-2 text-xs ${SHIFT_LOCATION_COLORS[shift.location].bg} ${SHIFT_LOCATION_COLORS[shift.location].text} min-h-10 flex flex-col items-center justify-center ${idx > 0 ? "mt-1" : ""}`}
+                                                    >
+                                                        <div>
+                                                            {tLocations(
+                                                                getShiftLocationTranslationKey(
+                                                                    shift.location
+                                                                )
+                                                            )}
+                                                        </div>
+                                                        {timeRange && (
+                                                            <div className="text-[10px] opacity-80 mt-0.5">
+                                                                {timeRange}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })}
                                         </TableCell>
                                     )
                                 })}
@@ -460,6 +531,105 @@ export function ShiftsCalendar({
                                     placeholder={tRequestForm("selectEndDate")}
                                 />
                             </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="full-day"
+                                checked={formData.isFullDay}
+                                onCheckedChange={(checked) =>
+                                    setFormData({ isFullDay: checked === true })
+                                }
+                            />
+                            <Label htmlFor="full-day" className="cursor-pointer font-normal">
+                                {tRequestForm("fullDay")}
+                            </Label>
+                        </div>
+
+                        {!formData.isFullDay && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="startTime">{tRequestForm("startTime")}</Label>
+                                    <Select
+                                        value={formData.startTime}
+                                        onValueChange={(value) => setFormData({ startTime: value })}
+                                    >
+                                        <SelectTrigger id="startTime">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Array.from({ length: 24 }, (_, i) => {
+                                                const hour = i.toString().padStart(2, "0")
+                                                return ["00", "15", "30", "45"].map((min) => {
+                                                    const time = `${hour}:${min}`
+                                                    return (
+                                                        <SelectItem key={time} value={time}>
+                                                            {time}
+                                                        </SelectItem>
+                                                    )
+                                                })
+                                            })}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="endTime">{tRequestForm("endTime")}</Label>
+                                    <Select
+                                        value={formData.endTime}
+                                        onValueChange={(value) => setFormData({ endTime: value })}
+                                    >
+                                        <SelectTrigger id="endTime">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Array.from({ length: 24 }, (_, i) => {
+                                                const hour = i.toString().padStart(2, "0")
+                                                return ["00", "15", "30", "45"].map((min) => {
+                                                    const time = `${hour}:${min}`
+                                                    return (
+                                                        <SelectItem key={time} value={time}>
+                                                            {time}
+                                                        </SelectItem>
+                                                    )
+                                                })
+                                            })}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        )}
+
+                        {requestedHours !== null && !formData.isFullDay && (
+                            <div className="text-sm text-muted-foreground">
+                                {tRequestForm("requestedHours")}: {requestedHours.toFixed(2)}{" "}
+                                {tRequestForm("hours")}
+                            </div>
+                        )}
+
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="skip-weekends"
+                                checked={formData.skipWeekends}
+                                onCheckedChange={(checked) =>
+                                    setFormData({ skipWeekends: checked === true })
+                                }
+                            />
+                            <Label htmlFor="skip-weekends" className="cursor-pointer font-normal">
+                                {tRequestForm("skipWeekends")}
+                            </Label>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="skip-holidays"
+                                checked={formData.skipHolidays}
+                                onCheckedChange={(checked) =>
+                                    setFormData({ skipHolidays: checked === true })
+                                }
+                            />
+                            <Label htmlFor="skip-holidays" className="cursor-pointer font-normal">
+                                {tRequestForm("skipHolidays")}
+                            </Label>
                         </div>
 
                         {needsLocation && (

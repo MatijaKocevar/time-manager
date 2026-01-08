@@ -51,6 +51,11 @@ export function RequestsTable({
         return `${day}.${month}.${year}`
     }
 
+    const formatDateTime = (date: Date, time?: string | null) => {
+        const formattedDate = formatDate(date)
+        return time ? `${formattedDate} ${time}` : formattedDate
+    }
+
     const handleRowDoubleClick = (request: RequestDisplay) => {
         onRequestClick?.(request)
     }
@@ -146,10 +151,10 @@ export function RequestsTable({
                                         </WorkTypeBadge>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
-                                        {formatDate(request.startDate)}
+                                        {formatDateTime(request.startDate, request.startTime)}
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
-                                        {formatDate(request.endDate)}
+                                        {formatDateTime(request.endDate, request.endTime)}
                                     </TableCell>
                                     <TableCell>
                                         <span

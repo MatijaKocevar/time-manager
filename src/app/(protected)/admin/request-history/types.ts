@@ -3,6 +3,10 @@ export interface RequestDisplay {
     type: string
     startDate: Date
     endDate: Date
+    startTime: string | null
+    endTime: string | null
+    isFullDay: boolean
+    requestedHours: number | null
     reason: string | null
     location: string | null
     status: string

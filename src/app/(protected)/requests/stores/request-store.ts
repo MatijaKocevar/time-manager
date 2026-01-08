@@ -5,6 +5,10 @@ interface RequestFormState {
     type: RequestType | ""
     startDate: string
     endDate: string
+    startTime: string
+    endTime: string
+    isFullDay: boolean
+    requestedHours: number | null
     reason: string
     location: string
     skipWeekends: boolean
@@ -29,6 +33,10 @@ export const useRequestStore = create<RequestStoreState & RequestStoreActions>((
         type: "",
         startDate: "",
         endDate: "",
+        startTime: "09:00",
+        endTime: "17:00",
+        isFullDay: true,
+        requestedHours: null,
         reason: "",
         location: "",
         skipWeekends: true,
@@ -46,6 +54,10 @@ export const useRequestStore = create<RequestStoreState & RequestStoreActions>((
                 type: "",
                 startDate: "",
                 endDate: "",
+                startTime: "09:00",
+                endTime: "17:00",
+                isFullDay: true,
+                requestedHours: null,
                 reason: "",
                 location: "",
                 skipWeekends: true,

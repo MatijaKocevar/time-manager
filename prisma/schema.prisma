@@ -7,8 +7,9 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model Account {
-  id                String  @id @default(cuid())
+  id                String   @id @default(cuid())
   userId            String
   type              String
   provider          String
@@ -22,8 +23,7 @@ model Account {
   session_state     String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -35,8 +35,273 @@ model Session {
   expires      DateTime
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+model User {
+  id                     String                  @id @default(cuid())
+  name                   String?
+  email                  String                  @unique
+  emailVerified          DateTime?
+  image                  String?
+  password               String?
+  role                   UserRole                @default(USER)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  sidebarOpen            Boolean                 @default(true)
+  sidebarExpandedItems   Json?                   @default("[]")
+  theme                  String                  @default("light")
+  locale                 String                  @default("en")
+  accounts               Account[]
+  hourEntries            HourEntry[]
+  lists                  List[]
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
+  pushSubscriptions      PushSubscription[]
+  approvedRequests       Request[]               @relation("ApprovedRequests")
+  cancelledRequests      Request[]               @relation("CancelledRequests")
+  rejectedRequests       Request[]               @relation("RejectedRequests")
+  requests               Request[]
+  sessions               Session[]
+  shifts                 Shift[]
+  tasks                  Task[]
+  taskTimeEntries        TaskTimeEntry[]
+}
+
+model HourEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime
+  hours       Float
+  type        HourType @default(WORK)
+  description String?
+  taskId      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  task        Task?    @relation(fields: [taskId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date, type, taskId])
+  @@index([userId])
+  @@index([date])
+  @@index([taskId])
+}
+
+model DailyHourSummary {
+  userId        String   @id
+  date          DateTime
+  type          HourType
+  manualHours   Float
+  trackedHours  Float
+  totalHours    Float
+
+  @@unique([userId, date, type])
+  @@index([userId])
+  @@index([date])
+  @@map("daily_hour_summary")
+}
+
+model Task {
+  id          String          @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  status      TaskStatus      @default(TODO)
+  parentId    String?
+  order       Int             @default(0)
+  isExpanded  Boolean         @default(false)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  listId      String?
+  hourEntries HourEntry[]
+  list        List?           @relation(fields: [listId], references: [id])
+  parent      Task?           @relation("TaskHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks    Task[]          @relation("TaskHierarchy")
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeEntries TaskTimeEntry[]
+
+  @@index([userId])
+  @@index([listId])
+  @@index([parentId])
+  @@index([userId, status])
+  @@index([userId, listId])
+  @@index([userId, status, listId])
+  @@index([userId, listId, status])
+  @@index([id, title, status, listId])
+}
+
+model TaskTimeEntry {
+  id        String    @id @default(cuid())
+  taskId    String
+  userId    String
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  type      HourType  @default(WORK)
+  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
+  @@index([startTime])
+  @@index([userId, startTime])
+  @@index([userId, endTime])
+}
+
+model Request {
+  id                  String        @id @default(cuid())
+  userId              String
+  type                RequestType
+  status              RequestStatus @default(PENDING)
+  startDate           DateTime
+  endDate             DateTime
+  reason              String?
+  location            String?
+  affectsHourType     Boolean       @default(false)
+  approvedBy          String?
+  approvedAt          DateTime?
+  rejectedBy          String?
+  rejectedAt          DateTime?
+  rejectionReason     String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  cancellationReason  String?
+  cancelledAt         DateTime?
+  cancelledBy         String?
+  skipHolidays        Boolean       @default(true)
+  skipWeekends        Boolean       @default(true)
+  endTime             String?
+  isFullDay           Boolean       @default(true)
+  originalEndDate     DateTime?
+  originalStartDate   DateTime?
+  requestedHours      Decimal?
+  splitFrom           String?
+  startTime           String?
+  supersededBy        String?
+  trimmedBy           String?
+  approver            User?         @relation("ApprovedRequests", fields: [approvedBy], references: [id])
+  canceller           User?         @relation("CancelledRequests", fields: [cancelledBy], references: [id])
+  rejector            User?         @relation("RejectedRequests", fields: [rejectedBy], references: [id])
+  splitFromRequest    Request?      @relation("SplitRequests", fields: [splitFrom], references: [id])
+  splitRequests       Request[]     @relation("SplitRequests")
+  supersededByRequest Request?      @relation("SupersededRequests", fields: [supersededBy], references: [id])
+  supersededRequests  Request[]     @relation("SupersededRequests")
+  trimmedByRequest    Request?      @relation("TrimmedRequests", fields: [trimmedBy], references: [id])
+  trimmedRequests     Request[]     @relation("TrimmedRequests")
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+  @@index([userId, status])
+  @@index([userId, createdAt])
+}
+
+model Shift {
+  id            String        @id @default(cuid())
+  userId        String
+  date          DateTime
+  location      ShiftLocation @default(OFFICE)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  endDateTime   DateTime?
+  startDateTime DateTime?
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+  @@index([userId, date])
+  @@index([userId, startDateTime])
+}
+
+model List {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  color       String?
+  icon        String?
+  order       Int      @default(0)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks       Task[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([userId, order])
+}
+
+model Holiday {
+  id          String   @id @default(cuid())
+  date        DateTime @unique
+  name        String
+  description String?
+  isRecurring Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([date])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model NotificationPreference {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  emailNewRequest       Boolean  @default(true)
+  emailRequestApproved  Boolean  @default(true)
+  emailRequestRejected  Boolean  @default(true)
+  emailRequestCancelled Boolean  @default(true)
+  pushNewRequest        Boolean  @default(true)
+  pushRequestApproved   Boolean  @default(true)
+  pushRequestRejected   Boolean  @default(true)
+  pushRequestCancelled  Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  url       String?
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
 }
 
 enum UserRole {
@@ -82,273 +347,9 @@ enum ShiftLocation {
   OTHER
 }
 
-model User {
-  id                    String    @id @default(cuid())
-  name                  String?
-  email                 String    @unique
-  emailVerified         DateTime?
-  image                 String?
-  password              String?
-  role                  UserRole  @default(USER)
-  locale                String    @default("en")
-  sidebarOpen           Boolean   @default(true)
-  sidebarExpandedItems  Json?     @default("[]")
-  theme                 String    @default("light")
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  accounts          Account[]
-  sessions          Session[]
-  hourEntries       HourEntry[]
-  tasks             Task[]
-  taskTimeEntries   TaskTimeEntry[]
-  dailyHourSummary  DailyHourSummary[]
-  requests          Request[]
-  approvedRequests  Request[]         @relation("ApprovedRequests")
-  rejectedRequests  Request[]         @relation("RejectedRequests")
-  cancelledRequests      Request[]              @relation("CancelledRequests")
-  shifts                 Shift[]
-  lists                  List[]
-  pushSubscriptions      PushSubscription[]
-  notificationPreference NotificationPreference?
-  notifications          Notification[]
-}
-
-model HourEntry {
-  id          String   @id @default(cuid())
-  userId      String
-  date        DateTime
-  hours       Float
-  type        HourType @default(WORK)
-  description String?
-  taskId      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  task Task? @relation(fields: [taskId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([date])
-  @@index([taskId])
-  @@unique([userId, date, type, taskId])
-}
-
-model Task {
-  id          String     @id @default(cuid())
-  userId      String
-  listId      String?
-  title       String
-  description String?
-  status      TaskStatus @default(TODO)
-  parentId    String?
-  order       Int        @default(0)
-  isExpanded  Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  list        List?           @relation(fields: [listId], references: [id], onDelete: SetNull)
-  parent      Task?           @relation("TaskHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  subtasks    Task[]          @relation("TaskHierarchy")
-  timeEntries TaskTimeEntry[]
-  hourEntries HourEntry[]
-
-  @@index([userId])
-  @@index([listId])
-  @@index([parentId])
-  @@index([userId, status])
-  @@index([userId, listId])
-  @@index([userId, status, listId])
-  @@index([userId, listId, status])
-  @@index([id, title, status, listId])
-}
-
-model TaskTimeEntry {
-  id        String    @id @default(cuid())
-  taskId    String
-  userId    String
-  startTime DateTime
-  endTime   DateTime?
-  duration  Int?
-  type      HourType  @default(WORK)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([taskId])
-  @@index([userId])
-  @@index([startTime])
-  @@index([userId, startTime])
-  @@index([userId, endTime])
-}
-
-model DailyHourSummary {
-  id           String   @id @default(cuid())
-  userId       String
-  date         DateTime
-  type         HourType
-  manualHours  Float    @default(0)
-  trackedHours Float    @default(0)
-  totalHours   Float    @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, date, type])
-  @@index([userId])
-  @@index([date])
-  @@index([userId, date])
-  @@map("daily_hour_summary")
-}
-
-model Request {
-  id                 String        @id @default(cuid())
-  userId             String
-  type               RequestType
-  status             RequestStatus @default(PENDING)
-  startDate          DateTime
-  endDate            DateTime
-  reason             String?
-  location           String?
-  affectsHourType    Boolean       @default(false)
-  skipWeekends       Boolean       @default(true)
-  skipHolidays       Boolean       @default(true)
-  approvedBy         String?
-  approvedAt         DateTime?
-  rejectedBy         String?
-  rejectedAt         DateTime?
-  rejectionReason    String?
-  cancelledBy        String?
-  cancelledAt        DateTime?
-  cancellationReason String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-
-  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  approver  User? @relation("ApprovedRequests", fields: [approvedBy], references: [id], onDelete: SetNull)
-  rejector  User? @relation("RejectedRequests", fields: [rejectedBy], references: [id], onDelete: SetNull)
-  canceller User? @relation("CancelledRequests", fields: [cancelledBy], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([status])
-  @@index([startDate])
-  @@index([userId, status])
-}
-
-model Shift {
-  id        String        @id @default(cuid())
-  userId    String
-  date      DateTime
-  location  ShiftLocation @default(OFFICE)
-  notes     String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, date])
-  @@index([userId])
-  @@index([date])
-}
-
-model List {
-  id          String   @id @default(cuid())
-  userId      String
-  name        String
-  description String?
-  color       String?
-  icon        String?
-  order       Int      @default(0)
-  isDefault   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tasks Task[]
-
-  @@unique([userId, name])
-  @@index([userId])
-  @@index([userId, order])
-}
-
-model Holiday {
-  id          String   @id @default(cuid())
-  date        DateTime @unique
-  name        String
-  description String?
-  isRecurring Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([date])
-}
-
-model PushSubscription {
-  id        String   @id @default(cuid())
-  userId    String
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
 enum NotificationType {
   REQUEST_SUBMITTED
   REQUEST_APPROVED
   REQUEST_REJECTED
   REQUEST_CANCELLED
-}
-
-model NotificationPreference {
-  id                      String   @id @default(cuid())
-  userId                  String   @unique
-  emailNewRequest         Boolean  @default(true)
-  emailRequestApproved    Boolean  @default(true)
-  emailRequestRejected    Boolean  @default(true)
-  emailRequestCancelled   Boolean  @default(true)
-  pushNewRequest          Boolean  @default(true)
-  pushRequestApproved     Boolean  @default(true)
-  pushRequestRejected     Boolean  @default(true)
-  pushRequestCancelled    Boolean  @default(true)
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model Notification {
-  id        String           @id @default(cuid())
-  userId    String
-  type      NotificationType
-  title     String
-  message   String
-  read      Boolean          @default(false)
-  url       String?
-  metadata  Json?
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([userId, read])
-  @@index([createdAt])
 }

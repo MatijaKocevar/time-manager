@@ -125,6 +125,7 @@ export function PendingRequestsTable({
                 approvingId,
                 onApprove: (requestId: string) => approveMutation.mutate({ id: requestId }),
                 onReject: openRejectDialog,
+                requests,
             }),
         [
             approveMutation.isPending,
@@ -135,6 +136,7 @@ export function PendingRequestsTable({
             translations,
             locale,
             openRejectDialog,
+            requests,
         ]
     )
 

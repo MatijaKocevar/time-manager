@@ -14,6 +14,7 @@ interface CreateColumnsParams {
     isApproving: boolean
     isRejecting: boolean
     approvingId: string | null
+    requests: RequestDisplay[]
     onApprove: (id: string) => void
     onReject: (id: string) => void
 }
@@ -25,6 +26,7 @@ export function createColumns({
     isApproving,
     isRejecting,
     approvingId,
+    requests,
     onApprove,
     onReject,
 }: CreateColumnsParams): ColumnDef<RequestDisplay>[] {
@@ -37,6 +39,16 @@ export function createColumns({
             other: translations.types.other,
         }
         return typeMap[key] || key
+    }
+
+    const hasEarlierPendingRequest = (request: RequestDisplay) => {
+        return requests.some(
+            (r) =>
+                r.user.email === request.user.email &&
+                r.status === "PENDING" &&
+                r.createdAt < request.createdAt &&
+                r.id !== request.id
+        )
     }
 
     return [
@@ -71,19 +83,41 @@ export function createColumns({
         {
             accessorKey: "startDate",
             header: translations.table.startDate,
-            cell: ({ row }) => formatDate(row.original.startDate, locale),
+            cell: ({ row }) => (
+                <div>
+                    <div>{formatDate(row.original.startDate, locale)}</div>
+                    {row.original.startTime && (
+                        <div className="text-xs text-muted-foreground">
+                            {row.original.startTime}
+                        </div>
+                    )}
+                </div>
+            ),
             enableColumnFilter: false,
         },
         {
             accessorKey: "endDate",
             header: translations.table.endDate,
-            cell: ({ row }) => formatDate(row.original.endDate, locale),
+            cell: ({ row }) => (
+                <div>
+                    <div>{formatDate(row.original.endDate, locale)}</div>
+                    {row.original.endTime && (
+                        <div className="text-xs text-muted-foreground">{row.original.endTime}</div>
+                    )}
+                </div>
+            ),
             enableColumnFilter: false,
         },
         {
             id: "hours",
             header: translations.table.hours,
             cell: ({ row }) => {
+                if (
+                    row.original.requestedHours !== null &&
+                    row.original.requestedHours !== undefined
+                ) {
+                    return `${Number(row.original.requestedHours).toFixed(2)}h`
+                }
                 const workdays = calculateWorkdays(
                     row.original.startDate,
                     row.original.endDate,
@@ -107,13 +141,19 @@ export function createColumns({
             header: () => <div className="text-right w-[170px]">{translations.table.actions}</div>,
             cell: ({ row }) => {
                 const isThisRowApproving = approvingId === row.original.id
+                const hasEarlier = hasEarlierPendingRequest(row.original)
                 return (
                     <div className="flex gap-2 justify-end w-[170px]">
                         <Button
                             size="sm"
                             onClick={() => onApprove(row.original.id)}
-                            disabled={isApproving || isThisRowApproving}
+                            disabled={isApproving || isThisRowApproving || hasEarlier}
                             className="w-[84px]"
+                            title={
+                                hasEarlier
+                                    ? "Earlier pending requests must be processed first"
+                                    : undefined
+                            }
                         >
                             {isThisRowApproving ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -125,8 +165,13 @@ export function createColumns({
                             size="sm"
                             variant="destructive"
                             onClick={() => onReject(row.original.id)}
-                            disabled={isRejecting || isApproving}
+                            disabled={isRejecting || isApproving || hasEarlier}
                             className="w-[76px]"
+                            title={
+                                hasEarlier
+                                    ? "Earlier pending requests must be processed first"
+                                    : undefined
+                            }
                         >
                             {translations.table.reject}
                         </Button>

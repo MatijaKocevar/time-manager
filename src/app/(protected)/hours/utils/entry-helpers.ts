@@ -51,8 +51,6 @@ export function buildGrandTotalEntries(
         date: Date
         type: HourType
         totalHours: number
-        createdAt: Date
-        updatedAt: Date
     }>,
     userId: string
 ): Array<HourEntryDisplay> {

@@ -341,7 +341,12 @@
             "selectEndDate": "Izberite končni datum",
             "requestDetails": "Podrobnosti zahtevka",
             "skipWeekends": "Preskoči vikende",
-            "skipHolidays": "Preskoči praznike"
+            "skipHolidays": "Preskoči praznike",
+            "fullDay": "Cel dan",
+            "startTime": "Začetni čas",
+            "endTime": "Končni čas",
+            "requestedHours": "Zahtevane ure",
+            "hours": "ur"
         },
         "table": {
             "approvedBy": "Odobril/Zavrnil",

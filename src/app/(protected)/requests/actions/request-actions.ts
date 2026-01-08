@@ -58,7 +58,17 @@ export async function createRequest(input: CreateRequestInput) {
             return { error: validation.error.issues[0].message }
         }
 
-        const { startDate, endDate, type, reason, location } = validation.data
+        const {
+            startDate,
+            endDate,
+            startTime,
+            endTime,
+            isFullDay,
+            requestedHours,
+            type,
+            reason,
+            location,
+        } = validation.data
 
         if (startDate > endDate) {
             return { error: "Start date must be before or equal to end date" }
@@ -70,6 +80,10 @@ export async function createRequest(input: CreateRequestInput) {
                 type,
                 startDate,
                 endDate,
+                startTime,
+                endTime,
+                isFullDay,
+                requestedHours,
                 reason,
                 location,
                 affectsHourType: true,
@@ -429,6 +443,251 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
     }
 }
 
+function combineDateTime(date: Date, timeStr: string): Date {
+    const [hours, minutes] = timeStr.split(":").map(Number)
+    const combined = new Date(date)
+    combined.setHours(hours, minutes, 0, 0)
+    return combined
+}
+
+function getRequestDateTimeRange(request: {
+    startDate: Date
+    endDate: Date
+    startTime: string | null
+    endTime: string | null
+    isFullDay: boolean
+}) {
+    if (request.isFullDay || !request.startTime || !request.endTime) {
+        const start = new Date(request.startDate)
+        start.setHours(0, 0, 0, 0)
+        const end = new Date(request.endDate)
+        end.setHours(23, 59, 59, 999)
+        return { startDateTime: start, endDateTime: end }
+    }
+
+    const startDateTime = combineDateTime(request.startDate, request.startTime)
+    const endDateTime = combineDateTime(request.endDate, request.endTime)
+    return { startDateTime, endDateTime }
+}
+
+async function findOverlappingRequests(
+    tx: any,
+    userId: string,
+    startDateTime: Date,
+    endDateTime: Date,
+    excludeRequestId?: string
+) {
+    const requests = await tx.request.findMany({
+        where: {
+            userId,
+            status: "APPROVED",
+            id: excludeRequestId ? { not: excludeRequestId } : undefined,
+        },
+    })
+
+    return requests.filter((req: any) => {
+        const reqRange = getRequestDateTimeRange(req)
+        return reqRange.startDateTime < endDateTime && reqRange.endDateTime > startDateTime
+    })
+}
+
+async function cleanupRequestDataInRange(
+    tx: any,
+    userId: string,
+    startDateTime: Date,
+    endDateTime: Date,
+    requestType: string
+) {
+    await tx.shift.deleteMany({
+        where: {
+            userId,
+            date: { gte: startDateTime, lte: endDateTime },
+            notes: { contains: "Auto-generated from" },
+        },
+    })
+
+    if (requestType === "VACATION" || requestType === "SICK_LEAVE") {
+        const systemTask = await tx.task.findFirst({
+            where: {
+                userId,
+                title: `System: ${requestType}`,
+            },
+        })
+
+        if (systemTask) {
+            await tx.taskTimeEntry.deleteMany({
+                where: {
+                    userId,
+                    taskId: systemTask.id,
+                    startTime: { gte: startDateTime, lte: endDateTime },
+                },
+            })
+        }
+    } else {
+        const hourType = mapRequestTypeToHourType(requestType as any)
+
+        await tx.hourEntry.updateMany({
+            where: {
+                userId,
+                date: { gte: startDateTime, lte: endDateTime },
+                type: hourType,
+            },
+            data: { type: "WORK" },
+        })
+
+        await tx.taskTimeEntry.updateMany({
+            where: {
+                userId,
+                startTime: { gte: startDateTime, lte: endDateTime },
+                type: hourType,
+            },
+            data: { type: "WORK" },
+        })
+    }
+}
+
+async function trimOverlappingRequest(
+    tx: any,
+    oldRequest: any,
+    newStartDateTime: Date,
+    newEndDateTime: Date,
+    newRequestId: string
+) {
+    const oldRange = getRequestDateTimeRange(oldRequest)
+
+    const fullyOverlapped =
+        newStartDateTime <= oldRange.startDateTime && newEndDateTime >= oldRange.endDateTime
+
+    if (fullyOverlapped) {
+        await tx.request.update({
+            where: { id: oldRequest.id },
+            data: {
+                status: "CANCELLED",
+                cancellationReason: "Superseded by newer request",
+                supersededBy: newRequestId,
+                originalStartDate: oldRequest.startDate,
+                originalEndDate: oldRequest.endDate,
+            },
+        })
+        await cleanupRequestDataInRange(
+            tx,
+            oldRequest.userId,
+            oldRange.startDateTime,
+            oldRange.endDateTime,
+            oldRequest.type
+        )
+        return
+    }
+
+    const leftTrim =
+        oldRange.startDateTime < newStartDateTime &&
+        oldRange.endDateTime <= newEndDateTime &&
+        oldRange.endDateTime > newStartDateTime
+
+    if (leftTrim) {
+        const newEndDate = new Date(newStartDateTime)
+        newEndDate.setDate(newEndDate.getDate() - 1)
+        newEndDate.setHours(23, 59, 59, 999)
+
+        await tx.request.update({
+            where: { id: oldRequest.id },
+            data: {
+                endDate: newEndDate,
+                trimmedBy: newRequestId,
+                originalEndDate: oldRequest.endDate,
+            },
+        })
+
+        await cleanupRequestDataInRange(
+            tx,
+            oldRequest.userId,
+            newStartDateTime,
+            oldRange.endDateTime,
+            oldRequest.type
+        )
+        return
+    }
+
+    const rightTrim =
+        oldRange.startDateTime >= newStartDateTime &&
+        oldRange.startDateTime < newEndDateTime &&
+        oldRange.endDateTime > newEndDateTime
+
+    if (rightTrim) {
+        const newStartDate = new Date(newEndDateTime)
+        newStartDate.setDate(newStartDate.getDate() + 1)
+        newStartDate.setHours(0, 0, 0, 0)
+
+        await tx.request.update({
+            where: { id: oldRequest.id },
+            data: {
+                startDate: newStartDate,
+                trimmedBy: newRequestId,
+                originalStartDate: oldRequest.startDate,
+            },
+        })
+
+        await cleanupRequestDataInRange(
+            tx,
+            oldRequest.userId,
+            oldRange.startDateTime,
+            newEndDateTime,
+            oldRequest.type
+        )
+        return
+    }
+
+    const split = oldRange.startDateTime < newStartDateTime && oldRange.endDateTime > newEndDateTime
+
+    if (split) {
+        const firstPartEndDate = new Date(newStartDateTime)
+        firstPartEndDate.setDate(firstPartEndDate.getDate() - 1)
+        firstPartEndDate.setHours(23, 59, 59, 999)
+
+        await tx.request.update({
+            where: { id: oldRequest.id },
+            data: {
+                endDate: firstPartEndDate,
+                trimmedBy: newRequestId,
+                originalEndDate: oldRequest.endDate,
+            },
+        })
+
+        const secondPartStartDate = new Date(newEndDateTime)
+        secondPartStartDate.setDate(secondPartStartDate.getDate() + 1)
+        secondPartStartDate.setHours(0, 0, 0, 0)
+
+        await tx.request.create({
+            data: {
+                userId: oldRequest.userId,
+                type: oldRequest.type,
+                status: "APPROVED",
+                startDate: secondPartStartDate,
+                endDate: oldRequest.endDate,
+                startTime: oldRequest.startTime,
+                endTime: oldRequest.endTime,
+                isFullDay: oldRequest.isFullDay,
+                requestedHours: oldRequest.requestedHours,
+                reason: `Split from original request due to overlap`,
+                affectsHourType: oldRequest.affectsHourType,
+                skipWeekends: oldRequest.skipWeekends,
+                skipHolidays: oldRequest.skipHolidays,
+                approvedBy: oldRequest.approvedBy,
+                approvedAt: new Date(),
+                splitFrom: oldRequest.id,
+            },
+        })
+
+        await cleanupRequestDataInRange(
+            tx,
+            oldRequest.userId,
+            newStartDateTime,
+            newEndDateTime,
+            oldRequest.type
+        )
+    }
+}
+
 export async function approveRequest(input: ApproveRequestInput) {
     try {
         const session = await requireAdmin()
@@ -452,7 +711,35 @@ export async function approveRequest(input: ApproveRequestInput) {
             return { error: "Can only approve pending requests" }
         }
 
+        const earlierPendingRequests = await prisma.request.count({
+            where: {
+                userId: request.userId,
+                status: "PENDING",
+                createdAt: { lt: request.createdAt },
+            },
+        })
+
+        if (earlierPendingRequests > 0) {
+            return {
+                error: `Cannot approve - ${earlierPendingRequests} earlier pending request(s) must be processed first. Approve requests in submission order.`,
+            }
+        }
+
+        const { startDateTime, endDateTime } = getRequestDateTimeRange(request)
+
         await prisma.$transaction(async (tx) => {
+            const overlappingRequests = await findOverlappingRequests(
+                tx,
+                request.userId,
+                startDateTime,
+                endDateTime,
+                request.id
+            )
+
+            for (const oldRequest of overlappingRequests) {
+                await trimOverlappingRequest(tx, oldRequest, startDateTime, endDateTime, request.id)
+            }
+
             await tx.request.update({
                 where: { id },
                 data: {
@@ -483,18 +770,8 @@ export async function approveRequest(input: ApproveRequestInput) {
             const endDay = new Date(request.endDate)
             endDay.setUTCHours(0, 0, 0, 0)
 
-            console.log(
-                `Request dates: startDate=${request.startDate.toISOString()}, endDate=${request.endDate.toISOString()}`
-            )
-            console.log(
-                `Normalized: startDay=${startDay.toISOString()}, endDay=${endDay.toISOString()}`
-            )
-
             const daysDiff = Math.round(
                 (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
-            )
-            console.log(
-                `Days difference calculated: ${daysDiff}, will create ${daysDiff + 1} iterations`
             )
 
             for (let i = 0; i <= daysDiff; i++) {
@@ -513,30 +790,47 @@ export async function approveRequest(input: ApproveRequestInput) {
                     })
 
                 if ((!request.skipWeekends || !isWeekend) && !isHol) {
-                    console.log(`  Creating shift for day ${i + 1}: ${currentDay.toISOString()}`)
+                    let shiftStartDateTime: Date
+                    let shiftEndDateTime: Date
 
-                    await tx.shift.upsert({
-                        where: {
-                            userId_date: {
-                                userId: request.userId,
-                                date: currentDay,
-                            },
-                        },
-                        create: {
+                    if (request.isFullDay || !request.startTime || !request.endTime) {
+                        shiftStartDateTime = new Date(currentDay)
+                        shiftStartDateTime.setHours(0, 0, 0, 0)
+                        shiftEndDateTime = new Date(currentDay)
+                        shiftEndDateTime.setHours(23, 59, 59, 999)
+                    } else {
+                        const isFirstDay = i === 0
+                        const isLastDay = i === daysDiff
+
+                        if (isFirstDay) {
+                            const [startHour, startMin] = request.startTime.split(":").map(Number)
+                            shiftStartDateTime = new Date(currentDay)
+                            shiftStartDateTime.setHours(startHour, startMin, 0, 0)
+                        } else {
+                            shiftStartDateTime = new Date(currentDay)
+                            shiftStartDateTime.setHours(0, 0, 0, 0)
+                        }
+
+                        if (isLastDay) {
+                            const [endHour, endMin] = request.endTime.split(":").map(Number)
+                            shiftEndDateTime = new Date(currentDay)
+                            shiftEndDateTime.setHours(endHour, endMin, 0, 0)
+                        } else {
+                            shiftEndDateTime = new Date(currentDay)
+                            shiftEndDateTime.setHours(23, 59, 59, 999)
+                        }
+                    }
+
+                    await tx.shift.create({
+                        data: {
                             userId: request.userId,
                             date: currentDay,
-                            location: shiftLocation,
-                            notes: `Auto-generated from ${request.type.toLowerCase()} request`,
-                        },
-                        update: {
+                            startDateTime: shiftStartDateTime,
+                            endDateTime: shiftEndDateTime,
                             location: shiftLocation,
                             notes: `Auto-generated from ${request.type.toLowerCase()} request`,
                         },
                     })
-                } else {
-                    console.log(
-                        `  Skipping day ${i + 1}: ${currentDay.toISOString()} (weekend: ${isWeekend}, holiday: ${isHol})`
-                    )
                 }
             }
 
@@ -645,39 +939,75 @@ export async function approveRequest(input: ApproveRequestInput) {
                             (request.skipHolidays && isHoliday)
 
                         if (!shouldSkip) {
-                            const dayStart = new Date(currentDay)
-                            dayStart.setUTCHours(8, 0, 0, 0)
-                            const dayEnd = new Date(currentDay)
-                            dayEnd.setUTCHours(16, 0, 0, 0)
+                            let entryStart: Date
+                            let entryEnd: Date
+                            let hours: number
 
-                            console.log(
-                                `➕ Creating VACATION TaskTimeEntry for ${currentDay.toISOString()}`
-                            )
+                            if (request.isFullDay || !request.startTime || !request.endTime) {
+                                hours = 8
+                                entryStart = new Date(currentDay)
+                                entryStart.setUTCHours(8, 0, 0, 0)
+                                entryEnd = new Date(currentDay)
+                                entryEnd.setUTCHours(16, 0, 0, 0)
+                            } else {
+                                const isFirstDay = i === 0
+                                const isLastDay = i === daysDiff
+
+                                if (isFirstDay && isLastDay) {
+                                    hours = request.requestedHours
+                                        ? Number(request.requestedHours)
+                                        : 8
+                                    const [startHour, startMin] = request.startTime
+                                        .split(":")
+                                        .map(Number)
+                                    const [endHour, endMin] = request.endTime.split(":").map(Number)
+                                    entryStart = new Date(currentDay)
+                                    entryStart.setHours(startHour, startMin, 0, 0)
+                                    entryEnd = new Date(currentDay)
+                                    entryEnd.setHours(endHour, endMin, 0, 0)
+                                } else if (isFirstDay) {
+                                    const [startHour, startMin] = request.startTime
+                                        .split(":")
+                                        .map(Number)
+                                    entryStart = new Date(currentDay)
+                                    entryStart.setHours(startHour, startMin, 0, 0)
+                                    entryEnd = new Date(currentDay)
+                                    entryEnd.setHours(23, 59, 59, 999)
+                                    hours = 24 - startHour - startMin / 60
+                                } else if (isLastDay) {
+                                    const [endHour, endMin] = request.endTime.split(":").map(Number)
+                                    entryStart = new Date(currentDay)
+                                    entryStart.setHours(0, 0, 0, 0)
+                                    entryEnd = new Date(currentDay)
+                                    entryEnd.setHours(endHour, endMin, 0, 0)
+                                    hours = endHour + endMin / 60
+                                } else {
+                                    hours = 24
+                                    entryStart = new Date(currentDay)
+                                    entryStart.setHours(0, 0, 0, 0)
+                                    entryEnd = new Date(currentDay)
+                                    entryEnd.setHours(23, 59, 59, 999)
+                                }
+                            }
+
                             await tx.taskTimeEntry.create({
                                 data: {
                                     taskId: systemTask.id,
                                     userId: request.userId,
-                                    startTime: dayStart,
-                                    endTime: dayEnd,
-                                    duration: 8 * 3600,
+                                    startTime: entryStart,
+                                    endTime: entryEnd,
+                                    duration: Math.round(hours * 3600),
                                     type: targetHourType,
                                 },
                             })
                         }
                     }
                 } else {
-                    console.log(
-                        `⚠️ ENTERING ELSE BRANCH (WORK_FROM_HOME/OTHER) - will REMAP existing entries`
-                    )
-                    // For other types (WORK_FROM_HOME, OTHER): Remap existing hours, but exclude VACATION/SICK_LEAVE
-                    const migrateStartDate = new Date(request.startDate)
-                    migrateStartDate.setHours(0, 0, 0, 0)
-                    const migrateEndDate = new Date(request.endDate)
-                    migrateEndDate.setHours(23, 59, 59, 999)
+                    const { startDateTime: reqStartDateTime, endDateTime: reqEndDateTime } =
+                        getRequestDateTimeRange(request)
 
                     const typesToRemap = ["WORK", "WORK_FROM_HOME", "OTHER"]
 
-                    // Get system task IDs to exclude from updates
                     const systemTasks = await tx.task.findMany({
                         where: {
                             userId: request.userId,
@@ -695,8 +1025,8 @@ export async function approveRequest(input: ApproveRequestInput) {
                                 where: {
                                     userId: request.userId,
                                     date: {
-                                        gte: migrateStartDate,
-                                        lte: migrateEndDate,
+                                        gte: reqStartDateTime,
+                                        lte: reqEndDateTime,
                                     },
                                     type: oldType as HourType,
                                     taskId: null,
@@ -706,13 +1036,14 @@ export async function approveRequest(input: ApproveRequestInput) {
                                 },
                             })
 
-                            // Update TaskTimeEntry records, but exclude system task entries
                             await tx.taskTimeEntry.updateMany({
                                 where: {
                                     userId: request.userId,
                                     startTime: {
-                                        gte: migrateStartDate,
-                                        lte: migrateEndDate,
+                                        lt: reqEndDateTime,
+                                    },
+                                    endTime: {
+                                        gt: reqStartDateTime,
                                     },
                                     type: oldType as HourType,
                                     NOT: {
@@ -788,6 +1119,20 @@ export async function rejectRequest(input: RejectRequestInput) {
 
         if (request.status !== "PENDING") {
             return { error: "Can only reject pending requests" }
+        }
+
+        const earlierPendingRequests = await prisma.request.count({
+            where: {
+                userId: request.userId,
+                status: "PENDING",
+                createdAt: { lt: request.createdAt },
+            },
+        })
+
+        if (earlierPendingRequests > 0) {
+            return {
+                error: `Cannot reject - ${earlierPendingRequests} earlier pending request(s) must be processed first. Process requests in submission order.`,
+            }
         }
 
         await prisma.$transaction(async (tx) => {
@@ -880,7 +1225,10 @@ export async function getUserRequests(): Promise<RequestDisplay[]> {
             },
         })
 
-        return requests
+        return requests.map((req) => ({
+            ...req,
+            requestedHours: req.requestedHours ? Number(req.requestedHours) : null,
+        }))
     } catch (error) {
         console.error("Error fetching user requests:", error)
         throw new Error("Failed to fetch requests")
@@ -942,7 +1290,10 @@ export async function getUserRequestsForAdmin(
             },
         })
 
-        return requests
+        return requests.map((req) => ({
+            ...req,
+            requestedHours: req.requestedHours ? Number(req.requestedHours) : null,
+        }))
     } catch (error) {
         console.error("Error fetching user requests:", error)
         throw new Error("Failed to fetch requests")
@@ -999,7 +1350,10 @@ export async function getAllRequests(statusFilter?: string[]): Promise<RequestDi
             },
         })
 
-        return requests
+        return requests.map((req) => ({
+            ...req,
+            requestedHours: req.requestedHours ? Number(req.requestedHours) : null,
+        }))
     } catch (error) {
         console.error("Error fetching all requests:", error)
         throw new Error("Failed to fetch requests")

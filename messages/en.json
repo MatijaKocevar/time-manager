@@ -341,7 +341,12 @@
             "selectEndDate": "Select end date",
             "requestDetails": "Request Details",
             "skipWeekends": "Skip weekends",
-            "skipHolidays": "Skip holidays"
+            "skipHolidays": "Skip holidays",
+            "fullDay": "Full Day",
+            "startTime": "Start Time",
+            "endTime": "End Time",
+            "requestedHours": "Requested Hours",
+            "hours": "hours"
         },
         "table": {
             "approvedBy": "Approved/Rejected By",

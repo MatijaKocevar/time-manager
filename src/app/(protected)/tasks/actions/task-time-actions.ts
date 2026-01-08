@@ -88,20 +88,17 @@ export async function startTimer(input: StartTimerInput) {
                 })
             }
 
-            // Check for approved request for the current date to set the correct type for new timer
+            // Check for approved request for the current date/time to set the correct type for new timer
             // BUT: NEVER use VACATION or SICK_LEAVE for manually tracked time
-            // Those types are ONLY for automatic 8-hour entries created by request approval
+            // Those types are ONLY for automatic entries created by request approval
             const now = new Date()
-            const nowUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
 
-            const currentApprovedRequest = await tx.request.findFirst({
+            const approvedRequests = await tx.request.findMany({
                 where: {
                     userId: session.user.id,
                     status: "APPROVED",
                     affectsHourType: true,
                     cancelledAt: null,
-                    startDate: { lte: nowUTC },
-                    endDate: { gte: nowUTC },
                     type: {
                         notIn: ["VACATION", "SICK_LEAVE"],
                     },
@@ -113,8 +110,29 @@ export async function startTimer(input: StartTimerInput) {
 
             let newEntryType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" =
                 "WORK"
-            if (currentApprovedRequest) {
-                newEntryType = currentApprovedRequest.type
+
+            for (const request of approvedRequests) {
+                let requestStart: Date
+                let requestEnd: Date
+
+                if (request.isFullDay || !request.startTime || !request.endTime) {
+                    requestStart = new Date(request.startDate)
+                    requestStart.setHours(0, 0, 0, 0)
+                    requestEnd = new Date(request.endDate)
+                    requestEnd.setHours(23, 59, 59, 999)
+                } else {
+                    const [startHour, startMin] = request.startTime.split(":").map(Number)
+                    const [endHour, endMin] = request.endTime.split(":").map(Number)
+                    requestStart = new Date(request.startDate)
+                    requestStart.setHours(startHour, startMin, 0, 0)
+                    requestEnd = new Date(request.endDate)
+                    requestEnd.setHours(endHour, endMin, 0, 0)
+                }
+
+                if (now >= requestStart && now <= requestEnd) {
+                    newEntryType = request.type
+                    break
+                }
             }
 
             return await tx.taskTimeEntry.create({

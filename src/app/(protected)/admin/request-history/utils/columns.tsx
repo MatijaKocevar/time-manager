@@ -82,19 +82,45 @@ export function createColumns({
         {
             accessorKey: "startDate",
             header: translations.table.startDate,
-            cell: ({ row }) => formatDate(row.original.startDate, locale),
+            cell: ({ row }) => (
+                <div>
+                    <div>{formatDate(row.original.startDate, locale)}</div>
+                    {row.original.startTime && (
+                        <div className="text-xs text-muted-foreground">
+                            {row.original.startTime}
+                        </div>
+                    )}
+                </div>
+            ),
             enableColumnFilter: false,
         },
         {
             accessorKey: "endDate",
             header: translations.table.endDate,
-            cell: ({ row }) => formatDate(row.original.endDate, locale),
+            cell: ({ row }) => (
+                <div>
+                    <div>{formatDate(row.original.endDate, locale)}</div>
+                    {row.original.endTime && (
+                        <div className="text-xs text-muted-foreground">{row.original.endTime}</div>
+                    )}
+                </div>
+            ),
             enableColumnFilter: false,
         },
         {
             id: "hours",
             header: translations.table.hours,
             cell: ({ row }) => {
+                if (
+                    row.original.requestedHours !== null &&
+                    row.original.requestedHours !== undefined
+                ) {
+                    return (
+                        <div className="font-semibold">
+                            {Number(row.original.requestedHours).toFixed(2)}h
+                        </div>
+                    )
+                }
                 const workdays = calculateWorkdays(
                     row.original.startDate,
                     row.original.endDate,

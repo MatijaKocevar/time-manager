@@ -330,8 +330,8 @@ export async function getHourEntriesForUser(
                     type: summary.type,
                     description: null,
                     taskId: "total",
-                    createdAt: summary.createdAt,
-                    updatedAt: summary.updatedAt,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
                 })
             }
 
@@ -344,8 +344,8 @@ export async function getHourEntriesForUser(
                     type: summary.type,
                     description: null,
                     taskId: "tracked",
-                    createdAt: summary.createdAt,
-                    updatedAt: summary.updatedAt,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
                 })
             }
 
@@ -444,8 +444,8 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                     type: summary.type,
                     description: null,
                     taskId: "total",
-                    createdAt: summary.createdAt,
-                    updatedAt: summary.updatedAt,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
                 })
             }
 
@@ -458,8 +458,8 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                     type: summary.type,
                     description: null,
                     taskId: "tracked",
-                    createdAt: summary.createdAt,
-                    updatedAt: summary.updatedAt,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
                 })
             }
 
