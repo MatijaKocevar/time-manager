@@ -43,7 +43,9 @@ BEGIN
     ) THEN
         ALTER TABLE "Request"
         ADD CONSTRAINT "Request_supersededBy_fkey" FOREIGN KEY ("supersededBy") REFERENCES "Request" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
-    END IF;
+
+END IF;
+
 END $$;
 
 -- AddForeignKey
