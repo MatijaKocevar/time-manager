@@ -178,50 +178,52 @@ export function HourTypeRow({
                         })}
                     </TableRow>
 
-                    <TableRow>
-                        <TableCell className="font-medium sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r">
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="cursor-default pl-8">
-                                        <span
-                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold truncate ${getTypeColor(manualKey)}`}
-                                        >
+                    {hourType !== "VACATION" && hourType !== "SICK_LEAVE" && (
+                        <TableRow>
+                            <TableCell className="font-medium sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className="cursor-default pl-8">
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold truncate ${getTypeColor(manualKey)}`}
+                                            >
+                                                {getTranslatedTypeLabel(manualKey)}
+                                            </span>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <div className="text-sm">
                                             {getTranslatedTypeLabel(manualKey)}
-                                        </span>
-                                    </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <div className="text-sm">
-                                        {getTranslatedTypeLabel(manualKey)}
-                                    </div>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TableCell>
-                        {dates.map((date) => {
-                            const year = date.getFullYear()
-                            const month = String(date.getMonth() + 1).padStart(2, "0")
-                            const day = String(date.getDate()).padStart(2, "0")
-                            const dateKey = `${year}-${month}-${day}`
+                                        </div>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TableCell>
+                            {dates.map((date) => {
+                                const year = date.getFullYear()
+                                const month = String(date.getMonth() + 1).padStart(2, "0")
+                                const day = String(date.getDate()).padStart(2, "0")
+                                const dateKey = `${year}-${month}-${day}`
 
-                            const entry = groupedEntries[manualKey]?.[dateKey]
-                            const isWeekend = date.getDay() === 0 || date.getDay() === 6
-                            const holiday = isHoliday(date)
+                                const entry = groupedEntries[manualKey]?.[dateKey]
+                                const isWeekend = date.getDay() === 0 || date.getDay() === 6
+                                const holiday = isHoliday(date)
 
-                            return (
-                                <TableCell
-                                    key={dateKey}
-                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
-                                >
-                                    <EditableHourCell
-                                        date={date}
-                                        type={hourType}
-                                        entry={entry}
-                                        userId={userId}
-                                    />
-                                </TableCell>
-                            )
-                        })}
-                    </TableRow>
+                                return (
+                                    <TableCell
+                                        key={dateKey}
+                                        className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
+                                    >
+                                        <EditableHourCell
+                                            date={date}
+                                            type={hourType}
+                                            entry={entry}
+                                            userId={userId}
+                                        />
+                                    </TableCell>
+                                )
+                            })}
+                        </TableRow>
+                    )}
                 </Fragment>
             )}
         </>
