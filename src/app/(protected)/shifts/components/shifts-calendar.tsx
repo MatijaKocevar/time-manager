@@ -17,7 +17,6 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Checkbox } from "@/components/ui/checkbox"
 import { SHIFT_LOCATION_COLORS } from "../constants"
-import type { ShiftLocation } from "../schemas/shift-schemas"
 import { getShiftLocationTranslationKey } from "../utils/translation-helpers"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
@@ -36,27 +35,11 @@ import { REQUEST_TYPES, REQUEST_TYPE } from "../../requests/constants"
 import { type RequestType } from "../../requests/schemas/request-schemas"
 import { getRequestTypeTranslationKey } from "../../requests/utils/translation-helpers"
 import { format } from "date-fns"
-
-interface User {
-    id: string
-    name: string | null
-    email: string
-}
-
-interface Shift {
-    id: string
-    userId: string
-    dateString: string
-    location: ShiftLocation
-    notes: string | null
-    user: User
-    startDateTime: Date | null
-    endDateTime: Date | null
-}
+import type { UserWithWorkHours, ShiftDisplay } from "../schemas/shift-schemas"
 
 interface ShiftsCalendarProps {
-    initialShifts: Shift[]
-    users: User[]
+    initialShifts: ShiftDisplay[]
+    users: UserWithWorkHours[]
     initialHolidays?: Array<{ date: Date; name: string }>
     initialViewMode: "week" | "month"
     initialSelectedDate: Date
@@ -85,8 +68,8 @@ export function ShiftsCalendar({
     const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false)
     const [selectedDayShifts, setSelectedDayShifts] = useState<{
         date: Date
-        user: User
-        shifts: Shift[]
+        user: UserWithWorkHours
+        shifts: ShiftDisplay[]
     } | null>(null)
 
     const formData = useRequestStore((state) => state.formData)
@@ -141,7 +124,7 @@ export function ShiftsCalendar({
     }, [currentDate, viewMode])
 
     const shiftsByUserAndDate = useMemo(() => {
-        const map = new Map<string, Shift[]>()
+        const map = new Map<string, ShiftDisplay[]>()
         initialShifts.forEach((shift) => {
             const key = `${shift.userId}-${shift.dateString}`
             const existing = map.get(key) || []
@@ -180,7 +163,7 @@ export function ShiftsCalendar({
         return holidaysByDate.get(key)
     }
 
-    const handleCellClick = (date: Date, user: User, shifts: Shift[]) => {
+    const handleCellClick = (date: Date, user: UserWithWorkHours, shifts: ShiftDisplay[]) => {
         if (shifts.length > 0) {
             setSelectedDayShifts({ date, user, shifts })
         } else {

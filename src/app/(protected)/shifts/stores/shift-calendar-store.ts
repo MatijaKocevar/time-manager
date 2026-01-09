@@ -1,10 +1,17 @@
 import { create } from "zustand"
+import type { UserWithWorkHours, ShiftDisplay } from "../schemas/shift-schemas"
 
 type ViewMode = "week" | "month"
 
 interface ShiftCalendarState {
     viewMode: ViewMode
     currentDate: Date
+    isRequestDialogOpen: boolean
+    selectedDayShifts: {
+        date: Date
+        user: UserWithWorkHours
+        shifts: ShiftDisplay[]
+    } | null
 }
 
 interface ShiftCalendarActions {
@@ -13,12 +20,18 @@ interface ShiftCalendarActions {
     handlePrevious: () => void
     handleNext: () => void
     handleToday: () => void
+    openRequestDialog: () => void
+    closeRequestDialog: () => void
+    setShiftDetails: (date: Date, user: UserWithWorkHours, shifts: ShiftDisplay[]) => void
+    clearShiftDetails: () => void
 }
 
 export const useShiftCalendarStore = create<ShiftCalendarState & ShiftCalendarActions>(
     (set, get) => ({
         viewMode: "week",
         currentDate: new Date(),
+        isRequestDialogOpen: false,
+        selectedDayShifts: null,
 
         setViewMode: (mode) => set({ viewMode: mode }),
 
@@ -47,5 +60,14 @@ export const useShiftCalendarStore = create<ShiftCalendarState & ShiftCalendarAc
         },
 
         handleToday: () => set({ currentDate: new Date() }),
+
+        openRequestDialog: () => set({ isRequestDialogOpen: true }),
+
+        closeRequestDialog: () => set({ isRequestDialogOpen: false }),
+
+        setShiftDetails: (date, user, shifts) =>
+            set({ selectedDayShifts: { date, user, shifts } }),
+
+        clearShiftDetails: () => set({ selectedDayShifts: null }),
     })
 )
