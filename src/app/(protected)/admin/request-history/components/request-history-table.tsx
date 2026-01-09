@@ -27,6 +27,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cancelApprovedRequest } from "../../../requests/actions/request-actions"
 import { requestKeys } from "../../../requests/query-keys"
+import { hourKeys } from "../../../hours/query-keys"
 import { ColumnFilter } from "./column-filter"
 import { CancelDialog } from "./cancel-dialog"
 import { createColumns } from "../utils/columns"
@@ -75,6 +76,7 @@ export function RequestHistoryTable({
             cancelApprovedRequest(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            queryClient.invalidateQueries({ queryKey: hourKeys.all })
             resetCancelDialog()
         },
     })
