@@ -114,9 +114,7 @@ export function RequestFormDialog({
                         <div className="space-y-2">
                             <Label htmlFor="startDate">{translations.startDateLabel}</Label>
                             <DatePicker
-                                date={
-                                    formData.startDate ? new Date(formData.startDate) : undefined
-                                }
+                                date={formData.startDate ? new Date(formData.startDate) : undefined}
                                 onDateChange={(date) =>
                                     onFormDataChange({
                                         startDate: date ? format(date, "yyyy-MM-dd") : "",

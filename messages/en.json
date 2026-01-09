@@ -317,6 +317,7 @@
             "vacation": "Vacation",
             "sickLeave": "Sick Leave",
             "workFromHome": "Work From Home",
+            "businessTrip": "Business Trip",
             "other": "Other"
         },
         "statuses": {

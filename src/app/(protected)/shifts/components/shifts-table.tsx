@@ -136,8 +136,9 @@ export function ShiftsTable({
                                                     shift.endDateTime &&
                                                     (new Date(shift.startDateTime).getHours() !==
                                                         0 ||
-                                                        new Date(shift.startDateTime).getMinutes() !==
-                                                            0 ||
+                                                        new Date(
+                                                            shift.startDateTime
+                                                        ).getMinutes() !== 0 ||
                                                         new Date(shift.endDateTime).getHours() !==
                                                             23 ||
                                                         new Date(shift.endDateTime).getMinutes() !==

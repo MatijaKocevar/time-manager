@@ -317,6 +317,7 @@
             "vacation": "Dopust",
             "sickLeave": "Bolniška",
             "workFromHome": "Delo od doma",
+            "businessTrip": "Službeno potovanje",
             "other": "Drugo"
         },
         "statuses": {
