@@ -65,8 +65,7 @@ export const useShiftCalendarStore = create<ShiftCalendarState & ShiftCalendarAc
 
         closeRequestDialog: () => set({ isRequestDialogOpen: false }),
 
-        setShiftDetails: (date, user, shifts) =>
-            set({ selectedDayShifts: { date, user, shifts } }),
+        setShiftDetails: (date, user, shifts) => set({ selectedDayShifts: { date, user, shifts } }),
 
         clearShiftDetails: () => set({ selectedDayShifts: null }),
     })

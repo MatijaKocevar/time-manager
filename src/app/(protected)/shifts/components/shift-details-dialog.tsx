@@ -68,7 +68,8 @@ export function ShiftDetailsDialog({
                                 {selectedDayShifts.shifts.map((shift) => {
                                     const userWorkStart =
                                         selectedDayShifts.user.workStartTime || "08:00"
-                                    const userWorkEnd = selectedDayShifts.user.workEndTime || "16:00"
+                                    const userWorkEnd =
+                                        selectedDayShifts.user.workEndTime || "16:00"
                                     const [workStartHour, workStartMinute] = userWorkStart
                                         .split(":")
                                         .map(Number)
@@ -83,7 +84,8 @@ export function ShiftDetailsDialog({
                                             workStartHour ||
                                             new Date(shift.startDateTime).getMinutes() !==
                                                 workStartMinute ||
-                                            new Date(shift.endDateTime).getHours() !== workEndHour ||
+                                            new Date(shift.endDateTime).getHours() !==
+                                                workEndHour ||
                                             new Date(shift.endDateTime).getMinutes() !==
                                                 workEndMinute)
 
