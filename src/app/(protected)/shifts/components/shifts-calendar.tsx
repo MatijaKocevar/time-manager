@@ -3,39 +3,16 @@
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations, useLocale } from "next-intl"
-import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Button } from "@/components/ui/button"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { Checkbox } from "@/components/ui/checkbox"
-import { SHIFT_LOCATION_COLORS } from "../constants"
-import { getShiftLocationTranslationKey } from "../utils/translation-helpers"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { DatePicker } from "@/components/ui/date-picker"
 import { useRequestStore } from "../../requests/stores/request-store"
 import { createRequest } from "../../requests/actions/request-actions"
-import { REQUEST_TYPES, REQUEST_TYPE } from "../../requests/constants"
+import { REQUEST_TYPE } from "../../requests/constants"
 import { type RequestType } from "../../requests/schemas/request-schemas"
-import { getRequestTypeTranslationKey } from "../../requests/utils/translation-helpers"
-import { format } from "date-fns"
 import type { UserWithWorkHours, ShiftDisplay } from "../schemas/shift-schemas"
+import { ShiftsCalendarHeader } from "./shifts-calendar-header"
+import { ShiftsTable } from "./shifts-table"
+import { RequestFormDialog } from "./request-form-dialog"
+import { ShiftDetailsDialog } from "./shift-details-dialog"
 
 interface ShiftsCalendarProps {
     initialShifts: ShiftDisplay[]
@@ -163,6 +140,15 @@ export function ShiftsCalendar({
         return holidaysByDate.get(key)
     }
 
+    const isToday = (date: Date) => {
+        const today = new Date()
+        return (
+            date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear()
+        )
+    }
+
     const handleCellClick = (date: Date, user: UserWithWorkHours, shifts: ShiftDisplay[]) => {
         if (shifts.length > 0) {
             setSelectedDayShifts({ date, user, shifts })
@@ -174,11 +160,9 @@ export function ShiftsCalendar({
         }
     }
 
-    const handleDialogClose = (open: boolean) => {
-        if (!open) {
-            setIsRequestDialogOpen(false)
-            resetForm()
-        }
+    const handleDialogClose = () => {
+        setIsRequestDialogOpen(false)
+        resetForm()
     }
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -225,17 +209,6 @@ export function ShiftsCalendar({
 
     const requestedHours = calculateRequestedHours()
 
-    const needsLocation = formData.type === REQUEST_TYPE.WORK_FROM_HOME
-
-    const isToday = (date: Date) => {
-        const today = new Date()
-        return (
-            date.getDate() === today.getDate() &&
-            date.getMonth() === today.getMonth() &&
-            date.getFullYear() === today.getFullYear()
-        )
-    }
-
     const handlePrevious = () => {
         const newDate = new Date(currentDate)
         if (viewMode === "week") {
@@ -268,503 +241,100 @@ export function ShiftsCalendar({
         router.push(`/shifts?view=${mode}&date=${dateStr}`)
     }
 
+    const locationsMap: Record<string, string> = {}
+    const locationsShortMap: Record<string, string> = {}
+    
+    ;["office", "home", "vacation", "sickLeave", "other"].forEach((key) => {
+        locationsMap[key] = tLocations(key as never)
+        locationsShortMap[key] = tLocationsShort(key as never)
+    })
+
     return (
         <div className="flex flex-col gap-4 h-full">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 shrink-0">
-                <div className="flex items-center justify-between lg:justify-start gap-2">
-                    <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={handlePrevious}>
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleNext}>
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleToday}>
-                            {tCommon("time.today")}
-                        </Button>
-                    </div>
-                    <div className="flex gap-2 lg:hidden">
-                        <Button
-                            variant={viewMode === "week" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handleViewModeChange("week")}
-                        >
-                            {t("views.weekView")}
-                        </Button>
-                        <Button
-                            variant={viewMode === "month" ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handleViewModeChange("month")}
-                        >
-                            {t("views.monthView")}
-                        </Button>
-                    </div>
-                </div>
-                <h2 className="text-xl font-semibold text-center lg:text-left lg:ml-4">
-                    {viewMode === "week"
-                        ? t("views.weekOf", {
-                              date: startDate.toLocaleDateString(dateLocale, {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                              }),
-                          })
-                        : currentDate.toLocaleDateString(dateLocale, {
-                              month: "long",
-                              year: "numeric",
-                          })}
-                </h2>
-                <div className="hidden lg:flex gap-2">
-                    <Button
-                        variant={viewMode === "week" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleViewModeChange("week")}
-                    >
-                        {t("views.weekView")}
-                    </Button>
-                    <Button
-                        variant={viewMode === "month" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleViewModeChange("month")}
-                    >
-                        {t("views.monthView")}
-                    </Button>
-                </div>
-            </div>
+            <ShiftsCalendarHeader
+                viewMode={viewMode}
+                currentDate={currentDate}
+                startDate={startDate}
+                dateLocale={dateLocale}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+                onToday={handleToday}
+                onViewModeChange={handleViewModeChange}
+                translations={{
+                    today: tCommon("time.today"),
+                    weekView: t("views.weekView"),
+                    monthView: t("views.monthView"),
+                    weekOf: (params: { date: string }) => t("views.weekOf", params),
+                }}
+            />
 
-            <div className="rounded-md border overflow-auto flex-1 min-h-0">
-                <Table>
-                    <TableHeader className="sticky top-0 z-30 bg-background">
-                        <TableRow>
-                            <TableHead className="sticky top-0 left-0 z-40 bg-background min-w-[150px] max-w-[200px] border-r">
-                                {t("table.employee")}
-                            </TableHead>
-                            {days.map((date) => {
-                                const isWeekend = date.getDay() === 0 || date.getDay() === 6
-                                const holiday = isHoliday(date)
-                                return (
-                                    <TableHead
-                                        key={date.toISOString()}
-                                        className={`text-center min-w-[120px] ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/10" : ""}`}
-                                    >
-                                        <div className="flex flex-col">
-                                            <span className="text-xs font-normal text-muted-foreground">
-                                                {date.toLocaleDateString(dateLocale, {
-                                                    weekday: "short",
-                                                })}
-                                            </span>
-                                            <span>
-                                                {date.toLocaleDateString(dateLocale, {
-                                                    month: "short",
-                                                    day: "numeric",
-                                                })}
-                                            </span>
-                                            {holiday && (
-                                                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 mt-1">
-                                                    {holiday.name}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </TableHead>
-                                )
-                            })}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {users.map((user) => (
-                            <TableRow key={user.id} className="hover:bg-muted/50">
-                                <TableCell className="font-medium sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r">
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <div className="cursor-default">
-                                                <div className="truncate">
-                                                    {user.name || t("table.unknown")}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground truncate">
-                                                    {user.email}
-                                                </div>
-                                            </div>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <div className="text-sm">
-                                                <div className="font-medium">
-                                                    {user.name || t("table.unknown")}
-                                                </div>
-                                                <div className="text-xs text-muted-foreground">
-                                                    {user.email}
-                                                </div>
-                                            </div>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TableCell>
-                                {days.map((date) => {
-                                    const shifts = getShifts(user.id, date)
-                                    const isWeekend = date.getDay() === 0 || date.getDay() === 6
-                                    const holiday = isHoliday(date)
-                                    const shouldShowDefault =
-                                        !isWeekend && !holiday && shifts.length === 0
+            <ShiftsTable
+                days={days}
+                users={users}
+                dateLocale={dateLocale}
+                getShifts={getShifts}
+                isHoliday={isHoliday}
+                isToday={isToday}
+                onCellClick={handleCellClick}
+                translations={{
+                    employee: t("table.employee"),
+                    unknown: t("table.unknown"),
+                }}
+                locationsTranslations={locationsMap}
+                locationsShortTranslations={locationsShortMap}
+            />
 
-                                    return (
-                                        <TableCell
-                                            key={date.toISOString()}
-                                            className={`text-center p-2 cursor-pointer ${
-                                                isWeekend ? "bg-muted/50" : ""
-                                            } ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
-                                            onClick={() => handleCellClick(date, user, shifts)}
-                                        >
-                                            <div className="flex flex-wrap gap-1 justify-center items-center min-h-[40px] p-1">
-                                                {shouldShowDefault && (
-                                                    <div
-                                                        className={`rounded px-1.5 py-1 text-[10px] font-semibold ${SHIFT_LOCATION_COLORS.OFFICE.bg} ${SHIFT_LOCATION_COLORS.OFFICE.text}`}
-                                                    >
-                                                        {tLocationsShort("office")}
-                                                    </div>
-                                                )}
-                                                {shifts.map((shift) => {
-                                                    const isPartialDay =
-                                                        shift.startDateTime &&
-                                                        shift.endDateTime &&
-                                                        (new Date(
-                                                            shift.startDateTime
-                                                        ).getHours() !== 0 ||
-                                                            new Date(
-                                                                shift.startDateTime
-                                                            ).getMinutes() !== 0 ||
-                                                            new Date(
-                                                                shift.endDateTime
-                                                            ).getHours() !== 23 ||
-                                                            new Date(
-                                                                shift.endDateTime
-                                                            ).getMinutes() !== 59)
+            <RequestFormDialog
+                isOpen={isRequestDialogOpen}
+                onClose={handleDialogClose}
+                formData={formData}
+                onFormDataChange={setFormData}
+                onSubmit={handleSubmit}
+                isPending={mutation.isPending}
+                error={mutation.data?.error || null}
+                requestedHours={requestedHours}
+                translations={{
+                    newRequest: tRequestForm("newRequest"),
+                    selectType: tRequestForm("selectType"),
+                    selectStartDate: tRequestForm("selectStartDate"),
+                    selectEndDate: tRequestForm("selectEndDate"),
+                    fullDay: tRequestForm("fullDay"),
+                    startTime: tRequestForm("startTime"),
+                    endTime: tRequestForm("endTime"),
+                    requestedHours: tRequestForm("requestedHours"),
+                    hours: tRequestForm("hours"),
+                    skipWeekends: tRequestForm("skipWeekends"),
+                    skipHolidays: tRequestForm("skipHolidays"),
+                    enterLocation: tRequestForm("enterLocation"),
+                    enterReason: tRequestForm("enterReason"),
+                    reasonOptional: tRequestForm("reasonOptional"),
+                    submitRequest: tRequestForm("submitRequest"),
+                    submitting: tCommon("status.submitting"),
+                    type: tCommon("fields.type"),
+                    startDateLabel: tCommon("fields.startDate"),
+                    endDateLabel: tCommon("fields.endDate"),
+                    location: tCommon("fields.location"),
+                }}
+                requestTypesTranslations={Object.fromEntries(
+                    ["vacation", "sickLeave", "workFromHome", "businessTrip", "other"].map(
+                        (key) => [key, tRequestTypes(key as never)]
+                    )
+                )}
+            />
 
-                                                    const timeRange =
-                                                        isPartialDay &&
-                                                        shift.startDateTime &&
-                                                        shift.endDateTime
-                                                            ? `${new Date(shift.startDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}-${new Date(shift.endDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}`
-                                                            : null
-
-                                                    return (
-                                                        <Tooltip key={shift.id}>
-                                                            <TooltipTrigger asChild>
-                                                                <div
-                                                                    className={`rounded px-1.5 py-1 text-[10px] font-semibold ${SHIFT_LOCATION_COLORS[shift.location].bg} ${SHIFT_LOCATION_COLORS[shift.location].text} cursor-pointer hover:opacity-80`}
-                                                                >
-                                                                    {tLocationsShort(
-                                                                        getShiftLocationTranslationKey(
-                                                                            shift.location
-                                                                        )
-                                                                    )}
-                                                                </div>
-                                                            </TooltipTrigger>
-                                                            <TooltipContent>
-                                                                <div className="text-xs">
-                                                                    <div className="font-semibold">
-                                                                        {tLocations(
-                                                                            getShiftLocationTranslationKey(
-                                                                                shift.location
-                                                                            )
-                                                                        )}
-                                                                    </div>
-                                                                    {timeRange && (
-                                                                        <div className="text-muted-foreground mt-1">
-                                                                            {timeRange}
-                                                                        </div>
-                                                                    )}
-                                                                    {shift.notes && (
-                                                                        <div className="text-muted-foreground mt-1 max-w-[200px]">
-                                                                            {shift.notes}
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </TooltipContent>
-                                                        </Tooltip>
-                                                    )
-                                                })}
-                                            </div>
-                                        </TableCell>
-                                    )
-                                })}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </div>
-
-            <Dialog open={isRequestDialogOpen} onOpenChange={handleDialogClose}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{tRequestForm("newRequest")}</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="type">{tCommon("fields.type")}</Label>
-                            <Select
-                                value={formData.type}
-                                onValueChange={(value) =>
-                                    setFormData({ type: value as RequestType })
-                                }
-                            >
-                                <SelectTrigger id="type">
-                                    <SelectValue placeholder={tRequestForm("selectType")} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {REQUEST_TYPES.map((rt) => (
-                                        <SelectItem key={rt.value} value={rt.value}>
-                                            {tRequestTypes(getRequestTypeTranslationKey(rt.value))}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
-                                <DatePicker
-                                    date={
-                                        formData.startDate
-                                            ? new Date(formData.startDate)
-                                            : undefined
-                                    }
-                                    onDateChange={(date) =>
-                                        setFormData({
-                                            startDate: date ? format(date, "yyyy-MM-dd") : "",
-                                        })
-                                    }
-                                    placeholder={tRequestForm("selectStartDate")}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
-                                <DatePicker
-                                    date={formData.endDate ? new Date(formData.endDate) : undefined}
-                                    onDateChange={(date) =>
-                                        setFormData({
-                                            endDate: date ? format(date, "yyyy-MM-dd") : "",
-                                        })
-                                    }
-                                    placeholder={tRequestForm("selectEndDate")}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="full-day"
-                                checked={formData.isFullDay}
-                                onCheckedChange={(checked) =>
-                                    setFormData({ isFullDay: checked === true })
-                                }
-                            />
-                            <Label htmlFor="full-day" className="cursor-pointer font-normal">
-                                {tRequestForm("fullDay")}
-                            </Label>
-                        </div>
-
-                        {!formData.isFullDay && (
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="startTime">{tRequestForm("startTime")}</Label>
-                                    <Select
-                                        value={formData.startTime}
-                                        onValueChange={(value) => setFormData({ startTime: value })}
-                                    >
-                                        <SelectTrigger id="startTime">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {Array.from({ length: 24 }, (_, i) => {
-                                                const hour = i.toString().padStart(2, "0")
-                                                return ["00", "15", "30", "45"].map((min) => {
-                                                    const time = `${hour}:${min}`
-                                                    return (
-                                                        <SelectItem key={time} value={time}>
-                                                            {time}
-                                                        </SelectItem>
-                                                    )
-                                                })
-                                            })}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="endTime">{tRequestForm("endTime")}</Label>
-                                    <Select
-                                        value={formData.endTime}
-                                        onValueChange={(value) => setFormData({ endTime: value })}
-                                    >
-                                        <SelectTrigger id="endTime">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {Array.from({ length: 24 }, (_, i) => {
-                                                const hour = i.toString().padStart(2, "0")
-                                                return ["00", "15", "30", "45"].map((min) => {
-                                                    const time = `${hour}:${min}`
-                                                    return (
-                                                        <SelectItem key={time} value={time}>
-                                                            {time}
-                                                        </SelectItem>
-                                                    )
-                                                })
-                                            })}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                        )}
-
-                        {requestedHours !== null && !formData.isFullDay && (
-                            <div className="text-sm text-muted-foreground">
-                                {tRequestForm("requestedHours")}: {requestedHours.toFixed(2)}{" "}
-                                {tRequestForm("hours")}
-                            </div>
-                        )}
-
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="skip-weekends"
-                                checked={formData.skipWeekends}
-                                onCheckedChange={(checked) =>
-                                    setFormData({ skipWeekends: checked === true })
-                                }
-                            />
-                            <Label htmlFor="skip-weekends" className="cursor-pointer font-normal">
-                                {tRequestForm("skipWeekends")}
-                            </Label>
-                        </div>
-
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="skip-holidays"
-                                checked={formData.skipHolidays}
-                                onCheckedChange={(checked) =>
-                                    setFormData({ skipHolidays: checked === true })
-                                }
-                            />
-                            <Label htmlFor="skip-holidays" className="cursor-pointer font-normal">
-                                {tRequestForm("skipHolidays")}
-                            </Label>
-                        </div>
-
-                        {needsLocation && (
-                            <div className="space-y-2">
-                                <Label htmlFor="location">{tCommon("fields.location")}</Label>
-                                <Input
-                                    id="location"
-                                    type="text"
-                                    placeholder={tRequestForm("enterLocation")}
-                                    value={formData.location}
-                                    onChange={(e) => setFormData({ location: e.target.value })}
-                                />
-                            </div>
-                        )}
-
-                        <div className="space-y-2">
-                            <Label htmlFor="reason">{tRequestForm("reasonOptional")}</Label>
-                            <Input
-                                id="reason"
-                                type="text"
-                                placeholder={tRequestForm("enterReason")}
-                                value={formData.reason}
-                                onChange={(e) => setFormData({ reason: e.target.value })}
-                            />
-                        </div>
-
-                        {mutation.data?.error && (
-                            <div className="text-sm text-red-600">{mutation.data.error}</div>
-                        )}
-
-                        <Button type="submit" disabled={mutation.isPending}>
-                            {mutation.isPending
-                                ? tCommon("status.submitting")
-                                : tRequestForm("submitRequest")}
-                        </Button>
-                    </form>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog
-                open={!!selectedDayShifts}
-                onOpenChange={(open) => !open && setSelectedDayShifts(null)}
-            >
-                <DialogContent className="max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>
-                            {selectedDayShifts &&
-                                tDialog("title", {
-                                    date: selectedDayShifts.date.toLocaleDateString(dateLocale, {
-                                        weekday: "long",
-                                        year: "numeric",
-                                        month: "long",
-                                        day: "numeric",
-                                    }),
-                                })}
-                        </DialogTitle>
-                    </DialogHeader>
-                    {selectedDayShifts && (
-                        <div className="space-y-4">
-                            <div>
-                                <div className="text-sm font-medium text-muted-foreground">
-                                    {t("table.employee")}
-                                </div>
-                                <div className="text-base font-semibold">
-                                    {selectedDayShifts.user.name || selectedDayShifts.user.email}
-                                </div>
-                            </div>
-                            {selectedDayShifts.shifts.length === 0 ? (
-                                <div className="text-sm text-muted-foreground py-4 text-center">
-                                    {tDialog("noShifts")}
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {selectedDayShifts.shifts.map((shift) => {
-                                        const isPartialDay =
-                                            shift.startDateTime &&
-                                            shift.endDateTime &&
-                                            (new Date(shift.startDateTime).getHours() !== 0 ||
-                                                new Date(shift.startDateTime).getMinutes() !== 0 ||
-                                                new Date(shift.endDateTime).getHours() !== 23 ||
-                                                new Date(shift.endDateTime).getMinutes() !== 59)
-
-                                        const timeRange =
-                                            isPartialDay && shift.startDateTime && shift.endDateTime
-                                                ? `${new Date(shift.startDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })} - ${new Date(shift.endDateTime).toLocaleTimeString(dateLocale, { hour: "2-digit", minute: "2-digit", hour12: false })}`
-                                                : tCommon("time.allDay") || "All Day"
-
-                                        return (
-                                            <div
-                                                key={shift.id}
-                                                className={`rounded-lg p-3 ${SHIFT_LOCATION_COLORS[shift.location].bg} ${SHIFT_LOCATION_COLORS[shift.location].text}`}
-                                            >
-                                                <div className="font-semibold mb-1">
-                                                    {tLocations(
-                                                        getShiftLocationTranslationKey(
-                                                            shift.location
-                                                        )
-                                                    )}
-                                                </div>
-                                                <div className="text-sm opacity-90">
-                                                    {timeRange}
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
-                            )}
-                            <div className="flex justify-end">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setSelectedDayShifts(null)}
-                                >
-                                    {tDialog("close")}
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <ShiftDetailsDialog
+                selectedDayShifts={selectedDayShifts}
+                onClose={() => setSelectedDayShifts(null)}
+                locale={locale}
+                translations={{
+                    title: (params: { date: string }) => tDialog("title", params),
+                    employee: t("table.employee"),
+                    noShifts: tDialog("noShifts"),
+                    close: tDialog("close"),
+                    allDay: tCommon("time.allDay"),
+                }}
+                locationsTranslations={locationsMap}
+            />
         </div>
     )
 }

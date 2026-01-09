@@ -18,13 +18,14 @@ import { REQUEST_TYPES, REQUEST_TYPE } from "../../requests/constants"
 import type { RequestType } from "../../requests/schemas/request-schemas"
 import { getRequestTypeTranslationKey } from "../../requests/utils/translation-helpers"
 
-interface FormData {
-    type: string
+interface RequestFormState {
+    type: RequestType | ""
     startDate: string
     endDate: string
     startTime: string
     endTime: string
     isFullDay: boolean
+    requestedHours: number | null
     reason: string
     location: string
     skipWeekends: boolean
@@ -34,8 +35,8 @@ interface FormData {
 interface RequestFormDialogProps {
     isOpen: boolean
     onClose: () => void
-    formData: FormData
-    onFormDataChange: (data: Partial<FormData>) => void
+    formData: RequestFormState
+    onFormDataChange: (data: Partial<RequestFormState>) => void
     onSubmit: (e: React.FormEvent) => void
     isPending: boolean
     error: string | null
