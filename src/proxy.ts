@@ -1,14 +1,26 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { getToken } from "next-auth/jwt"
 
-export default function proxy(request: NextRequest) {
+function getBrowserLocale(request: NextRequest): string {
+    const acceptLanguage = request.headers.get("accept-language")
+
+    if (!acceptLanguage) return "en"
+
+    const languages = acceptLanguage.split(",").map((lang) => {
+        const [code] = lang.split(";")[0].trim().split("-")
+        return code.toLowerCase()
+    })
+
+    if (languages.includes("sl")) return "sl"
+
+    return "en"
+}
+
+export default async function proxy(request: NextRequest) {
     const requestHeaders = new Headers(request.headers)
     requestHeaders.set("x-pathname", request.nextUrl.pathname)
     requestHeaders.set("x-request-id", crypto.randomUUID())
-
-    // Handle locale cookie for i18n
-    const locale = request.cookies.get("NEXT_LOCALE")?.value || "en"
-    console.log("[PROXY] Request to:", request.nextUrl.pathname, "cookie locale:", locale)
 
     const response = NextResponse.next({
         request: {
@@ -17,11 +29,41 @@ export default function proxy(request: NextRequest) {
     })
 
     if (!request.cookies.get("NEXT_LOCALE")) {
-        console.log("[PROXY] No NEXT_LOCALE cookie found, setting default:", locale)
+        const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+
+        let locale = "en"
+
+        if (token?.sub) {
+            const { prisma } = await import("@/lib/prisma")
+            const user = await prisma.user.findUnique({
+                where: { id: token.sub },
+                select: { locale: true },
+            })
+
+            if (user?.locale) {
+                locale = user.locale
+                console.log("[PROXY] Authenticated user, using DB locale:", locale)
+            } else {
+                locale = getBrowserLocale(request)
+                console.log("[PROXY] Authenticated user with no DB locale, using browser:", locale)
+            }
+        } else {
+            locale = getBrowserLocale(request)
+            console.log("[PROXY] Guest user, using browser locale:", locale)
+        }
+
         response.cookies.set("NEXT_LOCALE", locale, {
             path: "/",
+            maxAge: 31536000,
             sameSite: "lax",
         })
+    } else {
+        console.log(
+            "[PROXY] Cookie exists:",
+            request.cookies.get("NEXT_LOCALE")?.value,
+            "for:",
+            request.nextUrl.pathname
+        )
     }
 
     return response
