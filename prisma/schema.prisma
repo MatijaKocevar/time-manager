@@ -90,6 +90,9 @@ model HourEntry {
   @@index([taskId])
 }
 
+// MATERIALIZED VIEW - Cannot DELETE/UPDATE directly
+// Use refreshDailyHourSummary() from @/lib/materialized-views
+// Automatically recalculated when HourEntry or TaskTimeEntry changes
 model DailyHourSummary {
   userId        String   @id
   date          DateTime
