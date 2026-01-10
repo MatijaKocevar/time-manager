@@ -1,13 +1,14 @@
 import type { HourType } from "@/../../prisma/generated/client"
+import { HOUR_TYPE_VALUES } from "../constants/hour-types"
 
 export type HourTypeTranslationKey = "work" | "workFromHome" | "vacation" | "sickLeave" | "other"
 
 const HOUR_TYPE_TO_TRANSLATION_KEY: Record<HourType, HourTypeTranslationKey> = {
-    WORK: "work",
-    WORK_FROM_HOME: "workFromHome",
-    VACATION: "vacation",
-    SICK_LEAVE: "sickLeave",
-    OTHER: "other",
+    [HOUR_TYPE_VALUES.WORK]: "work",
+    [HOUR_TYPE_VALUES.WORK_FROM_HOME]: "workFromHome",
+    [HOUR_TYPE_VALUES.VACATION]: "vacation",
+    [HOUR_TYPE_VALUES.SICK_LEAVE]: "sickLeave",
+    [HOUR_TYPE_VALUES.OTHER]: "other",
 }
 
 export function getHourTypeTranslationKey(type: string): HourTypeTranslationKey {
@@ -31,4 +32,27 @@ export const HOUR_TYPE_ROW_LABELS = {
     TOTAL: "hours.labels.total",
     TRACKED: "hours.labels.tracked",
     MANUAL: "hours.labels.manual",
+}
+
+export function getTranslatedTypeLabel(
+    type: string,
+    tTypes: (key: HourTypeTranslationKey) => string,
+    tLabels: (key: string) => string
+): string {
+    const { SPECIAL_TYPES, ROW_SUFFIXES } = require("../constants/hour-types")
+
+    if (type === SPECIAL_TYPES.GRAND_TOTAL) {
+        return `${tLabels("grandTotal")} (${tTypes("work")})`
+    }
+    if (type.endsWith(ROW_SUFFIXES.TRACKED)) {
+        return tLabels("tracked")
+    }
+    if (type.endsWith(ROW_SUFFIXES.MANUAL)) {
+        return tLabels("manual")
+    }
+    if (type.endsWith(ROW_SUFFIXES.TOTAL)) {
+        const baseType = type.replace(ROW_SUFFIXES.TOTAL, "") as HourType
+        return tTypes(getHourTypeTranslationKey(baseType))
+    }
+    return tTypes(getHourTypeTranslationKey(type))
 }

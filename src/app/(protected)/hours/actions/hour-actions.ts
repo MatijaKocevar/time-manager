@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import type { HourType } from "@/../../prisma/generated/client"
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
+import { TASK_ID_VALUES } from "../constants/hour-types"
 import {
     CreateHourEntrySchema,
     UpdateHourEntrySchema,
@@ -329,7 +330,7 @@ export async function getHourEntriesForUser(
                     hours: summary.totalHours,
                     type: summary.type,
                     description: null,
-                    taskId: "total",
+                    taskId: TASK_ID_VALUES.TOTAL,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 })
@@ -343,7 +344,7 @@ export async function getHourEntriesForUser(
                     hours: summary.trackedHours,
                     type: summary.type,
                     description: null,
-                    taskId: "tracked",
+                    taskId: TASK_ID_VALUES.TRACKED,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 })
@@ -443,7 +444,7 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                     hours: summary.totalHours,
                     type: summary.type,
                     description: null,
-                    taskId: "total",
+                    taskId: TASK_ID_VALUES.TOTAL,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 })
@@ -457,7 +458,7 @@ export async function getHourEntries(startDate?: string, endDate?: string, type?
                     hours: summary.trackedHours,
                     type: summary.type,
                     description: null,
-                    taskId: "tracked",
+                    taskId: TASK_ID_VALUES.TRACKED,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 })

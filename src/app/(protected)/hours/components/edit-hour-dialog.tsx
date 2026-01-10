@@ -8,13 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { DatePicker } from "@/components/ui/date-picker"
 import { WorkTypeBadge } from "@/components/work-type-badge"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
 import { useHoursStore } from "../stores/hours-store"
 import { updateHourEntry } from "../actions/hour-actions"
 import { HOUR_TYPES, MAX_HOURS_PER_DAY } from "../constants/hour-types"
@@ -22,6 +16,7 @@ import { hourKeys } from "../query-keys"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 import type { WorkType } from "@/lib/work-type-styles"
 import { format } from "date-fns"
+import { HourType } from "../schemas"
 
 interface EditHourDialogProps {
     open: boolean
@@ -120,12 +115,7 @@ export function EditHourDialog({ open, onOpenChange }: EditHourDialogProps) {
                                 value={editFormData.type}
                                 onValueChange={(value: string) =>
                                     setEditFormData({
-                                        type: value as
-                                            | "WORK"
-                                            | "VACATION"
-                                            | "SICK_LEAVE"
-                                            | "WORK_FROM_HOME"
-                                            | "OTHER",
+                                        type: value as HourType,
                                     })
                                 }
                                 disabled={isEditLoading}

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { useQueryClient } from "@tanstack/react-query"
+import type { HourType } from "@/../../prisma/generated/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -130,12 +131,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
                     value={bulkEntryForm.data.type}
                     onValueChange={(value) =>
                         setBulkEntryFormData({
-                            type: value as
-                                | "WORK"
-                                | "VACATION"
-                                | "SICK_LEAVE"
-                                | "WORK_FROM_HOME"
-                                | "OTHER",
+                            type: value as HourType,
                         })
                     }
                 >

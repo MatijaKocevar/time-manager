@@ -1,5 +1,11 @@
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
-import { HOUR_TYPE_COLORS, ROW_BG_COLORS } from "../constants/hour-types"
+import {
+    HOUR_TYPE_COLORS,
+    ROW_BG_COLORS,
+    ROW_SUFFIXES,
+    SPECIAL_TYPES,
+    TASK_ID_VALUES,
+} from "../constants/hour-types"
 
 export function generateDateColumns(startDate: string, endDate: string): Date[] {
     const [startYear, startMonth, startDay] = startDate.split("-").map(Number)
@@ -35,14 +41,14 @@ export function groupEntriesByType(
         }
 
         let rowKey: string
-        if (entry.taskId === "grand_total") {
-            rowKey = "GRAND_TOTAL"
-        } else if (entry.taskId === "total") {
-            rowKey = `${entry.type}_TOTAL`
-        } else if (entry.taskId === "tracked") {
-            rowKey = `${entry.type}_TRACKED`
+        if (entry.taskId === TASK_ID_VALUES.GRAND_TOTAL) {
+            rowKey = SPECIAL_TYPES.GRAND_TOTAL
+        } else if (entry.taskId === TASK_ID_VALUES.TOTAL) {
+            rowKey = `${entry.type}${ROW_SUFFIXES.TOTAL}`
+        } else if (entry.taskId === TASK_ID_VALUES.TRACKED) {
+            rowKey = `${entry.type}${ROW_SUFFIXES.TRACKED}`
         } else {
-            rowKey = `${entry.type}_MANUAL`
+            rowKey = `${entry.type}${ROW_SUFFIXES.MANUAL}`
         }
 
         if (!grouped[rowKey]) {

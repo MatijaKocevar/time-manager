@@ -6,6 +6,7 @@ import { getHourEntries } from "./actions/hour-actions"
 import { getDateRange } from "./utils/view-helpers"
 import { getHolidaysInRange } from "../admin/holidays/actions/holiday-actions"
 import type { ViewMode } from "./schemas/hour-filter-schemas"
+import { VIEW_MODE_VALUES } from "./schemas/hour-filter-schemas"
 
 export const dynamic = "force-dynamic"
 
@@ -20,7 +21,7 @@ export default async function HoursPage({ searchParams }: HoursPageProps) {
     }
 
     const params = await searchParams
-    const viewMode = (params.view?.toUpperCase() as ViewMode) || "WEEKLY"
+    const viewMode = (params.view?.toUpperCase() as ViewMode) || VIEW_MODE_VALUES.WEEKLY
     const selectedDate = params.date ? new Date(params.date) : new Date()
 
     const cookieStore = await cookies()
@@ -30,8 +31,8 @@ export default async function HoursPage({ searchParams }: HoursPageProps) {
         : []
 
     const dateRange = getDateRange(viewMode, selectedDate)
-    const weekRange = getDateRange("WEEKLY", selectedDate)
-    const monthRange = getDateRange("MONTHLY", selectedDate)
+    const weekRange = getDateRange(VIEW_MODE_VALUES.WEEKLY, selectedDate)
+    const monthRange = getDateRange(VIEW_MODE_VALUES.MONTHLY, selectedDate)
 
     const [entries, weeklyEntries, monthlyEntries, holidays] = await Promise.all([
         getHourEntries(dateRange.startDate, dateRange.endDate),

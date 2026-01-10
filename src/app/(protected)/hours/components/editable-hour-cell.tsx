@@ -6,6 +6,7 @@ import type { HourType } from "@/../../prisma/generated/client"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { useEditableCellStore } from "../stores/editable-cell-store"
 import { useHoursBatchStore } from "../stores/hours-batch-store"
+import { TASK_ID_VALUES } from "../constants/hour-types"
 import { formatHoursToTime, parseDuration } from "../utils/time-helpers"
 import { Button } from "@/components/ui/button"
 import {
@@ -103,8 +104,8 @@ export function EditableHourCell({
     }
 
     if (entry?.taskId) {
-        const isTotal = entry.taskId === "total"
-        const isGrandTotal = entry.taskId === "grand_total"
+        const isTotal = entry.taskId === TASK_ID_VALUES.TOTAL
+        const isGrandTotal = entry.taskId === TASK_ID_VALUES.GRAND_TOTAL
         const hours = entry?.hours || 0
 
         // Calculate progress bar percentages for grand total

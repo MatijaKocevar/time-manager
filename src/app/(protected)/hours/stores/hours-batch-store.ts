@@ -1,16 +1,7 @@
 import { create } from "zustand"
 import type { HourType } from "@/../../prisma/generated/client"
 import { batchUpdateHourEntries } from "../actions/hour-actions"
-
-export interface PendingChange {
-    cellKey: string
-    entryId: string | null
-    date: string
-    type: HourType
-    hours: number
-    originalHours: number | null
-    action: "create" | "update" | "delete"
-}
+import type { PendingChange } from "../schemas/hour-entry-schemas"
 
 interface HoursBatchState {
     pendingChanges: Map<string, PendingChange>

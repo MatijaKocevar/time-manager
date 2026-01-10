@@ -5,11 +5,11 @@ import { useQuery } from "@tanstack/react-query"
 import { Card, CardHeader } from "@/components/ui/card"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
-import { HOUR_TYPES, HOUR_TYPE_COLORS } from "../constants/hour-types"
+import { HOUR_TYPES, HOUR_TYPE_COLORS, TASK_ID_VALUES } from "../constants/hour-types"
+import { VIEW_MODE_VALUES } from "../schemas/hour-filter-schemas"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 import { formatHoursMinutes } from "../utils/time-helpers"
 import { calculateWorkingDaysSync, calculateOvertime } from "../utils/calculation-helpers"
-import { isHolidayFromList } from "../utils/holiday-helpers"
 import { getCurrentUser } from "../../profile/actions/profile-actions"
 
 interface HoursSummaryProps {
@@ -41,24 +41,24 @@ export function HoursSummary({
     const hoursPerDay = userData?.workHoursPerDay || 8
 
     const weeklyGrandTotal = weeklyEntries
-        .filter((entry) => entry.taskId === "total")
+        .filter((entry) => entry.taskId === TASK_ID_VALUES.TOTAL)
         .reduce((sum, entry) => sum + entry.hours, 0)
 
     const monthlyGrandTotal = monthlyEntries
-        .filter((entry) => entry.taskId === "total")
+        .filter((entry) => entry.taskId === TASK_ID_VALUES.TOTAL)
         .reduce((sum, entry) => sum + entry.hours, 0)
 
     let expectedHours = 0
     let overtime = 0
     let workingDays = 0
 
-    if (viewMode === "MONTHLY" && dateRange) {
+    if (viewMode === VIEW_MODE_VALUES.MONTHLY && dateRange) {
         workingDays = calculateWorkingDaysSync(dateRange.start, dateRange.end, holidays)
         expectedHours = workingDays * hoursPerDay
         overtime = calculateOvertime(monthlyGrandTotal, workingDays, hoursPerDay)
     }
 
-    const weeklyTypeTotals = weeklyEntries.filter((entry) => entry.taskId === "total")
+    const weeklyTypeTotals = weeklyEntries.filter((entry) => entry.taskId === TASK_ID_VALUES.TOTAL)
     const weeklyHoursByType = HOUR_TYPES.reduce(
         (acc, hourType) => {
             acc[hourType.value] = weeklyTypeTotals
@@ -69,7 +69,9 @@ export function HoursSummary({
         {} as Record<string, number>
     )
 
-    const monthlyTypeTotals = monthlyEntries.filter((entry) => entry.taskId === "total")
+    const monthlyTypeTotals = monthlyEntries.filter(
+        (entry) => entry.taskId === TASK_ID_VALUES.TOTAL
+    )
     const monthlyHoursByType = HOUR_TYPES.reduce(
         (acc, hourType) => {
             acc[hourType.value] = monthlyTypeTotals
@@ -80,8 +82,8 @@ export function HoursSummary({
         {} as Record<string, number>
     )
 
-    const showWeekly = viewMode === "WEEKLY"
-    const showOvertime = viewMode === "MONTHLY" && workingDays > 0
+    const showWeekly = viewMode === VIEW_MODE_VALUES.WEEKLY
+    const showOvertime = viewMode === VIEW_MODE_VALUES.MONTHLY && workingDays > 0
 
     return (
         <div className="space-y-4">

@@ -1,4 +1,5 @@
 import type { ViewMode } from "../schemas/hour-filter-schemas"
+import { VIEW_MODE_VALUES } from "../schemas/hour-filter-schemas"
 
 export function getDateRange(mode: ViewMode, referenceDate: Date = new Date()) {
     const start = new Date(referenceDate)
@@ -7,20 +8,20 @@ export function getDateRange(mode: ViewMode, referenceDate: Date = new Date()) {
     end.setHours(0, 0, 0, 0)
 
     switch (mode) {
-        case "WEEKLY":
+        case VIEW_MODE_VALUES.WEEKLY:
             const dayOfWeek = start.getDay()
             const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1
             start.setDate(start.getDate() - daysToMonday)
             end.setTime(start.getTime())
             end.setDate(end.getDate() + 6)
             break
-        case "MONTHLY":
+        case VIEW_MODE_VALUES.MONTHLY:
             start.setDate(1)
             end.setMonth(end.getMonth() + 1, 0)
             break
-        case "DAILY":
+        case VIEW_MODE_VALUES.DAILY:
             break
-        case "YEARLY":
+        case VIEW_MODE_VALUES.YEARLY:
             start.setMonth(0, 1)
             end.setMonth(11, 31)
             break
@@ -53,13 +54,13 @@ export function getViewTitle(
     }
     const dateLocale = localeMap[locale] || "en-US"
 
-    if (mode === "WEEKLY") {
+    if (mode === VIEW_MODE_VALUES.WEEKLY) {
         const start = dateRange.start
         const end = dateRange.end
         return `${start.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })} - ${end.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })}`
-    } else if (mode === "MONTHLY") {
+    } else if (mode === VIEW_MODE_VALUES.MONTHLY) {
         return currentDate.toLocaleDateString(dateLocale, { month: "long", year: "numeric" })
-    } else if (mode === "DAILY") {
+    } else if (mode === VIEW_MODE_VALUES.DAILY) {
         return currentDate.toLocaleDateString(dateLocale, {
             weekday: "long",
             month: "long",

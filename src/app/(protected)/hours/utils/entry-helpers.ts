@@ -1,6 +1,7 @@
 import type { HourType } from "@/../../prisma/generated/client"
-import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
+import type { HourEntryDisplay, PendingChange } from "../schemas/hour-entry-schemas"
 import { formatDateKey } from "./date-helpers"
+import { HOUR_TYPE_VALUES, TASK_ID_VALUES } from "../constants/hour-types"
 
 export function buildManualEntriesMap(
     manualEntries: Array<{
@@ -75,9 +76,9 @@ export function buildGrandTotalEntries(
             userId,
             date: data.date,
             hours: data.hours,
-            type: "WORK" as const,
+            type: HOUR_TYPE_VALUES.WORK,
             description: null,
-            taskId: "grand_total",
+            taskId: TASK_ID_VALUES.GRAND_TOTAL,
             createdAt: new Date(),
             updatedAt: new Date(),
         }))
@@ -85,7 +86,7 @@ export function buildGrandTotalEntries(
 
 export function mergeEntriesWithPendingChanges(
     entries: HourEntryDisplay[],
-    pendingChanges: Map<string, { hours: number; action: string; date: string; type: HourType }>,
+    pendingChanges: Map<string, PendingChange>,
     userId: string
 ): HourEntryDisplay[] {
     const displayEntries = entries.map((entry) => {

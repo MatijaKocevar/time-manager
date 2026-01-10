@@ -2,6 +2,7 @@
 
 import { useMemo } from "react"
 import { useTranslations, useLocale } from "next-intl"
+import { SPECIAL_TYPES, HOUR_TYPE_VALUES, TASK_ID_VALUES } from "../constants/hour-types"
 import {
     Table,
     TableBody,
@@ -124,7 +125,7 @@ export function HoursTable({
                                     <TooltipTrigger asChild>
                                         <div className="cursor-default">
                                             <span
-                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold truncate ${getTypeColor("GRAND_TOTAL")}`}
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold truncate ${getTypeColor(SPECIAL_TYPES.GRAND_TOTAL)}`}
                                             >
                                                 {tLabels("grandTotal")} ({tMessages("allTypes")})
                                             </span>
@@ -143,7 +144,7 @@ export function HoursTable({
                                 const day = String(date.getDate()).padStart(2, "0")
                                 const dateKey = `${year}-${month}-${day}`
 
-                                const entry = groupedEntries["GRAND_TOTAL"]?.[dateKey]
+                                const entry = groupedEntries[SPECIAL_TYPES.GRAND_TOTAL]?.[dateKey]
                                 const isWeekend = date.getDay() === 0 || date.getDay() === 6
                                 const holiday = isHoliday(date)
 
@@ -172,10 +173,10 @@ export function HoursTable({
                                         )}
                                         <EditableHourCell
                                             date={date}
-                                            type="WORK"
+                                            type={HOUR_TYPE_VALUES.WORK}
                                             entry={{
                                                 ...entry,
-                                                taskId: "grand_total",
+                                                taskId: TASK_ID_VALUES.GRAND_TOTAL,
                                             }}
                                             userId={userId}
                                             showProgressBar={false}

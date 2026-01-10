@@ -1,11 +1,43 @@
-import { getWorkTypeColor, type WorkType } from "@/lib/work-type-styles"
+import { getWorkTypeColor } from "@/lib/work-type-styles"
+
+export const ROW_SUFFIXES = {
+    TRACKED: "_TRACKED",
+    MANUAL: "_MANUAL",
+    TOTAL: "_TOTAL",
+} as const
+
+export const SPECIAL_TYPES = {
+    GRAND_TOTAL: "GRAND_TOTAL",
+} as const
+
+export const TASK_ID_VALUES = {
+    TOTAL: "total",
+    TRACKED: "tracked",
+    GRAND_TOTAL: "grand_total",
+} as const
+
+export const HOUR_TYPE_VALUES = {
+    WORK: "WORK",
+    VACATION: "VACATION",
+    SICK_LEAVE: "SICK_LEAVE",
+    WORK_FROM_HOME: "WORK_FROM_HOME",
+    OTHER: "OTHER",
+} as const
+
+export const ALL_HOUR_TYPES = [
+    HOUR_TYPE_VALUES.WORK,
+    HOUR_TYPE_VALUES.WORK_FROM_HOME,
+    HOUR_TYPE_VALUES.VACATION,
+    HOUR_TYPE_VALUES.SICK_LEAVE,
+    HOUR_TYPE_VALUES.OTHER,
+] as const
 
 export const HOUR_TYPES = [
-    { value: "WORK" },
-    { value: "WORK_FROM_HOME" },
-    { value: "VACATION" },
-    { value: "SICK_LEAVE" },
-    { value: "OTHER" },
+    { value: HOUR_TYPE_VALUES.WORK },
+    { value: HOUR_TYPE_VALUES.WORK_FROM_HOME },
+    { value: HOUR_TYPE_VALUES.VACATION },
+    { value: HOUR_TYPE_VALUES.SICK_LEAVE },
+    { value: HOUR_TYPE_VALUES.OTHER },
 ] as const
 
 export const HOUR_TYPE_COLORS = {

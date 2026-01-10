@@ -9,6 +9,7 @@ import { ChevronLeft, ChevronRight, Download } from "lucide-react"
 import { HoursSummary } from "@/app/(protected)/hours/components/hours-summary"
 import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
 import { getDateRange, getViewTitle } from "@/app/(protected)/hours/utils/view-helpers"
+import { VIEW_MODE_VALUES } from "@/app/(protected)/hours/schemas/hour-filter-schemas"
 import { getHolidaysInRange } from "@/app/(protected)/admin/holidays/actions/holiday-actions"
 import { exportUserDetailsWithHours } from "../../actions/export-actions"
 import { ExportDialog, type ExportFormat } from "@/features/export"
@@ -30,8 +31,8 @@ export function UserHoursSection({
     const [currentDate, setCurrentDate] = useState(new Date())
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
 
-    const { startDate, endDate, start, end } = getDateRange("MONTHLY", currentDate)
-    const monthTitle = getViewTitle("MONTHLY", { start, end }, currentDate)
+    const { startDate, endDate, start, end } = getDateRange(VIEW_MODE_VALUES.MONTHLY, currentDate)
+    const monthTitle = getViewTitle(VIEW_MODE_VALUES.MONTHLY, { start, end }, currentDate)
 
     const { data: entries = initialEntries, isLoading } = useQuery({
         queryKey: userHourKeys.detail(userId, startDate),
@@ -101,7 +102,7 @@ export function UserHoursSection({
             <CardContent>
                 <HoursSummary
                     entries={entries}
-                    viewMode="MONTHLY"
+                    viewMode={VIEW_MODE_VALUES.MONTHLY}
                     weeklyEntries={[]}
                     monthlyEntries={entries}
                     isLoading={isLoading}

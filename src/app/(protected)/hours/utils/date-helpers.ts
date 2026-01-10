@@ -37,3 +37,11 @@ export function buildHolidayMap(
     })
     return map
 }
+
+export function getHolidayForDate(
+    date: Date,
+    holidaysByDate: Map<string, { name: string }>
+): { name: string } | undefined {
+    const key = formatDateKey(date)
+    return holidaysByDate.get(key)
+}

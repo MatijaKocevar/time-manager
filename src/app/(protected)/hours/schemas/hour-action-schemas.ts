@@ -1,7 +1,13 @@
 import { z } from "zod"
-import { MAX_HOURS_PER_DAY } from "../constants/hour-types"
+import { MAX_HOURS_PER_DAY, HOUR_TYPE_VALUES } from "../constants/hour-types"
 
-export const HourTypeSchema = z.enum(["WORK", "VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "OTHER"])
+export const HourTypeSchema = z.enum([
+    HOUR_TYPE_VALUES.WORK,
+    HOUR_TYPE_VALUES.VACATION,
+    HOUR_TYPE_VALUES.SICK_LEAVE,
+    HOUR_TYPE_VALUES.WORK_FROM_HOME,
+    HOUR_TYPE_VALUES.OTHER,
+])
 
 const CreateHourEntryInputSchema = z.object({
     date: z.string(),
@@ -60,9 +66,37 @@ export const BulkCreateHourEntriesSchema = BulkCreateHourEntriesInputSchema.tran
     endDate: new Date(data.endDate),
 }))
 
+export const SingleEntryFormDataSchema = z.object({
+    date: z.string(),
+    hours: z.number(),
+    type: HourTypeSchema,
+    description: z.string(),
+})
+
+export const BulkEntryFormDataSchema = z.object({
+    startDate: z.string(),
+    endDate: z.string(),
+    hours: z.number(),
+    type: HourTypeSchema,
+    description: z.string(),
+    skipWeekends: z.boolean(),
+    skipHolidays: z.boolean(),
+})
+
+export const EditFormDataSchema = z.object({
+    id: z.string(),
+    date: z.string(),
+    hours: z.number(),
+    type: HourTypeSchema,
+    description: z.string(),
+})
+
 export type HourType = z.infer<typeof HourTypeSchema>
 export type CreateHourEntryInput = z.input<typeof CreateHourEntrySchema>
 export type UpdateHourEntryInput = z.input<typeof UpdateHourEntrySchema>
 export type DeleteHourEntryInput = z.infer<typeof DeleteHourEntrySchema>
 export type BatchUpdateHourEntriesInput = z.infer<typeof BatchUpdateHourEntriesSchema>
 export type BulkCreateHourEntriesInput = z.input<typeof BulkCreateHourEntriesSchema>
+export type SingleEntryFormData = z.infer<typeof SingleEntryFormDataSchema>
+export type BulkEntryFormData = z.infer<typeof BulkEntryFormDataSchema>
+export type EditFormData = z.infer<typeof EditFormDataSchema>

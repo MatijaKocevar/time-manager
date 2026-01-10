@@ -14,3 +14,15 @@ export const HourEntryDisplaySchema = z.object({
 })
 
 export type HourEntryDisplay = z.infer<typeof HourEntryDisplaySchema>
+
+export const PendingChangeSchema = z.object({
+    cellKey: z.string(),
+    entryId: z.string().nullable(),
+    date: z.string(),
+    type: HourTypeSchema,
+    hours: z.number(),
+    originalHours: z.number().nullable(),
+    action: z.enum(["create", "update", "delete"]),
+})
+
+export type PendingChange = z.infer<typeof PendingChangeSchema>
