@@ -7,10 +7,7 @@ import { prisma } from "@/lib/prisma"
 export async function POST(request: Request) {
     const { locale } = await request.json()
 
-    console.log("[SET-LOCALE API] Received locale change request:", locale)
-
     if (!locale || !["en", "sl"].includes(locale)) {
-        console.log("[SET-LOCALE API] Invalid locale:", locale)
         return NextResponse.json({ error: "Invalid locale" }, { status: 400 })
     }
 
@@ -20,7 +17,6 @@ export async function POST(request: Request) {
         maxAge: 31536000,
         sameSite: "lax",
     })
-    console.log("[SET-LOCALE API] Cookie set to:", locale)
 
     const session = await getServerSession(authConfig)
     if (session?.user?.id) {
@@ -28,14 +24,6 @@ export async function POST(request: Request) {
             where: { id: session.user.id },
             data: { locale },
         })
-        console.log(
-            "[SET-LOCALE API] Database updated for user:",
-            session.user.id,
-            "locale:",
-            locale
-        )
-    } else {
-        console.log("[SET-LOCALE API] No session found, database not updated")
     }
 
     return NextResponse.json({ success: true })

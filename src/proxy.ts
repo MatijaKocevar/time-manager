@@ -42,14 +42,11 @@ export default async function proxy(request: NextRequest) {
 
             if (user?.locale) {
                 locale = user.locale
-                console.log("[PROXY] Authenticated user, using DB locale:", locale)
             } else {
                 locale = getBrowserLocale(request)
-                console.log("[PROXY] Authenticated user with no DB locale, using browser:", locale)
             }
         } else {
             locale = getBrowserLocale(request)
-            console.log("[PROXY] Guest user, using browser locale:", locale)
         }
 
         response.cookies.set("NEXT_LOCALE", locale, {
@@ -57,13 +54,6 @@ export default async function proxy(request: NextRequest) {
             maxAge: 31536000,
             sameSite: "lax",
         })
-    } else {
-        console.log(
-            "[PROXY] Cookie exists:",
-            request.cookies.get("NEXT_LOCALE")?.value,
-            "for:",
-            request.nextUrl.pathname
-        )
     }
 
     return response
