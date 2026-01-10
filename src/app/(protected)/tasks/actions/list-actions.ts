@@ -119,7 +119,7 @@ export async function createList(input: CreateListInput) {
 
         const validation = CreateListSchema.safeParse(input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { success: false, error: validation.error.issues[0].message }
         }
 
         const data = validation.data
@@ -134,7 +134,7 @@ export async function createList(input: CreateListInput) {
         })
 
         if (existingList) {
-            return { error: "A list with this name already exists" }
+            return { success: false, error: "A list with this name already exists" }
         }
 
         const list = await prisma.list.create({
@@ -153,7 +153,7 @@ export async function createList(input: CreateListInput) {
         return { success: true, list }
     } catch (error) {
         console.error("Error creating list:", error)
-        return { error: "Failed to create list" }
+        return { success: false, error: "Failed to create list" }
     }
 }
 
@@ -163,7 +163,7 @@ export async function updateList(input: UpdateListInput) {
 
         const validation = UpdateListSchema.safeParse(input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { success: false, error: validation.error.issues[0].message }
         }
 
         const { id, ...data } = validation.data
@@ -173,11 +173,11 @@ export async function updateList(input: UpdateListInput) {
         })
 
         if (!existingList) {
-            return { error: "List not found" }
+            return { success: false, error: "List not found" }
         }
 
         if (existingList.userId !== session.user.id) {
-            return { error: "Unauthorized" }
+            return { success: false, error: "Unauthorized" }
         }
 
         if (data.name) {
@@ -190,7 +190,7 @@ export async function updateList(input: UpdateListInput) {
             })
 
             if (nameConflict) {
-                return { error: "A list with this name already exists" }
+                return { success: false, error: "A list with this name already exists" }
             }
         }
 
@@ -203,17 +203,19 @@ export async function updateList(input: UpdateListInput) {
         return { success: true, list }
     } catch (error) {
         console.error("Error updating list:", error)
-        return { error: "Failed to update list" }
+        return { success: false, error: "Failed to update list" }
     }
 }
 
-export async function deleteList(input: DeleteListInput) {
+export async function deleteList(
+    input: DeleteListInput
+): Promise<{ success: boolean; error?: string }> {
     try {
         const session = await requireAuth()
 
         const validation = DeleteListSchema.safeParse(input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { success: false, error: validation.error.issues[0].message }
         }
 
         const { id } = validation.data
@@ -230,15 +232,15 @@ export async function deleteList(input: DeleteListInput) {
         })
 
         if (!existingList) {
-            return { error: "List not found" }
+            return { success: false, error: "List not found" }
         }
 
         if (existingList.userId !== session.user.id) {
-            return { error: "Unauthorized" }
+            return { success: false, error: "Unauthorized" }
         }
 
         if (existingList.isDefault) {
-            return { error: "Cannot delete the default list" }
+            return { success: false, error: "Cannot delete the default list" }
         }
 
         if (existingList._count.tasks > 0) {
@@ -278,7 +280,7 @@ export async function deleteList(input: DeleteListInput) {
         return { success: true }
     } catch (error) {
         console.error("Error deleting list:", error)
-        return { error: "Failed to delete list" }
+        return { success: false, error: "Failed to delete list" }
     }
 }
 
@@ -304,7 +306,7 @@ export async function moveTaskToList(input: MoveTaskToListInput) {
 
         const validation = MoveTaskToListSchema.safeParse(input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { success: false, error: validation.error.issues[0].message }
         }
 
         const { taskId, listId } = validation.data
@@ -314,11 +316,11 @@ export async function moveTaskToList(input: MoveTaskToListInput) {
         })
 
         if (!task) {
-            return { error: "Task not found" }
+            return { success: false, error: "Task not found" }
         }
 
         if (task.userId !== session.user.id) {
-            return { error: "Unauthorized" }
+            return { success: false, error: "Unauthorized" }
         }
 
         if (listId) {
@@ -327,11 +329,11 @@ export async function moveTaskToList(input: MoveTaskToListInput) {
             })
 
             if (!list) {
-                return { error: "List not found" }
+                return { success: false, error: "List not found" }
             }
 
             if (list.userId !== session.user.id) {
-                return { error: "Unauthorized" }
+                return { success: false, error: "Unauthorized" }
             }
         }
 
@@ -347,6 +349,6 @@ export async function moveTaskToList(input: MoveTaskToListInput) {
         return { success: true }
     } catch (error) {
         console.error("Error moving task to list:", error)
-        return { error: "Failed to move task" }
+        return { success: false, error: "Failed to move task" }
     }
 }

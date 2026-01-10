@@ -1,10 +1,10 @@
 "use client"
 
-import { Users, MoreHorizontal, Edit, Trash, ChevronRight, ChevronDown } from "lucide-react"
-import { usePathname } from "next/navigation"
+import { MoreHorizontal, Edit, Trash, ChevronRight, ChevronDown } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 import {
     Sidebar,
@@ -26,6 +26,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { UserAvatar } from "@/components/user-avatar"
+import { AppLogo } from "@/components/app-logo"
 import { navigationItems } from "@/features/navigation/config"
 import { UserRole } from "@/types"
 import type { ListDisplay } from "@/app/(protected)/tasks/schemas/list-schemas"
@@ -34,10 +35,7 @@ import { NewListButton } from "./new-list-button"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
-import { deleteList } from "@/app/(protected)/tasks/actions/list-actions"
 import { updateSidebarExpandedItems } from "./actions/sidebar-actions"
-import { useQueryClient } from "@tanstack/react-query"
-import { listKeys } from "@/app/(protected)/tasks/query-keys"
 import { useIsMobile } from "@/hooks/use-mobile"
 
 interface AppSidebarProps {
@@ -58,13 +56,14 @@ export function AppSidebar({
     pendingRequestsCount = 0,
 }: AppSidebarProps) {
     const pathname = usePathname()
-    const queryClient = useQueryClient()
+    const router = useRouter()
     const { setOpenMobile } = useSidebar()
     const isMobile = useIsMobile()
     const openListDialog = useTasksStore((state) => state.openListDialog)
-    const [deletingListId, setDeletingListId] = useState<string | null>(null)
+    const deletingListId = useTasksStore((state) => state.deletingListId)
+    const deleteList = useTasksStore((state) => state.deleteList)
     const [expandedItemsSet, setExpandedItemsSet] = useState(() => new Set(initialExpandedItems))
-    const [hasInitialized, setHasInitialized] = useState(false)
+    const hasInitializedRef = useRef(false)
     const t = useTranslations()
     const tNav = useTranslations("navigation")
     const tCommon = useTranslations("common")
@@ -77,13 +76,13 @@ export function AppSidebar({
     }
 
     useEffect(() => {
-        if (!hasInitialized) {
-            setHasInitialized(true)
+        if (!hasInitializedRef.current) {
+            hasInitializedRef.current = true
             return
         }
         const items = Array.from(expandedItemsSet)
         updateSidebarExpandedItems(items).catch(console.error)
-    }, [expandedItemsSet, hasInitialized])
+    }, [expandedItemsSet])
 
     const toggleItem = (itemUrl: string) => {
         setExpandedItemsSet((prev) => {
@@ -107,26 +106,10 @@ export function AppSidebar({
         openListDialog(listId)
     }
 
-    const handleDeleteList = async (listId: string) => {
-        if (!confirm(tTasks("list.deleteConfirm"))) {
-            return
-        }
-        setDeletingListId(listId)
-        try {
-            const result = await deleteList({ id: listId })
-            if (result.success) {
-                await queryClient.invalidateQueries({ queryKey: listKeys.all })
-                if (pathname.includes(listId)) {
-                    window.location.href = "/tasks"
-                }
-            } else {
-                alert(result.error || "Failed to delete list")
-            }
-        } catch (error) {
-            console.error("Failed to delete list:", error)
-            alert("Failed to delete list")
-        } finally {
-            setDeletingListId(null)
+    const onDeleteList = async (listId: string) => {
+        const success = await deleteList(listId, tTasks("list.deleteConfirm"))
+        if (success && pathname.includes(listId)) {
+            router.push("/tasks")
         }
     }
 
@@ -137,14 +120,7 @@ export function AppSidebar({
                     <SidebarMenuItem>
                         <SidebarMenuButton asChild size="lg">
                             <Link href="/time-sheets" onClick={handleNavigationClick}>
-                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                                    <Users className="size-4" />
-                                </div>
-                                <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-semibold">
-                                        {t("metadata.title")}
-                                    </span>
-                                </div>
+                                <AppLogo size="md" showText={true} />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -277,7 +253,7 @@ export function AppSidebar({
                                                                         </DropdownMenuItem>
                                                                         <DropdownMenuItem
                                                                             onClick={() =>
-                                                                                handleDeleteList(
+                                                                                onDeleteList(
                                                                                     list.id
                                                                                 )
                                                                             }

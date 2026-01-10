@@ -70,6 +70,7 @@ interface TasksStoreState {
         error: string
     }
     taskOperations: Map<string, { isLoading: boolean }>
+    deletingListId: string | null
 }
 
 interface TasksStoreActions {
@@ -122,6 +123,8 @@ interface TasksStoreActions {
     resetMoveTaskForm: () => void
     setTaskOperationLoading: (taskId: string, isLoading: boolean) => void
     clearTaskOperationLoading: (taskId: string) => void
+    setDeletingListId: (listId: string | null) => void
+    deleteList: (listId: string, confirmMessage: string) => Promise<boolean>
 }
 
 const initialFormData: CreateFormData = {
@@ -332,6 +335,7 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
         error: "",
     },
     taskOperations: new Map(),
+    deletingListId: null,
 
     openCreateDialog: (parentId, listId) =>
         set(() => ({
@@ -546,4 +550,33 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
             newOperations.delete(taskId)
             return { taskOperations: newOperations }
         }),
+
+    setDeletingListId: (listId) => set(() => ({ deletingListId: listId })),
+
+    deleteList: async (listId, confirmMessage) => {
+        if (!confirm(confirmMessage)) {
+            return false
+        }
+
+        set(() => ({ deletingListId: listId }))
+
+        try {
+            const { deleteList: deleteListAction } = await import("../actions/list-actions")
+            const result = await deleteListAction({ id: listId })
+
+            if (result.success) {
+                return true
+            } else if (result.error) {
+                alert(result.error)
+                return false
+            }
+            return false
+        } catch (error) {
+            console.error("Failed to delete list:", error)
+            alert("Failed to delete list")
+            return false
+        } finally {
+            set(() => ({ deletingListId: null }))
+        }
+    },
 }))

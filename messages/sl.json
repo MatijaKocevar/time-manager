@@ -869,6 +869,7 @@
     },
     "metadata": {
         "title": "Upravljavec časa",
-        "description": "Učinkovito upravljajte svoj čas, naloge in ure"
+        "description": "Učinkovito upravljajte svoj čas, naloge in ure",
+        "company": "Acme Corporation"
     }
 }

@@ -869,6 +869,7 @@
     },
     "metadata": {
         "title": "Time Manager",
-        "description": "Manage your time, tasks, and hours efficiently"
+        "description": "Manage your time, tasks, and hours efficiently",
+        "company": "Acme Corporation"
     }
 }
