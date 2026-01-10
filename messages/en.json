@@ -666,7 +666,18 @@
     "profile": {
         "title": "Profile",
         "form": {
-            "saveChanges": "Save Changes"
+            "title": "Profile Information",
+            "description": "Update your name and password",
+            "saveChanges": "Save Changes",
+            "name": "Name",
+            "email": "Email",
+            "emailReadOnly": "Email cannot be changed",
+            "currentPassword": "Current Password",
+            "newPassword": "New Password",
+            "confirmPassword": "Confirm New Password",
+            "changePasswordTitle": "Change Password",
+            "changePasswordDescription": "Leave empty to keep current password",
+            "hoursPerDayDisplay": "{hours} hours"
         },
         "workHours": {
             "title": "Work Hours Configuration",
@@ -674,6 +685,44 @@
             "startTime": "Work Start Time",
             "endTime": "Work End Time",
             "hoursPerDay": "Hours per day"
+        },
+        "notifications": {
+            "title": "Notification Preferences",
+            "description": "Configure how you want to be notified about request updates",
+            "checkingStatus": "Checking browser subscription status...",
+            "updateSuccess": "Notification preferences updated successfully",
+            "savePreferences": "Save Preferences",
+            "emailLabel": "Email Notification",
+            "pushLabel": "Push Notification",
+            "newRequestTitle": "New Request Submitted (Admin Only)",
+            "newRequestDescription": "Receive notifications when users submit new time-off requests",
+            "approvedTitle": "Request Approved",
+            "approvedDescription": "Receive notifications when your request is approved",
+            "rejectedTitle": "Request Rejected",
+            "rejectedDescription": "Receive notifications when your request is rejected",
+            "cancelledTitle": "Request Cancelled",
+            "cancelledDescription": "Receive notifications when a request is cancelled",
+            "enabled": "✓ Notifications are enabled. You will receive push alerts.",
+            "subscribed": "You are subscribed to push notifications. You will receive alerts for request updates.",
+            "notSubscribed": "Enable push notifications to receive instant alerts about request approvals and new pending requests.",
+            "disableNotifications": "Disable Notifications",
+            "enableNotifications": "Enable Notifications",
+            "enabling": "Enabling...",
+            "unsubscribing": "Unsubscribing...",
+            "httpsNote": "Note: Push notifications require HTTPS. To test locally, use"
+        },
+        "messages": {
+            "errorLoadingPreferences": "Error loading notification preferences",
+            "updateSuccess": "Profile updated successfully",
+            "updateFailed": "Failed to update profile"
+        },
+        "validation": {
+            "passwordsDoNotMatch": "Passwords do not match",
+            "currentPasswordRequired": "Current password is required to set a new password",
+            "currentPasswordIncorrect": "Current password is incorrect",
+            "workEndTimeAfterStart": "Work end time must be after start time",
+            "unauthorized": "Unauthorized",
+            "userNotFound": "User not found"
         }
     },
     "auth": {

@@ -666,7 +666,18 @@
     "profile": {
         "title": "Profil",
         "form": {
-            "saveChanges": "Shrani spremembe"
+            "title": "Informacije o profilu",
+            "description": "Posodobite svoje ime in geslo",
+            "saveChanges": "Shrani spremembe",
+            "name": "Ime",
+            "email": "E-pošta",
+            "emailReadOnly": "E-pošte ni mogoče spremeniti",
+            "currentPassword": "Trenutno geslo",
+            "newPassword": "Novo geslo",
+            "confirmPassword": "Potrdi novo geslo",
+            "changePasswordTitle": "Spremeni geslo",
+            "changePasswordDescription": "Pustite prazno, če želite obdržati trenutno geslo",
+            "hoursPerDayDisplay": "{hours} ur"
         },
         "workHours": {
             "title": "Konfiguracija delovnih ur",
@@ -674,6 +685,44 @@
             "startTime": "Začetek delovnega časa",
             "endTime": "Konec delovnega časa",
             "hoursPerDay": "Ur na dan"
+        },
+        "notifications": {
+            "title": "Nastavitve obvestil",
+            "description": "Nastavite, kako želite prejemati obvestila o posodobitvah zahtevkov",
+            "checkingStatus": "Preverjanje stanja naročnine v brskalniku...",
+            "updateSuccess": "Nastavitve obvestil so bile uspešno posodobljene",
+            "savePreferences": "Shrani nastavitve",
+            "emailLabel": "E-poštno obvestilo",
+            "pushLabel": "Push obvestilo",
+            "newRequestTitle": "Nov zahtevek oddan (samo za skrbnike)",
+            "newRequestDescription": "Prejemajte obvestila, ko uporabniki oddajo nove zahtevke za odsotnost",
+            "approvedTitle": "Zahtevek odobren",
+            "approvedDescription": "Prejemajte obvestila, ko je vaš zahtevek odobren",
+            "rejectedTitle": "Zahtevek zavrnjen",
+            "rejectedDescription": "Prejemajte obvestila, ko je vaš zahtevek zavrnjen",
+            "cancelledTitle": "Zahtevek preklican",
+            "cancelledDescription": "Prejemajte obvestila, ko je zahtevek preklican",
+            "enabled": "✓ Obvestila so omogočena. Prejemali boste push opozorila.",
+            "subscribed": "Naročeni ste na push obvestila. Prejemali boste opozorila o posodobitvah zahtevkov.",
+            "notSubscribed": "Omogočite push obvestila za takojšnja opozorila o odobritvah zahtevkov in novih čakajočih zahtevkih.",
+            "disableNotifications": "Onemogoči obvestila",
+            "enableNotifications": "Omogoči obvestila",
+            "enabling": "Omogočanje...",
+            "unsubscribing": "Odjavljanje...",
+            "httpsNote": "Opomba: Push obvestila zahtevajo HTTPS. Za testiranje lokalno uporabite"
+        },
+        "messages": {
+            "errorLoadingPreferences": "Napaka pri nalaganju nastavitev obvestil",
+            "updateSuccess": "Profil je bil uspešno posodobljen",
+            "updateFailed": "Posodobitev profila ni uspela"
+        },
+        "validation": {
+            "passwordsDoNotMatch": "Gesli se ne ujemata",
+            "currentPasswordRequired": "Trenutno geslo je obvezno za nastavitev novega gesla",
+            "currentPasswordIncorrect": "Trenutno geslo je nepravilno",
+            "workEndTimeAfterStart": "Konec delovnega časa mora biti po začetku",
+            "unauthorized": "Nepooblaščen dostop",
+            "userNotFound": "Uporabnik ni najden"
         }
     },
     "auth": {

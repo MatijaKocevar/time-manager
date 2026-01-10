@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -18,7 +19,12 @@ import { UserAvatar } from "@/components/user-avatar"
 import { Eye, EyeOff } from "lucide-react"
 import { updateProfile } from "../actions/profile-actions"
 import { useProfileStore } from "../stores/profile-store"
-import { MIN_PASSWORD_LENGTH, ROLE_COLORS } from "../constants/profile-constants"
+import {
+    MIN_PASSWORD_LENGTH,
+    ROLE_COLORS,
+    TIME_PICKER_CONFIG,
+    DEFAULT_WORK_HOURS,
+} from "../constants/profile-constants"
 import type { UserRole } from "@/types"
 
 interface ProfileFormProps {
@@ -31,24 +37,25 @@ interface ProfileFormProps {
         workEndTime: string | null
         workHoursPerDay: number | null
     }
-    workHoursTranslations: {
-        title: string
-        description: string
-        startTime: string
-        endTime: string
-        hoursPerDay: string
-    }
 }
 
-export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
+export function ProfileForm({ user }: ProfileFormProps) {
     const router = useRouter()
+    const t = useTranslations("profile.form")
+    const tWorkHours = useTranslations("profile.workHours")
+    const tValidation = useTranslations("profile.validation")
+    const tMessages = useTranslations("profile.messages")
+    const tCommon = useTranslations("common")
+
     const [showPassword, setShowPassword] = useState(false)
     const [confirmPassword, setConfirmPassword] = useState("")
     const [name, setName] = useState(user.name || "")
     const [currentPassword, setCurrentPassword] = useState("")
     const [newPassword, setNewPassword] = useState("")
-    const [workStartTime, setWorkStartTime] = useState(user.workStartTime || "08:00")
-    const [workEndTime, setWorkEndTime] = useState(user.workEndTime || "16:00")
+    const [workStartTime, setWorkStartTime] = useState(
+        user.workStartTime || DEFAULT_WORK_HOURS.START_TIME
+    )
+    const [workEndTime, setWorkEndTime] = useState(user.workEndTime || DEFAULT_WORK_HOURS.END_TIME)
 
     const isLoading = useProfileStore((state) => state.isLoading)
     const error = useProfileStore((state) => state.error)
@@ -57,9 +64,10 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
     const setError = useProfileStore((state) => state.setError)
     const setSuccess = useProfileStore((state) => state.setSuccess)
 
-    const timeOptions = Array.from({ length: 96 }, (_, i) => {
-        const hours = Math.floor(i / 4)
-        const minutes = (i % 4) * 15
+    const timeOptions = Array.from({ length: TIME_PICKER_CONFIG.TOTAL_INTERVALS }, (_, i) => {
+        const hours = Math.floor(i / TIME_PICKER_CONFIG.INTERVALS_PER_HOUR)
+        const minutes =
+            (i % TIME_PICKER_CONFIG.INTERVALS_PER_HOUR) * TIME_PICKER_CONFIG.MINUTES_PER_INTERVAL
         return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
     })
 
@@ -78,7 +86,7 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
         setError("")
 
         if (newPassword && newPassword !== confirmPassword) {
-            setError("Passwords do not match")
+            setError(tValidation("passwordsDoNotMatch"))
             setLoading(false)
             return
         }
@@ -94,7 +102,10 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
         const result = await updateProfile(input)
 
         if (result.error) {
-            setError(result.error)
+            const errorMessage = result.error.startsWith("profile.")
+                ? tValidation(result.error.split(".").pop() as never)
+                : result.error
+            setError(errorMessage)
             setLoading(false)
         } else {
             setSuccess(true)
@@ -113,9 +124,9 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
                     <div className="flex items-center gap-4">
                         <UserAvatar role={user.role} className="h-16 w-16" />
                         <div className="flex-1">
-                            <CardTitle>Profile Information</CardTitle>
+                            <CardTitle>{t("title")}</CardTitle>
                             <div className="flex items-center gap-2 mt-1">
-                                <CardDescription>Update your name and password</CardDescription>
+                                <CardDescription>{t("description")}</CardDescription>
                                 <span
                                     className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${ROLE_COLORS[user.role]}`}
                                 >
@@ -131,12 +142,12 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
                     )}
                     {success && (
                         <div className="text-sm text-green-600 bg-green-50 p-3 rounded-md">
-                            Profile updated successfully
+                            {tMessages("updateSuccess")}
                         </div>
                     )}
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Name</Label>
+                            <Label htmlFor="name">{t("name")}</Label>
                             <Input
                                 id="name"
                                 value={name}
@@ -146,24 +157,22 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">{t("email")}</Label>
                             <Input id="email" value={user.email} disabled />
-                            <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                            <p className="text-xs text-muted-foreground">{t("emailReadOnly")}</p>
                         </div>
                     </div>
                     <Separator />
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-sm font-medium">{workHoursTranslations.title}</h3>
+                            <h3 className="text-sm font-medium">{tWorkHours("title")}</h3>
                             <p className="text-xs text-muted-foreground">
-                                {workHoursTranslations.description}
+                                {tWorkHours("description")}
                             </p>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="work-start-time">
-                                    {workHoursTranslations.startTime}
-                                </Label>
+                                <Label htmlFor="work-start-time">{tWorkHours("startTime")}</Label>
                                 <Select
                                     value={workStartTime}
                                     onValueChange={setWorkStartTime}
@@ -182,9 +191,7 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="work-end-time">
-                                    {workHoursTranslations.endTime}
-                                </Label>
+                                <Label htmlFor="work-end-time">{tWorkHours("endTime")}</Label>
                                 <Select
                                     value={workEndTime}
                                     onValueChange={setWorkEndTime}
@@ -204,19 +211,20 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
                             </div>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                            {workHoursTranslations.hoursPerDay}: {hoursPerDay.toFixed(2)} hours
+                            {tWorkHours("hoursPerDay")}:{" "}
+                            {t("hoursPerDayDisplay", { hours: hoursPerDay.toFixed(2) })}
                         </div>
                     </div>
                     <Separator />
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-sm font-medium">Change Password</h3>
+                            <h3 className="text-sm font-medium">{t("changePasswordTitle")}</h3>
                             <p className="text-xs text-muted-foreground">
-                                Leave empty to keep current password
+                                {t("changePasswordDescription")}
                             </p>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="current-password">Current Password</Label>
+                            <Label htmlFor="current-password">{t("currentPassword")}</Label>
                             <div className="relative">
                                 <Input
                                     id="current-password"
@@ -243,7 +251,7 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="new-password">New Password</Label>
+                            <Label htmlFor="new-password">{t("newPassword")}</Label>
                             <div className="relative">
                                 <Input
                                     id="new-password"
@@ -271,7 +279,7 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="confirm-password">Confirm New Password</Label>
+                            <Label htmlFor="confirm-password">{t("confirmPassword")}</Label>
                             <div className="relative">
                                 <Input
                                     id="confirm-password"
@@ -301,7 +309,7 @@ export function ProfileForm({ user, workHoursTranslations }: ProfileFormProps) {
                     </div>
                     <div className="flex justify-end">
                         <Button type="submit" disabled={isLoading}>
-                            {isLoading ? "Saving..." : "Save Changes"}
+                            {isLoading ? tCommon("status.saving") : t("saveChanges")}
                         </Button>
                     </div>
                 </CardContent>

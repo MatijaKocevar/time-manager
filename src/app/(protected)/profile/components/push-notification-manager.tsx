@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { usePushNotificationStore } from "@/app/(protected)/profile/stores/push-notification-store"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,6 +16,8 @@ export function PushNotificationManager({
     initialHasSubscription,
     vapidPublicKey,
 }: PushNotificationManagerProps) {
+    const t = useTranslations("notifications.pushNotifications")
+
     const [hasSubscription, setHasSubscription] = useState(false)
     const [isCheckingBrowser, setIsCheckingBrowser] = useState(true)
 
@@ -54,12 +57,10 @@ export function PushNotificationManager({
                     ) : (
                         <BellOff className="h-5 w-5" />
                     )}
-                    Push Notifications
+                    {t("title")}
                 </CardTitle>
                 <CardDescription>
-                    {hasSubscription
-                        ? "You are subscribed to push notifications. You will receive alerts for request updates."
-                        : "Enable push notifications to receive instant alerts about request approvals and new pending requests."}
+                    {hasSubscription ? t("descriptionSubscribed") : t("description")}
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -76,7 +77,7 @@ export function PushNotificationManager({
                 ) : hasSubscription ? (
                     <div className="space-y-4">
                         <div className="rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400">
-                            ✓ Notifications are enabled. You will receive push alerts.
+                            {t("subscribed")}
                         </div>
                         <Button
                             onClick={async () => {
@@ -92,7 +93,7 @@ export function PushNotificationManager({
                             className="w-full"
                         >
                             <BellOff className="mr-2 h-4 w-4" />
-                            {isLoading ? "Unsubscribing..." : "Disable Notifications"}
+                            {isLoading ? t("unsubscribing") : t("disable")}
                         </Button>
                     </div>
                 ) : (
@@ -109,13 +110,12 @@ export function PushNotificationManager({
                         className="w-full"
                     >
                         <Bell className="mr-2 h-4 w-4" />
-                        {isLoading ? "Enabling..." : "Enable Notifications"}
+                        {isLoading ? t("enabling") : t("enable")}
                     </Button>
                 )}
 
                 <p className="text-xs text-muted-foreground">
-                    Note: Push notifications require HTTPS. To test locally, use{" "}
-                    <code>next dev --experimental-https</code>
+                    {t("httpsNote")} <code>next dev --experimental-https</code>
                 </p>
             </CardContent>
         </Card>

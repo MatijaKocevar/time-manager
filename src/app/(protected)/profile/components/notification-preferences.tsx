@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
@@ -17,6 +18,9 @@ export function NotificationPreferences({
     initialPreferences,
     userRole,
 }: NotificationPreferencesProps) {
+    const t = useTranslations("profile.notifications")
+    const tCommon = useTranslations("common")
+
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
@@ -59,10 +63,8 @@ export function NotificationPreferences({
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
-                <CardDescription>
-                    Configure how you want to be notified about request updates
-                </CardDescription>
+                <CardTitle>{t("title")}</CardTitle>
+                <CardDescription>{t("description")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 {error && (
@@ -73,7 +75,7 @@ export function NotificationPreferences({
 
                 {success && (
                     <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-                        Notification preferences updated successfully
+                        {t("updateSuccess")}
                     </div>
                 )}
 
@@ -81,11 +83,9 @@ export function NotificationPreferences({
                     <>
                         <div className="space-y-4">
                             <div>
-                                <h3 className="text-sm font-medium mb-3">
-                                    New Request Submitted (Admin Only)
-                                </h3>
+                                <h3 className="text-sm font-medium mb-3">{t("newRequestTitle")}</h3>
                                 <p className="text-sm text-muted-foreground mb-4">
-                                    Receive notifications when users submit new time-off requests
+                                    {t("newRequestDescription")}
                                 </p>
                                 <div className="space-y-3 ml-4">
                                     <div className="flex items-center space-x-2">
@@ -99,7 +99,7 @@ export function NotificationPreferences({
                                             className="h-4 w-4 rounded border-gray-300"
                                         />
                                         <Label htmlFor="emailNewRequest" className="cursor-pointer">
-                                            Email Notification
+                                            {t("emailLabel")}
                                         </Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
@@ -113,7 +113,7 @@ export function NotificationPreferences({
                                             className="h-4 w-4 rounded border-gray-300"
                                         />
                                         <Label htmlFor="pushNewRequest" className="cursor-pointer">
-                                            Push Notification
+                                            {t("pushLabel")}
                                         </Label>
                                     </div>
                                 </div>
@@ -125,9 +125,9 @@ export function NotificationPreferences({
 
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-sm font-medium mb-3">Request Approved</h3>
+                        <h3 className="text-sm font-medium mb-3">{t("approvedTitle")}</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Receive notifications when your request is approved
+                            {t("approvedDescription")}
                         </p>
                         <div className="space-y-3 ml-4">
                             <div className="flex items-center space-x-2">
@@ -141,7 +141,7 @@ export function NotificationPreferences({
                                     className="h-4 w-4 rounded border-gray-300"
                                 />
                                 <Label htmlFor="emailRequestApproved" className="cursor-pointer">
-                                    Email Notification
+                                    {t("emailLabel")}
                                 </Label>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -155,7 +155,7 @@ export function NotificationPreferences({
                                     className="h-4 w-4 rounded border-gray-300"
                                 />
                                 <Label htmlFor="pushRequestApproved" className="cursor-pointer">
-                                    Push Notification
+                                    {t("pushLabel")}
                                 </Label>
                             </div>
                         </div>
@@ -166,9 +166,9 @@ export function NotificationPreferences({
 
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-sm font-medium mb-3">Request Rejected</h3>
+                        <h3 className="text-sm font-medium mb-3">{t("rejectedTitle")}</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Receive notifications when your request is rejected
+                            {t("rejectedDescription")}
                         </p>
                         <div className="space-y-3 ml-4">
                             <div className="flex items-center space-x-2">
@@ -182,7 +182,7 @@ export function NotificationPreferences({
                                     className="h-4 w-4 rounded border-gray-300"
                                 />
                                 <Label htmlFor="emailRequestRejected" className="cursor-pointer">
-                                    Email Notification
+                                    {t("emailLabel")}
                                 </Label>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -196,7 +196,7 @@ export function NotificationPreferences({
                                     className="h-4 w-4 rounded border-gray-300"
                                 />
                                 <Label htmlFor="pushRequestRejected" className="cursor-pointer">
-                                    Push Notification
+                                    {t("pushLabel")}
                                 </Label>
                             </div>
                         </div>
@@ -207,9 +207,9 @@ export function NotificationPreferences({
 
                 <div className="space-y-4">
                     <div>
-                        <h3 className="text-sm font-medium mb-3">Request Cancelled</h3>
+                        <h3 className="text-sm font-medium mb-3">{t("cancelledTitle")}</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                            Receive notifications when a request is cancelled
+                            {t("cancelledDescription")}
                         </p>
                         <div className="space-y-3 ml-4">
                             <div className="flex items-center space-x-2">
@@ -223,7 +223,7 @@ export function NotificationPreferences({
                                     className="h-4 w-4 rounded border-gray-300"
                                 />
                                 <Label htmlFor="emailRequestCancelled" className="cursor-pointer">
-                                    Email Notification
+                                    {t("emailLabel")}
                                 </Label>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -237,7 +237,7 @@ export function NotificationPreferences({
                                     className="h-4 w-4 rounded border-gray-300"
                                 />
                                 <Label htmlFor="pushRequestCancelled" className="cursor-pointer">
-                                    Push Notification
+                                    {t("pushLabel")}
                                 </Label>
                             </div>
                         </div>
@@ -246,7 +246,7 @@ export function NotificationPreferences({
 
                 <div className="flex justify-end pt-4">
                     <Button onClick={handleSave} disabled={loading}>
-                        {loading ? "Saving..." : "Save Preferences"}
+                        {loading ? tCommon("status.saving") : t("savePreferences")}
                     </Button>
                 </div>
             </CardContent>

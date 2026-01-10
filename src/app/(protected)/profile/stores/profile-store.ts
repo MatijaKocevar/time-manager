@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { type ProfileFormState } from "../schemas/profile-schemas"
+import { DEFAULT_WORK_HOURS } from "../constants/profile-constants"
 
 interface ProfileStoreState {
     formData: ProfileFormState
@@ -23,8 +24,8 @@ export const useProfileStore = create<ProfileStoreState & ProfileStoreActions>((
         name: "",
         currentPassword: "",
         newPassword: "",
-        workStartTime: "08:00",
-        workEndTime: "16:00",
+        workStartTime: DEFAULT_WORK_HOURS.START_TIME,
+        workEndTime: DEFAULT_WORK_HOURS.END_TIME,
     },
     isLoading: false,
     error: "",
@@ -43,8 +44,8 @@ export const useProfileStore = create<ProfileStoreState & ProfileStoreActions>((
                 name: initialName,
                 currentPassword: "",
                 newPassword: "",
-                workStartTime: "08:00",
-                workEndTime: "16:00",
+                workStartTime: DEFAULT_WORK_HOURS.START_TIME,
+                workEndTime: DEFAULT_WORK_HOURS.END_TIME,
             },
             error: "",
             success: false,

@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
 import { UpdateProfileSchema, type UpdateProfileInput } from "../schemas/profile-action-schemas"
-import { BCRYPT_SALT_ROUNDS } from "../constants/profile-constants"
+import { BCRYPT_SALT_ROUNDS, WORK_HOURS_VALIDATION } from "../constants/profile-constants"
 
 export async function getCurrentUser() {
     const session = await getServerSession(authConfig)
@@ -35,7 +35,7 @@ export async function updateProfile(input: UpdateProfileInput) {
     const session = await getServerSession(authConfig)
 
     if (!session?.user) {
-        return { error: "Unauthorized" }
+        return { error: "profile.validation.unauthorized" }
     }
 
     const validation = UpdateProfileSchema.safeParse(input)
@@ -52,13 +52,13 @@ export async function updateProfile(input: UpdateProfileInput) {
         const [endH, endM] = workEndTime.split(":").map(Number)
         workHoursPerDay = (endH * 60 + endM - startH * 60 - startM) / 60
 
-        if (workHoursPerDay <= 0) {
-            return { error: "Work end time must be after start time" }
+        if (workHoursPerDay <= WORK_HOURS_VALIDATION.MIN_HOURS_PER_DAY) {
+            return { error: "profile.validation.workEndTimeAfterStart" }
         }
     }
 
     if (newPassword && !currentPassword) {
-        return { error: "Current password is required to set a new password" }
+        return { error: "profile.validation.currentPasswordRequired" }
     }
 
     if (currentPassword && newPassword) {
@@ -67,13 +67,13 @@ export async function updateProfile(input: UpdateProfileInput) {
         })
 
         if (!user?.password) {
-            return { error: "User not found" }
+            return { error: "profile.validation.userNotFound" }
         }
 
         const isPasswordValid = await bcrypt.compare(currentPassword, user.password)
 
         if (!isPasswordValid) {
-            return { error: "Current password is incorrect" }
+            return { error: "profile.validation.currentPasswordIncorrect" }
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS)
@@ -98,8 +98,9 @@ export async function updateProfile(input: UpdateProfileInput) {
 
             revalidatePath("/profile")
             return { success: true }
-        } catch {
-            return { error: "Failed to update profile" }
+        } catch (error) {
+            console.error("Failed to update profile with password:", error)
+            return { error: "profile.messages.updateFailed" }
         }
     }
 
@@ -122,7 +123,8 @@ export async function updateProfile(input: UpdateProfileInput) {
 
         revalidatePath("/profile")
         return { success: true }
-    } catch {
-        return { error: "Failed to update profile" }
+    } catch (error) {
+        console.error("Failed to update profile:", error)
+        return { error: "profile.messages.updateFailed" }
     }
 }

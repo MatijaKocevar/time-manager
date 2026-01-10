@@ -16,28 +16,19 @@ export default async function ProfilePage() {
         redirect("/login")
     }
 
-    const t = await getTranslations("profile.workHours")
+    const t = await getTranslations("profile.messages")
 
     const { hasSubscription } = await hasUserSubscription()
     const { preferences, error } = await getNotificationPreferences()
     const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
 
     if (error || !preferences) {
-        return <div>Error loading notification preferences</div>
+        return <div>{t("errorLoadingPreferences")}</div>
     }
 
     return (
         <div className="space-y-4">
-            <ProfileForm
-                user={user}
-                workHoursTranslations={{
-                    title: t("title"),
-                    description: t("description"),
-                    startTime: t("startTime"),
-                    endTime: t("endTime"),
-                    hoursPerDay: t("hoursPerDay"),
-                }}
-            />
+            <ProfileForm user={user} />
             <PushNotificationManager
                 initialHasSubscription={hasSubscription}
                 vapidPublicKey={vapidPublicKey}
