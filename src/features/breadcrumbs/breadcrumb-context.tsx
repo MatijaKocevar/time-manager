@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from "react"
 
 interface BreadcrumbContextValue {
     overrides: Record<string, string>
@@ -17,6 +17,10 @@ export function BreadcrumbProvider({
     initialOverrides?: Record<string, string>
 }) {
     const [overrides, setOverridesState] = useState<Record<string, string>>(initialOverrides)
+
+    useEffect(() => {
+        setOverridesState(initialOverrides)
+    }, [initialOverrides])
 
     const setOverrides = useCallback((data: Record<string, string>) => {
         setOverridesState((prev) => ({ ...prev, ...data }))

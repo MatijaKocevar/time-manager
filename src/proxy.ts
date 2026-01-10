@@ -8,6 +8,7 @@ export default function proxy(request: NextRequest) {
 
     // Handle locale cookie for i18n
     const locale = request.cookies.get("NEXT_LOCALE")?.value || "en"
+    console.log("[PROXY] Request to:", request.nextUrl.pathname, "cookie locale:", locale)
 
     const response = NextResponse.next({
         request: {
@@ -16,6 +17,7 @@ export default function proxy(request: NextRequest) {
     })
 
     if (!request.cookies.get("NEXT_LOCALE")) {
+        console.log("[PROXY] No NEXT_LOCALE cookie found, setting default:", locale)
         response.cookies.set("NEXT_LOCALE", locale, {
             path: "/",
             sameSite: "lax",
