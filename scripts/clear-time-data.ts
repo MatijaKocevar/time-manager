@@ -33,6 +33,9 @@ async function clearTimeData() {
 
             console.log("Deleting VerificationToken records...")
             await tx.verificationToken.deleteMany({})
+
+            console.log("Refreshing DailyHourSummary materialized view...")
+            await tx.$executeRawUnsafe("REFRESH MATERIALIZED VIEW CONCURRENTLY daily_hour_summary")
         })
 
         console.log("✅ All data cleared successfully!")
