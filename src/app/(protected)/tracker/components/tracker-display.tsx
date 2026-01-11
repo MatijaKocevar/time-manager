@@ -307,7 +307,12 @@ export function TrackerDisplay({
                                                             {task.listIcon}
                                                         </span>
                                                     )}
-                                                    <span className="truncate">{task.title}</span>
+                                                    <span
+                                                        className={`truncate ${task.parentId ? "pl-4" : ""}`}
+                                                    >
+                                                        {task.parentId && "↳ "}
+                                                        {task.title}
+                                                    </span>
                                                 </div>
                                             </SelectItem>
                                         ))}
