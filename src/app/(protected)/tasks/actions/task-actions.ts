@@ -262,6 +262,10 @@ export async function deleteTask(input: DeleteTaskInput) {
             return { error: "Task not found" }
         }
 
+        if (existing.isSystemTask) {
+            return { error: "Cannot delete system-generated tasks" }
+        }
+
         await prisma.task.delete({
             where: { id },
         })

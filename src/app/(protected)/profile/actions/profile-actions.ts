@@ -5,7 +5,12 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
-import { UpdateProfileSchema, type UpdateProfileInput, DeactivateAccountSchema, type DeactivateAccountInput } from "../schemas/profile-action-schemas"
+import {
+    UpdateProfileSchema,
+    type UpdateProfileInput,
+    DeactivateAccountSchema,
+    type DeactivateAccountInput,
+} from "../schemas/profile-action-schemas"
 import { BCRYPT_SALT_ROUNDS, WORK_HOURS_VALIDATION } from "../constants/profile-constants"
 
 export async function getCurrentUser() {

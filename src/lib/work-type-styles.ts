@@ -1,4 +1,11 @@
-export type WorkType = "WORK" | "WORK_FROM_HOME" | "VACATION" | "SICK_LEAVE" | "OTHER"
+export type WorkType =
+    | "WORK"
+    | "WORK_FROM_HOME"
+    | "VACATION"
+    | "SICK_LEAVE"
+    | "OTHER"
+    | "BREAK"
+    | "PRIVATE"
 
 export type WorkTypeVariant = "default" | "light" | "lighter" | "strong"
 
@@ -32,6 +39,18 @@ export const WORK_TYPE_COLORS: Record<WorkType, Record<WorkTypeVariant, string>>
         light: "bg-gray-50 text-gray-700 dark:bg-gray-700 dark:text-gray-300",
         lighter: "bg-gray-50 text-gray-600 dark:bg-gray-700/50 dark:text-gray-400",
         strong: "bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100",
+    },
+    BREAK: {
+        default: "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-200",
+        light: "bg-orange-50 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
+        lighter: "bg-orange-50 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400",
+        strong: "bg-orange-200 text-orange-900 dark:bg-orange-900 dark:text-orange-100",
+    },
+    PRIVATE: {
+        default: "bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-200",
+        light: "bg-pink-50 text-pink-700 dark:bg-pink-900 dark:text-pink-300",
+        lighter: "bg-pink-50 text-pink-600 dark:bg-pink-900/50 dark:text-pink-400",
+        strong: "bg-pink-200 text-pink-900 dark:bg-pink-900 dark:text-pink-100",
     },
 }
 

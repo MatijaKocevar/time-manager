@@ -173,7 +173,9 @@
             "workFromHome": "Delo od doma",
             "vacation": "Dopust",
             "sickLeave": "Bolniška",
-            "other": "Drugo"
+            "other": "Drugo",
+            "break": "Odmor",
+            "private": "Zasebno"
         },
         "labels": {
             "total": "SKUPAJ",
@@ -298,7 +300,12 @@
             "createTaskToTrack": "Ustvarite nalogo na strani Naloge, da začnete slediti času.",
             "noTasksYet": "Še ni nalog. Ustvarite naloge na strani Naloge, da začnete slediti času!",
             "task": "Naloga",
-            "list": "Seznam"
+            "list": "Seznam",
+            "selectType": "Izberite tip",
+            "selectTask": "Izberite nalogo",
+            "trackingType": "Tip sledenja",
+            "todayEntries": "Današnji vnosi časa",
+            "noEntriesForType": "Ni vnosov časa za ta tip danes"
         },
         "editTimeEntry": {
             "title": "Uredi vnos časa",

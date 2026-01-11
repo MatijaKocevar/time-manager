@@ -22,6 +22,8 @@ export const HOUR_TYPE_VALUES = {
     SICK_LEAVE: "SICK_LEAVE",
     WORK_FROM_HOME: "WORK_FROM_HOME",
     OTHER: "OTHER",
+    BREAK: "BREAK",
+    PRIVATE: "PRIVATE",
 } as const
 
 export const ALL_HOUR_TYPES = [
@@ -30,6 +32,8 @@ export const ALL_HOUR_TYPES = [
     HOUR_TYPE_VALUES.VACATION,
     HOUR_TYPE_VALUES.SICK_LEAVE,
     HOUR_TYPE_VALUES.OTHER,
+    HOUR_TYPE_VALUES.BREAK,
+    HOUR_TYPE_VALUES.PRIVATE,
 ] as const
 
 export const HOUR_TYPES = [
@@ -38,6 +42,8 @@ export const HOUR_TYPES = [
     { value: HOUR_TYPE_VALUES.VACATION },
     { value: HOUR_TYPE_VALUES.SICK_LEAVE },
     { value: HOUR_TYPE_VALUES.OTHER },
+    { value: HOUR_TYPE_VALUES.BREAK },
+    { value: HOUR_TYPE_VALUES.PRIVATE },
 ] as const
 
 export const HOUR_TYPE_COLORS = {
@@ -62,6 +68,14 @@ export const HOUR_TYPE_COLORS = {
     OTHER_TRACKED: getWorkTypeColor("OTHER", "default"),
     OTHER_MANUAL: getWorkTypeColor("OTHER", "light"),
     OTHER_TOTAL: getWorkTypeColor("OTHER", "strong"),
+    BREAK: getWorkTypeColor("BREAK", "default"),
+    BREAK_TRACKED: getWorkTypeColor("BREAK", "default"),
+    BREAK_MANUAL: getWorkTypeColor("BREAK", "light"),
+    BREAK_TOTAL: getWorkTypeColor("BREAK", "strong"),
+    PRIVATE: getWorkTypeColor("PRIVATE", "default"),
+    PRIVATE_TRACKED: getWorkTypeColor("PRIVATE", "default"),
+    PRIVATE_MANUAL: getWorkTypeColor("PRIVATE", "light"),
+    PRIVATE_TOTAL: getWorkTypeColor("PRIVATE", "strong"),
 } as const
 
 export const ROW_BG_COLORS = {
@@ -81,6 +95,12 @@ export const ROW_BG_COLORS = {
     OTHER_TOTAL: "bg-gray-500/10 dark:bg-gray-500/15",
     OTHER_TRACKED: "bg-gray-500/5 dark:bg-gray-500/10",
     OTHER_MANUAL: "bg-gray-500/5 dark:bg-gray-500/10",
+    BREAK_TOTAL: "bg-orange-500/10 dark:bg-orange-500/15",
+    BREAK_TRACKED: "bg-orange-500/5 dark:bg-orange-500/10",
+    BREAK_MANUAL: "bg-orange-500/5 dark:bg-orange-500/10",
+    PRIVATE_TOTAL: "bg-pink-500/10 dark:bg-pink-500/15",
+    PRIVATE_TRACKED: "bg-pink-500/5 dark:bg-pink-500/10",
+    PRIVATE_MANUAL: "bg-pink-500/5 dark:bg-pink-500/10",
 } as const
 
 export const DEFAULT_HOURS = 8

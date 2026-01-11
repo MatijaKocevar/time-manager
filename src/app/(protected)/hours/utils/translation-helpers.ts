@@ -1,7 +1,14 @@
 import type { HourType } from "@/../../prisma/generated/client"
 import { HOUR_TYPE_VALUES } from "../constants/hour-types"
 
-export type HourTypeTranslationKey = "work" | "workFromHome" | "vacation" | "sickLeave" | "other"
+export type HourTypeTranslationKey =
+    | "work"
+    | "workFromHome"
+    | "vacation"
+    | "sickLeave"
+    | "other"
+    | "break"
+    | "private"
 
 const HOUR_TYPE_TO_TRANSLATION_KEY: Record<HourType, HourTypeTranslationKey> = {
     [HOUR_TYPE_VALUES.WORK]: "work",
@@ -9,6 +16,8 @@ const HOUR_TYPE_TO_TRANSLATION_KEY: Record<HourType, HourTypeTranslationKey> = {
     [HOUR_TYPE_VALUES.VACATION]: "vacation",
     [HOUR_TYPE_VALUES.SICK_LEAVE]: "sickLeave",
     [HOUR_TYPE_VALUES.OTHER]: "other",
+    [HOUR_TYPE_VALUES.BREAK]: "break",
+    [HOUR_TYPE_VALUES.PRIVATE]: "private",
 }
 
 export function getHourTypeTranslationKey(type: string): HourTypeTranslationKey {
@@ -21,6 +30,8 @@ export const HOUR_TYPE_KEYS: Record<HourType, string> = {
     VACATION: "hours.types.vacation",
     SICK_LEAVE: "hours.types.sickLeave",
     OTHER: "hours.types.other",
+    BREAK: "hours.types.break",
+    PRIVATE: "hours.types.private",
 }
 
 export function getHourTypeLabel(t: (key: string) => string, type: HourType): string {

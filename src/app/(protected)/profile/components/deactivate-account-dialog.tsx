@@ -74,9 +74,7 @@ export function DeactivateAccountDialog({ open, onOpenChange }: DeactivateAccoun
 
                 <div className="space-y-4 py-4">
                     {error && (
-                        <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                            {error}
-                        </div>
+                        <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</div>
                     )}
 
                     <div className="flex items-start space-x-2">

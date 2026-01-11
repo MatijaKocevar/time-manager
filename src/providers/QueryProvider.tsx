@@ -14,7 +14,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
             new QueryClient({
                 defaultOptions: {
                     queries: {
-                        refetchOnWindowFocus: false,
+                        // Keep defaults - let SSE handle real-time updates
                     },
                 },
             })

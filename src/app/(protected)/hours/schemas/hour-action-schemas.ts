@@ -7,6 +7,8 @@ export const HourTypeSchema = z.enum([
     HOUR_TYPE_VALUES.SICK_LEAVE,
     HOUR_TYPE_VALUES.WORK_FROM_HOME,
     HOUR_TYPE_VALUES.OTHER,
+    HOUR_TYPE_VALUES.BREAK,
+    HOUR_TYPE_VALUES.PRIVATE,
 ])
 
 const CreateHourEntryInputSchema = z.object({

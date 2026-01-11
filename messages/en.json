@@ -173,7 +173,9 @@
             "workFromHome": "Work From Home",
             "vacation": "Vacation",
             "sickLeave": "Sick Leave",
-            "other": "Other"
+            "other": "Other",
+            "break": "Break",
+            "private": "Private"
         },
         "labels": {
             "total": "TOTAL",
@@ -298,7 +300,12 @@
             "createTaskToTrack": "Create a task from the Tasks page to start tracking time.",
             "noTasksYet": "No tasks yet. Create tasks from the Tasks page to start tracking time!",
             "task": "Task",
-            "list": "List"
+            "list": "List",
+            "selectType": "Select Type",
+            "selectTask": "Select Task",
+            "trackingType": "Tracking Type",
+            "todayEntries": "Today's Time Entries",
+            "noEntriesForType": "No time entries for this type today"
         },
         "editTimeEntry": {
             "title": "Edit Time Entry",

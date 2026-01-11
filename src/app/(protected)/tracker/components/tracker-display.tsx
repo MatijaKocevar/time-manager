@@ -1,214 +1,372 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Play, Square } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { Play, Square, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { getActiveTimer } from "@/app/(protected)/tasks/actions/task-time-actions"
-import { startTimer, stopTimer } from "@/app/(protected)/tasks/actions/task-time-actions"
-import { taskKeys } from "@/app/(protected)/tasks/query-keys"
-import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
+import {
+    startTracking,
+    stopTracking,
+    getActiveTrackingEntry,
+    getTodayTimeEntries,
+} from "../actions/tracker-actions"
 import { useTrackerStore } from "../stores/tracker-store"
 import { formatDuration, getElapsedSeconds } from "@/app/(protected)/tasks/utils/time-helpers"
-import type { TaskTimeEntryDisplay } from "@/app/(protected)/tasks/schemas/task-time-entry-schemas"
+import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
+import { taskKeys } from "@/app/(protected)/tasks/query-keys"
 import type { TaskDisplay } from "@/app/(protected)/tasks/schemas/task-schemas"
+import type { HourType } from "@/../../prisma/generated/client"
 
 interface TrackerDisplayProps {
-    tasks: TaskDisplay[]
-    initialActiveTimer: TaskTimeEntryDisplay | null
+    inProgressTasks: TaskDisplay[]
+    generalWorkTask: { id: string; title: string } | null
+    initialActiveTimer: {
+        id: string
+        taskId: string
+        userId: string
+        startTime: Date
+        endTime: Date | null
+        duration: number | null
+        createdAt: Date
+        updatedAt: Date
+        type: HourType
+        task: {
+            id: string
+            title: string
+            isSystemTask: boolean
+        }
+    } | null
+    translations: {
+        selectType: string
+        selectTask: string
+        trackingType: string
+        todayEntries: string
+        work: string
+        break: string
+        private: string
+        noTasksAvailable: string
+        generalWork: string
+    }
 }
 
-export function TrackerDisplay({ tasks, initialActiveTimer }: TrackerDisplayProps) {
+export function TrackerDisplay({
+    inProgressTasks,
+    generalWorkTask,
+    initialActiveTimer,
+    translations,
+}: TrackerDisplayProps) {
     const queryClient = useQueryClient()
-    const t = useTranslations("tasks.tracker")
 
-    const activeTimers = useTasksStore((state) => state.activeTimers)
-    const elapsedTimes = useTasksStore((state) => state.elapsedTimes)
-    const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
-    const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
-    const updateElapsedTime = useTasksStore((state) => state.updateElapsedTime)
-    const syncActiveTimerFromServer = useTasksStore((state) => state.syncActiveTimerFromServer)
-
+    const selectedType = useTrackerStore((state) => state.selectedType)
     const selectedTaskId = useTrackerStore((state) => state.selectedTaskId)
     const trackerError = useTrackerStore((state) => state.error)
+    const setSelectedType = useTrackerStore((state) => state.setSelectedType)
+    const setSelectedTaskId = useTrackerStore((state) => state.setSelectedTaskId)
     const setTrackerError = useTrackerStore((state) => state.setError)
-    const initializeSelectedTask = useTrackerStore((state) => state.initializeSelectedTask)
+    const checkAndResetForNewDay = useTrackerStore((state) => state.checkAndResetForNewDay)
+
+    const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
+    const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
+
+    const eventSourceRef = useRef<EventSource | null>(null)
+
+    useEffect(() => {
+        checkAndResetForNewDay()
+
+        if (!selectedTaskId && generalWorkTask && selectedType === "WORK") {
+            setSelectedTaskId(generalWorkTask.id)
+        }
+    }, [checkAndResetForNewDay, generalWorkTask, selectedTaskId, selectedType, setSelectedTaskId])
+
+    useEffect(() => {
+        console.log("[SSE] Setting up EventSource connection")
+        const eventSource = new EventSource("/api/tracker/events")
+        eventSourceRef.current = eventSource
+
+        eventSource.onopen = () => {
+            console.log("[SSE] Connected to tracker events, readyState:", eventSource.readyState)
+            fetch("/api/tracker/connections")
+                .then((r) => r.json())
+                .then((data) =>
+                    console.log("[SSE] Connection count on server:", data.connectionCount)
+                )
+                .catch((e) => console.error("[SSE] Failed to check connections:", e))
+        }
+
+        eventSource.addEventListener("timer-started", (e) => {
+            console.log("[SSE] Received timer-started event:", e.data)
+            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
+        })
+
+        eventSource.addEventListener("timer-stopped", (e) => {
+            console.log("[SSE] Received timer-stopped event:", e.data)
+            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
+        })
+
+        eventSource.onerror = (error) => {
+            console.error("[SSE] Connection error:", error, "readyState:", eventSource.readyState)
+            if (eventSource.readyState === EventSource.CLOSED) {
+                console.error("[SSE] Connection closed by server")
+            } else if (eventSource.readyState === EventSource.CONNECTING) {
+                console.log("[SSE] Reconnecting...")
+            }
+        }
+
+        return () => {
+            console.log("[SSE] Cleaning up: closing connection")
+            eventSource.close()
+        }
+    }, [queryClient])
 
     const { data: activeTimerData } = useQuery({
-        queryKey: taskKeys.activeTimer(),
-        queryFn: getActiveTimer,
+        queryKey: ["tracker", "activeTimer"],
+        queryFn: getActiveTrackingEntry,
         initialData: initialActiveTimer,
-        refetchOnWindowFocus: true,
+        refetchOnWindowFocus: false, // SSE handles updates
+        refetchOnMount: false,
+        staleTime: Infinity, // Never auto-refetch, rely on SSE invalidation
+    })
+
+    const { data: todayEntries = [] } = useQuery({
+        queryKey: ["tracker", "todayEntries", selectedType],
+        queryFn: () => getTodayTimeEntries(selectedType),
+        refetchOnWindowFocus: false, // SSE handles updates
+        refetchOnMount: false,
+        staleTime: Infinity, // Never auto-refetch, rely on SSE invalidation
     })
 
     const startMutation = useMutation({
-        mutationFn: startTimer,
-        onMutate: async () => {
+        mutationFn: startTracking,
+        onMutate: () => {
             setTrackerError("")
-            await queryClient.cancelQueries({ queryKey: taskKeys.activeTimer() })
-            const previousTimer = queryClient.getQueryData(taskKeys.activeTimer())
-            return { previousTimer }
         },
-        onSuccess: (data, variables) => {
+        onSuccess: (data) => {
             if (data.error) {
                 setTrackerError(data.error)
-            } else if (data.success && data.entryId) {
-                clearAllActiveTimers()
-                setActiveTimer(variables.taskId, data.entryId, new Date())
+            } else if (data.success) {
+                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+                queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
                 queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
             }
         },
-        onError: (error, _variables, context) => {
+        onError: (error) => {
             setTrackerError(error.message)
-            if (context?.previousTimer) {
-                queryClient.setQueryData(taskKeys.activeTimer(), context.previousTimer)
-            }
         },
     })
 
     const stopMutation = useMutation({
-        mutationFn: stopTimer,
-        onMutate: async () => {
+        mutationFn: stopTracking,
+        onMutate: () => {
             setTrackerError("")
-            await queryClient.cancelQueries({ queryKey: taskKeys.activeTimer() })
-            const previousTimer = queryClient.getQueryData(taskKeys.activeTimer())
-            return { previousTimer }
         },
         onSuccess: (data) => {
             if (data.error) {
                 setTrackerError(data.error)
             } else {
                 clearAllActiveTimers()
+                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+                queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
                 queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
             }
         },
-        onError: (error, _variables, context) => {
+        onError: (error) => {
             setTrackerError(error.message)
-            if (context?.previousTimer) {
-                queryClient.setQueryData(taskKeys.activeTimer(), context.previousTimer)
-            }
         },
     })
 
-    useEffect(() => {
-        syncActiveTimerFromServer(
-            activeTimerData,
-            activeTimers,
-            clearAllActiveTimers,
-            setActiveTimer
-        )
-    }, [
-        activeTimerData,
-        activeTimers,
-        clearAllActiveTimers,
-        setActiveTimer,
-        syncActiveTimerFromServer,
-    ])
+    const elapsedSeconds = activeTimerData ? getElapsedSeconds(activeTimerData.startTime) : 0
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            activeTimers.forEach((timer, taskId) => {
-                const elapsed = getElapsedSeconds(timer.startTime)
-                updateElapsedTime(taskId, elapsed)
-            })
-        }, 1000)
+        if (activeTimerData) {
+            setActiveTimer(activeTimerData.taskId, activeTimerData.id, activeTimerData.startTime)
 
-        return () => clearInterval(interval)
-    }, [activeTimers, updateElapsedTime])
+            const interval = setInterval(() => {
+                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+            }, 1000)
 
-    useEffect(() => {
-        initializeSelectedTask(activeTimerData?.taskId, selectedTaskId, tasks)
-    }, [activeTimerData, selectedTaskId, tasks, initializeSelectedTask])
+            return () => clearInterval(interval)
+        }
+    }, [activeTimerData, setActiveTimer, queryClient])
 
-    const activeTaskId = activeTimerData?.taskId
-    const isTimerRunning = Boolean(activeTaskId)
-    const activeTimerEntry = activeTimerData as TaskTimeEntryDisplay | null
-
-    const displayedTaskId = activeTaskId ?? selectedTaskId ?? tasks[0]?.id
-    const displayedTask = tasks.find((task) => task.id === displayedTaskId)
-    const elapsedSeconds = displayedTaskId ? (elapsedTimes.get(displayedTaskId) ?? 0) : 0
-
+    const isTimerRunning = Boolean(activeTimerData)
     const isLoading = startMutation.isPending || stopMutation.isPending
 
+    const canStart =
+        !isTimerRunning &&
+        (selectedType === "BREAK" || selectedType === "PRIVATE" || selectedType === "WORK")
+
+    const handleTypeChange = (type: string) => {
+        setSelectedType(type as HourType)
+    }
+
+    const handleTaskChange = (taskId: string) => {
+        setSelectedTaskId(taskId)
+    }
+
     const handlePlayStop = () => {
-        if (isTimerRunning && activeTimerEntry) {
-            stopMutation.mutate({ id: activeTimerEntry.id })
-        } else if (selectedTaskId) {
-            startMutation.mutate({ taskId: selectedTaskId })
+        if (isTimerRunning && activeTimerData) {
+            stopMutation.mutate({ entryId: activeTimerData.id })
+        } else if (canStart) {
+            startMutation.mutate({
+                type: selectedType,
+                taskId: selectedType === "WORK" ? (selectedTaskId ?? undefined) : undefined,
+            })
         }
     }
 
-    if (!displayedTask) {
-        return (
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="text-center space-y-4 py-8">
-                        <p className="text-muted-foreground">{t("noTasksAvailable")}</p>
-                        <p className="text-sm text-muted-foreground">{t("createTaskToTrack")}</p>
-                    </div>
-                </CardContent>
-            </Card>
-        )
+    const handleViewEntries = () => {
+        if (todayEntries.length > 0) {
+            const firstEntry = todayEntries[0]
+            useTasksStore.getState().openTimeEntriesDialog(firstEntry.taskId)
+        }
+    }
+
+    const getTypeLabel = (type: HourType) => {
+        switch (type) {
+            case "WORK":
+                return translations.work
+            case "BREAK":
+                return translations.break
+            case "PRIVATE":
+                return translations.private
+            default:
+                return type
+        }
     }
 
     return (
         <Card>
             <CardContent className="pt-6">
-                <div className="space-y-4 md:space-y-6">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            {displayedTask.listName && (
-                                <Badge
-                                    variant="outline"
-                                    style={{
-                                        borderColor: displayedTask.listColor ?? undefined,
-                                        color: displayedTask.listColor ?? undefined,
-                                    }}
-                                >
-                                    {displayedTask.listIcon && (
-                                        <span className="mr-1">{displayedTask.listIcon}</span>
-                                    )}
-                                    {displayedTask.listName}
-                                </Badge>
-                            )}
-                            <Badge variant="secondary">{displayedTask.status}</Badge>
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-sm font-medium mb-2 block">
+                                {translations.trackingType}
+                            </label>
+                            <Select
+                                value={selectedType}
+                                onValueChange={handleTypeChange}
+                                disabled={isTimerRunning || isLoading}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="WORK">{translations.work}</SelectItem>
+                                    <SelectItem value="BREAK">{translations.break}</SelectItem>
+                                    <SelectItem value="PRIVATE">{translations.private}</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <h2 className="text-xl md:text-2xl font-semibold">{displayedTask.title}</h2>
-                        {displayedTask.description && (
-                            <p className="text-sm text-muted-foreground">
-                                {displayedTask.description}
-                            </p>
+
+                        {selectedType === "WORK" && (
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">
+                                    {translations.selectTask}
+                                </label>
+                                <Select
+                                    value={selectedTaskId ?? ""}
+                                    onValueChange={handleTaskChange}
+                                    disabled={isTimerRunning || isLoading}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue
+                                            placeholder={
+                                                inProgressTasks.length === 0
+                                                    ? translations.noTasksAvailable
+                                                    : translations.selectTask
+                                            }
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {generalWorkTask && (
+                                            <SelectItem value={generalWorkTask.id}>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="truncate">
+                                                        {translations.generalWork}
+                                                    </span>
+                                                </div>
+                                            </SelectItem>
+                                        )}
+                                        {inProgressTasks.map((task) => (
+                                            <SelectItem key={task.id} value={task.id}>
+                                                <div className="flex items-center gap-2">
+                                                    {task.listIcon && (
+                                                        <span className="text-xs">
+                                                            {task.listIcon}
+                                                        </span>
+                                                    )}
+                                                    <span className="truncate">{task.title}</span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         )}
                     </div>
 
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 py-4">
-                        <div className="text-4xl md:text-6xl font-mono font-bold tabular-nums">
+                    {isTimerRunning && activeTimerData && (
+                        <div className="space-y-2 p-4 bg-muted rounded-lg">
+                            <div className="flex items-center justify-between">
+                                <Badge variant="secondary">
+                                    {getTypeLabel(activeTimerData.type)}
+                                </Badge>
+                                {!activeTimerData.task.isSystemTask && (
+                                    <span className="text-sm text-muted-foreground truncate ml-2">
+                                        {activeTimerData.task.title}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col items-center justify-center gap-6 py-8">
+                        <div
+                            className="text-6xl font-mono font-bold tabular-nums"
+                            suppressHydrationWarning
+                        >
                             {formatDuration(elapsedSeconds)}
                         </div>
 
                         <Button
                             size="lg"
                             onClick={handlePlayStop}
-                            disabled={isLoading || !selectedTaskId}
-                            className={`w-24 h-24 md:w-28 md:h-28 rounded-full text-white shadow-lg transition-all ${
+                            disabled={isLoading || (!isTimerRunning && !canStart)}
+                            className={`w-28 h-28 rounded-full text-white shadow-lg transition-all ${
                                 isTimerRunning
                                     ? "bg-red-600 hover:bg-red-700"
                                     : "bg-green-600 hover:bg-green-700"
                             }`}
                         >
                             {isTimerRunning ? (
-                                <Square className="w-10 h-10 md:w-12 md:h-12" />
+                                <Square className="h-10 w-10" fill="currentColor" />
                             ) : (
-                                <Play className="w-10 h-10 md:w-12 md:h-12 ml-1" />
+                                <Play className="h-10 w-10" fill="currentColor" />
                             )}
                         </Button>
                     </div>
 
                     {trackerError && (
-                        <div className="text-sm text-red-600 text-center">{trackerError}</div>
+                        <div className="text-sm text-destructive text-center">{trackerError}</div>
+                    )}
+
+                    {todayEntries.length > 0 && (
+                        <Button variant="outline" onClick={handleViewEntries} className="w-full">
+                            <Clock className="mr-2 h-4 w-4" />
+                            {translations.todayEntries} ({todayEntries.length})
+                        </Button>
                     )}
                 </div>
             </CardContent>
