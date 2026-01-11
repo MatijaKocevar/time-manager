@@ -29,6 +29,7 @@ export async function exportUsersData(input: { format: ExportFormat }) {
         const session = await requireAdmin()
 
         const users = await prisma.user.findMany({
+            where: { isActive: true },
             orderBy: {
                 createdAt: "desc",
             },

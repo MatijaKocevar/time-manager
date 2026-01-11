@@ -16,9 +16,10 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { UserAvatar } from "@/components/user-avatar"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, AlertTriangle } from "lucide-react"
 import { updateProfile } from "../actions/profile-actions"
 import { useProfileStore } from "../stores/profile-store"
+import { DeactivateAccountDialog } from "./deactivate-account-dialog"
 import {
     MIN_PASSWORD_LENGTH,
     ROLE_COLORS,
@@ -52,6 +53,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     const [name, setName] = useState(user.name || "")
     const [currentPassword, setCurrentPassword] = useState("")
     const [newPassword, setNewPassword] = useState("")
+    const [showDeactivateDialog, setShowDeactivateDialog] = useState(false)
     const [workStartTime, setWorkStartTime] = useState(
         user.workStartTime || DEFAULT_WORK_HOURS.START_TIME
     )
@@ -314,6 +316,31 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     </div>
                 </CardContent>
             </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-destructive flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5" />
+                        {t("dangerZone")}
+                    </CardTitle>
+                    <CardDescription>{t("dangerZoneDescription")}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={() => setShowDeactivateDialog(true)}
+                        disabled={isLoading}
+                    >
+                        {t("deactivateButton")}
+                    </Button>
+                </CardContent>
+            </Card>
+
+            <DeactivateAccountDialog
+                open={showDeactivateDialog}
+                onOpenChange={setShowDeactivateDialog}
+            />
         </form>
     )
 }

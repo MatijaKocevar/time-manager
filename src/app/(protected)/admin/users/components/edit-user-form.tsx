@@ -3,7 +3,13 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
-import { updateUser, deleteUser, changeUserPassword } from "../actions/user-actions"
+import {
+    updateUser,
+    changeUserPassword,
+    deactivateUser,
+    reactivateUser,
+    anonymizeUser,
+} from "../actions/user-actions"
 import { useUserFormStore } from "../stores/user-form-store"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Trash2, Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 import { getUserRoleTranslationKey } from "../utils/translation-helpers"
 import { type UserRole } from "../schemas/user-action-schemas"
 
@@ -26,6 +32,9 @@ interface EditUserFormProps {
         name: string | null
         email: string
         role: UserRole
+        isActive: boolean
+        deactivatedAt: Date | null
+        anonymizedAt: Date | null
     }
 }
 
@@ -46,22 +55,32 @@ export function EditUserForm({ user }: EditUserFormProps) {
 
     const isLoading = useUserFormStore((state) => state.editForm.isLoading)
     const isPasswordLoading = useUserFormStore((state) => state.changePasswordForm.isLoading)
-    const isDeleteLoading = useUserFormStore((state) => state.deleteForm.isLoading)
+    const isDeactivateLoading = useUserFormStore((state) => state.deactivateForm.isLoading)
+    const isReactivateLoading = useUserFormStore((state) => state.reactivateForm.isLoading)
+    const isAnonymizeLoading = useUserFormStore((state) => state.anonymizeForm.isLoading)
 
     const error = useUserFormStore((state) => state.editForm.error)
     const passwordError = useUserFormStore((state) => state.changePasswordForm.error)
-    const deleteError = useUserFormStore((state) => state.deleteForm.error)
+    const deactivateError = useUserFormStore((state) => state.deactivateForm.error)
+    const reactivateError = useUserFormStore((state) => state.reactivateForm.error)
+    const anonymizeError = useUserFormStore((state) => state.anonymizeForm.error)
 
     const setChangePasswordFormData = useUserFormStore((state) => state.setChangePasswordFormData)
     const setEditLoading = useUserFormStore((state) => state.setEditLoading)
     const setChangePasswordLoading = useUserFormStore((state) => state.setChangePasswordLoading)
-    const setDeleteLoading = useUserFormStore((state) => state.setDeleteLoading)
+    const setDeactivateLoading = useUserFormStore((state) => state.setDeactivateLoading)
+    const setReactivateLoading = useUserFormStore((state) => state.setReactivateLoading)
+    const setAnonymizeLoading = useUserFormStore((state) => state.setAnonymizeLoading)
     const setEditError = useUserFormStore((state) => state.setEditError)
     const setChangePasswordError = useUserFormStore((state) => state.setChangePasswordError)
-    const setDeleteError = useUserFormStore((state) => state.setDeleteError)
+    const setDeactivateError = useUserFormStore((state) => state.setDeactivateError)
+    const setReactivateError = useUserFormStore((state) => state.setReactivateError)
+    const setAnonymizeError = useUserFormStore((state) => state.setAnonymizeError)
     const clearEditError = useUserFormStore((state) => state.clearEditError)
     const clearChangePasswordError = useUserFormStore((state) => state.clearChangePasswordError)
-    const clearDeleteError = useUserFormStore((state) => state.clearDeleteError)
+    const clearDeactivateError = useUserFormStore((state) => state.clearDeactivateError)
+    const clearReactivateError = useUserFormStore((state) => state.clearReactivateError)
+    const clearAnonymizeError = useUserFormStore((state) => state.clearAnonymizeError)
     const initializePasswordForm = useUserFormStore((state) => state.initializeChangePasswordForm)
 
     useEffect(() => {
@@ -114,18 +133,52 @@ export function EditUserForm({ user }: EditUserFormProps) {
         }
     }
 
-    const handleDelete = async () => {
-        if (!confirm(t("deleteConfirm", { name: user.name || "this user" }))) return
+    const handleDeactivate = async () => {
+        if (!confirm(t("deactivateConfirm", { name: user.name || "this user" }))) return
 
-        clearDeleteError()
-        setDeleteLoading(true)
+        clearDeactivateError()
+        setDeactivateLoading(true)
 
-        const result = await deleteUser({ id: user.id })
+        const result = await deactivateUser({ id: user.id })
 
-        setDeleteLoading(false)
+        setDeactivateLoading(false)
 
         if (result.error) {
-            setDeleteError(result.error)
+            setDeactivateError(result.error)
+        } else {
+            router.refresh()
+        }
+    }
+
+    const handleReactivate = async () => {
+        if (!confirm(t("reactivateConfirm", { name: user.name || "this user" }))) return
+
+        clearReactivateError()
+        setReactivateLoading(true)
+
+        const result = await reactivateUser({ id: user.id })
+
+        setReactivateLoading(false)
+
+        if (result.error) {
+            setReactivateError(result.error)
+        } else {
+            router.refresh()
+        }
+    }
+
+    const handleAnonymize = async () => {
+        if (!confirm(t("anonymizeConfirm", { name: user.name || "this user" }))) return
+
+        clearAnonymizeError()
+        setAnonymizeLoading(true)
+
+        const result = await anonymizeUser({ id: user.id })
+
+        setAnonymizeLoading(false)
+
+        if (result.error) {
+            setAnonymizeError(result.error)
         } else {
             router.push("/admin/users")
         }
@@ -257,22 +310,63 @@ export function EditUserForm({ user }: EditUserFormProps) {
             <Separator />
             <div className="space-y-4">
                 <div>
-                    <h3 className="text-lg font-medium">{t("deleteUserTitle")}</h3>
-                    <p className="text-sm text-muted-foreground">{t("deleteUserDescription")}</p>
+                    <h3 className="text-lg font-medium">
+                        {user.isActive ? t("deactivateUser") : t("reactivateUser")}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                        {user.isActive
+                            ? t("deactivateConfirm", { name: "" }).split("?")[0]
+                            : t("reactivateConfirm", { name: "" }).split("?")[0]}
+                    </p>
                 </div>
-                {deleteError && <p className="text-sm text-red-500">{deleteError}</p>}
+                {deactivateError && <p className="text-sm text-red-500">{deactivateError}</p>}
+                {reactivateError && <p className="text-sm text-red-500">{reactivateError}</p>}
                 <div className="flex justify-end">
-                    <Button
-                        type="button"
-                        variant="destructive"
-                        onClick={handleDelete}
-                        disabled={isDeleteLoading}
-                    >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        {isDeleteLoading ? t("deleting") : t("deleteUser")}
-                    </Button>
+                    {user.isActive ? (
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            onClick={handleDeactivate}
+                            disabled={isDeactivateLoading || !!user.anonymizedAt}
+                        >
+                            {isDeactivateLoading ? t("deactivating") : t("deactivateUser")}
+                        </Button>
+                    ) : (
+                        <Button
+                            type="button"
+                            onClick={handleReactivate}
+                            disabled={isReactivateLoading || !!user.anonymizedAt}
+                        >
+                            {isReactivateLoading ? t("reactivating") : t("reactivateUser")}
+                        </Button>
+                    )}
                 </div>
             </div>
+
+            {!user.isActive && !user.anonymizedAt && (
+                <>
+                    <Separator />
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="text-lg font-medium">{t("anonymizeUser")}</h3>
+                            <p className="text-sm text-muted-foreground">
+                                {t("anonymizeConfirm", { name: "" }).split("?")[0]}
+                            </p>
+                        </div>
+                        {anonymizeError && <p className="text-sm text-red-500">{anonymizeError}</p>}
+                        <div className="flex justify-end">
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                onClick={handleAnonymize}
+                                disabled={isAnonymizeLoading}
+                            >
+                                {isAnonymizeLoading ? t("anonymizing") : t("anonymizeUser")}
+                            </Button>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     )
 }

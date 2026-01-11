@@ -5,7 +5,7 @@ import { getUsers } from "./actions/user-actions"
 
 export default async function AdminUsersPage() {
     const session = await getServerSession(authConfig)
-    const users = await getUsers()
+    const users = await getUsers(true)
 
     return (
         <div className="flex flex-col gap-4 min-w-0 h-full">

@@ -10,10 +10,16 @@ import {
     UpdateUserSchema,
     DeleteUserSchema,
     ChangeUserPasswordSchema,
+    DeactivateUserSchema,
+    ReactivateUserSchema,
+    AnonymizeUserSchema,
     type CreateUserInput,
     type UpdateUserInput,
     type DeleteUserInput,
     type ChangeUserPasswordInput,
+    type DeactivateUserInput,
+    type ReactivateUserInput,
+    type AnonymizeUserInput,
 } from "../schemas/user-action-schemas"
 
 async function requireAdmin() {
@@ -30,10 +36,11 @@ async function requireAdmin() {
     return session
 }
 
-export async function getUsers() {
+export async function getUsers(includeDeactivated = false) {
     await requireAdmin()
 
     const users = await prisma.user.findMany({
+        where: includeDeactivated ? undefined : { isActive: true },
         orderBy: {
             createdAt: "desc",
         },
@@ -42,6 +49,9 @@ export async function getUsers() {
             name: true,
             email: true,
             role: true,
+            isActive: true,
+            deactivatedAt: true,
+            anonymizedAt: true,
             createdAt: true,
         },
     })
@@ -59,6 +69,9 @@ export async function getUserById(id: string) {
             name: true,
             email: true,
             role: true,
+            isActive: true,
+            deactivatedAt: true,
+            anonymizedAt: true,
         },
     })
 
@@ -91,7 +104,7 @@ export async function createUser(input: CreateUserInput) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     try {
-        const newUser = await prisma.user.create({
+        await prisma.user.create({
             data: {
                 name,
                 email,
@@ -204,5 +217,164 @@ export async function changeUserPassword(input: ChangeUserPasswordInput) {
         return { success: true }
     } catch {
         return { error: "Failed to change password" }
+    }
+}
+
+export async function deactivateUser(input: DeactivateUserInput) {
+    const session = await requireAdmin()
+
+    const validation = DeactivateUserSchema.safeParse(input)
+
+    if (!validation.success) {
+        return { error: validation.error.issues[0].message }
+    }
+
+    const { id } = validation.data
+
+    if (id === session.user.id) {
+        return { error: "Cannot deactivate your own account" }
+    }
+
+    const userToDeactivate = await prisma.user.findUnique({
+        where: { id },
+    })
+
+    if (!userToDeactivate) {
+        return { error: "User not found" }
+    }
+
+    if (!userToDeactivate.isActive) {
+        return { error: "User is already deactivated" }
+    }
+
+    if (userToDeactivate.role === "ADMIN") {
+        const activeAdminCount = await prisma.user.count({
+            where: { role: "ADMIN", isActive: true },
+        })
+
+        if (activeAdminCount <= 1) {
+            return { error: "Cannot deactivate the last active admin user" }
+        }
+    }
+
+    try {
+        await prisma.user.update({
+            where: { id },
+            data: {
+                isActive: false,
+                deactivatedAt: new Date(),
+            },
+        })
+
+        revalidatePath("/admin/users")
+        return { success: true }
+    } catch {
+        return { error: "Failed to deactivate user" }
+    }
+}
+
+export async function reactivateUser(input: ReactivateUserInput) {
+    await requireAdmin()
+
+    const validation = ReactivateUserSchema.safeParse(input)
+
+    if (!validation.success) {
+        return { error: validation.error.issues[0].message }
+    }
+
+    const { id } = validation.data
+
+    const userToReactivate = await prisma.user.findUnique({
+        where: { id },
+    })
+
+    if (!userToReactivate) {
+        return { error: "User not found" }
+    }
+
+    if (userToReactivate.isActive) {
+        return { error: "User is already active" }
+    }
+
+    if (userToReactivate.anonymizedAt) {
+        return { error: "Cannot reactivate an anonymized user" }
+    }
+
+    try {
+        await prisma.user.update({
+            where: { id },
+            data: {
+                isActive: true,
+                deactivatedAt: null,
+            },
+        })
+
+        revalidatePath("/admin/users")
+        return { success: true }
+    } catch {
+        return { error: "Failed to reactivate user" }
+    }
+}
+
+export async function anonymizeUser(input: AnonymizeUserInput) {
+    const session = await requireAdmin()
+
+    const validation = AnonymizeUserSchema.safeParse(input)
+
+    if (!validation.success) {
+        return { error: validation.error.issues[0].message }
+    }
+
+    const { id } = validation.data
+
+    if (id === session.user.id) {
+        return { error: "Cannot anonymize your own account" }
+    }
+
+    const userToAnonymize = await prisma.user.findUnique({
+        where: { id },
+    })
+
+    if (!userToAnonymize) {
+        return { error: "User not found" }
+    }
+
+    if (userToAnonymize.isActive) {
+        return { error: "User must be deactivated before anonymization" }
+    }
+
+    if (userToAnonymize.anonymizedAt) {
+        return { error: "User is already anonymized" }
+    }
+
+    if (userToAnonymize.role === "ADMIN") {
+        const activeAdminCount = await prisma.user.count({
+            where: { role: "ADMIN", isActive: true },
+        })
+
+        if (activeAdminCount === 0) {
+            return { error: "Cannot anonymize the last admin user" }
+        }
+    }
+
+    try {
+        const timestamp = new Date().getTime()
+
+        await prisma.user.update({
+            where: { id },
+            data: {
+                name: `Anonymized User ${timestamp}`,
+                email: `anonymized-${id}@deleted.local`,
+                password: null,
+                image: null,
+                emailVerified: null,
+                anonymizedAt: new Date(),
+            },
+        })
+
+        revalidatePath("/admin/users")
+        return { success: true }
+    } catch {
+        return { error: "Failed to anonymize user" }
     }
 }

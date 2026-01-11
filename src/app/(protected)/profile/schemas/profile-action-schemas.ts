@@ -15,3 +15,9 @@ export const UpdateProfileSchema = z.object({
 })
 
 export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>
+
+export const DeactivateAccountSchema = z.object({
+    anonymize: z.boolean().default(false),
+})
+
+export type DeactivateAccountInput = z.infer<typeof DeactivateAccountSchema>

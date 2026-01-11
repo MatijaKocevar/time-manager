@@ -448,7 +448,12 @@
                 "noUsers": "Ni uporabnikov",
                 "noUsersMatch": "Noben uporabnik ne ustreza vašemu iskanju",
                 "you": "Ti",
-                "edit": "Uredi"
+                "edit": "Uredi",
+                "status": "Status",
+                "active": "Aktiven",
+                "inactive": "Neaktiven",
+                "anonymized": "Anonimiziran",
+                "showDeactivated": "Prikaži deaktivirane uporabnike"
             },
             "form": {
                 "fillDetails": "Izpolnite podrobnosti za ustvarjanje novega uporabnika",
@@ -475,7 +480,17 @@
                 "deleteUserTitle": "Izbriši uporabnika",
                 "deleteUserDescription": "Trajno odstrani tega uporabnika iz sistema. Tega dejanja ni mogoče razveljaviti.",
                 "deleting": "Brisanje...",
-                "deleteConfirm": "Ali ste prepričani, da želite izbrisati {name}?"
+                "deleteConfirm": "Ali ste prepričani, da želite izbrisati {name}?",
+                "deactivateUser": "Deaktiviraj uporabnika",
+                "deactivating": "Deaktivacija...",
+                "deactivateConfirm": "Ali ste prepričani, da želite deaktivirati {name}? Uporabnik se ne bo mogel več prijaviti.",
+                "reactivateUser": "Reaktiviraj uporabnika",
+                "reactivating": "Reaktivacija...",
+                "reactivateConfirm": "Ali ste prepričani, da želite reaktivirati {name}?",
+                "anonymizeUser": "Anonimiziraj uporabnika",
+                "anonymizing": "Anonimizacija...",
+                "anonymizeConfirm": "Ali ste prepričani, da želite anonimizirati {name}? To bo odstranilo vse osebne podatke in tega ni mogoče razveljaviti.",
+                "anonymizeRequiresDeactivation": "Uporabnik mora biti najprej deaktiviran"
             },
             "detail": {
                 "hoursSummary": "Povzetek ur",
@@ -677,7 +692,10 @@
             "confirmPassword": "Potrdi novo geslo",
             "changePasswordTitle": "Spremeni geslo",
             "changePasswordDescription": "Pustite prazno, če želite obdržati trenutno geslo",
-            "hoursPerDayDisplay": "{hours} ur"
+            "hoursPerDayDisplay": "{hours} ur",
+            "dangerZone": "Nevarna cona",
+            "dangerZoneDescription": "Nepreklicna dejanja, ki vplivajo na vaš račun",
+            "deactivateButton": "Deaktiviraj račun"
         },
         "workHours": {
             "title": "Konfiguracija delovnih ur",
@@ -723,6 +741,18 @@
             "workEndTimeAfterStart": "Konec delovnega časa mora biti po začetku",
             "unauthorized": "Nepooblaščen dostop",
             "userNotFound": "Uporabnik ni najden"
+        },
+        "deactivation": {
+            "title": "Deaktiviraj račun",
+            "description": "Trajno deaktiviraj tvoj račun",
+            "buttonLabel": "Deaktiviraj račun",
+            "dialogTitle": "Ali ste prepričani, da želite deaktivirati svoj račun?",
+            "dialogDescription": "To bo onemogočilo vaš račun in se ne boste mogli več prijaviti.",
+            "anonymizeLabel": "Takoj anonimiziraj moje podatke",
+            "anonymizeDescription": "To bo trajno odstranilo vaše osebne podatke. Tega dejanja ni mogoče razveljaviti.",
+            "confirmButton": "Da, deaktiviraj moj račun",
+            "deactivating": "Deaktiviram...",
+            "deactivationFailed": "Deaktivacija računa ni uspela"
         }
     },
     "auth": {

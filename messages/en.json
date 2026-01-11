@@ -448,7 +448,12 @@
                 "noUsers": "No users found",
                 "noUsersMatch": "No users match your search",
                 "you": "You",
-                "edit": "Edit"
+                "edit": "Edit",
+                "status": "Status",
+                "active": "Active",
+                "inactive": "Inactive",
+                "anonymized": "Anonymized",
+                "showDeactivated": "Show deactivated users"
             },
             "form": {
                 "fillDetails": "Fill in the details to create a new user",
@@ -475,7 +480,17 @@
                 "deleteUserTitle": "Delete User",
                 "deleteUserDescription": "Permanently remove this user from the system. This action cannot be undone.",
                 "deleting": "Deleting...",
-                "deleteConfirm": "Are you sure you want to delete {name}?"
+                "deleteConfirm": "Are you sure you want to delete {name}?",
+                "deactivateUser": "Deactivate User",
+                "deactivating": "Deactivating...",
+                "deactivateConfirm": "Are you sure you want to deactivate {name}? The user will no longer be able to log in.",
+                "reactivateUser": "Reactivate User",
+                "reactivating": "Reactivating...",
+                "reactivateConfirm": "Are you sure you want to reactivate {name}?",
+                "anonymizeUser": "Anonymize User",
+                "anonymizing": "Anonymizing...",
+                "anonymizeConfirm": "Are you sure you want to anonymize {name}? This will remove all personal data and cannot be undone.",
+                "anonymizeRequiresDeactivation": "User must be deactivated before anonymization"
             },
             "detail": {
                 "hoursSummary": "Hours Summary",
@@ -677,7 +692,10 @@
             "confirmPassword": "Confirm New Password",
             "changePasswordTitle": "Change Password",
             "changePasswordDescription": "Leave empty to keep current password",
-            "hoursPerDayDisplay": "{hours} hours"
+            "hoursPerDayDisplay": "{hours} hours",
+            "dangerZone": "Danger Zone",
+            "dangerZoneDescription": "Irreversible actions that affect your account",
+            "deactivateButton": "Deactivate Account"
         },
         "workHours": {
             "title": "Work Hours Configuration",
@@ -723,6 +741,18 @@
             "workEndTimeAfterStart": "Work end time must be after start time",
             "unauthorized": "Unauthorized",
             "userNotFound": "User not found"
+        },
+        "deactivation": {
+            "title": "Deactivate Account",
+            "description": "Permanently deactivate your account",
+            "buttonLabel": "Deactivate Account",
+            "dialogTitle": "Are you sure you want to deactivate your account?",
+            "dialogDescription": "This will disable your account and you will no longer be able to log in.",
+            "anonymizeLabel": "Anonymize my data immediately",
+            "anonymizeDescription": "This will permanently remove your personal information. This action cannot be undone.",
+            "confirmButton": "Yes, Deactivate My Account",
+            "deactivating": "Deactivating...",
+            "deactivationFailed": "Failed to deactivate account"
         }
     },
     "auth": {

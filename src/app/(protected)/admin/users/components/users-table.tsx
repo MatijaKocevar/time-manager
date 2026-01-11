@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { Edit, Search, Plus, Download } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 import type { UserTableItem } from "../schemas/user-table-schemas"
 import { USER_ROLE_COLORS } from "../constants/user-constants"
 import { getUserRoleTranslationKey } from "../utils/translation-helpers"
@@ -55,15 +56,18 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
     const tForm = useTranslations("admin.users.form")
     const tCommon = useTranslations("common.actions")
     const [searchQuery, setSearchQuery] = useState("")
+    const [showDeactivated, setShowDeactivated] = useState(false)
     const [isNewUserOpen, setIsNewUserOpen] = useState(false)
     const [isExporting, setIsExporting] = useState(false)
 
     const { createForm, setCreateFormData, resetCreateForm, setCreateLoading, setCreateError } =
         useUserFormStore()
 
-    const filteredUsers = users.filter((user) =>
-        user.name?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    const filteredUsers = users.filter((user) => {
+        const matchesSearch = user.name?.toLowerCase().includes(searchQuery.toLowerCase())
+        const matchesActiveFilter = showDeactivated || user.isActive
+        return matchesSearch && matchesActiveFilter
+    })
 
     const handleRowDoubleClick = (userId: string) => {
         router.push(`/admin/users/${userId}`)
@@ -112,14 +116,29 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
     return (
         <>
             <div className="flex items-center justify-between gap-4">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                        placeholder={t("filterPlaceholder")}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
-                    />
+                <div className="flex items-center gap-4 flex-1">
+                    <div className="relative max-w-sm flex-1">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            placeholder={t("filterPlaceholder")}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-9"
+                        />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="showDeactivated"
+                            checked={showDeactivated}
+                            onCheckedChange={(checked) => setShowDeactivated(checked === true)}
+                        />
+                        <label
+                            htmlFor="showDeactivated"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                            {t("showDeactivated")}
+                        </label>
+                    </div>
                 </div>
                 <div className="flex gap-2">
                     <Button
@@ -145,6 +164,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                             </TableHead>
                             <TableHead className="min-w-[200px]">{t("email")}</TableHead>
                             <TableHead className="min-w-[100px]">{t("role")}</TableHead>
+                            <TableHead className="min-w-[100px]">{t("status")}</TableHead>
                             <TableHead className="min-w-[120px]">{t("created")}</TableHead>
                             <TableHead className="text-right min-w-[180px]">
                                 {t("actions")}
@@ -155,7 +175,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                         {filteredUsers.length === 0 ? (
                             <TableRow>
                                 <TableCell
-                                    colSpan={5}
+                                    colSpan={6}
                                     className="text-center text-muted-foreground"
                                 >
                                     {searchQuery ? t("noUsersMatch") : t("noUsers")}
@@ -166,7 +186,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                 <TableRow
                                     key={user.id}
                                     onDoubleClick={() => handleRowDoubleClick(user.id)}
-                                    className="cursor-pointer"
+                                    className={`cursor-pointer ${!user.isActive ? "opacity-60 bg-muted/50" : ""}`}
                                 >
                                     <TableCell className="font-medium sticky left-0 z-10 bg-background min-w-[150px] max-w-[200px] border-r">
                                         <Tooltip>
@@ -198,6 +218,23 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${USER_ROLE_COLORS[user.role]}`}
                                         >
                                             {tRoles(getUserRoleTranslationKey(user.role))}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span
+                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
+                                                user.anonymizedAt
+                                                    ? "bg-gray-100 text-gray-800"
+                                                    : user.isActive
+                                                      ? "bg-green-100 text-green-800"
+                                                      : "bg-red-100 text-red-800"
+                                            }`}
+                                        >
+                                            {user.anonymizedAt
+                                                ? t("anonymized")
+                                                : user.isActive
+                                                  ? t("active")
+                                                  : t("inactive")}
                                         </span>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">

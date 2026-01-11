@@ -39,11 +39,38 @@ interface DeleteFormState {
     error: string
 }
 
+interface DeactivateFormState {
+    data: {
+        id: string
+    } | null
+    isLoading: boolean
+    error: string
+}
+
+interface ReactivateFormState {
+    data: {
+        id: string
+    } | null
+    isLoading: boolean
+    error: string
+}
+
+interface AnonymizeFormState {
+    data: {
+        id: string
+    } | null
+    isLoading: boolean
+    error: string
+}
+
 interface UserFormStoreState {
     createForm: CreateFormState
     editForm: EditFormState
     changePasswordForm: ChangePasswordFormState
     deleteForm: DeleteFormState
+    deactivateForm: DeactivateFormState
+    reactivateForm: ReactivateFormState
+    anonymizeForm: AnonymizeFormState
 }
 
 interface UserFormStoreActions {
@@ -87,6 +114,21 @@ interface UserFormStoreActions {
     setDeleteLoading: (isLoading: boolean) => void
     setDeleteError: (error: string) => void
     clearDeleteError: () => void
+    setDeactivateFormData: (userId: string) => void
+    resetDeactivateForm: () => void
+    setDeactivateLoading: (isLoading: boolean) => void
+    setDeactivateError: (error: string) => void
+    clearDeactivateError: () => void
+    setReactivateFormData: (userId: string) => void
+    resetReactivateForm: () => void
+    setReactivateLoading: (isLoading: boolean) => void
+    setReactivateError: (error: string) => void
+    clearReactivateError: () => void
+    setAnonymizeFormData: (userId: string) => void
+    resetAnonymizeForm: () => void
+    setAnonymizeLoading: (isLoading: boolean) => void
+    setAnonymizeError: (error: string) => void
+    clearAnonymizeError: () => void
 }
 
 export const useUserFormStore = create<UserFormStoreState & UserFormStoreActions>((set) => ({
@@ -111,6 +153,21 @@ export const useUserFormStore = create<UserFormStoreState & UserFormStoreActions
         error: "",
     },
     deleteForm: {
+        data: null,
+        isLoading: false,
+        error: "",
+    },
+    deactivateForm: {
+        data: null,
+        isLoading: false,
+        error: "",
+    },
+    reactivateForm: {
+        data: null,
+        isLoading: false,
+        error: "",
+    },
+    anonymizeForm: {
         data: null,
         isLoading: false,
         error: "",
@@ -241,5 +298,89 @@ export const useUserFormStore = create<UserFormStoreState & UserFormStoreActions
     clearDeleteError: () =>
         set((state) => ({
             deleteForm: { ...state.deleteForm, error: "" },
+        })),
+    setDeactivateFormData: (userId) =>
+        set({
+            deactivateForm: {
+                data: { id: userId },
+                isLoading: false,
+                error: "",
+            },
+        }),
+    resetDeactivateForm: () =>
+        set({
+            deactivateForm: {
+                data: null,
+                isLoading: false,
+                error: "",
+            },
+        }),
+    setDeactivateLoading: (isLoading) =>
+        set((state) => ({
+            deactivateForm: { ...state.deactivateForm, isLoading },
+        })),
+    setDeactivateError: (error) =>
+        set((state) => ({
+            deactivateForm: { ...state.deactivateForm, error },
+        })),
+    clearDeactivateError: () =>
+        set((state) => ({
+            deactivateForm: { ...state.deactivateForm, error: "" },
+        })),
+    setReactivateFormData: (userId) =>
+        set({
+            reactivateForm: {
+                data: { id: userId },
+                isLoading: false,
+                error: "",
+            },
+        }),
+    resetReactivateForm: () =>
+        set({
+            reactivateForm: {
+                data: null,
+                isLoading: false,
+                error: "",
+            },
+        }),
+    setReactivateLoading: (isLoading) =>
+        set((state) => ({
+            reactivateForm: { ...state.reactivateForm, isLoading },
+        })),
+    setReactivateError: (error) =>
+        set((state) => ({
+            reactivateForm: { ...state.reactivateForm, error },
+        })),
+    clearReactivateError: () =>
+        set((state) => ({
+            reactivateForm: { ...state.reactivateForm, error: "" },
+        })),
+    setAnonymizeFormData: (userId) =>
+        set({
+            anonymizeForm: {
+                data: { id: userId },
+                isLoading: false,
+                error: "",
+            },
+        }),
+    resetAnonymizeForm: () =>
+        set({
+            anonymizeForm: {
+                data: null,
+                isLoading: false,
+                error: "",
+            },
+        }),
+    setAnonymizeLoading: (isLoading) =>
+        set((state) => ({
+            anonymizeForm: { ...state.anonymizeForm, isLoading },
+        })),
+    setAnonymizeError: (error) =>
+        set((state) => ({
+            anonymizeForm: { ...state.anonymizeForm, error },
+        })),
+    clearAnonymizeError: () =>
+        set((state) => ({
+            anonymizeForm: { ...state.anonymizeForm, error: "" },
         })),
 }))

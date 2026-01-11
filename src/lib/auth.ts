@@ -62,6 +62,12 @@ export const authConfig = {
                         )
                     }
 
+                    if (!user.isActive) {
+                        throw new Error(
+                            "Your account has been deactivated. Please contact an administrator."
+                        )
+                    }
+
                     return {
                         id: user.id,
                         email: user.email,

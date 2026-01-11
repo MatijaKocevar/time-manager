@@ -6,6 +6,9 @@ export const UserTableItemSchema = z.object({
     name: z.string().nullable(),
     email: z.string(),
     role: UserRoleSchema,
+    isActive: z.boolean(),
+    deactivatedAt: z.date().nullable(),
+    anonymizedAt: z.date().nullable(),
     createdAt: z.date(),
 })
 

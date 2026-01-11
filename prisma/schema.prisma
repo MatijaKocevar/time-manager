@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "./generated/client"
+  provider        = "prisma-client-js"
+  output          = "./generated/client"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -48,6 +49,9 @@ model User {
   role                   UserRole                @default(USER)
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
+  isActive               Boolean                 @default(true)
+  deactivatedAt          DateTime?
+  anonymizedAt           DateTime?
   sidebarOpen            Boolean                 @default(true)
   sidebarExpandedItems   Json?                   @default("[]")
   theme                  String                  @default("light")
@@ -93,8 +97,8 @@ model HourEntry {
 // MATERIALIZED VIEW - Cannot DELETE/UPDATE directly
 // Use refreshDailyHourSummary() from @/lib/materialized-views
 // Automatically recalculated when HourEntry or TaskTimeEntry changes
-model DailyHourSummary {
-  userId        String   @id
+view DailyHourSummary {
+  userId        String
   date          DateTime
   type          HourType
   manualHours   Float
@@ -102,8 +106,6 @@ model DailyHourSummary {
   totalHours    Float
 
   @@unique([userId, date, type])
-  @@index([userId])
-  @@index([date])
   @@map("daily_hour_summary")
 }
 

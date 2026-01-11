@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
-import { UpdateProfileSchema, type UpdateProfileInput } from "../schemas/profile-action-schemas"
+import { UpdateProfileSchema, type UpdateProfileInput, DeactivateAccountSchema, type DeactivateAccountInput } from "../schemas/profile-action-schemas"
 import { BCRYPT_SALT_ROUNDS, WORK_HOURS_VALIDATION } from "../constants/profile-constants"
 
 export async function getCurrentUser() {
@@ -126,5 +126,51 @@ export async function updateProfile(input: UpdateProfileInput) {
     } catch (error) {
         console.error("Failed to update profile:", error)
         return { error: "profile.messages.updateFailed" }
+    }
+}
+
+export async function deactivateAccount(input: DeactivateAccountInput) {
+    const session = await getServerSession(authConfig)
+
+    if (!session?.user) {
+        return { error: "profile.validation.unauthorized" }
+    }
+
+    const validation = DeactivateAccountSchema.safeParse(input)
+
+    if (!validation.success) {
+        return { error: validation.error.issues[0].message }
+    }
+
+    const { anonymize } = validation.data
+
+    try {
+        if (anonymize) {
+            await prisma.user.update({
+                where: { id: session.user.id },
+                data: {
+                    isActive: false,
+                    deactivatedAt: new Date(),
+                    anonymizedAt: new Date(),
+                    name: `Anonymized User ${session.user.id.slice(-8)}`,
+                    email: `anonymized-${session.user.id}@deleted.local`,
+                    password: await bcrypt.hash(Math.random().toString(36), BCRYPT_SALT_ROUNDS),
+                },
+            })
+        } else {
+            await prisma.user.update({
+                where: { id: session.user.id },
+                data: {
+                    isActive: false,
+                    deactivatedAt: new Date(),
+                },
+            })
+        }
+
+        revalidatePath("/profile")
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to deactivate account:", error)
+        return { error: "profile.deactivation.deactivationFailed" }
     }
 }

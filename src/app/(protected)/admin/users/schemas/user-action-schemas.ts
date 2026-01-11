@@ -49,6 +49,18 @@ export const ChangeUserPasswordSchema = z.object({
         .min(PASSWORD_MIN_LENGTH, `Password must be at least ${PASSWORD_MIN_LENGTH} characters`),
 })
 
+export const DeactivateUserSchema = z.object({
+    id: z.string(),
+})
+
+export const ReactivateUserSchema = z.object({
+    id: z.string(),
+})
+
+export const AnonymizeUserSchema = z.object({
+    id: z.string(),
+})
+
 export type UserRole = z.infer<typeof UserRoleSchema>
 export type User = z.infer<typeof UserSchema>
 export type UserPublicProfile = z.infer<typeof UserPublicProfileSchema>
@@ -57,3 +69,6 @@ export type CreateUserInput = z.infer<typeof CreateUserSchema>
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>
 export type DeleteUserInput = z.infer<typeof DeleteUserSchema>
 export type ChangeUserPasswordInput = z.infer<typeof ChangeUserPasswordSchema>
+export type DeactivateUserInput = z.infer<typeof DeactivateUserSchema>
+export type ReactivateUserInput = z.infer<typeof ReactivateUserSchema>
+export type AnonymizeUserInput = z.infer<typeof AnonymizeUserSchema>
