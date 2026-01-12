@@ -350,3 +350,62 @@ export async function getTaskTimeEntries(taskId?: string) {
         throw new Error("Failed to fetch today's time entries")
     }
 }
+
+export async function getTodayTimeSummary() {
+    try {
+        const session = await requireAuth()
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const tomorrow = new Date(today)
+        tomorrow.setDate(tomorrow.getDate() + 1)
+
+        const entries = await prisma.taskTimeEntry.findMany({
+            where: {
+                userId: session.user.id,
+                startTime: {
+                    gte: today,
+                    lt: tomorrow,
+                },
+            },
+        })
+
+        const activeTimer = await prisma.taskTimeEntry.findFirst({
+            where: {
+                userId: session.user.id,
+                endTime: null,
+            },
+            include: {
+                task: true,
+            },
+        })
+
+        const totals = entries.reduce(
+            (acc, entry) => {
+                const type = entry.type as "WORK" | "BREAK" | "PRIVATE"
+                if (type === "WORK" || type === "BREAK" || type === "PRIVATE") {
+                    const durationHours = entry.duration ? entry.duration / 3600 : 0
+                    acc[type] += durationHours
+                }
+                return acc
+            },
+            { WORK: 0, BREAK: 0, PRIVATE: 0 } as Record<"WORK" | "BREAK" | "PRIVATE", number>
+        )
+
+        return {
+            totals,
+            activeTimer: activeTimer
+                ? {
+                      id: activeTimer.id,
+                      startTime: activeTimer.startTime,
+                      type: activeTimer.type as HourType,
+                  }
+                : null,
+        }
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error
+        }
+        throw new Error("Failed to fetch today's time summary")
+    }
+}

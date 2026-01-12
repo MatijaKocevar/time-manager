@@ -306,7 +306,8 @@
             "selectTask": "Select Task",
             "trackingType": "Tracking Type",
             "todayEntries": "Today's Time Entries",
-            "noEntriesForType": "No time entries for this type today"
+            "noEntriesForType": "No time entries for this type today",
+            "dailySummaryTitle": "Today's Time"
         },
         "editTimeEntry": {
             "title": "Edit Time Entry",

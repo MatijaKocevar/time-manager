@@ -306,7 +306,8 @@
             "selectTask": "Izberite nalogo",
             "trackingType": "Tip sledenja",
             "todayEntries": "Današnji vnosi časa",
-            "noEntriesForType": "Ni vnosov časa za ta tip danes"
+            "noEntriesForType": "Ni vnosov časa za ta tip danes",
+            "dailySummaryTitle": "Današnji čas"
         },
         "editTimeEntry": {
             "title": "Uredi vnos časa",

@@ -45,6 +45,7 @@ export default async function TrackerPage() {
         private: tTypes("private"),
         noTasksAvailable: t("noTasksAvailable"),
         generalWork: "General",
+        dailySummaryTitle: t("dailySummaryTitle"),
     }
 
     return (

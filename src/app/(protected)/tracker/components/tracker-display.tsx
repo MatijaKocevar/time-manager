@@ -24,6 +24,7 @@ import {
     useTrackerSelection,
 } from "../hooks"
 import type { TrackerDisplayProps } from "../types/tracker-display.types"
+import { DailySummaryCard } from "./daily-summary-card"
 
 export function TrackerDisplay({
     inProgressTasks,
@@ -100,130 +101,147 @@ export function TrackerDisplay({
     }
 
     return (
-        <Card>
-            <CardContent className="pt-6">
-                <div className="space-y-6">
-                    <div className="space-y-4">
-                        <div>
-                            <label className="text-sm font-medium mb-2 block">
-                                {translations.trackingType}
-                            </label>
-                            <Select
-                                value={selectedType}
-                                onValueChange={handleTypeChange}
-                                disabled={isTimerRunning || isLoading}
-                            >
-                                <SelectTrigger className="w-full" suppressHydrationWarning>
-                                    <SelectValue>{getTypeLabel(selectedType)}</SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="WORK">{translations.work}</SelectItem>
-                                    <SelectItem value="BREAK">{translations.break}</SelectItem>
-                                    <SelectItem value="PRIVATE">{translations.private}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div>
-                            <label className="text-sm font-medium mb-2 block">
-                                {translations.selectTask}
-                            </label>
-                            <Select
-                                value={selectedTaskId ?? ""}
-                                onValueChange={handleTaskChange}
-                                disabled={selectedType !== "WORK" || isTimerRunning || isLoading}
-                            >
-                                <SelectTrigger className="w-full" suppressHydrationWarning>
-                                    <SelectValue>{getSelectedTaskLabel()}</SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {generalWorkTask && (
-                                        <SelectItem value={generalWorkTask.id}>
-                                            <div className="flex items-center gap-2">
-                                                <span className="truncate">
-                                                    {translations.generalWork}
-                                                </span>
-                                            </div>
+        <>
+            <Card>
+                <CardContent className="pt-6">
+                    <div className="space-y-6">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">
+                                    {translations.trackingType}
+                                </label>
+                                <Select
+                                    value={selectedType}
+                                    onValueChange={handleTypeChange}
+                                    disabled={isTimerRunning || isLoading}
+                                >
+                                    <SelectTrigger className="w-full" suppressHydrationWarning>
+                                        <SelectValue>{getTypeLabel(selectedType)}</SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="WORK">{translations.work}</SelectItem>
+                                        <SelectItem value="BREAK">{translations.break}</SelectItem>
+                                        <SelectItem value="PRIVATE">
+                                            {translations.private}
                                         </SelectItem>
-                                    )}
-                                    {inProgressTasks.map((task) => (
-                                        <SelectItem key={task.id} value={task.id}>
-                                            <div className="flex items-center gap-2">
-                                                {task.listIcon && (
-                                                    <span className="text-xs">{task.listIcon}</span>
-                                                )}
-                                                <span
-                                                    className={`truncate ${task.parentId ? "pl-4" : ""}`}
-                                                >
-                                                    {task.parentId && "↳ "}
-                                                    {task.title}
-                                                </span>
-                                            </div>
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2 p-4 bg-muted rounded-lg min-h-[60px] flex items-center">
-                        {isTimerRunning && activeTimerData ? (
-                            <div className="flex items-center justify-between w-full">
-                                <Badge variant="secondary">
-                                    {getTypeLabel(activeTimerData.type)}
-                                </Badge>
-                                <span className="text-sm text-muted-foreground truncate ml-2">
-                                    {!activeTimerData.task.isSystemTask
-                                        ? activeTimerData.task.title
-                                        : ""}
-                                </span>
+                                    </SelectContent>
+                                </Select>
                             </div>
-                        ) : (
-                            <div className="text-sm text-muted-foreground opacity-0">-</div>
-                        )}
-                    </div>
 
-                    <div className="flex flex-col items-center justify-center gap-6 py-8">
-                        <div
-                            className="text-6xl font-mono font-bold tabular-nums"
-                            suppressHydrationWarning
-                        >
-                            {formatDuration(elapsedSeconds)}
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">
+                                    {translations.selectTask}
+                                </label>
+                                <Select
+                                    value={selectedTaskId ?? ""}
+                                    onValueChange={handleTaskChange}
+                                    disabled={
+                                        selectedType !== "WORK" || isTimerRunning || isLoading
+                                    }
+                                >
+                                    <SelectTrigger className="w-full" suppressHydrationWarning>
+                                        <SelectValue>{getSelectedTaskLabel()}</SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {generalWorkTask && (
+                                            <SelectItem value={generalWorkTask.id}>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="truncate">
+                                                        {translations.generalWork}
+                                                    </span>
+                                                </div>
+                                            </SelectItem>
+                                        )}
+                                        {inProgressTasks.map((task) => (
+                                            <SelectItem key={task.id} value={task.id}>
+                                                <div className="flex items-center gap-2">
+                                                    {task.listIcon && (
+                                                        <span className="text-xs">
+                                                            {task.listIcon}
+                                                        </span>
+                                                    )}
+                                                    <span
+                                                        className={`truncate ${task.parentId ? "pl-4" : ""}`}
+                                                    >
+                                                        {task.parentId && "↳ "}
+                                                        {task.title}
+                                                    </span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 p-4 bg-muted rounded-lg min-h-[60px] flex items-center">
+                            {isTimerRunning && activeTimerData ? (
+                                <div className="flex items-center justify-between w-full">
+                                    <Badge variant="secondary">
+                                        {getTypeLabel(activeTimerData.type)}
+                                    </Badge>
+                                    <span className="text-sm text-muted-foreground truncate ml-2">
+                                        {!activeTimerData.task.isSystemTask
+                                            ? activeTimerData.task.title
+                                            : ""}
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className="text-sm text-muted-foreground opacity-0">-</div>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col items-center justify-center gap-6 py-8">
+                            <div
+                                className="text-6xl font-mono font-bold tabular-nums"
+                                suppressHydrationWarning
+                            >
+                                {formatDuration(elapsedSeconds)}
+                            </div>
+
+                            <Button
+                                size="lg"
+                                onClick={handlePlayStop}
+                                disabled={isLoading || (!isTimerRunning && !canStart)}
+                                className={`w-28 h-28 rounded-full text-white shadow-lg transition-all ${
+                                    isTimerRunning
+                                        ? "bg-red-600 hover:bg-red-700"
+                                        : "bg-green-600 hover:bg-green-700"
+                                }`}
+                            >
+                                {isTimerRunning ? (
+                                    <Square className="h-10 w-10" fill="currentColor" />
+                                ) : (
+                                    <Play className="h-10 w-10" fill="currentColor" />
+                                )}
+                            </Button>
+                        </div>
+
+                        <div className="min-h-[20px] text-sm text-destructive text-center">
+                            {trackerError || ""}
                         </div>
 
                         <Button
-                            size="lg"
-                            onClick={handlePlayStop}
-                            disabled={isLoading || (!isTimerRunning && !canStart)}
-                            className={`w-28 h-28 rounded-full text-white shadow-lg transition-all ${
-                                isTimerRunning
-                                    ? "bg-red-600 hover:bg-red-700"
-                                    : "bg-green-600 hover:bg-green-700"
-                            }`}
+                            variant="outline"
+                            onClick={handleViewEntries}
+                            className="w-full"
+                            disabled={taskEntries.length === 0}
                         >
-                            {isTimerRunning ? (
-                                <Square className="h-10 w-10" fill="currentColor" />
-                            ) : (
-                                <Play className="h-10 w-10" fill="currentColor" />
-                            )}
+                            <Clock className="mr-2 h-4 w-4" />
+                            {translations.todayEntries} ({taskEntries.length})
                         </Button>
                     </div>
+                </CardContent>
+            </Card>
 
-                    <div className="min-h-[20px] text-sm text-destructive text-center">
-                        {trackerError || ""}
-                    </div>
-
-                    <Button
-                        variant="outline"
-                        onClick={handleViewEntries}
-                        className="w-full"
-                        disabled={taskEntries.length === 0}
-                    >
-                        <Clock className="mr-2 h-4 w-4" />
-                        {translations.todayEntries} ({taskEntries.length})
-                    </Button>
-                </div>
-            </CardContent>
-        </Card>
+            <DailySummaryCard
+                translations={{
+                    title: translations.dailySummaryTitle,
+                    work: translations.work,
+                    break: translations.break,
+                    private: translations.private,
+                }}
+            />
+        </>
     )
 }

@@ -43,5 +43,6 @@ export interface TrackerDisplayProps {
         private: string
         noTasksAvailable: string
         generalWork: string
+        dailySummaryTitle: string
     }
 }
