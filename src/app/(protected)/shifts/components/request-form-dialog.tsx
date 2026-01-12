@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input"
 import { DatePicker } from "@/components/ui/date-picker"
 import { Checkbox } from "@/components/ui/checkbox"
 import { format } from "date-fns"
+import { parseDateStringAsLocal } from "@/lib/utils"
 import { REQUEST_TYPES, REQUEST_TYPE } from "../../requests/constants"
 import type { RequestType } from "../../requests/schemas/request-schemas"
 import { getRequestTypeTranslationKey } from "../../requests/utils/translation-helpers"
@@ -114,7 +115,11 @@ export function RequestFormDialog({
                         <div className="space-y-2">
                             <Label htmlFor="startDate">{translations.startDateLabel}</Label>
                             <DatePicker
-                                date={formData.startDate ? new Date(formData.startDate) : undefined}
+                                date={
+                                    formData.startDate
+                                        ? parseDateStringAsLocal(formData.startDate)
+                                        : undefined
+                                }
                                 onDateChange={(date) =>
                                     onFormDataChange({
                                         startDate: date ? format(date, "yyyy-MM-dd") : "",
@@ -126,7 +131,11 @@ export function RequestFormDialog({
                         <div className="space-y-2">
                             <Label htmlFor="endDate">{translations.endDateLabel}</Label>
                             <DatePicker
-                                date={formData.endDate ? new Date(formData.endDate) : undefined}
+                                date={
+                                    formData.endDate
+                                        ? parseDateStringAsLocal(formData.endDate)
+                                        : undefined
+                                }
                                 onDateChange={(date) =>
                                     onFormDataChange({
                                         endDate: date ? format(date, "yyyy-MM-dd") : "",

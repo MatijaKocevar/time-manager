@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations, useLocale } from "next-intl"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { formatDateToLocal } from "@/lib/utils"
 import { useRequestStore } from "../../requests/stores/request-store"
 import { createRequest } from "../../requests/actions/request-actions"
 import { REQUEST_TYPE } from "../../requests/constants"
@@ -154,7 +155,7 @@ export function ShiftsCalendar({
             setSelectedDayShifts({ date, user, shifts })
         } else {
             resetForm()
-            const dateString = date.toISOString().split("T")[0]
+            const dateString = formatDateToLocal(date)
             setFormData({ startDate: dateString, endDate: dateString })
             setIsRequestDialogOpen(true)
         }
@@ -216,7 +217,7 @@ export function ShiftsCalendar({
         } else {
             newDate.setMonth(currentDate.getMonth() - 1)
         }
-        const dateStr = newDate.toISOString().split("T")[0]
+        const dateStr = formatDateToLocal(newDate)
         router.push(`/shifts?view=${viewMode}&date=${dateStr}`)
     }
 
@@ -227,23 +228,23 @@ export function ShiftsCalendar({
         } else {
             newDate.setMonth(currentDate.getMonth() + 1)
         }
-        const dateStr = newDate.toISOString().split("T")[0]
+        const dateStr = formatDateToLocal(newDate)
         router.push(`/shifts?view=${viewMode}&date=${dateStr}`)
     }
 
     const handleToday = () => {
-        const dateStr = new Date().toISOString().split("T")[0]
+        const dateStr = formatDateToLocal(new Date())
         router.push(`/shifts?view=${viewMode}&date=${dateStr}`)
     }
 
     const handleViewModeChange = (mode: "week" | "month") => {
-        const dateStr = currentDate.toISOString().split("T")[0]
+        const dateStr = formatDateToLocal(currentDate)
         router.push(`/shifts?view=${mode}&date=${dateStr}`)
     }
 
     const locationsMap: Record<string, string> = {}
     const locationsShortMap: Record<string, string> = {}
-    
+
     ;["office", "home", "vacation", "sickLeave", "other"].forEach((key) => {
         locationsMap[key] = tLocations(key as never)
         locationsShortMap[key] = tLocationsShort(key as never)
