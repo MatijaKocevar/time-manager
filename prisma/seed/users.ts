@@ -27,6 +27,13 @@ export async function seedUsers(
         isDemo: true,
     })
 
+    users.push({
+        email: "admin@example.com",
+        name: "Admin Admin",
+        password: hashedPassword,
+        role: "ADMIN",
+    })
+
     if (!minimal) {
         for (let i = 0; i < count; i++) {
             const firstName = random.choice(FIRST_NAMES)

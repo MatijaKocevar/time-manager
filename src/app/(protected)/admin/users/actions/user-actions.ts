@@ -176,6 +176,7 @@ export async function deleteUser(input: DeleteUserInput) {
         return { error: "Cannot delete your own account" }
     }
 
+    await requireNotDemo(session.user.id)
     await requireNotDemo(id)
 
     const userToDelete = await prisma.user.findUnique({
@@ -209,7 +210,7 @@ export async function deleteUser(input: DeleteUserInput) {
 }
 
 export async function changeUserPassword(input: ChangeUserPasswordInput) {
-    await requireAdmin()
+    const session = await requireAdmin()
 
     const validation = ChangeUserPasswordSchema.safeParse(input)
 
@@ -219,6 +220,7 @@ export async function changeUserPassword(input: ChangeUserPasswordInput) {
 
     const { id, newPassword } = validation.data
 
+    await requireNotDemo(session.user.id)
     await requireNotDemo(id)
 
     const hashedPassword = await bcrypt.hash(newPassword, 12)
@@ -251,6 +253,7 @@ export async function deactivateUser(input: DeactivateUserInput) {
         return { error: "Cannot deactivate your own account" }
     }
 
+    await requireNotDemo(session.user.id)
     await requireNotDemo(id)
 
     const userToDeactivate = await prisma.user.findUnique({
@@ -349,6 +352,7 @@ export async function anonymizeUser(input: AnonymizeUserInput) {
         return { error: "Cannot anonymize your own account" }
     }
 
+    await requireNotDemo(session.user.id)
     await requireNotDemo(id)
 
     const userToAnonymize = await prisma.user.findUnique({
