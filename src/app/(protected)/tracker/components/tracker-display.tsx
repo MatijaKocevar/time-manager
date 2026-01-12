@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Play, Square, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,7 @@ import {
     stopTracking,
     getActiveTrackingEntry,
     getTodayTimeEntries,
+    saveTrackerPreferences,
 } from "../actions/tracker-actions"
 import { useTrackerStore } from "../stores/tracker-store"
 import { formatDuration, getElapsedSeconds } from "@/app/(protected)/tasks/utils/time-helpers"
@@ -29,6 +30,8 @@ import type { HourType } from "@/../../prisma/generated/client"
 interface TrackerDisplayProps {
     inProgressTasks: TaskDisplay[]
     generalWorkTask: { id: string; title: string } | null
+    initialSelectedType: HourType
+    initialSelectedTaskId: string | null
     initialActiveTimer: {
         id: string
         taskId: string
@@ -61,18 +64,31 @@ interface TrackerDisplayProps {
 export function TrackerDisplay({
     inProgressTasks,
     generalWorkTask,
+    initialSelectedType,
+    initialSelectedTaskId,
     initialActiveTimer,
     translations,
 }: TrackerDisplayProps) {
     const queryClient = useQueryClient()
 
-    const selectedType = useTrackerStore((state) => state.selectedType)
-    const selectedTaskId = useTrackerStore((state) => state.selectedTaskId)
+    const today = new Date().toISOString().split("T")[0]
+    const lastViewed =
+        typeof window !== "undefined" ? localStorage.getItem("tracker-last-viewed-date") : null
+
+    const isNewDay = lastViewed !== today
+
+    const getInitialTaskId = () => {
+        if (isNewDay) return generalWorkTask?.id ?? null
+        if (initialSelectedTaskId) return initialSelectedTaskId
+        if (initialSelectedType === "WORK" && generalWorkTask) return generalWorkTask.id
+        return null
+    }
+
+    const [selectedType, setSelectedType] = useState<HourType>(initialSelectedType)
+    const [selectedTaskId, setSelectedTaskId] = useState<string | null>(getInitialTaskId())
+
     const trackerError = useTrackerStore((state) => state.error)
-    const setSelectedType = useTrackerStore((state) => state.setSelectedType)
-    const setSelectedTaskId = useTrackerStore((state) => state.setSelectedTaskId)
     const setTrackerError = useTrackerStore((state) => state.setError)
-    const checkAndResetForNewDay = useTrackerStore((state) => state.checkAndResetForNewDay)
 
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
@@ -80,12 +96,15 @@ export function TrackerDisplay({
     const eventSourceRef = useRef<EventSource | null>(null)
 
     useEffect(() => {
-        checkAndResetForNewDay()
-
-        if (!selectedTaskId && generalWorkTask && selectedType === "WORK") {
-            setSelectedTaskId(generalWorkTask.id)
+        if (isNewDay) {
+            localStorage.setItem("tracker-last-viewed-date", today)
+            setTrackerError("")
         }
-    }, [checkAndResetForNewDay, generalWorkTask, selectedTaskId, selectedType, setSelectedTaskId])
+    }, [isNewDay, today, setTrackerError])
+
+    useEffect(() => {
+        queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
+    }, [selectedTaskId, queryClient])
 
     useEffect(() => {
         console.log("[SSE] Setting up EventSource connection")
@@ -139,8 +158,8 @@ export function TrackerDisplay({
     })
 
     const { data: todayEntries = [] } = useQuery({
-        queryKey: ["tracker", "todayEntries", selectedType],
-        queryFn: () => getTodayTimeEntries(selectedType),
+        queryKey: ["tracker", "todayEntries", selectedType, selectedTaskId],
+        queryFn: () => getTodayTimeEntries(selectedType, selectedTaskId ?? undefined),
         refetchOnWindowFocus: false, // SSE handles updates
         refetchOnMount: false,
         staleTime: Infinity, // Never auto-refetch, rely on SSE invalidation
@@ -207,11 +226,15 @@ export function TrackerDisplay({
         (selectedType === "BREAK" || selectedType === "PRIVATE" || selectedType === "WORK")
 
     const handleTypeChange = (type: string) => {
-        setSelectedType(type as HourType)
+        const newType = type as HourType
+        setSelectedType(newType)
+        setSelectedTaskId(null)
+        saveTrackerPreferences(newType, null)
     }
 
     const handleTaskChange = (taskId: string) => {
         setSelectedTaskId(taskId)
+        saveTrackerPreferences(selectedType, taskId)
     }
 
     const handlePlayStop = () => {
@@ -245,6 +268,17 @@ export function TrackerDisplay({
         }
     }
 
+    const getSelectedTaskLabel = () => {
+        if (!selectedTaskId) return translations.selectTask
+
+        if (generalWorkTask && selectedTaskId === generalWorkTask.id) {
+            return translations.generalWork
+        }
+
+        const task = inProgressTasks.find((t) => t.id === selectedTaskId)
+        return task ? task.title : translations.selectTask
+    }
+
     return (
         <Card>
             <CardContent className="pt-6">
@@ -259,8 +293,8 @@ export function TrackerDisplay({
                                 onValueChange={handleTypeChange}
                                 disabled={isTimerRunning || isLoading}
                             >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue />
+                                <SelectTrigger className="w-full" suppressHydrationWarning>
+                                    <SelectValue>{getTypeLabel(selectedType)}</SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="WORK">{translations.work}</SelectItem>
@@ -270,72 +304,64 @@ export function TrackerDisplay({
                             </Select>
                         </div>
 
-                        {selectedType === "WORK" && (
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">
-                                    {translations.selectTask}
-                                </label>
-                                <Select
-                                    value={selectedTaskId ?? ""}
-                                    onValueChange={handleTaskChange}
-                                    disabled={isTimerRunning || isLoading}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue
-                                            placeholder={
-                                                inProgressTasks.length === 0
-                                                    ? translations.noTasksAvailable
-                                                    : translations.selectTask
-                                            }
-                                        />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {generalWorkTask && (
-                                            <SelectItem value={generalWorkTask.id}>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="truncate">
-                                                        {translations.generalWork}
-                                                    </span>
-                                                </div>
-                                            </SelectItem>
-                                        )}
-                                        {inProgressTasks.map((task) => (
-                                            <SelectItem key={task.id} value={task.id}>
-                                                <div className="flex items-center gap-2">
-                                                    {task.listIcon && (
-                                                        <span className="text-xs">
-                                                            {task.listIcon}
-                                                        </span>
-                                                    )}
-                                                    <span
-                                                        className={`truncate ${task.parentId ? "pl-4" : ""}`}
-                                                    >
-                                                        {task.parentId && "↳ "}
-                                                        {task.title}
-                                                    </span>
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
+                        <div>
+                            <label className="text-sm font-medium mb-2 block">
+                                {translations.selectTask}
+                            </label>
+                            <Select
+                                value={selectedTaskId ?? ""}
+                                onValueChange={handleTaskChange}
+                                disabled={selectedType !== "WORK" || isTimerRunning || isLoading}
+                            >
+                                <SelectTrigger className="w-full" suppressHydrationWarning>
+                                    <SelectValue>{getSelectedTaskLabel()}</SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {generalWorkTask && (
+                                        <SelectItem value={generalWorkTask.id}>
+                                            <div className="flex items-center gap-2">
+                                                <span className="truncate">
+                                                    {translations.generalWork}
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                    )}
+                                    {inProgressTasks.map((task) => (
+                                        <SelectItem key={task.id} value={task.id}>
+                                            <div className="flex items-center gap-2">
+                                                {task.listIcon && (
+                                                    <span className="text-xs">{task.listIcon}</span>
+                                                )}
+                                                <span
+                                                    className={`truncate ${task.parentId ? "pl-4" : ""}`}
+                                                >
+                                                    {task.parentId && "↳ "}
+                                                    {task.title}
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
-                    {isTimerRunning && activeTimerData && (
-                        <div className="space-y-2 p-4 bg-muted rounded-lg">
-                            <div className="flex items-center justify-between">
+                    <div className="space-y-2 p-4 bg-muted rounded-lg min-h-[60px] flex items-center">
+                        {isTimerRunning && activeTimerData ? (
+                            <div className="flex items-center justify-between w-full">
                                 <Badge variant="secondary">
                                     {getTypeLabel(activeTimerData.type)}
                                 </Badge>
-                                {!activeTimerData.task.isSystemTask && (
-                                    <span className="text-sm text-muted-foreground truncate ml-2">
-                                        {activeTimerData.task.title}
-                                    </span>
-                                )}
+                                <span className="text-sm text-muted-foreground truncate ml-2">
+                                    {!activeTimerData.task.isSystemTask
+                                        ? activeTimerData.task.title
+                                        : ""}
+                                </span>
                             </div>
-                        </div>
-                    )}
+                        ) : (
+                            <div className="text-sm text-muted-foreground opacity-0">-</div>
+                        )}
+                    </div>
 
                     <div className="flex flex-col items-center justify-center gap-6 py-8">
                         <div
@@ -363,16 +389,19 @@ export function TrackerDisplay({
                         </Button>
                     </div>
 
-                    {trackerError && (
-                        <div className="text-sm text-destructive text-center">{trackerError}</div>
-                    )}
+                    <div className="min-h-[20px] text-sm text-destructive text-center">
+                        {trackerError || ""}
+                    </div>
 
-                    {todayEntries.length > 0 && (
-                        <Button variant="outline" onClick={handleViewEntries} className="w-full">
-                            <Clock className="mr-2 h-4 w-4" />
-                            {translations.todayEntries} ({todayEntries.length})
-                        </Button>
-                    )}
+                    <Button
+                        variant="outline"
+                        onClick={handleViewEntries}
+                        className="w-full"
+                        disabled={todayEntries.length === 0}
+                    >
+                        <Clock className="mr-2 h-4 w-4" />
+                        {translations.todayEntries} ({todayEntries.length})
+                    </Button>
                 </div>
             </CardContent>
         </Card>

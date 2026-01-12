@@ -1,17 +1,23 @@
 import { getTasks } from "@/app/(protected)/tasks/actions/task-actions"
-import { getActiveTrackingEntry, getGeneralWorkTask } from "./actions/tracker-actions"
+import {
+    getActiveTrackingEntry,
+    getGeneralWorkTask,
+    getTrackerPreferences,
+} from "./actions/tracker-actions"
 import { TASK_STATUS } from "@/app/(protected)/tasks/constants/task-statuses"
-import { TrackerClient } from "./components/tracker-client"
+import { TrackerDisplay } from "./components/tracker-display"
+import { TimeEntriesDialog } from "@/app/(protected)/tasks/components/time-entries-dialog"
 import { getTranslations } from "next-intl/server"
 
 export default async function TrackerPage() {
     const t = await getTranslations("tasks.tracker")
     const tTypes = await getTranslations("hours.types")
 
-    const [inProgressTasks, activeTimer, generalWorkTask] = await Promise.all([
+    const [inProgressTasks, activeTimer, generalWorkTask, trackerPreferences] = await Promise.all([
         getTasks({ status: TASK_STATUS.IN_PROGRESS }),
         getActiveTrackingEntry(),
         getGeneralWorkTask(),
+        getTrackerPreferences(),
     ])
 
     const translations = {
@@ -27,11 +33,16 @@ export default async function TrackerPage() {
     }
 
     return (
-        <TrackerClient
-            initialInProgressTasks={inProgressTasks}
-            initialActiveTimer={activeTimer}
-            initialGeneralWorkTask={generalWorkTask}
-            translations={translations}
-        />
+        <div className="space-y-6">
+            <TrackerDisplay
+                inProgressTasks={inProgressTasks}
+                generalWorkTask={generalWorkTask}
+                initialSelectedType={trackerPreferences.selectedType}
+                initialSelectedTaskId={trackerPreferences.selectedTaskId}
+                initialActiveTimer={activeTimer}
+                translations={translations}
+            />
+            <TimeEntriesDialog />
+        </div>
     )
 }

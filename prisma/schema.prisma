@@ -59,6 +59,8 @@ model User {
   workStartTime          String?                 @default("08:00")
   workEndTime            String?                 @default("16:00")
   workHoursPerDay        Float?                  @default(8.0)
+  trackerSelectedType    HourType                @default(WORK)
+  trackerSelectedTaskId  String?
   accounts               Account[]
   hourEntries            HourEntry[]
   lists                  List[]

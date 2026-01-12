@@ -21,6 +21,52 @@ async function requireAuth() {
     return session
 }
 
+export async function getTrackerPreferences() {
+    try {
+        const session = await requireAuth()
+
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: {
+                trackerSelectedType: true,
+                trackerSelectedTaskId: true,
+            },
+        })
+
+        return {
+            selectedType: user?.trackerSelectedType ?? "WORK",
+            selectedTaskId: user?.trackerSelectedTaskId ?? null,
+        }
+    } catch {
+        return {
+            selectedType: "WORK" as HourType,
+            selectedTaskId: null,
+        }
+    }
+}
+
+export async function saveTrackerPreferences(
+    selectedType: HourType,
+    selectedTaskId: string | null
+) {
+    try {
+        const session = await requireAuth()
+
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: {
+                trackerSelectedType: selectedType,
+                trackerSelectedTaskId: selectedTaskId,
+            },
+        })
+
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to save tracker preferences:", error)
+        return { success: false, error: "Failed to save preferences" }
+    }
+}
+
 export async function getGeneralWorkTask() {
     try {
         const session = await requireAuth()
@@ -247,7 +293,7 @@ export async function getActiveTrackingEntry() {
     }
 }
 
-export async function getTodayTimeEntries(type?: HourType) {
+export async function getTodayTimeEntries(type?: HourType, taskId?: string) {
     try {
         const session = await requireAuth()
 
@@ -261,6 +307,7 @@ export async function getTodayTimeEntries(type?: HourType) {
             userId: string
             startTime: { gte: Date; lte: Date }
             type?: HourType
+            taskId?: string
         } = {
             userId: session.user.id,
             startTime: {
@@ -271,6 +318,10 @@ export async function getTodayTimeEntries(type?: HourType) {
 
         if (type) {
             where.type = type
+        }
+
+        if (taskId) {
+            where.taskId = taskId
         }
 
         const entries = await prisma.taskTimeEntry.findMany({
