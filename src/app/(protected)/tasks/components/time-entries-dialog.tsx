@@ -24,7 +24,10 @@ import { taskKeys } from "../query-keys"
 import { hourKeys } from "@/app/(protected)/hours/query-keys"
 import { timeSheetKeys } from "@/app/(protected)/time-sheets/query-keys"
 import { formatDuration } from "../utils/time-helpers"
-import type { TaskTimeEntryDisplay } from "../schemas/task-time-entry-schemas"
+import type {
+    TaskTimeEntryDisplay,
+    TaskTimeEntryWithAggregation,
+} from "../schemas/task-time-entry-schemas"
 
 function formatDateTimeLocal(date: Date): string {
     const year = date.getFullYear()
@@ -54,14 +57,17 @@ export function TimeEntriesDialog() {
     const [editedEntries, setEditedEntries] = useState<Map<string, EditedEntry>>(new Map())
     const [isSaving, setIsSaving] = useState(false)
 
-    const { data: entries = [] } = useQuery({
+    const { data } = useQuery({
         queryKey: taskKeys.timeEntriesForTask(timeEntriesDialog.taskId ?? ""),
         queryFn: () => {
-            if (!timeEntriesDialog.taskId) return []
+            if (!timeEntriesDialog.taskId) return { entries: [], childAggregation: null }
             return getTaskTimeEntries(timeEntriesDialog.taskId)
         },
         enabled: timeEntriesDialog.isOpen && !!timeEntriesDialog.taskId,
     })
+
+    const entries = data?.entries ?? []
+    const childAggregation = data?.childAggregation
 
     useEffect(() => {
         if (!timeEntriesDialog.isOpen) {
@@ -180,80 +186,80 @@ export function TimeEntriesDialog() {
                     <DialogDescription>{t("noTimeEntries")}</DialogDescription>
                 </DialogHeader>
 
-                {entries.length === 0 ? (
-                    <div className="py-8 text-center text-muted-foreground">
-                        {t("noTimeEntries")}
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-4">
-                        <div className="rounded-md border overflow-y-auto max-h-[60vh]">
-                            <table className="w-full caption-bottom text-sm">
-                                <thead className="sticky top-0 bg-background z-10 [&_tr]:border-b">
-                                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px] bg-background">
-                                            {t("startedAt")}
-                                        </th>
-                                        <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px] bg-background">
-                                            {t("endedAt")}
-                                        </th>
-                                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right w-[120px] bg-background">
-                                            {t("duration")}
-                                        </th>
-                                        <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[60px] bg-background"></th>
-                                    </tr>
-                                </thead>
-                                <tbody className="[&_tr:last-child]:border-0">
-                                    {entries.map((entry) => {
-                                        const isActive = entry.endTime === null
-                                        const elapsed = isActive
-                                            ? Math.floor(
-                                                  (currentTime.getTime() -
-                                                      entry.startTime.getTime()) /
-                                                      1000
-                                              )
-                                            : null
-
-                                        const duration =
-                                            isActive && elapsed !== null
-                                                ? elapsed
-                                                : (entry.duration ?? 0)
-
-                                        return (
-                                            <tr
-                                                key={entry.id}
-                                                className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
-                                            >
-                                                <td className="p-4 align-middle">
-                                                    <Input
-                                                        type="datetime-local"
-                                                        value={getEntryValue(entry, "startTime")}
-                                                        onChange={(e) =>
-                                                            handleFieldChange(
-                                                                entry.id,
-                                                                "startTime",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                        disabled={
-                                                            isSaving || deleteMutation.isPending
-                                                        }
-                                                        className="h-9 text-sm"
-                                                    />
+                <div className="flex flex-col gap-4">
+                    <div
+                        className="rounded-md border"
+                        style={{ height: "300px", minHeight: "200px" }}
+                    >
+                        {entries.length === 0 && !childAggregation ? (
+                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                                {t("noTimeEntries")}
+                            </div>
+                        ) : (
+                            <div className="h-full overflow-y-auto">
+                                <table className="w-full caption-bottom text-sm">
+                                    <thead className="sticky top-0 bg-background z-10 [&_tr]:border-b">
+                                        <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px] bg-background">
+                                                {t("startedAt")}
+                                            </th>
+                                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px] bg-background">
+                                                {t("endedAt")}
+                                            </th>
+                                            <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right w-[120px] bg-background">
+                                                {t("duration")}
+                                            </th>
+                                            <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[60px] bg-background"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="[&_tr:last-child]:border-0">
+                                        {childAggregation && (
+                                            <tr className="border-b bg-muted/30">
+                                                <td
+                                                    colSpan={2}
+                                                    className="p-4 align-middle text-muted-foreground italic"
+                                                >
+                                                    {t("childTimeAggregation")}
                                                 </td>
-                                                <td className="p-4 align-middle">
-                                                    {isActive ? (
-                                                        <div className="flex items-center h-9 px-3 text-sm text-muted-foreground">
-                                                            {formatDateTimeLocal(currentTime)}{" "}
-                                                            (tracking)
-                                                        </div>
-                                                    ) : (
+                                                <td className="p-4 align-middle text-right font-mono text-muted-foreground">
+                                                    {formatDuration(
+                                                        childAggregation.aggregatedDuration
+                                                    )}
+                                                </td>
+                                                <td className="p-4 align-middle"></td>
+                                            </tr>
+                                        )}
+                                        {entries.map((entry) => {
+                                            const isActive = entry.endTime === null
+                                            const elapsed = isActive
+                                                ? Math.floor(
+                                                      (currentTime.getTime() -
+                                                          entry.startTime.getTime()) /
+                                                          1000
+                                                  )
+                                                : null
+
+                                            const duration =
+                                                isActive && elapsed !== null
+                                                    ? elapsed
+                                                    : (entry.duration ?? 0)
+
+                                            return (
+                                                <tr
+                                                    key={entry.id}
+                                                    className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                                                >
+                                                    <td className="p-4 align-middle">
                                                         <Input
                                                             type="datetime-local"
-                                                            value={getEntryValue(entry, "endTime")}
+                                                            value={getEntryValue(
+                                                                entry,
+                                                                "startTime"
+                                                            )}
                                                             onChange={(e) =>
                                                                 handleFieldChange(
                                                                     entry.id,
-                                                                    "endTime",
+                                                                    "startTime",
                                                                     e.target.value
                                                                 )
                                                             }
@@ -262,67 +268,102 @@ export function TimeEntriesDialog() {
                                                             }
                                                             className="h-9 text-sm"
                                                         />
-                                                    )}
-                                                </td>
-                                                <td className="p-4 align-middle text-right font-mono">
-                                                    {formatDuration(duration)}
-                                                </td>
-                                                <td className="p-4 align-middle">
-                                                    {isActive ? (
-                                                        <Button
-                                                            variant="destructive"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                stopMutation.mutate({
-                                                                    id: entry.id,
-                                                                })
-                                                            }}
-                                                            disabled={stopMutation.isPending}
-                                                            className="h-8 w-8 p-0"
-                                                        >
-                                                            <Square className="h-4 w-4" />
-                                                            <span className="sr-only">Stop</span>
-                                                        </Button>
-                                                    ) : (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleDelete(entry.id)}
-                                                            disabled={
-                                                                isSaving || deleteMutation.isPending
-                                                            }
-                                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                            <span className="sr-only">Delete</span>
-                                                        </Button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        )
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                        <div className="flex justify-between items-center pt-4">
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">Total:</span>
-                                <span className="text-lg font-semibold font-mono">
-                                    {formatDuration(totalDuration)}
-                                </span>
+                                                    </td>
+                                                    <td className="p-4 align-middle">
+                                                        {isActive ? (
+                                                            <div className="flex items-center h-9 px-3 text-sm text-muted-foreground">
+                                                                {formatDateTimeLocal(currentTime)}{" "}
+                                                                (tracking)
+                                                            </div>
+                                                        ) : (
+                                                            <Input
+                                                                type="datetime-local"
+                                                                value={getEntryValue(
+                                                                    entry,
+                                                                    "endTime"
+                                                                )}
+                                                                onChange={(e) =>
+                                                                    handleFieldChange(
+                                                                        entry.id,
+                                                                        "endTime",
+                                                                        e.target.value
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    isSaving ||
+                                                                    deleteMutation.isPending
+                                                                }
+                                                                className="h-9 text-sm"
+                                                            />
+                                                        )}
+                                                    </td>
+                                                    <td className="p-4 align-middle text-right font-mono">
+                                                        {formatDuration(duration)}
+                                                    </td>
+                                                    <td className="p-4 align-middle">
+                                                        {isActive ? (
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    stopMutation.mutate({
+                                                                        id: entry.id,
+                                                                    })
+                                                                }}
+                                                                disabled={stopMutation.isPending}
+                                                                className="h-8 w-8 p-0"
+                                                            >
+                                                                <Square className="h-4 w-4" />
+                                                                <span className="sr-only">
+                                                                    Stop
+                                                                </span>
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    handleDelete(entry.id)
+                                                                }
+                                                                disabled={
+                                                                    isSaving ||
+                                                                    deleteMutation.isPending
+                                                                }
+                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                                <span className="sr-only">
+                                                                    Delete
+                                                                </span>
+                                                            </Button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
-                            {editedEntries.size > 0 && (
-                                <Button
-                                    onClick={handleSaveAll}
-                                    disabled={isSaving || deleteMutation.isPending}
-                                >
-                                    {isSaving ? tStatus("saving") : tCommon("save")}{" "}
-                                    {editedEntries.size > 1 && `(${editedEntries.size})`}
-                                </Button>
-                            )}
-                        </div>
+                        )}
                     </div>
-                )}
+                    <div className="flex justify-between items-center pt-4">
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground">Total:</span>
+                            <span className="text-lg font-semibold font-mono">
+                                {formatDuration(totalDuration)}
+                            </span>
+                        </div>
+                        {editedEntries.size > 0 && (
+                            <Button
+                                onClick={handleSaveAll}
+                                disabled={isSaving || deleteMutation.isPending}
+                            >
+                                {isSaving ? tStatus("saving") : tCommon("save")}{" "}
+                                {editedEntries.size > 1 && `(${editedEntries.size})`}
+                            </Button>
+                        )}
+                    </div>
+                </div>
             </DialogContent>
         </Dialog>
     )

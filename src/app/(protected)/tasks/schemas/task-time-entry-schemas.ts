@@ -11,6 +11,16 @@ export const TaskTimeEntryDisplaySchema = z.object({
     updatedAt: z.date(),
 })
 
+export const ChildTimeAggregationSchema = z.object({
+    isAggregation: z.literal(true),
+    aggregatedDuration: z.number().int(),
+})
+
+export const TaskTimeEntryWithAggregationSchema = z.discriminatedUnion("isAggregation", [
+    TaskTimeEntryDisplaySchema.extend({ isAggregation: z.literal(false).optional() }),
+    ChildTimeAggregationSchema,
+])
+
 export const StartTimerSchema = z.object({
     taskId: z.string(),
 })
@@ -30,6 +40,8 @@ export const DeleteTaskTimeEntrySchema = z.object({
 })
 
 export type TaskTimeEntryDisplay = z.infer<typeof TaskTimeEntryDisplaySchema>
+export type ChildTimeAggregation = z.infer<typeof ChildTimeAggregationSchema>
+export type TaskTimeEntryWithAggregation = z.infer<typeof TaskTimeEntryWithAggregationSchema>
 export type StartTimerInput = z.infer<typeof StartTimerSchema>
 export type StopTimerInput = z.infer<typeof StopTimerSchema>
 export type UpdateTaskTimeEntryInput = z.infer<typeof UpdateTaskTimeEntrySchema>

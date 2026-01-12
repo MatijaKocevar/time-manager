@@ -269,6 +269,7 @@
             "endedAt": "Ended At",
             "noTimeEntries": "No time entries yet",
             "deleteTimeEntryConfirm": "Are you sure you want to delete this time entry?",
+            "childTimeAggregation": "Time from subtasks",
             "subtasksInheritList": "Subtasks inherit parent's list"
         },
         "table": {

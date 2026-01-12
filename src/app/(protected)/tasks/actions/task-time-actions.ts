@@ -203,7 +203,7 @@ export async function stopTimer(input: StopTimerInput) {
     }
 }
 
-export async function getTaskTimeEntries(taskId: string): Promise<TaskTimeEntryDisplay[]> {
+export async function getTaskTimeEntries(taskId: string) {
     try {
         const session = await requireAuth()
 
@@ -220,7 +220,44 @@ export async function getTaskTimeEntries(taskId: string): Promise<TaskTimeEntryD
             orderBy: { startTime: "desc" },
         })
 
-        return entries
+        const descendantIds = await prisma.$queryRaw<Array<{ id: string }>>`
+            WITH RECURSIVE task_tree AS (
+                SELECT id, "parentId"
+                FROM "Task"
+                WHERE "parentId" = ${taskId}
+                
+                UNION ALL
+                
+                SELECT t.id, t."parentId"
+                FROM "Task" t
+                INNER JOIN task_tree tt ON t."parentId" = tt.id
+            )
+            SELECT id FROM task_tree
+        `
+
+        let childAggregation = null
+        if (descendantIds.length > 0) {
+            const childIds = descendantIds.map((d) => d.id)
+            const childTimeResult = await prisma.taskTimeEntry.aggregate({
+                where: {
+                    taskId: { in: childIds },
+                    endTime: { not: null },
+                },
+                _sum: {
+                    duration: true,
+                },
+            })
+
+            const aggregatedDuration = childTimeResult._sum.duration ?? 0
+            if (aggregatedDuration > 0) {
+                childAggregation = {
+                    isAggregation: true as const,
+                    aggregatedDuration,
+                }
+            }
+        }
+
+        return { entries, childAggregation }
     } catch (error) {
         if (error instanceof Error) {
             throw error
