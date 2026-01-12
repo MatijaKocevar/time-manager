@@ -1,7 +1,7 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import type { HourType } from "@/../../prisma/generated/client"
 import { useTrackerStore } from "../stores/tracker-store"
-import { saveTrackerPreferences } from "../actions/tracker-actions"
+import { saveTrackerPreferences, getSystemTaskByType } from "../actions/tracker-actions"
 
 interface UseTrackerSelectionProps {
     initialSelectedType: HourType
@@ -12,25 +12,41 @@ export function useTrackerSelection({
     initialSelectedType,
     initialSelectedTaskId,
 }: UseTrackerSelectionProps) {
-    const selectedType = useTrackerStore((state) => state.selectedType)
-    const selectedTaskId = useTrackerStore((state) => state.selectedTaskId)
-    const setSelectedType = useTrackerStore((state) => state.setSelectedType)
-    const setSelectedTaskId = useTrackerStore((state) => state.setSelectedTaskId)
+    // Use useState with server values to prevent flash
+    const [selectedType, setSelectedTypeLocal] = useState(initialSelectedType)
+    const [selectedTaskId, setSelectedTaskIdLocal] = useState(initialSelectedTaskId)
+    
+    const setSelectedTypeStore = useTrackerStore((state) => state.setSelectedType)
+    const setSelectedTaskIdStore = useTrackerStore((state) => state.setSelectedTaskId)
 
+    // Sync with store on mount
     useEffect(() => {
-        setSelectedType(initialSelectedType)
-        setSelectedTaskId(initialSelectedTaskId)
-    }, [initialSelectedType, initialSelectedTaskId, setSelectedType, setSelectedTaskId])
+        setSelectedTypeStore(initialSelectedType)
+        setSelectedTaskIdStore(initialSelectedTaskId)
+    }, [initialSelectedType, initialSelectedTaskId, setSelectedTypeStore, setSelectedTaskIdStore])
 
-    const handleTypeChange = (type: string) => {
+    const handleTypeChange = async (type: string) => {
         const newType = type as HourType
-        setSelectedType(newType)
-        setSelectedTaskId(null)
-        saveTrackerPreferences(newType, null)
+        setSelectedTypeLocal(newType)
+        setSelectedTypeStore(newType)
+        
+        // For BREAK and PRIVATE, fetch the system task ID
+        if (newType === "BREAK" || newType === "PRIVATE") {
+            const systemTask = await getSystemTaskByType(newType)
+            const taskId = systemTask?.id ?? null
+            setSelectedTaskIdLocal(taskId)
+            setSelectedTaskIdStore(taskId)
+            saveTrackerPreferences(newType, taskId)
+        } else {
+            setSelectedTaskIdLocal(null)
+            setSelectedTaskIdStore(null)
+            saveTrackerPreferences(newType, null)
+        }
     }
 
     const handleTaskChange = (taskId: string) => {
-        setSelectedTaskId(taskId)
+        setSelectedTaskIdLocal(taskId)
+        setSelectedTaskIdStore(taskId)
         saveTrackerPreferences(selectedType, taskId)
     }
 

@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
+import type { HourType } from "@/../../prisma/generated/client"
 import {
     StartTimerSchema,
     StopTimerSchema,
@@ -88,50 +89,62 @@ export async function startTimer(input: StartTimerInput) {
                 })
             }
 
-            // Check for approved request for the current date/time to set the correct type for new timer
-            // BUT: NEVER use VACATION or SICK_LEAVE for manually tracked time
-            // Those types are ONLY for automatic entries created by request approval
-            const now = new Date()
+            // Determine type - BREAK and PRIVATE system tasks ALWAYS use their type
+            let newEntryType: HourType = "WORK"
 
-            const approvedRequests = await tx.request.findMany({
-                where: {
-                    userId: session.user.id,
-                    status: "APPROVED",
-                    affectsHourType: true,
-                    cancelledAt: null,
-                    type: {
-                        notIn: ["VACATION", "SICK_LEAVE"],
-                    },
-                },
-                orderBy: {
-                    approvedAt: "desc",
-                },
-            })
-
-            let newEntryType: "WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER" =
-                "WORK"
-
-            for (const request of approvedRequests) {
-                let requestStart: Date
-                let requestEnd: Date
-
-                if (request.isFullDay || !request.startTime || !request.endTime) {
-                    requestStart = new Date(request.startDate)
-                    requestStart.setHours(0, 0, 0, 0)
-                    requestEnd = new Date(request.endDate)
-                    requestEnd.setHours(23, 59, 59, 999)
-                } else {
-                    const [startHour, startMin] = request.startTime.split(":").map(Number)
-                    const [endHour, endMin] = request.endTime.split(":").map(Number)
-                    requestStart = new Date(request.startDate)
-                    requestStart.setUTCHours(startHour, startMin, 0, 0)
-                    requestEnd = new Date(request.endDate)
-                    requestEnd.setUTCHours(endHour, endMin, 0, 0)
+            // Check if this is a BREAK or PRIVATE system task (these override requests)
+            if (task.isSystemTask && task.title) {
+                if (task.title === "System: BREAK") {
+                    newEntryType = "BREAK"
+                } else if (task.title === "System: PRIVATE") {
+                    newEntryType = "PRIVATE"
                 }
+            }
 
-                if (now >= requestStart && now <= requestEnd) {
-                    newEntryType = request.type
-                    break
+            // If not BREAK/PRIVATE, check for approved requests (applies to General Work and all regular tasks)
+            if (newEntryType === "WORK") {
+                // Check for approved request for the current date/time to set the correct type for new timer
+                // BUT: NEVER use VACATION or SICK_LEAVE for manually tracked time
+                // Those types are ONLY for automatic entries created by request approval
+                const now = new Date()
+
+                const approvedRequests = await tx.request.findMany({
+                    where: {
+                        userId: session.user.id,
+                        status: "APPROVED",
+                        affectsHourType: true,
+                        cancelledAt: null,
+                        type: {
+                            notIn: ["VACATION", "SICK_LEAVE"],
+                        },
+                    },
+                    orderBy: {
+                        approvedAt: "desc",
+                    },
+                })
+
+                for (const request of approvedRequests) {
+                    let requestStart: Date
+                    let requestEnd: Date
+
+                    if (request.isFullDay || !request.startTime || !request.endTime) {
+                        requestStart = new Date(request.startDate)
+                        requestStart.setHours(0, 0, 0, 0)
+                        requestEnd = new Date(request.endDate)
+                        requestEnd.setHours(23, 59, 59, 999)
+                    } else {
+                        const [startHour, startMin] = request.startTime.split(":").map(Number)
+                        const [endHour, endMin] = request.endTime.split(":").map(Number)
+                        requestStart = new Date(request.startDate)
+                        requestStart.setUTCHours(startHour, startMin, 0, 0)
+                        requestEnd = new Date(request.endDate)
+                        requestEnd.setUTCHours(endHour, endMin, 0, 0)
+                    }
+
+                    if (now >= requestStart && now <= requestEnd) {
+                        newEntryType = request.type
+                        break
+                    }
                 }
             }
 

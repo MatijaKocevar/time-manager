@@ -85,6 +85,25 @@ export async function getGeneralWorkTask() {
     }
 }
 
+export async function getSystemTaskByType(type: "BREAK" | "PRIVATE") {
+    try {
+        const session = await requireAuth()
+        const title = `System: ${type}`
+
+        const systemTask = await prisma.task.findFirst({
+            where: {
+                userId: session.user.id,
+                title,
+                isSystemTask: true,
+            },
+        })
+
+        return systemTask
+    } catch {
+        return null
+    }
+}
+
 export interface StartTrackingInput {
     type: HourType
     taskId?: string

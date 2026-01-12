@@ -4,6 +4,7 @@ import {
     getGeneralWorkTask,
     getTrackerPreferences,
     getTaskTimeEntries,
+    getSystemTaskByType,
 } from "./actions/tracker-actions"
 import { TASK_STATUS } from "@/app/(protected)/tasks/constants/task-statuses"
 import { TrackerDisplay } from "./components/tracker-display"
@@ -21,9 +22,15 @@ export default async function TrackerPage() {
         getTrackerPreferences(),
     ])
 
-    const initialTaskEntries = await getTaskTimeEntries(
-        trackerPreferences.selectedTaskId ?? undefined
-    )
+    // If the saved type is BREAK or PRIVATE, ensure we have the system task ID
+    let finalSelectedTaskId = trackerPreferences.selectedTaskId
+
+    if (trackerPreferences.selectedType === "BREAK" || trackerPreferences.selectedType === "PRIVATE") {
+        const systemTask = await getSystemTaskByType(trackerPreferences.selectedType)
+        finalSelectedTaskId = systemTask?.id ?? null
+    }
+
+    const initialTaskEntries = await getTaskTimeEntries(finalSelectedTaskId ?? undefined)
 
     const translations = {
         selectType: t("selectType"),
@@ -43,7 +50,7 @@ export default async function TrackerPage() {
                 inProgressTasks={inProgressTasks}
                 generalWorkTask={generalWorkTask}
                 initialSelectedType={trackerPreferences.selectedType}
-                initialSelectedTaskId={trackerPreferences.selectedTaskId}
+                initialSelectedTaskId={finalSelectedTaskId}
                 initialActiveTimer={activeTimer}
                 initialTodayEntries={initialTaskEntries}
                 translations={translations}
