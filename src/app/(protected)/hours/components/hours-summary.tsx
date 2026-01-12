@@ -2,6 +2,8 @@
 
 import { useTranslations } from "next-intl"
 import { useQuery } from "@tanstack/react-query"
+import { ChevronDown, ChevronUp } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Card, CardHeader } from "@/components/ui/card"
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
@@ -11,6 +13,7 @@ import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 import { formatHoursMinutes } from "../utils/time-helpers"
 import { calculateWorkingDaysSync, calculateOvertime } from "../utils/calculation-helpers"
 import { getCurrentUser } from "../../profile/actions/profile-actions"
+import { useHoursStore } from "../stores/hours-store"
 
 interface HoursSummaryProps {
     entries: HourEntryDisplay[]
@@ -84,126 +87,108 @@ export function HoursSummary({
 
     const showWeekly = viewMode === VIEW_MODE_VALUES.WEEKLY
     const showOvertime = viewMode === VIEW_MODE_VALUES.MONTHLY && workingDays > 0
+    const summaryCollapsed = useHoursStore((state) => state.summaryCollapsed)
+    const toggleSummary = useHoursStore((state) => state.toggleSummary)
 
     return (
-        <div className="space-y-4">
-            {showOvertime && (
-                <Card>
-                    <CardHeader className="p-4">
-                        <div className="flex items-center justify-between gap-6">
-                            <div className="flex items-center gap-6 text-sm">
-                                <div>
-                                    <span className="text-muted-foreground">
-                                        {t("workingDays")}:{" "}
-                                    </span>
-                                    <span className="font-semibold">{workingDays}</span>
-                                </div>
-                                <div className="h-4 w-px bg-border" />
-                                <div>
-                                    <span className="text-muted-foreground">{t("expected")}: </span>
-                                    <span className="font-semibold">
-                                        {formatHoursMinutes(expectedHours)}
-                                    </span>
-                                </div>
-                                <div className="h-4 w-px bg-border" />
-                                <div>
-                                    <span className="text-muted-foreground">{t("total")}: </span>
-                                    <span className="font-semibold">
-                                        {formatHoursMinutes(monthlyGrandTotal)}
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">
-                                    {t("overtime")}:
-                                </span>
-                                <span
-                                    className={`text-lg font-bold ${
-                                        overtime > 0
-                                            ? "text-red-600 dark:text-red-500"
-                                            : overtime < 0
-                                              ? "text-orange-600 dark:text-orange-500"
-                                              : "text-green-600 dark:text-green-500"
-                                    }`}
+        <div className="space-y-2">
+            <Card>
+                <CardHeader className="p-3">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 flex-wrap text-sm">
+                            <div className="flex items-center gap-1.5">
+                                <div
+                                    className={`px-1.5 py-0.5 rounded text-xs font-medium ${HOUR_TYPE_COLORS.GRAND_TOTAL}`}
                                 >
-                                    {overtime > 0 && "+"}
-                                    {formatHoursMinutes(overtime)}
+                                    {t("totalHours")}
+                                </div>
+                                <span className="text-lg font-bold">
+                                    {showWeekly
+                                        ? formatHoursMinutes(weeklyGrandTotal)
+                                        : formatHoursMinutes(monthlyGrandTotal)}
                                 </span>
+                                {showWeekly && (
+                                    <span className="text-xs text-muted-foreground">
+                                        / {formatHoursMinutes(monthlyGrandTotal)} {tCommon("time.month")}
+                                    </span>
+                                )}
                             </div>
+                            {showOvertime && (
+                                <>
+                                    <div className="h-4 w-px bg-border" />
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs text-muted-foreground">
+                                            {t("expected")}:
+                                        </span>
+                                        <span className="font-semibold">
+                                            {formatHoursMinutes(expectedHours)}
+                                        </span>
+                                    </div>
+                                    <div className="h-4 w-px bg-border" />
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs text-muted-foreground">
+                                            {t("overtime")}:
+                                        </span>
+                                        <span
+                                            className={`font-bold ${
+                                                overtime > 0
+                                                    ? "text-red-600 dark:text-red-500"
+                                                    : overtime < 0
+                                                      ? "text-orange-600 dark:text-orange-500"
+                                                      : "text-green-600 dark:text-green-500"
+                                            }`}
+                                        >
+                                            {overtime > 0 && "+"}
+                                            {formatHoursMinutes(overtime)}
+                                        </span>
+                                    </div>
+                                </>
+                            )}
                         </div>
-                    </CardHeader>
-                </Card>
-            )}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                <Card>
-                    <CardHeader className="p-4 pb-2">
-                        <div
-                            className={`inline-block px-2 py-1 rounded text-xs font-medium mb-2 ${HOUR_TYPE_COLORS.GRAND_TOTAL}`}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={toggleSummary}
+                            className="h-8 px-2"
                         >
-                            {t("totalHours")}
-                        </div>
-                        {showWeekly ? (
-                            <div className="flex flex-col gap-1 mt-2">
-                                <div>
-                                    <div className="text-xs text-muted-foreground">
-                                        {tCommon("time.week")}
-                                    </div>
-                                    <div className="text-xl font-bold">
-                                        {formatHoursMinutes(weeklyGrandTotal)}
-                                    </div>
+                            {summaryCollapsed ? (
+                                <ChevronDown className="h-4 w-4" />
+                            ) : (
+                                <ChevronUp className="h-4 w-4" />
+                            )}
+                        </Button>
+                    </div>
+                </CardHeader>
+            </Card>
+            {!summaryCollapsed && (
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                    {HOUR_TYPES.map((hourType) => (
+                        <Card key={hourType.value}>
+                            <CardHeader className="p-2">
+                                <div
+                                    className={`inline-block px-1.5 py-0.5 rounded text-xs font-medium ${HOUR_TYPE_COLORS[hourType.value]}`}
+                                >
+                                    {tTypes(getHourTypeTranslationKey(hourType.value))}
                                 </div>
-                                <div>
-                                    <div className="text-xs text-muted-foreground">
-                                        {tCommon("time.month")}
-                                    </div>
-                                    <div className="text-xl font-bold">
-                                        {formatHoursMinutes(monthlyGrandTotal)}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-2xl font-bold mt-2">
-                                {formatHoursMinutes(monthlyGrandTotal)}
-                            </div>
-                        )}
-                    </CardHeader>
-                </Card>
-                {HOUR_TYPES.map((hourType) => (
-                    <Card key={hourType.value}>
-                        <CardHeader className="p-4 pb-2">
-                            <div
-                                className={`inline-block px-2 py-1 rounded text-xs font-medium mb-2 ${HOUR_TYPE_COLORS[hourType.value]}`}
-                            >
-                                {tTypes(getHourTypeTranslationKey(hourType.value))}
-                            </div>
-                            {showWeekly ? (
-                                <div className="flex flex-col gap-1 mt-2">
-                                    <div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {tCommon("time.week")}
-                                        </div>
-                                        <div className="text-lg font-semibold">
+                                {showWeekly ? (
+                                    <div className="mt-1 text-sm">
+                                        <div className="font-semibold">
                                             {formatHoursMinutes(weeklyHoursByType[hourType.value])}
                                         </div>
-                                    </div>
-                                    <div>
                                         <div className="text-xs text-muted-foreground">
-                                            {tCommon("time.month")}
-                                        </div>
-                                        <div className="text-lg font-semibold">
-                                            {formatHoursMinutes(monthlyHoursByType[hourType.value])}
+                                            {formatHoursMinutes(monthlyHoursByType[hourType.value])} {tCommon("time.month")}
                                         </div>
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="text-xl font-semibold mt-2">
-                                    {formatHoursMinutes(monthlyHoursByType[hourType.value])}
-                                </div>
-                            )}
-                        </CardHeader>
-                    </Card>
-                ))}
-            </div>
+                                ) : (
+                                    <div className="text-base font-semibold mt-1">
+                                        {formatHoursMinutes(monthlyHoursByType[hourType.value])}
+                                    </div>
+                                )}
+                            </CardHeader>
+                        </Card>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }

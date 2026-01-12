@@ -27,6 +27,7 @@ interface EditFormState {
 
 interface HoursStoreState {
     expandedTypes: Set<string>
+    summaryCollapsed: boolean
     singleEntryForm: SingleEntryFormState
     bulkEntryForm: BulkEntryFormState
     editForm: EditFormState
@@ -39,6 +40,7 @@ interface HoursStoreActions {
     toggleType: (type: string) => void
     expandAll: () => void
     collapseAll: () => void
+    toggleSummary: () => void
     setSingleEntryFormData: (data: Partial<SingleEntryFormData>) => void
     resetSingleEntryForm: () => void
     setSingleEntryLoading: (isLoading: boolean) => void
@@ -68,6 +70,16 @@ const saveExpandedTypes = (types: Set<string>) => {
     document.cookie = `hours-expanded-types=${JSON.stringify(typesArray)}; path=/; max-age=31536000; SameSite=Lax`
 }
 
+const saveSummaryCollapsed = (collapsed: boolean) => {
+    if (typeof window === "undefined") return
+    try {
+        localStorage.setItem("hours-summary-collapsed", JSON.stringify(collapsed))
+    } catch {
+        // Ignore localStorage errors
+    }
+    document.cookie = `hours-summary-collapsed=${collapsed}; path=/; max-age=31536000; SameSite=Lax`
+}
+
 // Read initial state synchronously from localStorage
 const getInitialExpandedTypes = (): Set<string> => {
     if (typeof window === "undefined") return new Set<string>()
@@ -82,11 +94,25 @@ const getInitialExpandedTypes = (): Set<string> => {
     return new Set<string>()
 }
 
+const getInitialSummaryCollapsed = (): boolean => {
+    if (typeof window === "undefined") return false
+    try {
+        const stored = localStorage.getItem("hours-summary-collapsed")
+        if (stored) {
+            return JSON.parse(stored) as boolean
+        }
+    } catch {
+        // Ignore localStorage errors
+    }
+    return false
+}
+
 export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) => {
     const today = new Date().toISOString().split("T")[0]
 
     return {
         expandedTypes: getInitialExpandedTypes(),
+        summaryCollapsed: getInitialSummaryCollapsed(),
         initializeExpandedTypes: (types) => {
             const expandedTypes = new Set<string>(types)
             set({ expandedTypes })
@@ -112,6 +138,12 @@ export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) =
             saveExpandedTypes(emptySet)
             set({ expandedTypes: emptySet })
         },
+        toggleSummary: () =>
+            set((state) => {
+                const newCollapsed = !state.summaryCollapsed
+                saveSummaryCollapsed(newCollapsed)
+                return { summaryCollapsed: newCollapsed }
+            }),
         singleEntryForm: {
             data: {
                 date: today,
