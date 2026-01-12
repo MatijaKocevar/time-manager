@@ -89,13 +89,14 @@ class SSEManager {
     }
 }
 
-// Use global to persist singleton across hot reloads
+// Use global to persist singleton across all imports and hot reloads
 const globalForSSE = globalThis as unknown as {
     sseManager: SSEManager | undefined
 }
 
-export const sseManager = globalForSSE.sseManager ?? new SSEManager()
-
-if (process.env.NODE_ENV !== "production") {
-    globalForSSE.sseManager = sseManager
+if (!globalForSSE.sseManager) {
+    console.log("[SSE Manager] Creating new SSEManager instance")
+    globalForSSE.sseManager = new SSEManager()
 }
+
+export const sseManager = globalForSSE.sseManager
