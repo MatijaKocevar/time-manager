@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
     Select,
     SelectContent,
@@ -34,6 +35,7 @@ interface ProfileFormProps {
         name: string | null
         email: string
         role: UserRole
+        isDemo: boolean
         workStartTime: string | null
         workEndTime: string | null
         workHoursPerDay: number | null
@@ -47,6 +49,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
     const tValidation = useTranslations("profile.validation")
     const tMessages = useTranslations("profile.messages")
     const tCommon = useTranslations("common")
+    const tCommonMessages = useTranslations("common.messages")
 
     const [showPassword, setShowPassword] = useState(false)
     const [confirmPassword, setConfirmPassword] = useState("")
@@ -227,86 +230,113 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="current-password">{t("currentPassword")}</Label>
-                            <div className="relative">
-                                <Input
-                                    id="current-password"
-                                    type={showPassword ? "text" : "password"}
-                                    value={currentPassword}
-                                    onChange={(e) => setCurrentPassword(e.target.value)}
-                                    disabled={isLoading}
-                                    className="pr-10"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    disabled={isLoading}
-                                >
-                                    {showPassword ? (
-                                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                    ) : (
-                                        <Eye className="h-4 w-4 text-muted-foreground" />
-                                    )}
-                                </Button>
-                            </div>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="relative">
+                                        <Input
+                                            id="current-password"
+                                            type={showPassword ? "text" : "password"}
+                                            value={currentPassword}
+                                            onChange={(e) => setCurrentPassword(e.target.value)}
+                                            disabled={isLoading || user.isDemo}
+                                            className="pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            disabled={isLoading || user.isDemo}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                            ) : (
+                                                <Eye className="h-4 w-4 text-muted-foreground" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </TooltipTrigger>
+                                {user.isDemo && (
+                                    <TooltipContent>
+                                        {tCommonMessages("demoRestriction")}
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="new-password">{t("newPassword")}</Label>
-                            <div className="relative">
-                                <Input
-                                    id="new-password"
-                                    type={showPassword ? "text" : "password"}
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    minLength={MIN_PASSWORD_LENGTH}
-                                    disabled={isLoading}
-                                    className="pr-10"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    disabled={isLoading}
-                                >
-                                    {showPassword ? (
-                                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                    ) : (
-                                        <Eye className="h-4 w-4 text-muted-foreground" />
-                                    )}
-                                </Button>
-                            </div>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="relative">
+                                        <Input
+                                            id="new-password"
+                                            type={showPassword ? "text" : "password"}
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            minLength={MIN_PASSWORD_LENGTH}
+                                            disabled={isLoading || user.isDemo}
+                                            className="pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            disabled={isLoading || user.isDemo}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                            ) : (
+                                                <Eye className="h-4 w-4 text-muted-foreground" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </TooltipTrigger>
+                                {user.isDemo && (
+                                    <TooltipContent>
+                                        {tCommonMessages("demoRestriction")}
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="confirm-password">{t("confirmPassword")}</Label>
-                            <div className="relative">
-                                <Input
-                                    id="confirm-password"
-                                    type={showPassword ? "text" : "password"}
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    minLength={MIN_PASSWORD_LENGTH}
-                                    disabled={isLoading}
-                                    className="pr-10"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    disabled={isLoading}
-                                >
-                                    {showPassword ? (
-                                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                                    ) : (
-                                        <Eye className="h-4 w-4 text-muted-foreground" />
-                                    )}
-                                </Button>
-                            </div>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="relative">
+                                        <Input
+                                            id="confirm-password"
+                                            type={showPassword ? "text" : "password"}
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            minLength={MIN_PASSWORD_LENGTH}
+                                            disabled={isLoading || user.isDemo}
+                                            className="pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            disabled={isLoading || user.isDemo}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                            ) : (
+                                                <Eye className="h-4 w-4 text-muted-foreground" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                </TooltipTrigger>
+                                {user.isDemo && (
+                                    <TooltipContent>
+                                        {tCommonMessages("demoRestriction")}
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
                         </div>
                     </div>
                     <div className="flex justify-end">
@@ -326,14 +356,23 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     <CardDescription>{t("dangerZoneDescription")}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Button
-                        type="button"
-                        variant="destructive"
-                        onClick={() => setShowDeactivateDialog(true)}
-                        disabled={isLoading}
-                    >
-                        {t("deactivateButton")}
-                    </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="inline-block">
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    onClick={() => setShowDeactivateDialog(true)}
+                                    disabled={isLoading || user.isDemo}
+                                >
+                                    {t("deactivateButton")}
+                                </Button>
+                            </div>
+                        </TooltipTrigger>
+                        {user.isDemo && (
+                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                        )}
+                    </Tooltip>
                 </CardContent>
             </Card>
 

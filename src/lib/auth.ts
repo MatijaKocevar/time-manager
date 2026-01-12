@@ -13,11 +13,13 @@ declare module "next-auth" {
             id: string
             role: UserRole
             locale: string
+            isDemo: boolean
         } & DefaultSession["user"]
     }
     interface User {
         role: UserRole
         locale: string
+        isDemo: boolean
     }
 }
 
@@ -26,6 +28,7 @@ declare module "next-auth/jwt" {
         id: string
         role: UserRole
         locale: string
+        isDemo: boolean
     }
 }
 
@@ -75,6 +78,7 @@ export const authConfig = {
                         image: user.image,
                         role: user.role,
                         locale: user.locale || "en",
+                        isDemo: user.isDemo || false,
                     }
                 } catch (error) {
                     if (error instanceof Error) {
@@ -94,6 +98,7 @@ export const authConfig = {
                 token.id = user.id
                 token.role = user.role
                 token.locale = user.locale || "en"
+                token.isDemo = user.isDemo || false
             }
             return token
         },
@@ -106,6 +111,9 @@ export const authConfig = {
             }
             if (token?.locale) {
                 session.user.locale = token.locale
+            }
+            if (token?.isDemo !== undefined) {
+                session.user.isDemo = token.isDemo
             }
             return session
         },

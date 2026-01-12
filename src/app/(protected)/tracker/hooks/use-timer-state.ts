@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import type { HourType } from "@/../../prisma/generated/client"
 import { getActiveTrackingEntry } from "../actions/tracker-actions"
@@ -27,6 +27,7 @@ interface UseTimerStateProps {
 export function useTimerState({ initialActiveTimer }: UseTimerStateProps) {
     const queryClient = useQueryClient()
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
+    const [elapsedSeconds, setElapsedSeconds] = useState(0)
 
     const { data: activeTimerData } = useQuery({
         queryKey: ["tracker", "activeTimer"],
@@ -37,20 +38,26 @@ export function useTimerState({ initialActiveTimer }: UseTimerStateProps) {
         staleTime: Infinity,
     })
 
-    const elapsedSeconds = activeTimerData ? getElapsedSeconds(activeTimerData.startTime) : 0
     const isTimerRunning = Boolean(activeTimerData)
 
     useEffect(() => {
         if (activeTimerData) {
-            setActiveTimer(activeTimerData.taskId, activeTimerData.id, activeTimerData.startTime)
+            const startTime = new Date(activeTimerData.startTime)
+            setActiveTimer(activeTimerData.taskId, activeTimerData.id, startTime)
 
-            const interval = setInterval(() => {
-                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
-            }, 1000)
+            const updateElapsed = () => {
+                setElapsedSeconds(getElapsedSeconds(startTime))
+            }
+
+            updateElapsed()
+
+            const interval = setInterval(updateElapsed, 1000)
 
             return () => clearInterval(interval)
+        } else {
+            setElapsedSeconds(0)
         }
-    }, [activeTimerData, setActiveTimer, queryClient])
+    }, [activeTimerData, queryClient])
 
     return {
         activeTimerData,

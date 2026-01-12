@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
     Select,
     SelectContent,
@@ -32,17 +33,20 @@ interface EditUserFormProps {
         name: string | null
         email: string
         role: UserRole
+        isDemo: boolean
         isActive: boolean
         deactivatedAt: Date | null
         anonymizedAt: Date | null
     }
+    currentUserIsDemo: boolean
 }
 
-export function EditUserForm({ user }: EditUserFormProps) {
+export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
     const router = useRouter()
     const t = useTranslations("admin.users.form")
     const tRoles = useTranslations("admin.users.roles")
     const tCommon = useTranslations("common.actions")
+    const tCommonMessages = useTranslations("common.messages")
 
     const [name, setName] = useState(user.name ?? "")
     const [role, setRole] = useState<UserRole>(user.role)
@@ -202,23 +206,32 @@ export function EditUserForm({ user }: EditUserFormProps) {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="role">{t("role")}</Label>
-                    <Select
-                        value={role}
-                        onValueChange={(value: string) => setRole(value as UserRole)}
-                        disabled={isLoading}
-                    >
-                        <SelectTrigger className="w-full">
-                            <SelectValue>{tRoles(getUserRoleTranslationKey(role))}</SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="USER">
-                                {tRoles(getUserRoleTranslationKey("USER"))}
-                            </SelectItem>
-                            <SelectItem value="ADMIN">
-                                {tRoles(getUserRoleTranslationKey("ADMIN"))}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div>
+                                <Select
+                                    value={role}
+                                    onValueChange={(value: string) => setRole(value as UserRole)}
+                                    disabled={isLoading || user.isDemo || (currentUserIsDemo && role !== "ADMIN")}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue>{tRoles(getUserRoleTranslationKey(role))}</SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="USER">
+                                            {tRoles(getUserRoleTranslationKey("USER"))}
+                                        </SelectItem>
+                                        <SelectItem value="ADMIN" disabled={currentUserIsDemo}>
+                                            {tRoles(getUserRoleTranslationKey("ADMIN"))}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </TooltipTrigger>
+                        {(user.isDemo || currentUserIsDemo) && (
+                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                        )}
+                    </Tooltip>
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}
                 <div className="flex justify-end gap-2">
@@ -240,70 +253,93 @@ export function EditUserForm({ user }: EditUserFormProps) {
             <form onSubmit={handleChangePassword} className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="newPassword">{t("changePassword")}</Label>
-                    <div className="relative">
-                        <Input
-                            id="newPassword"
-                            type={showPassword ? "text" : "password"}
-                            placeholder={t("enterNewPassword")}
-                            value={newPassword}
-                            onChange={(e) =>
-                                setChangePasswordFormData({ newPassword: e.target.value })
-                            }
-                            disabled={isPasswordLoading}
-                            className="pr-10"
-                        />
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowPassword(!showPassword)}
-                            disabled={isPasswordLoading}
-                        >
-                            {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
-                            ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                            )}
-                        </Button>
-                    </div>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="relative">
+                                <Input
+                                    id="newPassword"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder={t("enterNewPassword")}
+                                    value={newPassword}
+                                    onChange={(e) =>
+                                        setChangePasswordFormData({ newPassword: e.target.value })
+                                    }
+                                    disabled={isPasswordLoading || user.isDemo}
+                                    className="pr-10"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    disabled={isPasswordLoading || user.isDemo}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                </Button>
+                            </div>
+                        </TooltipTrigger>
+                        {user.isDemo && (
+                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                        )}
+                    </Tooltip>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
-                    <div className="relative">
-                        <Input
-                            id="confirmPassword"
-                            type={showPassword ? "text" : "password"}
-                            placeholder={t("confirmNewPassword")}
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            disabled={isPasswordLoading}
-                            className="pr-10"
-                        />
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowPassword(!showPassword)}
-                            disabled={isPasswordLoading}
-                        >
-                            {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
-                            ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                            )}
-                        </Button>
-                    </div>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="relative">
+                                <Input
+                                    id="confirmPassword"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder={t("confirmNewPassword")}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    disabled={isPasswordLoading || user.isDemo}
+                                    className="pr-10"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    disabled={isPasswordLoading || user.isDemo}
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                        <Eye className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                </Button>
+                            </div>
+                        </TooltipTrigger>
+                        {user.isDemo && (
+                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                        )}
+                    </Tooltip>
                 </div>
                 {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
                 <div className="flex justify-end">
-                    <Button
-                        type="submit"
-                        disabled={isPasswordLoading || !newPassword || !confirmPassword}
-                    >
-                        {isPasswordLoading ? t("changing") : t("changePassword")}
-                    </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="inline-block">
+                                <Button
+                                    type="submit"
+                                    disabled={isPasswordLoading || !newPassword || !confirmPassword || user.isDemo}
+                                >
+                                    {isPasswordLoading ? t("changing") : t("changePassword")}
+                                </Button>
+                            </div>
+                        </TooltipTrigger>
+                        {user.isDemo && (
+                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                        )}
+                    </Tooltip>
                 </div>
             </form>
 
@@ -322,24 +358,33 @@ export function EditUserForm({ user }: EditUserFormProps) {
                 {deactivateError && <p className="text-sm text-red-500">{deactivateError}</p>}
                 {reactivateError && <p className="text-sm text-red-500">{reactivateError}</p>}
                 <div className="flex justify-end">
-                    {user.isActive ? (
-                        <Button
-                            type="button"
-                            variant="destructive"
-                            onClick={handleDeactivate}
-                            disabled={isDeactivateLoading || !!user.anonymizedAt}
-                        >
-                            {isDeactivateLoading ? t("deactivating") : t("deactivateUser")}
-                        </Button>
-                    ) : (
-                        <Button
-                            type="button"
-                            onClick={handleReactivate}
-                            disabled={isReactivateLoading || !!user.anonymizedAt}
-                        >
-                            {isReactivateLoading ? t("reactivating") : t("reactivateUser")}
-                        </Button>
-                    )}
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="inline-block">
+                                {user.isActive ? (
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        onClick={handleDeactivate}
+                                        disabled={isDeactivateLoading || !!user.anonymizedAt || user.isDemo}
+                                    >
+                                        {isDeactivateLoading ? t("deactivating") : t("deactivateUser")}
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        type="button"
+                                        onClick={handleReactivate}
+                                        disabled={isReactivateLoading || !!user.anonymizedAt || user.isDemo}
+                                    >
+                                        {isReactivateLoading ? t("reactivating") : t("reactivateUser")}
+                                    </Button>
+                                )}
+                            </div>
+                        </TooltipTrigger>
+                        {user.isDemo && (
+                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                        )}
+                    </Tooltip>
                 </div>
             </div>
 
@@ -355,14 +400,23 @@ export function EditUserForm({ user }: EditUserFormProps) {
                         </div>
                         {anonymizeError && <p className="text-sm text-red-500">{anonymizeError}</p>}
                         <div className="flex justify-end">
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                onClick={handleAnonymize}
-                                disabled={isAnonymizeLoading}
-                            >
-                                {isAnonymizeLoading ? t("anonymizing") : t("anonymizeUser")}
-                            </Button>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="inline-block">
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            onClick={handleAnonymize}
+                                            disabled={isAnonymizeLoading || user.isDemo}
+                                        >
+                                            {isAnonymizeLoading ? t("anonymizing") : t("anonymizeUser")}
+                                        </Button>
+                                    </div>
+                                </TooltipTrigger>
+                                {user.isDemo && (
+                                    <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                                )}
+                            </Tooltip>
                         </div>
                     </div>
                 </>

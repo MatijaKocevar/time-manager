@@ -11,7 +11,7 @@ export async function seedUsers(
 ) {
     const hashedPassword = await bcrypt.hash("password123", 12)
 
-    const users: Array<{ email: string; name: string; password: string; role: "USER" | "ADMIN" }> =
+    const users: Array<{ email: string; name: string; password: string; role: "USER" | "ADMIN"; isDemo?: boolean }> =
         []
 
     users.push({
@@ -19,6 +19,7 @@ export async function seedUsers(
         name: "Demo Admin",
         password: hashedPassword,
         role: "ADMIN",
+        isDemo: true,
     })
 
     if (!minimal) {

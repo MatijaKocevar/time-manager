@@ -46,7 +46,8 @@
             "deleteConfirm": "Ste prepričani, da želite izbrisati {item}?",
             "success": "Uspeh",
             "error": "Napaka",
-            "somethingWentWrong": "Nekaj je šlo narobe. Poskusite znova."
+            "somethingWentWrong": "Nekaj je šlo narobe. Poskusite znova.",
+            "demoRestriction": "Ta funkcija je onemogočena za predstavitveni račun"
         },
         "fields": {
             "title": "Naslov",

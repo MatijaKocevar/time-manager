@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server"
+import { getServerSession } from "next-auth"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { authConfig } from "@/lib/auth"
 import { getUserById } from "../actions/user-actions"
 import { EditUserForm } from "../components/edit-user-form"
 import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
@@ -33,6 +35,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     const { id } = await params
     const t = await getTranslations("admin.users.detail")
     const { startDate, endDate } = getCurrentMonthDates()
+    const session = await getServerSession(authConfig)
 
     const [user, userHours, userRequests, holidays] = await Promise.all([
         getUserById(id),
@@ -45,7 +48,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
         <div className="flex flex-col gap-6">
             <Card>
                 <CardContent>
-                    <EditUserForm user={user} />
+                    <EditUserForm user={user} currentUserIsDemo={session?.user?.isDemo || false} />
                 </CardContent>
             </Card>
 

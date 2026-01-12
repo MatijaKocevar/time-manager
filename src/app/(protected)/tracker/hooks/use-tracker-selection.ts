@@ -23,7 +23,7 @@ export function useTrackerSelection({
     useEffect(() => {
         setSelectedTypeStore(initialSelectedType)
         setSelectedTaskIdStore(initialSelectedTaskId)
-    }, [initialSelectedType, initialSelectedTaskId, setSelectedTypeStore, setSelectedTaskIdStore])
+    }, [initialSelectedType, initialSelectedTaskId])
 
     const handleTypeChange = async (type: string) => {
         const newType = type as HourType

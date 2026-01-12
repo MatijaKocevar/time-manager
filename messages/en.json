@@ -46,7 +46,8 @@
             "deleteConfirm": "Are you sure you want to delete {item}?",
             "success": "Success",
             "error": "Error",
-            "somethingWentWrong": "Something went wrong. Please try again."
+            "somethingWentWrong": "Something went wrong. Please try again.",
+            "demoRestriction": "This feature is disabled for the demo account"
         },
         "fields": {
             "title": "Title",

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
+import { requireNotDemo } from "@/app/(protected)/hours/utils/auth-helpers"
 import {
     CreateUserSchema,
     UpdateUserSchema,
@@ -69,6 +70,7 @@ export async function getUserById(id: string) {
             name: true,
             email: true,
             role: true,
+            isDemo: true,
             isActive: true,
             deactivatedAt: true,
             anonymizedAt: true,
@@ -83,7 +85,7 @@ export async function getUserById(id: string) {
 }
 
 export async function createUser(input: CreateUserInput) {
-    await requireAdmin()
+    const session = await requireAdmin()
 
     const validation = CreateUserSchema.safeParse(input)
 
@@ -92,6 +94,10 @@ export async function createUser(input: CreateUserInput) {
     }
 
     const { name, email, password, role } = validation.data
+
+    if (role === "ADMIN") {
+        await requireNotDemo(session.user.id)
+    }
 
     const existingUser = await prisma.user.findUnique({
         where: { email },
@@ -136,6 +142,12 @@ export async function updateUser(input: UpdateUserInput) {
         return { error: "Cannot remove your own admin privileges" }
     }
 
+    if (role === "ADMIN") {
+        await requireNotDemo(session.user.id)
+    }
+
+    await requireNotDemo(id)
+
     try {
         await prisma.user.update({
             where: { id },
@@ -163,6 +175,8 @@ export async function deleteUser(input: DeleteUserInput) {
     if (id === session.user.id) {
         return { error: "Cannot delete your own account" }
     }
+
+    await requireNotDemo(id)
 
     const userToDelete = await prisma.user.findUnique({
         where: { id },
@@ -205,6 +219,8 @@ export async function changeUserPassword(input: ChangeUserPasswordInput) {
 
     const { id, newPassword } = validation.data
 
+    await requireNotDemo(id)
+
     const hashedPassword = await bcrypt.hash(newPassword, 12)
 
     try {
@@ -234,6 +250,8 @@ export async function deactivateUser(input: DeactivateUserInput) {
     if (id === session.user.id) {
         return { error: "Cannot deactivate your own account" }
     }
+
+    await requireNotDemo(id)
 
     const userToDeactivate = await prisma.user.findUnique({
         where: { id },
@@ -330,6 +348,8 @@ export async function anonymizeUser(input: AnonymizeUserInput) {
     if (id === session.user.id) {
         return { error: "Cannot anonymize your own account" }
     }
+
+    await requireNotDemo(id)
 
     const userToAnonymize = await prisma.user.findUnique({
         where: { id },

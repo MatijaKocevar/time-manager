@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
+import { requireNotDemo } from "@/app/(protected)/hours/utils/auth-helpers"
 import {
     UpdateProfileSchema,
     type UpdateProfileInput,
@@ -27,6 +28,7 @@ export async function getCurrentUser() {
             name: true,
             email: true,
             role: true,
+            isDemo: true,
             workStartTime: true,
             workEndTime: true,
             workHoursPerDay: true,
@@ -67,6 +69,8 @@ export async function updateProfile(input: UpdateProfileInput) {
     }
 
     if (currentPassword && newPassword) {
+        await requireNotDemo(session.user.id)
+
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
         })
@@ -140,6 +144,8 @@ export async function deactivateAccount(input: DeactivateAccountInput) {
     if (!session?.user) {
         return { error: "profile.validation.unauthorized" }
     }
+
+    await requireNotDemo(session.user.id)
 
     const validation = DeactivateAccountSchema.safeParse(input)
 

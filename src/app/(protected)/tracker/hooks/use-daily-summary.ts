@@ -2,15 +2,17 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getTodayTimeSummary } from "../actions/tracker-actions"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export function useDailySummary() {
     const queryClient = useQueryClient()
+    const [, setTick] = useState(0)
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["tracker", "dailySummary"],
         queryFn: getTodayTimeSummary,
-        refetchInterval: 1000,
+        refetchOnWindowFocus: false,
+        staleTime: 60000,
     })
 
     useEffect(() => {
@@ -27,6 +29,16 @@ export function useDailySummary() {
             }
         })
     }, [queryClient])
+
+    useEffect(() => {
+        if (data?.activeTimer) {
+            const interval = setInterval(() => {
+                setTick((prev) => prev + 1)
+            }, 1000)
+
+            return () => clearInterval(interval)
+        }
+    }, [data?.activeTimer])
 
     const getAdjustedTotal = (type: "WORK" | "BREAK" | "PRIVATE") => {
         if (!data) return 0

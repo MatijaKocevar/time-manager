@@ -50,6 +50,7 @@ model User {
   createdAt              DateTime                @default(now())
   updatedAt              DateTime                @updatedAt
   isActive               Boolean                 @default(true)
+  isDemo                 Boolean                 @default(false)
   deactivatedAt          DateTime?
   anonymizedAt           DateTime?
   sidebarOpen            Boolean                 @default(true)
