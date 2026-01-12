@@ -15,7 +15,7 @@ export function useTrackerSelection({
     // Use useState with server values to prevent flash
     const [selectedType, setSelectedTypeLocal] = useState(initialSelectedType)
     const [selectedTaskId, setSelectedTaskIdLocal] = useState(initialSelectedTaskId)
-    
+
     const setSelectedTypeStore = useTrackerStore((state) => state.setSelectedType)
     const setSelectedTaskIdStore = useTrackerStore((state) => state.setSelectedTaskId)
 
@@ -29,7 +29,7 @@ export function useTrackerSelection({
         const newType = type as HourType
         setSelectedTypeLocal(newType)
         setSelectedTypeStore(newType)
-        
+
         // For BREAK and PRIVATE, fetch the system task ID
         if (newType === "BREAK" || newType === "PRIVATE") {
             const systemTask = await getSystemTaskByType(newType)

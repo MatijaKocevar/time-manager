@@ -25,7 +25,10 @@ export default async function TrackerPage() {
     // If the saved type is BREAK or PRIVATE, ensure we have the system task ID
     let finalSelectedTaskId = trackerPreferences.selectedTaskId
 
-    if (trackerPreferences.selectedType === "BREAK" || trackerPreferences.selectedType === "PRIVATE") {
+    if (
+        trackerPreferences.selectedType === "BREAK" ||
+        trackerPreferences.selectedType === "PRIVATE"
+    ) {
         const systemTask = await getSystemTaskByType(trackerPreferences.selectedType)
         finalSelectedTaskId = systemTask?.id ?? null
     }
