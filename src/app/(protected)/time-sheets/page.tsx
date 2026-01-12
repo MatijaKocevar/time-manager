@@ -10,7 +10,6 @@ export default async function TimeSheetsPage({ searchParams }: TimeSheetsPagePro
     return (
         <div className="flex flex-col gap-4 h-full">
             <div className="flex-1 overflow-hidden">
-                ASSMASTER
                 <TimeSheetsView searchParams={params} />
             </div>
         </div>
