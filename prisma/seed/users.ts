@@ -11,8 +11,13 @@ export async function seedUsers(
 ) {
     const hashedPassword = await bcrypt.hash("password123", 12)
 
-    const users: Array<{ email: string; name: string; password: string; role: "USER" | "ADMIN"; isDemo?: boolean }> =
-        []
+    const users: Array<{
+        email: string
+        name: string
+        password: string
+        role: "USER" | "ADMIN"
+        isDemo?: boolean
+    }> = []
 
     users.push({
         email: "demo@example.com",

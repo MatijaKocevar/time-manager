@@ -212,10 +212,16 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                 <Select
                                     value={role}
                                     onValueChange={(value: string) => setRole(value as UserRole)}
-                                    disabled={isLoading || user.isDemo || (currentUserIsDemo && role !== "ADMIN")}
+                                    disabled={
+                                        isLoading ||
+                                        user.isDemo ||
+                                        (currentUserIsDemo && role !== "ADMIN")
+                                    }
                                 >
                                     <SelectTrigger className="w-full">
-                                        <SelectValue>{tRoles(getUserRoleTranslationKey(role))}</SelectValue>
+                                        <SelectValue>
+                                            {tRoles(getUserRoleTranslationKey(role))}
+                                        </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="USER">
@@ -330,7 +336,12 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                             <div className="inline-block">
                                 <Button
                                     type="submit"
-                                    disabled={isPasswordLoading || !newPassword || !confirmPassword || user.isDemo}
+                                    disabled={
+                                        isPasswordLoading ||
+                                        !newPassword ||
+                                        !confirmPassword ||
+                                        user.isDemo
+                                    }
                                 >
                                     {isPasswordLoading ? t("changing") : t("changePassword")}
                                 </Button>
@@ -366,17 +377,29 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                         type="button"
                                         variant="destructive"
                                         onClick={handleDeactivate}
-                                        disabled={isDeactivateLoading || !!user.anonymizedAt || user.isDemo}
+                                        disabled={
+                                            isDeactivateLoading ||
+                                            !!user.anonymizedAt ||
+                                            user.isDemo
+                                        }
                                     >
-                                        {isDeactivateLoading ? t("deactivating") : t("deactivateUser")}
+                                        {isDeactivateLoading
+                                            ? t("deactivating")
+                                            : t("deactivateUser")}
                                     </Button>
                                 ) : (
                                     <Button
                                         type="button"
                                         onClick={handleReactivate}
-                                        disabled={isReactivateLoading || !!user.anonymizedAt || user.isDemo}
+                                        disabled={
+                                            isReactivateLoading ||
+                                            !!user.anonymizedAt ||
+                                            user.isDemo
+                                        }
                                     >
-                                        {isReactivateLoading ? t("reactivating") : t("reactivateUser")}
+                                        {isReactivateLoading
+                                            ? t("reactivating")
+                                            : t("reactivateUser")}
                                     </Button>
                                 )}
                             </div>
@@ -409,12 +432,16 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                             onClick={handleAnonymize}
                                             disabled={isAnonymizeLoading || user.isDemo}
                                         >
-                                            {isAnonymizeLoading ? t("anonymizing") : t("anonymizeUser")}
+                                            {isAnonymizeLoading
+                                                ? t("anonymizing")
+                                                : t("anonymizeUser")}
                                         </Button>
                                     </div>
                                 </TooltipTrigger>
                                 {user.isDemo && (
-                                    <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                                    <TooltipContent>
+                                        {tCommonMessages("demoRestriction")}
+                                    </TooltipContent>
                                 )}
                             </Tooltip>
                         </div>
