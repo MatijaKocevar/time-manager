@@ -43,7 +43,7 @@ interface EditUserFormProps {
 
 export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
     console.log("EditUserForm - currentUserIsDemo:", currentUserIsDemo, "user.isDemo:", user.isDemo)
-    
+
     const router = useRouter()
     const t = useTranslations("admin.users.form")
     const tRoles = useTranslations("admin.users.roles")
@@ -434,7 +434,11 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                             type="button"
                                             variant="destructive"
                                             onClick={handleAnonymize}
-                                            disabled={isAnonymizeLoading || user.isDemo || currentUserIsDemo}
+                                            disabled={
+                                                isAnonymizeLoading ||
+                                                user.isDemo ||
+                                                currentUserIsDemo
+                                            }
                                         >
                                             {isAnonymizeLoading
                                                 ? t("anonymizing")
