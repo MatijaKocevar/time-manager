@@ -12,6 +12,7 @@ import {
     type SystemTaskType,
 } from "../utils/system-task-helpers"
 import { sseManager } from "@/lib/sse-manager"
+import { getPusherServer } from "@/lib/pusher-server"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -61,8 +62,7 @@ export async function saveTrackerPreferences(
         })
 
         return { success: true }
-    } catch (error) {
-        console.error("Failed to save tracker preferences:", error)
+    } catch {
         return { success: false, error: "Failed to save preferences" }
     }
 }
@@ -180,31 +180,26 @@ export async function startTracking(input: StartTrackingInput) {
         revalidatePath("/tasks")
         revalidatePath("/hours")
 
-        console.log(`[Tracker Action] Starting timer broadcast for user ${session.user.id}`)
-        console.log(
-            `[Tracker Action] Connection count:`,
-            sseManager.getConnectionCount(session.user.id)
-        )
-
-        // Broadcast asynchronously so response can complete first
         setImmediate(() => {
-            const timestamp = new Date().toISOString()
-            console.log(
-                `[Tracker Action ${timestamp}] Executing delayed broadcast for user ${session.user.id}, connection count:`,
-                sseManager.getConnectionCount(session.user.id)
-            )
             const broadcastData = {
                 entryId: newEntry.entry.id,
                 taskId: newEntry.taskId,
                 startTime: newEntry.entry.startTime,
                 type,
             }
-            console.log(
-                `[Tracker Action ${timestamp}] Broadcasting timer-started with data:`,
-                broadcastData
-            )
+
             sseManager.broadcast(session.user.id, "timer-started", broadcastData)
-            console.log(`[Tracker Action ${timestamp}] Broadcast call completed`)
+
+            if (process.env.VERCEL) {
+                const pusher = getPusherServer()
+                if (pusher) {
+                    pusher.trigger(
+                        `private-user-${session.user.id}`,
+                        "timer-started",
+                        broadcastData
+                    )
+                }
+            }
         })
 
         return { success: true, entryId: newEntry.entry.id }
@@ -250,25 +245,19 @@ export async function stopTracking(input: StopTrackingInput) {
         revalidatePath("/tasks")
         revalidatePath("/hours")
 
-        const timestamp = new Date().toISOString()
-        console.log(
-            `[Tracker Action ${timestamp}] Stopping timer broadcast for user ${session.user.id}`
-        )
-        console.log(
-            `[Tracker Action ${timestamp}] Connection count:`,
-            sseManager.getConnectionCount(session.user.id)
-        )
-
         const broadcastData = {
             entryId,
             duration,
         }
-        console.log(
-            `[Tracker Action ${timestamp}] Broadcasting timer-stopped with data:`,
-            broadcastData
-        )
+
         sseManager.broadcast(session.user.id, "timer-stopped", broadcastData)
-        console.log(`[Tracker Action ${timestamp}] Broadcast call completed`)
+
+        if (process.env.VERCEL) {
+            const pusher = getPusherServer()
+            if (pusher) {
+                pusher.trigger(`private-user-${session.user.id}`, "timer-stopped", broadcastData)
+            }
+        }
 
         return { success: true }
     } catch (error) {
@@ -309,39 +298,19 @@ export async function getActiveTrackingEntry() {
     }
 }
 
-export async function getTodayTimeEntries(type?: HourType, taskId?: string) {
+export async function getTaskTimeEntries(taskId?: string) {
     try {
         const session = await requireAuth()
 
-        const startOfDay = new Date()
-        startOfDay.setHours(0, 0, 0, 0)
-
-        const endOfDay = new Date()
-        endOfDay.setHours(23, 59, 59, 999)
-
-        const where: {
-            userId: string
-            startTime: { gte: Date; lte: Date }
-            type?: HourType
-            taskId?: string
-        } = {
-            userId: session.user.id,
-            startTime: {
-                gte: startOfDay,
-                lte: endOfDay,
-            },
-        }
-
-        if (type) {
-            where.type = type
-        }
-
-        if (taskId) {
-            where.taskId = taskId
+        if (!taskId) {
+            return []
         }
 
         const entries = await prisma.taskTimeEntry.findMany({
-            where,
+            where: {
+                userId: session.user.id,
+                taskId,
+            },
             include: {
                 task: {
                     select: {

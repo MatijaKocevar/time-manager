@@ -3,6 +3,7 @@ import {
     getActiveTrackingEntry,
     getGeneralWorkTask,
     getTrackerPreferences,
+    getTaskTimeEntries,
 } from "./actions/tracker-actions"
 import { TASK_STATUS } from "@/app/(protected)/tasks/constants/task-statuses"
 import { TrackerDisplay } from "./components/tracker-display"
@@ -19,6 +20,10 @@ export default async function TrackerPage() {
         getGeneralWorkTask(),
         getTrackerPreferences(),
     ])
+
+    const initialTaskEntries = await getTaskTimeEntries(
+        trackerPreferences.selectedTaskId ?? undefined
+    )
 
     const translations = {
         selectType: t("selectType"),
@@ -40,6 +45,7 @@ export default async function TrackerPage() {
                 initialSelectedType={trackerPreferences.selectedType}
                 initialSelectedTaskId={trackerPreferences.selectedTaskId}
                 initialActiveTimer={activeTimer}
+                initialTodayEntries={initialTaskEntries}
                 translations={translations}
             />
             <TimeEntriesDialog />

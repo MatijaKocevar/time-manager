@@ -39,9 +39,7 @@ function TaskTreeRow({ task }: { task: TaskTreeNode }) {
             if (result.success) {
                 await queryClient.invalidateQueries({ queryKey: taskKeys.all })
             }
-        } catch (error) {
-            console.error("Failed to toggle task expansion:", error)
-        }
+        } catch {}
     }
 
     return (

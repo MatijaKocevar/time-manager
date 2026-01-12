@@ -1,7 +1,5 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Play, Square, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -13,53 +11,19 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import {
-    startTracking,
-    stopTracking,
-    getActiveTrackingEntry,
-    getTodayTimeEntries,
-    saveTrackerPreferences,
-} from "../actions/tracker-actions"
 import { useTrackerStore } from "../stores/tracker-store"
-import { formatDuration, getElapsedSeconds } from "@/app/(protected)/tasks/utils/time-helpers"
+import { formatDuration } from "@/app/(protected)/tasks/utils/time-helpers"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
-import { taskKeys } from "@/app/(protected)/tasks/query-keys"
-import type { TaskDisplay } from "@/app/(protected)/tasks/schemas/task-schemas"
 import type { HourType } from "@/../../prisma/generated/client"
-
-interface TrackerDisplayProps {
-    inProgressTasks: TaskDisplay[]
-    generalWorkTask: { id: string; title: string } | null
-    initialSelectedType: HourType
-    initialSelectedTaskId: string | null
-    initialActiveTimer: {
-        id: string
-        taskId: string
-        userId: string
-        startTime: Date
-        endTime: Date | null
-        duration: number | null
-        createdAt: Date
-        updatedAt: Date
-        type: HourType
-        task: {
-            id: string
-            title: string
-            isSystemTask: boolean
-        }
-    } | null
-    translations: {
-        selectType: string
-        selectTask: string
-        trackingType: string
-        todayEntries: string
-        work: string
-        break: string
-        private: string
-        noTasksAvailable: string
-        generalWork: string
-    }
-}
+import {
+    useTrackerSSE,
+    useTrackerPusher,
+    useTimerState,
+    useTrackerMutations,
+    useTaskTimeEntries,
+    useTrackerSelection,
+} from "../hooks"
+import type { TrackerDisplayProps } from "../types/tracker-display.types"
 
 export function TrackerDisplay({
     inProgressTasks,
@@ -67,231 +31,31 @@ export function TrackerDisplay({
     initialSelectedType,
     initialSelectedTaskId,
     initialActiveTimer,
+    initialTodayEntries,
     translations,
 }: TrackerDisplayProps) {
-    const queryClient = useQueryClient()
-
-    const today = new Date().toISOString().split("T")[0]
-    const lastViewed =
-        typeof window !== "undefined" ? localStorage.getItem("tracker-last-viewed-date") : null
-
-    const isNewDay = lastViewed !== today
-
-    const getInitialTaskId = () => {
-        if (isNewDay) return generalWorkTask?.id ?? null
-        if (initialSelectedTaskId) return initialSelectedTaskId
-        if (initialSelectedType === "WORK" && generalWorkTask) return generalWorkTask.id
-        return null
-    }
-
-    const [selectedType, setSelectedType] = useState<HourType>(initialSelectedType)
-    const [selectedTaskId, setSelectedTaskId] = useState<string | null>(getInitialTaskId())
+    useTrackerSSE()
+    useTrackerPusher()
 
     const trackerError = useTrackerStore((state) => state.error)
-    const setTrackerError = useTrackerStore((state) => state.setError)
 
-    const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
-    const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
+    const { selectedType, selectedTaskId, handleTypeChange, handleTaskChange } =
+        useTrackerSelection({
+            initialSelectedType,
+            initialSelectedTaskId,
+        })
 
-    const eventSourceRef = useRef<EventSource | null>(null)
-    const reconnectCountRef = useRef(0)
-
-    useEffect(() => {
-        if (isNewDay) {
-            localStorage.setItem("tracker-last-viewed-date", today)
-            setTrackerError("")
-        }
-    }, [isNewDay, today, setTrackerError])
-
-    useEffect(() => {
-        queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
-    }, [selectedTaskId, queryClient])
-
-    useEffect(() => {
-        const timestamp = new Date().toISOString()
-        console.log(`[SSE ${timestamp}] Setting up EventSource connection to /api/tracker/events`)
-        const eventSource = new EventSource("/api/tracker/events")
-        eventSourceRef.current = eventSource
-        console.log(`[SSE ${timestamp}] EventSource created, readyState: ${eventSource.readyState}`)
-
-        const handleTimerStarted = (e: MessageEvent) => {
-            const timestamp = new Date().toISOString()
-            console.log(`[SSE ${timestamp}] Received timer-started event:`, e.data)
-            try {
-                const data = JSON.parse(e.data)
-                console.log(`[SSE ${timestamp}] Parsed data:`, data)
-                if (data.type && data.taskId) {
-                    console.log(
-                        `[SSE ${timestamp}] Syncing store: type = ${data.type}, taskId = ${data.taskId}`
-                    )
-                    setSelectedType(data.type)
-                    setSelectedTaskId(data.taskId)
-                    console.log(`[SSE ${timestamp}] Store updated successfully`)
-                } else {
-                    console.warn(`[SSE ${timestamp}] Missing type or taskId in event data:`, data)
-                }
-            } catch (error) {
-                console.error(`[SSE ${timestamp}] Failed to parse timer-started data:`, error)
-            }
-            console.log(`[SSE ${timestamp}] Invalidating queries...`)
-            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
-            queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
-            console.log(`[SSE ${timestamp}] Queries invalidated`)
-        }
-
-        const handleTimerStopped = (e: MessageEvent) => {
-            const timestamp = new Date().toISOString()
-            console.log(`[SSE ${timestamp}] Received timer-stopped event:`, e.data)
-            console.log(`[SSE ${timestamp}] Invalidating queries...`)
-            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
-            queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
-            console.log(`[SSE ${timestamp}] Queries invalidated`)
-        }
-
-        eventSource.onopen = () => {
-            const timestamp = new Date().toISOString()
-            const reconnectCount = reconnectCountRef.current
-            console.log(
-                `[SSE ${timestamp}] Connected to tracker events, readyState: ${eventSource.readyState}, reconnect count: ${reconnectCount}`
-            )
-
-            // If this is a reconnection (not the first connection), invalidate queries to sync state
-            if (reconnectCount > 0) {
-                console.log(`[SSE ${timestamp}] Reconnected - invalidating queries to sync state`)
-                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
-                queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
-                console.log(`[SSE ${timestamp}] Reconnection queries invalidated`)
-            }
-
-            reconnectCountRef.current += 1
-
-            fetch("/api/tracker/connections")
-                .then((r) => r.json())
-                .then((data) =>
-                    console.log(
-                        `[SSE ${timestamp}] Connection count on server: ${data.connectionCount}`
-                    )
-                )
-                .catch((e) => console.error(`[SSE ${timestamp}] Failed to check connections:`, e))
-        }
-
-        eventSource.addEventListener("timer-started", handleTimerStarted)
-        eventSource.addEventListener("timer-stopped", handleTimerStopped)
-
-        eventSource.onerror = (error) => {
-            const timestamp = new Date().toISOString()
-            console.error(
-                `[SSE ${timestamp}] Connection error:`,
-                error,
-                `readyState: ${eventSource.readyState}`
-            )
-            if (eventSource.readyState === EventSource.CLOSED) {
-                console.error(`[SSE ${timestamp}] Connection closed by server, will auto-reconnect`)
-            } else if (eventSource.readyState === EventSource.CONNECTING) {
-                console.log(`[SSE ${timestamp}] Reconnecting...`)
-            } else {
-                console.error(`[SSE ${timestamp}] Unknown error state: ${eventSource.readyState}`)
-            }
-        }
-
-        return () => {
-            const timestamp = new Date().toISOString()
-            console.log(`[SSE ${timestamp}] Cleaning up: closing connection`)
-            eventSource.removeEventListener("timer-started", handleTimerStarted)
-            eventSource.removeEventListener("timer-stopped", handleTimerStopped)
-            eventSource.close()
-            console.log(`[SSE ${timestamp}] Connection closed and cleaned up`)
-        }
-    }, [queryClient, setSelectedType, setSelectedTaskId])
-
-    const { data: activeTimerData } = useQuery({
-        queryKey: ["tracker", "activeTimer"],
-        queryFn: getActiveTrackingEntry,
-        initialData: initialActiveTimer,
-        refetchOnWindowFocus: false, // SSE handles updates
-        refetchOnMount: false,
-        staleTime: Infinity, // Never auto-refetch, rely on SSE invalidation
+    const { activeTimerData, elapsedSeconds, isTimerRunning } = useTimerState({
+        initialActiveTimer,
     })
 
-    const { data: todayEntries = [] } = useQuery({
-        queryKey: ["tracker", "todayEntries", selectedType, selectedTaskId],
-        queryFn: () => getTodayTimeEntries(selectedType, selectedTaskId ?? undefined),
-        refetchOnWindowFocus: false, // SSE handles updates
-        refetchOnMount: false,
-        staleTime: Infinity, // Never auto-refetch, rely on SSE invalidation
-    })
+    const { startMutation, stopMutation, isLoading } = useTrackerMutations()
 
-    const startMutation = useMutation({
-        mutationFn: startTracking,
-        onMutate: () => {
-            setTrackerError("")
-        },
-        onSuccess: (data) => {
-            if (data.error) {
-                setTrackerError(data.error)
-            } else if (data.success) {
-                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
-                queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
-                queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
-            }
-        },
-        onError: (error) => {
-            setTrackerError(error.message)
-        },
-    })
-
-    const stopMutation = useMutation({
-        mutationFn: stopTracking,
-        onMutate: () => {
-            setTrackerError("")
-        },
-        onSuccess: (data) => {
-            if (data.error) {
-                setTrackerError(data.error)
-            } else {
-                clearAllActiveTimers()
-                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
-                queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
-                queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
-            }
-        },
-        onError: (error) => {
-            setTrackerError(error.message)
-        },
-    })
-
-    const elapsedSeconds = activeTimerData ? getElapsedSeconds(activeTimerData.startTime) : 0
-
-    useEffect(() => {
-        if (activeTimerData) {
-            setActiveTimer(activeTimerData.taskId, activeTimerData.id, activeTimerData.startTime)
-
-            const interval = setInterval(() => {
-                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
-            }, 1000)
-
-            return () => clearInterval(interval)
-        }
-    }, [activeTimerData, setActiveTimer, queryClient])
-
-    const isTimerRunning = Boolean(activeTimerData)
-    const isLoading = startMutation.isPending || stopMutation.isPending
+    const { taskEntries } = useTaskTimeEntries(selectedTaskId, initialTodayEntries)
 
     const canStart =
         !isTimerRunning &&
         (selectedType === "BREAK" || selectedType === "PRIVATE" || selectedType === "WORK")
-
-    const handleTypeChange = (type: string) => {
-        const newType = type as HourType
-        setSelectedType(newType)
-        setSelectedTaskId(null)
-        saveTrackerPreferences(newType, null)
-    }
-
-    const handleTaskChange = (taskId: string) => {
-        setSelectedTaskId(taskId)
-        saveTrackerPreferences(selectedType, taskId)
-    }
 
     const handlePlayStop = () => {
         if (isTimerRunning && activeTimerData) {
@@ -305,8 +69,8 @@ export function TrackerDisplay({
     }
 
     const handleViewEntries = () => {
-        if (todayEntries.length > 0) {
-            const firstEntry = todayEntries[0]
+        if (taskEntries.length > 0) {
+            const firstEntry = taskEntries[0]
             useTasksStore.getState().openTimeEntriesDialog(firstEntry.taskId)
         }
     }
@@ -453,10 +217,10 @@ export function TrackerDisplay({
                         variant="outline"
                         onClick={handleViewEntries}
                         className="w-full"
-                        disabled={todayEntries.length === 0}
+                        disabled={taskEntries.length === 0}
                     >
                         <Clock className="mr-2 h-4 w-4" />
-                        {translations.todayEntries} ({todayEntries.length})
+                        {translations.todayEntries} ({taskEntries.length})
                     </Button>
                 </div>
             </CardContent>
