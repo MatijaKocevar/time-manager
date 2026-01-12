@@ -94,6 +94,7 @@ export function TrackerDisplay({
     const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
 
     const eventSourceRef = useRef<EventSource | null>(null)
+    const reconnectCountRef = useRef(0)
 
     useEffect(() => {
         if (isNewDay) {
@@ -107,56 +108,101 @@ export function TrackerDisplay({
     }, [selectedTaskId, queryClient])
 
     useEffect(() => {
-        console.log("[SSE] Setting up EventSource connection")
+        const timestamp = new Date().toISOString()
+        console.log(`[SSE ${timestamp}] Setting up EventSource connection to /api/tracker/events`)
         const eventSource = new EventSource("/api/tracker/events")
         eventSourceRef.current = eventSource
+        console.log(`[SSE ${timestamp}] EventSource created, readyState: ${eventSource.readyState}`)
+
+        const handleTimerStarted = (e: MessageEvent) => {
+            const timestamp = new Date().toISOString()
+            console.log(`[SSE ${timestamp}] Received timer-started event:`, e.data)
+            try {
+                const data = JSON.parse(e.data)
+                console.log(`[SSE ${timestamp}] Parsed data:`, data)
+                if (data.type && data.taskId) {
+                    console.log(
+                        `[SSE ${timestamp}] Syncing store: type = ${data.type}, taskId = ${data.taskId}`
+                    )
+                    setSelectedType(data.type)
+                    setSelectedTaskId(data.taskId)
+                    console.log(`[SSE ${timestamp}] Store updated successfully`)
+                } else {
+                    console.warn(`[SSE ${timestamp}] Missing type or taskId in event data:`, data)
+                }
+            } catch (error) {
+                console.error(`[SSE ${timestamp}] Failed to parse timer-started data:`, error)
+            }
+            console.log(`[SSE ${timestamp}] Invalidating queries...`)
+            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
+            console.log(`[SSE ${timestamp}] Queries invalidated`)
+        }
+
+        const handleTimerStopped = (e: MessageEvent) => {
+            const timestamp = new Date().toISOString()
+            console.log(`[SSE ${timestamp}] Received timer-stopped event:`, e.data)
+            console.log(`[SSE ${timestamp}] Invalidating queries...`)
+            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
+            console.log(`[SSE ${timestamp}] Queries invalidated`)
+        }
 
         eventSource.onopen = () => {
-            console.log("[SSE] Connected to tracker events, readyState:", eventSource.readyState)
+            const timestamp = new Date().toISOString()
+            const reconnectCount = reconnectCountRef.current
+            console.log(
+                `[SSE ${timestamp}] Connected to tracker events, readyState: ${eventSource.readyState}, reconnect count: ${reconnectCount}`
+            )
+
+            // If this is a reconnection (not the first connection), invalidate queries to sync state
+            if (reconnectCount > 0) {
+                console.log(`[SSE ${timestamp}] Reconnected - invalidating queries to sync state`)
+                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+                queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
+                console.log(`[SSE ${timestamp}] Reconnection queries invalidated`)
+            }
+
+            reconnectCountRef.current += 1
+
             fetch("/api/tracker/connections")
                 .then((r) => r.json())
                 .then((data) =>
-                    console.log("[SSE] Connection count on server:", data.connectionCount)
+                    console.log(
+                        `[SSE ${timestamp}] Connection count on server: ${data.connectionCount}`
+                    )
                 )
-                .catch((e) => console.error("[SSE] Failed to check connections:", e))
+                .catch((e) => console.error(`[SSE ${timestamp}] Failed to check connections:`, e))
         }
 
-        eventSource.addEventListener("timer-started", (e) => {
-            console.log("[SSE] Received timer-started event:", e.data)
-            try {
-                const data = JSON.parse(e.data)
-                if (data.type && data.taskId) {
-                    console.log("[SSE] Syncing store: type =", data.type, "taskId =", data.taskId)
-                    setSelectedType(data.type)
-                    setSelectedTaskId(data.taskId)
-                }
-            } catch (error) {
-                console.error("[SSE] Failed to parse timer-started data:", error)
-            }
-            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
-            queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
-        })
-
-        eventSource.addEventListener("timer-stopped", (e) => {
-            console.log("[SSE] Received timer-stopped event:", e.data)
-            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
-            queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
-        })
+        eventSource.addEventListener("timer-started", handleTimerStarted)
+        eventSource.addEventListener("timer-stopped", handleTimerStopped)
 
         eventSource.onerror = (error) => {
-            console.error("[SSE] Connection error:", error, "readyState:", eventSource.readyState)
+            const timestamp = new Date().toISOString()
+            console.error(
+                `[SSE ${timestamp}] Connection error:`,
+                error,
+                `readyState: ${eventSource.readyState}`
+            )
             if (eventSource.readyState === EventSource.CLOSED) {
-                console.error("[SSE] Connection closed by server")
+                console.error(`[SSE ${timestamp}] Connection closed by server, will auto-reconnect`)
             } else if (eventSource.readyState === EventSource.CONNECTING) {
-                console.log("[SSE] Reconnecting...")
+                console.log(`[SSE ${timestamp}] Reconnecting...`)
+            } else {
+                console.error(`[SSE ${timestamp}] Unknown error state: ${eventSource.readyState}`)
             }
         }
 
         return () => {
-            console.log("[SSE] Cleaning up: closing connection")
+            const timestamp = new Date().toISOString()
+            console.log(`[SSE ${timestamp}] Cleaning up: closing connection`)
+            eventSource.removeEventListener("timer-started", handleTimerStarted)
+            eventSource.removeEventListener("timer-stopped", handleTimerStopped)
             eventSource.close()
+            console.log(`[SSE ${timestamp}] Connection closed and cleaned up`)
         }
-    }, [queryClient])
+    }, [queryClient, setSelectedType, setSelectedTaskId])
 
     const { data: activeTimerData } = useQuery({
         queryKey: ["tracker", "activeTimer"],

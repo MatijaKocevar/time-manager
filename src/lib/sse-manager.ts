@@ -35,36 +35,53 @@ class SSEManager {
     }
 
     broadcast(userId: string, event: string, data: unknown) {
+        const timestamp = new Date().toISOString()
         const userConnections = this.connections.get(userId)
         console.log(
-            `[SSE Manager] Broadcasting ${event} to user ${userId}, connections: ${userConnections?.size ?? 0}`
+            `[SSE Manager ${timestamp}] Broadcasting ${event} to user ${userId}, connections: ${userConnections?.size ?? 0}`
         )
+        console.log(`[SSE Manager ${timestamp}] Event data:`, JSON.stringify(data))
 
         if (!userConnections || userConnections.size === 0) {
-            console.log(`[SSE Manager] No connections for user ${userId}`)
+            console.log(`[SSE Manager ${timestamp}] No connections for user ${userId}`)
+            console.log(
+                `[SSE Manager ${timestamp}] All connected users:`,
+                Array.from(this.connections.keys())
+            )
             return
         }
 
         const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`
         const encoder = new TextEncoder()
         const encoded = encoder.encode(message)
+        console.log(`[SSE Manager ${timestamp}] Encoded message length: ${encoded.length} bytes`)
 
         const failedConnectionIds: number[] = []
 
         userConnections.forEach((controller, id) => {
             try {
                 controller.enqueue(encoded)
-                console.log(`[SSE Manager] Sent ${event} event to connection ${id}`)
+                console.log(`[SSE Manager ${timestamp}] Sent ${event} event to connection ${id}`)
             } catch (error) {
-                console.error(`[SSE Manager] Failed to send to connection ${id}:`, error)
+                console.error(
+                    `[SSE Manager ${timestamp}] Failed to send to connection ${id}:`,
+                    error
+                )
                 failedConnectionIds.push(id)
             }
         })
 
-        failedConnectionIds.forEach((id) => {
-            console.log(`[SSE Manager] Removing failed connection ${id}`)
-            this.removeConnection(userId, id)
-        })
+        if (failedConnectionIds.length > 0) {
+            console.log(
+                `[SSE Manager ${timestamp}] Removing ${failedConnectionIds.length} failed connections`
+            )
+            failedConnectionIds.forEach((id) => {
+                console.log(`[SSE Manager ${timestamp}] Removing failed connection ${id}`)
+                this.removeConnection(userId, id)
+            })
+        } else {
+            console.log(`[SSE Manager ${timestamp}] All broadcasts succeeded`)
+        }
     }
 
     getConnectionCount(userId: string): number {

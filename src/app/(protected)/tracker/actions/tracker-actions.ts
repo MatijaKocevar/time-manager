@@ -188,16 +188,23 @@ export async function startTracking(input: StartTrackingInput) {
 
         // Broadcast asynchronously so response can complete first
         setImmediate(() => {
+            const timestamp = new Date().toISOString()
             console.log(
-                `[Tracker Action] Executing delayed broadcast, connection count now:`,
+                `[Tracker Action ${timestamp}] Executing delayed broadcast for user ${session.user.id}, connection count:`,
                 sseManager.getConnectionCount(session.user.id)
             )
-            sseManager.broadcast(session.user.id, "timer-started", {
+            const broadcastData = {
                 entryId: newEntry.entry.id,
                 taskId: newEntry.taskId,
                 startTime: newEntry.entry.startTime,
                 type,
-            })
+            }
+            console.log(
+                `[Tracker Action ${timestamp}] Broadcasting timer-started with data:`,
+                broadcastData
+            )
+            sseManager.broadcast(session.user.id, "timer-started", broadcastData)
+            console.log(`[Tracker Action ${timestamp}] Broadcast call completed`)
         })
 
         return { success: true, entryId: newEntry.entry.id }
@@ -243,16 +250,25 @@ export async function stopTracking(input: StopTrackingInput) {
         revalidatePath("/tasks")
         revalidatePath("/hours")
 
-        console.log(`[Tracker Action] Stopping timer broadcast for user ${session.user.id}`)
+        const timestamp = new Date().toISOString()
         console.log(
-            `[Tracker Action] Connection count:`,
+            `[Tracker Action ${timestamp}] Stopping timer broadcast for user ${session.user.id}`
+        )
+        console.log(
+            `[Tracker Action ${timestamp}] Connection count:`,
             sseManager.getConnectionCount(session.user.id)
         )
 
-        sseManager.broadcast(session.user.id, "timer-stopped", {
+        const broadcastData = {
             entryId,
             duration,
-        })
+        }
+        console.log(
+            `[Tracker Action ${timestamp}] Broadcasting timer-stopped with data:`,
+            broadcastData
+        )
+        sseManager.broadcast(session.user.id, "timer-stopped", broadcastData)
+        console.log(`[Tracker Action ${timestamp}] Broadcast call completed`)
 
         return { success: true }
     } catch (error) {
