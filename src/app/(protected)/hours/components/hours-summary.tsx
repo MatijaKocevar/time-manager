@@ -109,7 +109,8 @@ export function HoursSummary({
                                 </span>
                                 {showWeekly && (
                                     <span className="text-xs text-muted-foreground">
-                                        / {formatHoursMinutes(monthlyGrandTotal)} {tCommon("time.month")}
+                                        / {formatHoursMinutes(monthlyGrandTotal)}{" "}
+                                        {tCommon("time.month")}
                                     </span>
                                 )}
                             </div>
@@ -176,7 +177,8 @@ export function HoursSummary({
                                             {formatHoursMinutes(weeklyHoursByType[hourType.value])}
                                         </div>
                                         <div className="text-xs text-muted-foreground">
-                                            {formatHoursMinutes(monthlyHoursByType[hourType.value])} {tCommon("time.month")}
+                                            {formatHoursMinutes(monthlyHoursByType[hourType.value])}{" "}
+                                            {tCommon("time.month")}
                                         </div>
                                     </div>
                                 ) : (
