@@ -52,7 +52,6 @@ export function TimeSheetsTable({
     const activeTimers = useTasksStore((state) => state.activeTimers)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
-    const [hoveredCell, setHoveredCell] = useState<string | null>(null)
     const [loadingTask, setLoadingTask] = useState<string | null>(null)
 
     const { tasks, dates } = aggregatedData
@@ -86,7 +85,9 @@ export function TimeSheetsTable({
         },
     })
 
-    const tasksArray = Array.from(tasks.values())
+    const tasksArray = Array.from(tasks.values()).sort(
+        (a, b) => a.firstTrackedAt.getTime() - b.firstTrackedAt.getTime()
+    )
 
     const dailyTotals = new Map<string, number>()
     dates.forEach((dateStr) => {
@@ -207,56 +208,90 @@ export function TimeSheetsTable({
                                               ? "bg-red-500"
                                               : "bg-gray-400"
 
+                                const activeTimer = activeTimers.get(task.taskId)
+                                const isTracking = !!activeTimer
+                                const isLoadingThis = loadingTask === task.taskId
+
                                 return (
-                                    <TableRow key={task.taskId}>
+                                    <TableRow key={task.taskId} className="group">
                                         <TableCell className="sticky left-0 z-10 bg-background border-r py-2 min-w-[150px] max-w-[200px]">
-                                            <div className="flex items-start gap-2">
-                                                <div
-                                                    className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`}
-                                                />
-                                                <div className="flex flex-col gap-1 min-w-0">
-                                                    <span className="font-medium text-sm leading-tight truncate">
-                                                        {task.taskTitle}
-                                                    </span>
-                                                    <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={`text-[10px] h-5 px-1.5 py-0 rounded ${statusColor}`}
-                                                        >
-                                                            {task.status === "IN_PROGRESS"
-                                                                ? "In Progress"
-                                                                : task.status === "DONE"
-                                                                  ? "Complete"
-                                                                  : task.status === "ON_HOLD"
-                                                                    ? "On Hold"
-                                                                    : task.status === "CANCELED"
-                                                                      ? "Canceled"
-                                                                      : "To Do"}
-                                                        </Badge>
-                                                        {task.listName &&
-                                                            task.listName !== "No List" && (
-                                                                <Badge
-                                                                    variant="outline"
-                                                                    className="text-[10px] h-5 px-1.5 py-0 rounded text-muted-foreground"
-                                                                    style={{
-                                                                        borderColor:
-                                                                            task.listColor ??
-                                                                            undefined,
-                                                                        color:
-                                                                            task.listColor ??
-                                                                            undefined,
-                                                                    }}
-                                                                >
-                                                                    {task.listIcon && (
-                                                                        <span className="mr-0.5">
-                                                                            {task.listIcon}
-                                                                        </span>
-                                                                    )}
-                                                                    {task.listName}
-                                                                </Badge>
-                                                            )}
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="flex items-start gap-2 min-w-0">
+                                                    <div
+                                                        className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`}
+                                                    />
+                                                    <div className="flex flex-col gap-1 min-w-0">
+                                                        <span className="font-medium text-sm leading-tight truncate">
+                                                            {task.taskTitle}
+                                                        </span>
+                                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                                            <Badge
+                                                                variant="outline"
+                                                                className={`text-[10px] h-5 px-1.5 py-0 rounded ${statusColor}`}
+                                                            >
+                                                                {task.status === "IN_PROGRESS"
+                                                                    ? "In Progress"
+                                                                    : task.status === "DONE"
+                                                                      ? "Complete"
+                                                                      : task.status === "ON_HOLD"
+                                                                        ? "On Hold"
+                                                                        : task.status === "CANCELED"
+                                                                          ? "Canceled"
+                                                                          : "To Do"}
+                                                            </Badge>
+                                                            {task.listName &&
+                                                                task.listName !== "No List" && (
+                                                                    <Badge
+                                                                        variant="outline"
+                                                                        className="text-[10px] h-5 px-1.5 py-0 rounded text-muted-foreground"
+                                                                        style={{
+                                                                            borderColor:
+                                                                                task.listColor ??
+                                                                                undefined,
+                                                                            color:
+                                                                                task.listColor ??
+                                                                                undefined,
+                                                                        }}
+                                                                    >
+                                                                        {task.listIcon && (
+                                                                            <span className="mr-0.5">
+                                                                                {task.listIcon}
+                                                                            </span>
+                                                                        )}
+                                                                        {task.listName}
+                                                                    </Badge>
+                                                                )}
+                                                        </div>
                                                     </div>
                                                 </div>
+                                                <Button
+                                                    variant={isTracking ? "destructive" : "ghost"}
+                                                    size="sm"
+                                                    className="h-6 w-6 p-0 flex-shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+                                                    disabled={isLoadingThis}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        if (isTracking && activeTimer) {
+                                                            setLoadingTask(task.taskId)
+                                                            stopMutation.mutate({
+                                                                id: activeTimer.entryId,
+                                                            })
+                                                        } else {
+                                                            setLoadingTask(task.taskId)
+                                                            startMutation.mutate({
+                                                                taskId: task.taskId,
+                                                            })
+                                                        }
+                                                    }}
+                                                >
+                                                    {isLoadingThis ? (
+                                                        <LoadingSpinner className="h-3 w-3" />
+                                                    ) : isTracking ? (
+                                                        <Square className="h-3 w-3" />
+                                                    ) : (
+                                                        <Play className="h-3 w-3" />
+                                                    )}
+                                                </Button>
                                             </div>
                                         </TableCell>
                                         {dates.map((dateStr) => {
@@ -265,11 +300,6 @@ export function TimeSheetsTable({
                                             const durationInSeconds = task.byDate.get(dateKey)
                                             const isWeekendDay = isWeekend(date)
                                             const isTodayDay = isToday(date)
-                                            const activeTimer = activeTimers.get(task.taskId)
-                                            const isTracking = !!activeTimer
-                                            const cellKey = `${task.taskId}-${dateStr}`
-                                            const isHovered = hoveredCell === cellKey
-                                            const isLoadingThis = loadingTask === task.taskId
 
                                             const displayDuration =
                                                 isTracking && isTodayDay && activeTimer
@@ -283,77 +313,31 @@ export function TimeSheetsTable({
                                             return (
                                                 <TableCell
                                                     key={dateStr}
-                                                    className={`text-center tabular-nums relative group ${
+                                                    className={`text-center tabular-nums ${
                                                         isWeekendDay ? "bg-muted/50" : ""
                                                     } ${
                                                         isTodayDay
                                                             ? "bg-blue-50 dark:bg-blue-950"
                                                             : ""
                                                     }`}
-                                                    onMouseEnter={() => setHoveredCell(cellKey)}
-                                                    onMouseLeave={() => setHoveredCell(null)}
                                                 >
-                                                    <div className="flex items-center justify-center gap-1">
-                                                        <span
-                                                            className={`${
-                                                                displayDuration
-                                                                    ? "cursor-pointer hover:underline"
-                                                                    : ""
-                                                            }`}
-                                                            onClick={() => {
-                                                                if (displayDuration) {
-                                                                    openTimeEntriesDialog(
-                                                                        task.taskId
-                                                                    )
-                                                                }
-                                                            }}
-                                                            suppressHydrationWarning
-                                                        >
-                                                            {displayDuration
-                                                                ? formatDuration(displayDuration)
-                                                                : "-"}
-                                                        </span>
-                                                        {(isHovered || isTracking) &&
-                                                            isTodayDay && (
-                                                                <Button
-                                                                    variant={
-                                                                        isTracking
-                                                                            ? "destructive"
-                                                                            : "ghost"
-                                                                    }
-                                                                    size="sm"
-                                                                    className="h-6 w-6 p-0"
-                                                                    disabled={isLoadingThis}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation()
-                                                                        if (
-                                                                            isTracking &&
-                                                                            activeTimer
-                                                                        ) {
-                                                                            setLoadingTask(
-                                                                                task.taskId
-                                                                            )
-                                                                            stopMutation.mutate({
-                                                                                id: activeTimer.entryId,
-                                                                            })
-                                                                        } else {
-                                                                            setLoadingTask(
-                                                                                task.taskId
-                                                                            )
-                                                                            startMutation.mutate({
-                                                                                taskId: task.taskId,
-                                                                            })
-                                                                        }
-                                                                    }}
-                                                                >
-                                                                    {isTracking ? (
-                                                                        <Square className="h-3 w-3" />
-                                                                    ) : (
-                                                                        <Play className="h-3 w-3" />
-                                                                    )}
-                                                                </Button>
-                                                            )}
-                                                    </div>
+                                                    <span
+                                                        className={`${
+                                                            displayDuration
+                                                                ? "cursor-pointer hover:underline"
+                                                                : ""
+                                                        }`}
+                                                        onClick={() => {
+                                                            if (displayDuration) {
+                                                                openTimeEntriesDialog(task.taskId)
+                                                            }
+                                                        }}
+                                                        suppressHydrationWarning
+                                                    >
+                                                        {displayDuration
+                                                            ? formatDuration(displayDuration)
+                                                            : "-"}
+                                                    </span>
                                                 </TableCell>
                                             )
                                         })}

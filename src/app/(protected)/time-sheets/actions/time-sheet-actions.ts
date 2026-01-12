@@ -43,6 +43,7 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
                     },
                 ],
             },
+            orderBy: { startTime: "asc" },
             select: {
                 id: true,
                 taskId: true,

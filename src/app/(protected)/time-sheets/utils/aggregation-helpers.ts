@@ -26,6 +26,7 @@ export interface AggregatedTimeSheet {
             listIcon: string | null
             byDate: Map<string, number>
             totalDuration: number
+            firstTrackedAt: Date
         }
     >
     dates: string[]
@@ -47,6 +48,7 @@ export function aggregateTimeEntriesByTaskAndDate(
             listIcon: string | null
             byDate: Map<string, number>
             totalDuration: number
+            firstTrackedAt: Date
         }
     >()
 
@@ -75,6 +77,7 @@ export function aggregateTimeEntriesByTaskAndDate(
                 listIcon: entry.task.list?.icon ?? null,
                 byDate: new Map(),
                 totalDuration: 0,
+                firstTrackedAt: new Date(entry.startTime),
             })
         }
 
