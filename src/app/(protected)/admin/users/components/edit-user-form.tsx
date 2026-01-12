@@ -42,6 +42,8 @@ interface EditUserFormProps {
 }
 
 export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
+    console.log("EditUserForm - currentUserIsDemo:", currentUserIsDemo, "user.isDemo:", user.isDemo)
+    
     const router = useRouter()
     const t = useTranslations("admin.users.form")
     const tRoles = useTranslations("admin.users.roles")
@@ -380,7 +382,8 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                         disabled={
                                             isDeactivateLoading ||
                                             !!user.anonymizedAt ||
-                                            user.isDemo
+                                            user.isDemo ||
+                                            currentUserIsDemo
                                         }
                                     >
                                         {isDeactivateLoading
@@ -394,7 +397,8 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                         disabled={
                                             isReactivateLoading ||
                                             !!user.anonymizedAt ||
-                                            user.isDemo
+                                            user.isDemo ||
+                                            currentUserIsDemo
                                         }
                                     >
                                         {isReactivateLoading
@@ -404,7 +408,7 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                 )}
                             </div>
                         </TooltipTrigger>
-                        {user.isDemo && (
+                        {(user.isDemo || currentUserIsDemo) && (
                             <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
                         )}
                     </Tooltip>
@@ -430,7 +434,7 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                             type="button"
                                             variant="destructive"
                                             onClick={handleAnonymize}
-                                            disabled={isAnonymizeLoading || user.isDemo}
+                                            disabled={isAnonymizeLoading || user.isDemo || currentUserIsDemo}
                                         >
                                             {isAnonymizeLoading
                                                 ? t("anonymizing")
@@ -438,7 +442,7 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                         </Button>
                                     </div>
                                 </TooltipTrigger>
-                                {user.isDemo && (
+                                {(user.isDemo || currentUserIsDemo) && (
                                     <TooltipContent>
                                         {tCommonMessages("demoRestriction")}
                                     </TooltipContent>
