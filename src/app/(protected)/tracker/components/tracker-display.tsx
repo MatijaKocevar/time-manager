@@ -123,6 +123,16 @@ export function TrackerDisplay({
 
         eventSource.addEventListener("timer-started", (e) => {
             console.log("[SSE] Received timer-started event:", e.data)
+            try {
+                const data = JSON.parse(e.data)
+                if (data.type && data.taskId) {
+                    console.log("[SSE] Syncing store: type =", data.type, "taskId =", data.taskId)
+                    setSelectedType(data.type)
+                    setSelectedTaskId(data.taskId)
+                }
+            } catch (error) {
+                console.error("[SSE] Failed to parse timer-started data:", error)
+            }
             queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
             queryClient.invalidateQueries({ queryKey: ["tracker", "todayEntries"] })
         })
