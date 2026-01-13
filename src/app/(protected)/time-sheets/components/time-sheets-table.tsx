@@ -267,7 +267,11 @@ export function TimeSheetsTable({
                                                 <Button
                                                     variant={isTracking ? "destructive" : "ghost"}
                                                     size="sm"
-                                                    className="h-6 w-6 p-0 flex-shrink-0 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+                                                    className={`h-6 w-6 p-0 flex-shrink-0 transition-opacity ${
+                                                        isTracking
+                                                            ? "opacity-100"
+                                                            : "opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+                                                    }`}
                                                     disabled={isLoadingThis}
                                                     onClick={(e) => {
                                                         e.stopPropagation()

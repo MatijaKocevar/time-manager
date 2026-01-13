@@ -12,7 +12,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { DateTimePicker } from "@/components/ui/datetime-picker"
 import { useTasksStore } from "../stores/tasks-store"
 import {
     getTaskTimeEntries,
@@ -24,10 +24,7 @@ import { taskKeys } from "../query-keys"
 import { hourKeys } from "@/app/(protected)/hours/query-keys"
 import { timeSheetKeys } from "@/app/(protected)/time-sheets/query-keys"
 import { formatDuration } from "../utils/time-helpers"
-import type {
-    TaskTimeEntryDisplay,
-    TaskTimeEntryWithAggregation,
-} from "../schemas/task-time-entry-schemas"
+import type { TaskTimeEntryDisplay } from "../schemas/task-time-entry-schemas"
 
 function formatDateTimeLocal(date: Date): string {
     const year = date.getFullYear()
@@ -82,20 +79,28 @@ export function TimeEntriesDialog() {
         return () => clearInterval(interval)
     }, [timeEntriesDialog.isOpen])
 
-    const getEntryValue = (entry: TaskTimeEntryDisplay, field: "startTime" | "endTime") => {
+    const getEntryDate = (
+        entry: TaskTimeEntryDisplay,
+        field: "startTime" | "endTime"
+    ): Date | undefined => {
         const edited = editedEntries.get(entry.id)
         if (edited) {
-            return field === "startTime" ? edited.startTime : (edited.endTime ?? "")
+            const dateStr = field === "startTime" ? edited.startTime : edited.endTime
+            return dateStr ? new Date(dateStr) : undefined
         }
         if (field === "startTime") {
-            return formatDateTimeLocal(entry.startTime)
+            return entry.startTime
         }
-        return entry.endTime ? formatDateTimeLocal(entry.endTime) : ""
+        return entry.endTime ?? undefined
     }
 
-    const handleFieldChange = (entryId: string, field: "startTime" | "endTime", value: string) => {
+    const handleFieldChange = (
+        entryId: string,
+        field: "startTime" | "endTime",
+        date: Date | undefined
+    ) => {
         const entry = entries.find((e) => e.id === entryId)
-        if (!entry) return
+        if (!entry || !date) return
 
         const edited = editedEntries.get(entryId) || {
             id: entryId,
@@ -104,9 +109,9 @@ export function TimeEntriesDialog() {
         }
 
         if (field === "startTime") {
-            edited.startTime = value
+            edited.startTime = formatDateTimeLocal(date)
         } else {
-            edited.endTime = value || null
+            edited.endTime = formatDateTimeLocal(date)
         }
 
         const newMap = new Map(editedEntries)
@@ -180,15 +185,15 @@ export function TimeEntriesDialog() {
 
     return (
         <Dialog open={timeEntriesDialog.isOpen} onOpenChange={closeTimeEntriesDialog}>
-            <DialogContent className="!w-[95vw] !max-w-none max-h-[90vh] flex flex-col">
+            <DialogContent className="w-[95vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle>{t("timeEntries")}</DialogTitle>
-                    <DialogDescription>{t("noTimeEntries")}</DialogDescription>
+                    <DialogDescription className="sr-only">{t("noTimeEntries")}</DialogDescription>
                 </DialogHeader>
 
                 <div className="flex flex-col gap-4">
                     <div
-                        className="rounded-md border"
+                        className="rounded-md border overflow-hidden"
                         style={{ height: "300px", minHeight: "200px" }}
                     >
                         {entries.length === 0 && !childAggregation ? (
@@ -197,19 +202,20 @@ export function TimeEntriesDialog() {
                             </div>
                         ) : (
                             <div className="h-full overflow-y-auto">
-                                <table className="w-full caption-bottom text-sm">
+                                {/* Desktop table view */}
+                                <table className="hidden sm:table w-full caption-bottom text-sm">
                                     <thead className="sticky top-0 bg-background z-10 [&_tr]:border-b">
                                         <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px] bg-background">
+                                            <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium text-muted-foreground bg-background">
                                                 {t("startedAt")}
                                             </th>
-                                            <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[200px] bg-background">
+                                            <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium text-muted-foreground bg-background">
                                                 {t("endedAt")}
                                             </th>
-                                            <th className="h-12 px-4 align-middle font-medium text-muted-foreground text-right w-[120px] bg-background">
+                                            <th className="h-12 px-2 sm:px-4 align-middle font-medium text-muted-foreground text-right bg-background">
                                                 {t("duration")}
                                             </th>
-                                            <th className="h-12 px-4 align-middle font-medium text-muted-foreground w-[60px] bg-background"></th>
+                                            <th className="h-12 px-2 sm:px-4 align-middle font-medium text-muted-foreground bg-background"></th>
                                         </tr>
                                     </thead>
                                     <tbody className="[&_tr:last-child]:border-0">
@@ -217,16 +223,16 @@ export function TimeEntriesDialog() {
                                             <tr className="border-b bg-muted/30">
                                                 <td
                                                     colSpan={2}
-                                                    className="p-4 align-middle text-muted-foreground italic"
+                                                    className="p-2 sm:p-4 align-middle text-muted-foreground italic text-xs sm:text-sm"
                                                 >
                                                     {t("childTimeAggregation")}
                                                 </td>
-                                                <td className="p-4 align-middle text-right font-mono text-muted-foreground">
+                                                <td className="p-2 sm:p-4 align-middle text-right font-mono text-muted-foreground text-xs sm:text-sm">
                                                     {formatDuration(
                                                         childAggregation.aggregatedDuration
                                                     )}
                                                 </td>
-                                                <td className="p-4 align-middle"></td>
+                                                <td className="p-2 sm:p-4 align-middle"></td>
                                             </tr>
                                         )}
                                         {entries.map((entry) => {
@@ -249,58 +255,66 @@ export function TimeEntriesDialog() {
                                                     key={entry.id}
                                                     className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
                                                 >
-                                                    <td className="p-4 align-middle">
-                                                        <Input
-                                                            type="datetime-local"
-                                                            value={getEntryValue(
-                                                                entry,
-                                                                "startTime"
-                                                            )}
-                                                            onChange={(e) =>
+                                                    <td className="p-2 sm:p-4 align-middle">
+                                                        <DateTimePicker
+                                                            value={getEntryDate(entry, "startTime")}
+                                                            onChange={(date: Date | undefined) =>
                                                                 handleFieldChange(
                                                                     entry.id,
                                                                     "startTime",
-                                                                    e.target.value
+                                                                    date
                                                                 )
                                                             }
                                                             disabled={
                                                                 isSaving || deleteMutation.isPending
                                                             }
-                                                            className="h-9 text-sm"
+                                                            modal={true}
+                                                            hideTime={false}
+                                                            timePicker={{
+                                                                hour: true,
+                                                                minute: true,
+                                                                second: false,
+                                                            }}
                                                         />
                                                     </td>
-                                                    <td className="p-4 align-middle">
+                                                    <td className="p-2 sm:p-4 align-middle">
                                                         {isActive ? (
-                                                            <div className="flex items-center h-9 px-3 text-sm text-muted-foreground">
-                                                                {formatDateTimeLocal(currentTime)}{" "}
-                                                                (tracking)
+                                                            <div className="flex items-center h-9 px-3 text-xs sm:text-sm text-muted-foreground">
+                                                                {t("now")}
                                                             </div>
                                                         ) : (
-                                                            <Input
-                                                                type="datetime-local"
-                                                                value={getEntryValue(
+                                                            <DateTimePicker
+                                                                value={getEntryDate(
                                                                     entry,
                                                                     "endTime"
                                                                 )}
-                                                                onChange={(e) =>
+                                                                onChange={(
+                                                                    date: Date | undefined
+                                                                ) =>
                                                                     handleFieldChange(
                                                                         entry.id,
                                                                         "endTime",
-                                                                        e.target.value
+                                                                        date
                                                                     )
                                                                 }
                                                                 disabled={
                                                                     isSaving ||
                                                                     deleteMutation.isPending
                                                                 }
-                                                                className="h-9 text-sm"
+                                                                modal={true}
+                                                                hideTime={false}
+                                                                timePicker={{
+                                                                    hour: true,
+                                                                    minute: true,
+                                                                    second: false,
+                                                                }}
                                                             />
                                                         )}
                                                     </td>
-                                                    <td className="p-4 align-middle text-right font-mono">
+                                                    <td className="p-2 sm:p-4 align-middle text-right font-mono text-xs sm:text-sm">
                                                         {formatDuration(duration)}
                                                     </td>
-                                                    <td className="p-4 align-middle">
+                                                    <td className="p-2 sm:p-4 align-middle">
                                                         {isActive ? (
                                                             <Button
                                                                 variant="destructive"
@@ -343,6 +357,142 @@ export function TimeEntriesDialog() {
                                         })}
                                     </tbody>
                                 </table>
+
+                                {/* Mobile card view */}
+                                <div className="sm:hidden space-y-3 p-3">
+                                    {childAggregation && (
+                                        <div className="rounded-lg border bg-muted/30 p-3">
+                                            <div className="text-xs text-muted-foreground italic mb-1">
+                                                {t("childTimeAggregation")}
+                                            </div>
+                                            <div className="text-sm font-mono text-muted-foreground">
+                                                {formatDuration(
+                                                    childAggregation.aggregatedDuration
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {entries.map((entry) => {
+                                        const isActive = entry.endTime === null
+                                        const elapsed = isActive
+                                            ? Math.floor(
+                                                  (currentTime.getTime() -
+                                                      entry.startTime.getTime()) /
+                                                      1000
+                                              )
+                                            : null
+
+                                        const duration =
+                                            isActive && elapsed !== null
+                                                ? elapsed
+                                                : (entry.duration ?? 0)
+
+                                        return (
+                                            <div
+                                                key={entry.id}
+                                                className="rounded-lg border bg-card p-3 space-y-3"
+                                            >
+                                                <div className="space-y-2">
+                                                    <div className="text-xs font-medium text-muted-foreground">
+                                                        {t("startedAt")}
+                                                    </div>
+                                                    <DateTimePicker
+                                                        value={getEntryDate(entry, "startTime")}
+                                                        onChange={(date: Date | undefined) =>
+                                                            handleFieldChange(
+                                                                entry.id,
+                                                                "startTime",
+                                                                date
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            isSaving || deleteMutation.isPending
+                                                        }
+                                                        modal={true}
+                                                        hideTime={false}
+                                                        timePicker={{
+                                                            hour: true,
+                                                            minute: true,
+                                                            second: false,
+                                                        }}
+                                                    />
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <div className="text-xs font-medium text-muted-foreground">
+                                                        {t("endedAt")}
+                                                    </div>
+                                                    {isActive ? (
+                                                        <div className="flex items-center h-9 px-3 text-xs text-muted-foreground border rounded-md">
+                                                            {t("now")}
+                                                        </div>
+                                                    ) : (
+                                                        <DateTimePicker
+                                                            value={getEntryDate(entry, "endTime")}
+                                                            onChange={(date: Date | undefined) =>
+                                                                handleFieldChange(
+                                                                    entry.id,
+                                                                    "endTime",
+                                                                    date
+                                                                )
+                                                            }
+                                                            disabled={
+                                                                isSaving || deleteMutation.isPending
+                                                            }
+                                                            modal={true}
+                                                            hideTime={false}
+                                                            timePicker={{
+                                                                hour: true,
+                                                                minute: true,
+                                                                second: false,
+                                                            }}
+                                                        />
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center justify-between pt-2 border-t">
+                                                    <div className="space-y-1">
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {t("duration")}
+                                                        </div>
+                                                        <div className="text-sm font-mono font-semibold">
+                                                            {formatDuration(duration)}
+                                                        </div>
+                                                    </div>
+                                                    {isActive ? (
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                stopMutation.mutate({
+                                                                    id: entry.id,
+                                                                })
+                                                            }}
+                                                            disabled={stopMutation.isPending}
+                                                            className="h-8 w-8 p-0"
+                                                        >
+                                                            <Square className="h-4 w-4" />
+                                                            <span className="sr-only">Stop</span>
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleDelete(entry.id)}
+                                                            disabled={
+                                                                isSaving || deleteMutation.isPending
+                                                            }
+                                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                            <span className="sr-only">Delete</span>
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
                             </div>
                         )}
                     </div>

@@ -271,7 +271,8 @@
             "noTimeEntries": "Še ni časovnih vnosov",
             "deleteTimeEntryConfirm": "Ali si prepričan, da želiš izbrisati ta vnos časa?",
             "childTimeAggregation": "Čas iz podnalog",
-            "subtasksInheritList": "Podnaloge podedujejo seznam starša"
+            "subtasksInheritList": "Podnaloge podedujejo seznam starša",
+            "now": "Zdaj"
         },
         "table": {
             "list": "Seznam",
