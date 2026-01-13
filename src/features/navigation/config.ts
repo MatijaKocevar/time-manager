@@ -25,15 +25,15 @@ export interface NavigationItem {
 
 export const navigationItems: NavigationItem[] = [
     {
-        title: "navigation.timeSheets",
-        url: "/time-sheets",
-        icon: FileSpreadsheet,
+        title: "navigation.timeTracker",
+        url: "/tracker",
+        icon: Timer,
         roles: ["USER", "ADMIN"],
     },
     {
-        title: "navigation.shifts",
-        url: "/shifts",
-        icon: CalendarDays,
+        title: "navigation.timeSheets",
+        url: "/time-sheets",
+        icon: FileSpreadsheet,
         roles: ["USER", "ADMIN"],
     },
     {
@@ -43,9 +43,9 @@ export const navigationItems: NavigationItem[] = [
         roles: ["USER", "ADMIN"],
     },
     {
-        title: "navigation.timeTracker",
-        url: "/tracker",
-        icon: Timer,
+        title: "navigation.shifts",
+        url: "/shifts",
+        icon: CalendarDays,
         roles: ["USER", "ADMIN"],
     },
     {

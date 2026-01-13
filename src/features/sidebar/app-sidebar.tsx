@@ -128,7 +128,6 @@ export function AppSidebar({
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel>{tNav("management")}</SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {filteredItems.map((item) => {
