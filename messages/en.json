@@ -211,7 +211,11 @@
             "expected": "Expected",
             "total": "Total",
             "overtime": "Overtime",
-            "totalHours": "Total Hours"
+            "totalHours": "Total Hours",
+            "days": "days",
+            "attendance": "Attendance",
+            "inOffice": "In Office",
+            "workFromHome": "Work from home"
         },
         "actions": {
             "addNewEntry": "Add New Entry",

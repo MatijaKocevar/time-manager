@@ -580,3 +580,95 @@ export async function batchUpdateHourEntries(input: BatchUpdateHourEntriesInput)
         return { error: "Failed to batch update hour entries" }
     }
 }
+
+export async function getAttendanceData(startDate: string, endDate: string) {
+    try {
+        const session = await requireAuth()
+
+        const shifts = await prisma.shift.findMany({
+            where: {
+                userId: session.user.id,
+                date: {
+                    gte: parseDate(startDate),
+                    lte: parseEndDate(endDate),
+                },
+                location: {
+                    in: ["OFFICE", "HOME"],
+                },
+            },
+            select: {
+                location: true,
+            },
+        })
+
+        const officeCount = shifts.filter((shift) => shift.location === "OFFICE").length
+        const remoteCount = shifts.filter((shift) => shift.location === "HOME").length
+
+        return { officeCount, remoteCount }
+    } catch (error) {
+        throw new Error("Failed to fetch attendance data")
+    }
+}
+
+export async function getUserPreferences() {
+    try {
+        const session = await requireAuth()
+
+        const preferences = await prisma.userPreferences.findUnique({
+            where: { userId: session.user.id },
+        })
+
+        if (!preferences) {
+            return {
+                hoursViewMode: "weekly",
+                hoursCardCollapsed: false,
+                hoursExpandedRows: [],
+            }
+        }
+
+        return {
+            hoursViewMode: preferences.hoursViewMode,
+            hoursCardCollapsed: preferences.hoursCardCollapsed,
+            hoursExpandedRows: (preferences.hoursExpandedRows as string[]) || [],
+        }
+    } catch (error) {
+        throw new Error("Failed to fetch user preferences")
+    }
+}
+
+export async function saveUserPreferences(input: {
+    hoursViewMode?: string
+    hoursCardCollapsed?: boolean
+    hoursExpandedRows?: string[]
+}) {
+    try {
+        const session = await requireAuth()
+
+        await prisma.userPreferences.upsert({
+            where: { userId: session.user.id },
+            create: {
+                userId: session.user.id,
+                hoursViewMode: input.hoursViewMode || "weekly",
+                hoursCardCollapsed: input.hoursCardCollapsed || false,
+                hoursExpandedRows: input.hoursExpandedRows || [],
+            },
+            update: {
+                ...(input.hoursViewMode !== undefined && { hoursViewMode: input.hoursViewMode }),
+                ...(input.hoursCardCollapsed !== undefined && {
+                    hoursCardCollapsed: input.hoursCardCollapsed,
+                }),
+                ...(input.hoursExpandedRows !== undefined && {
+                    hoursExpandedRows: input.hoursExpandedRows,
+                }),
+            },
+        })
+
+        revalidatePath("/hours")
+        return { success: true }
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error.message }
+        }
+        return { error: "Failed to save user preferences" }
+    }
+}

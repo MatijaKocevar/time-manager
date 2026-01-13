@@ -211,7 +211,11 @@
             "expected": "Pričakovano",
             "total": "Skupaj",
             "overtime": "Nadure",
-            "totalHours": "Skupaj ur"
+            "totalHours": "Skupaj ur",
+            "days": "dni",
+            "attendance": "Prisotnost",
+            "inOffice": "V pisarni",
+            "workFromHome": "Delo od doma"
         },
         "actions": {
             "addNewEntry": "Dodaj nov vnos",

@@ -6,6 +6,7 @@ import {
 } from "../schemas/hour-action-schemas"
 import { type ViewMode, VIEW_MODE_VALUES } from "../schemas/hour-filter-schemas"
 import { DEFAULT_HOURS, ALL_HOUR_TYPES, HOUR_TYPE_VALUES } from "../constants/hour-types"
+import { saveUserPreferences } from "../actions/hour-actions"
 
 interface SingleEntryFormState {
     data: SingleEntryFormData
@@ -63,10 +64,12 @@ const saveExpandedTypes = (types: Set<string>) => {
     const typesArray = Array.from(types)
     try {
         localStorage.setItem("hours-expanded-types", JSON.stringify(typesArray))
+        saveUserPreferences({ hoursExpandedRows: typesArray }).catch(() => {
+            // Ignore errors
+        })
     } catch {
         // Ignore localStorage errors
     }
-    // Save to cookies for server-side access
     document.cookie = `hours-expanded-types=${JSON.stringify(typesArray)}; path=/; max-age=31536000; SameSite=Lax`
 }
 
@@ -74,10 +77,24 @@ const saveSummaryCollapsed = (collapsed: boolean) => {
     if (typeof window === "undefined") return
     try {
         localStorage.setItem("hours-summary-collapsed", JSON.stringify(collapsed))
+        saveUserPreferences({ hoursCardCollapsed: collapsed }).catch(() => {
+            // Ignore errors
+        })
     } catch {
         // Ignore localStorage errors
     }
     document.cookie = `hours-summary-collapsed=${collapsed}; path=/; max-age=31536000; SameSite=Lax`
+}
+
+const saveViewMode = (mode: ViewMode) => {
+    if (typeof window === "undefined") return
+    try {
+        saveUserPreferences({ hoursViewMode: mode }).catch(() => {
+            // Ignore errors
+        })
+    } catch {
+        // Ignore errors
+    }
 }
 
 // Read initial state synchronously from localStorage
@@ -268,7 +285,10 @@ export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) =
             set((state) => ({
                 editForm: { ...state.editForm, error },
             })),
-        setViewMode: (mode) => set({ viewMode: mode }),
+        setViewMode: (mode) => {
+            saveViewMode(mode)
+            set({ viewMode: mode })
+        },
         setSelectedDate: (date) => set({ selectedDate: date }),
     }
 })

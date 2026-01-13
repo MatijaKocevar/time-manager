@@ -39,6 +39,8 @@ interface HoursViewProps {
     initialHolidays?: Array<{ date: Date; name: string }>
     initialDateRange?: { start: Date; end: Date }
     initialExpandedTypes?: string[]
+    initialSummaryCollapsed?: boolean
+    initialAttendanceData?: { officeCount: number; remoteCount: number }
 }
 
 export function HoursView({
@@ -50,6 +52,8 @@ export function HoursView({
     initialSelectedDate,
     initialHolidays = [],
     initialExpandedTypes = [],
+    initialSummaryCollapsed = false,
+    initialAttendanceData,
 }: HoursViewProps) {
     const t = useTranslations("hours.actions")
     const tCommon = useTranslations("common")
@@ -79,6 +83,13 @@ export function HoursView({
         const initializeExpandedTypes = useHoursStore.getState().initializeExpandedTypes
         initializeExpandedTypes(initialExpandedTypes)
     }, [initialExpandedTypes])
+
+    useEffect(() => {
+        const hoursStore = useHoursStore.getState()
+        if (initialSummaryCollapsed !== hoursStore.summaryCollapsed) {
+            hoursStore.summaryCollapsed = initialSummaryCollapsed
+        }
+    }, [initialSummaryCollapsed])
 
     const isDirty = useHoursBatchStore((state) => state.isDirty)
     const isSaving = useHoursBatchStore((state) => state.isSaving)
@@ -114,6 +125,7 @@ export function HoursView({
                 monthlyEntries={monthlyEntries}
                 dateRange={monthRange}
                 holidays={holidays}
+                initialAttendanceData={initialAttendanceData}
             />
 
             <div className="space-y-2 pt-2">

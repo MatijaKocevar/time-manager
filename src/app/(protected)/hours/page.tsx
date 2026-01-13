@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 import { cookies } from "next/headers"
 import { authConfig } from "@/lib/auth"
 import { HoursView } from "./components/hours-view"
-import { getHourEntries } from "./actions/hour-actions"
+import { getHourEntries, getUserPreferences, getAttendanceData } from "./actions/hour-actions"
 import { getDateRange } from "./utils/view-helpers"
 import { getHolidaysInRange } from "../admin/holidays/actions/holiday-actions"
 import type { ViewMode } from "./schemas/hour-filter-schemas"
@@ -21,24 +21,33 @@ export default async function HoursPage({ searchParams }: HoursPageProps) {
     }
 
     const params = await searchParams
-    const viewMode = (params.view?.toUpperCase() as ViewMode) || VIEW_MODE_VALUES.WEEKLY
+    const preferences = await getUserPreferences()
+
+    const viewMode =
+        (params.view?.toUpperCase() as ViewMode) ||
+        (preferences.hoursViewMode.toUpperCase() as ViewMode) ||
+        VIEW_MODE_VALUES.WEEKLY
     const selectedDate = params.date ? new Date(params.date) : new Date()
 
     const cookieStore = await cookies()
     const expandedTypesCookie = cookieStore.get("hours-expanded-types")
-    const initialExpandedTypes = expandedTypesCookie?.value
-        ? JSON.parse(expandedTypesCookie.value)
-        : []
+    const initialExpandedTypes =
+        preferences.hoursExpandedRows.length > 0
+            ? preferences.hoursExpandedRows
+            : expandedTypesCookie?.value
+              ? JSON.parse(expandedTypesCookie.value)
+              : []
 
     const dateRange = getDateRange(viewMode, selectedDate)
     const weekRange = getDateRange(VIEW_MODE_VALUES.WEEKLY, selectedDate)
     const monthRange = getDateRange(VIEW_MODE_VALUES.MONTHLY, selectedDate)
 
-    const [entries, weeklyEntries, monthlyEntries, holidays] = await Promise.all([
+    const [entries, weeklyEntries, monthlyEntries, holidays, attendanceData] = await Promise.all([
         getHourEntries(dateRange.startDate, dateRange.endDate),
         getHourEntries(weekRange.startDate, weekRange.endDate),
         getHourEntries(monthRange.startDate, monthRange.endDate),
         getHolidaysInRange(monthRange.startDate, monthRange.endDate),
+        getAttendanceData(monthRange.startDate, monthRange.endDate),
     ])
 
     return (
@@ -52,6 +61,8 @@ export default async function HoursPage({ searchParams }: HoursPageProps) {
             initialHolidays={holidays}
             initialDateRange={monthRange}
             initialExpandedTypes={initialExpandedTypes}
+            initialSummaryCollapsed={preferences.hoursCardCollapsed}
+            initialAttendanceData={attendanceData}
         />
     )
 }
