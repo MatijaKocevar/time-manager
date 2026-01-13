@@ -78,7 +78,7 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
         return (
             <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
                 <Link
-                    href="/time-sheets"
+                    href="/tracker"
                     className="flex items-center hover:text-foreground transition-colors"
                 >
                     <Home className="h-4 w-4" />
@@ -97,7 +97,7 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
         return (
             <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
                 <Link
-                    href="/time-sheets"
+                    href="/tracker"
                     className="flex items-center hover:text-foreground transition-colors"
                 >
                     <Home className="h-4 w-4" />
@@ -130,7 +130,7 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
         return (
             <nav className="flex items-center text-sm text-muted-foreground">
                 <Link
-                    href="/time-sheets"
+                    href="/tracker"
                     className="flex items-center hover:text-foreground transition-colors"
                 >
                     <Home className="h-4 w-4" />
@@ -173,7 +173,7 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
     return (
         <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
             <Link
-                href="/time-sheets"
+                href="/tracker"
                 className="flex items-center hover:text-foreground transition-colors"
             >
                 <Home className="h-4 w-4" />
