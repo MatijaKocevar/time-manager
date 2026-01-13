@@ -3,14 +3,25 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getTodayTimeSummary } from "../actions/tracker-actions"
 import { useEffect, useState } from "react"
+import type { HourType } from "@/../../prisma/generated/client"
 
-export function useDailySummary() {
+interface DailySummaryData {
+    totals: Record<"WORK" | "BREAK" | "PRIVATE", number>
+    activeTimer: {
+        id: string
+        startTime: Date
+        type: HourType
+    } | null
+}
+
+export function useDailySummary(initialData: DailySummaryData) {
     const queryClient = useQueryClient()
     const [, setTick] = useState(0)
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["tracker", "dailySummary"],
         queryFn: getTodayTimeSummary,
+        initialData,
         refetchOnWindowFocus: false,
         staleTime: 60000,
     })

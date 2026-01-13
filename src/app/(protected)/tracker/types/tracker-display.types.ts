@@ -33,6 +33,14 @@ export interface TrackerDisplayProps {
         updatedAt: Date
         type: HourType
     }>
+    initialDailySummary: {
+        totals: Record<"WORK" | "BREAK" | "PRIVATE", number>
+        activeTimer: {
+            id: string
+            startTime: Date
+            type: HourType
+        } | null
+    }
     translations: {
         selectType: string
         selectTask: string

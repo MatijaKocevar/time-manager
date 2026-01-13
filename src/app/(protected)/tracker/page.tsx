@@ -5,6 +5,7 @@ import {
     getTrackerPreferences,
     getTaskTimeEntries,
     getSystemTaskByType,
+    getTodayTimeSummary,
 } from "./actions/tracker-actions"
 import { TASK_STATUS } from "@/app/(protected)/tasks/constants/task-statuses"
 import { TrackerDisplay } from "./components/tracker-display"
@@ -15,11 +16,12 @@ export default async function TrackerPage() {
     const t = await getTranslations("tasks.tracker")
     const tTypes = await getTranslations("hours.types")
 
-    const [inProgressTasks, activeTimer, generalWorkTask, trackerPreferences] = await Promise.all([
+    const [inProgressTasks, activeTimer, generalWorkTask, trackerPreferences, dailySummary] = await Promise.all([
         getTasks({ status: TASK_STATUS.IN_PROGRESS }),
         getActiveTrackingEntry(),
         getGeneralWorkTask(),
         getTrackerPreferences(),
+        getTodayTimeSummary(),
     ])
 
     // If the saved type is BREAK or PRIVATE, ensure we have the system task ID
@@ -57,6 +59,7 @@ export default async function TrackerPage() {
                 initialSelectedTaskId={finalSelectedTaskId}
                 initialActiveTimer={activeTimer}
                 initialTodayEntries={initialTaskEntries}
+                initialDailySummary={dailySummary}
                 translations={translations}
             />
             <TimeEntriesDialog />

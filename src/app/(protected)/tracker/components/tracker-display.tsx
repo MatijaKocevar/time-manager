@@ -33,6 +33,7 @@ export function TrackerDisplay({
     initialSelectedTaskId,
     initialActiveTimer,
     initialTodayEntries,
+    initialDailySummary,
     translations,
 }: TrackerDisplayProps) {
     useTrackerSSE()
@@ -235,6 +236,7 @@ export function TrackerDisplay({
             </Card>
 
             <DailySummaryCard
+                initialData={initialDailySummary}
                 translations={{
                     title: translations.dailySummaryTitle,
                     work: translations.work,

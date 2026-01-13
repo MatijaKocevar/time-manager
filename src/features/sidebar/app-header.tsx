@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Breadcrumbs } from "@/features/breadcrumbs"
 import { SettingsMenu } from "./settings-menu"
-import { NotificationsDropdown } from "@/features/notifications/components/notifications-dropdown"
+import { NotificationsDropdownClient } from "@/features/notifications/components/notifications-dropdown-client"
 import { getNotifications } from "@/features/notifications/actions/notification-actions"
 
 interface AppHeaderProps {
@@ -50,7 +50,7 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
                 <Breadcrumbs overrides={breadcrumbTranslations} />
             </div>
             <div className="flex items-center gap-2">
-                <NotificationsDropdown
+                <NotificationsDropdownClient
                     initialNotifications={notifications}
                     translations={notificationsTranslations}
                 />

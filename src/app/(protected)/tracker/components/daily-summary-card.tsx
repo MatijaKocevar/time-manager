@@ -4,8 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Clock } from "lucide-react"
 import { useDailySummary } from "../hooks/use-daily-summary"
 import { formatHoursMinutes } from "@/app/(protected)/hours/utils/time-helpers"
+import type { HourType } from "@/../../prisma/generated/client"
 
 interface DailySummaryCardProps {
+    initialData: {
+        totals: Record<"WORK" | "BREAK" | "PRIVATE", number>
+        activeTimer: {
+            id: string
+            startTime: Date
+            type: HourType
+        } | null
+    }
     translations: {
         title: string
         work: string
@@ -14,31 +23,8 @@ interface DailySummaryCardProps {
     }
 }
 
-export function DailySummaryCard({ translations }: DailySummaryCardProps) {
-    const { totals, isLoading } = useDailySummary()
-
-    if (isLoading) {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                        <Clock className="h-5 w-5" />
-                        {translations.title}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-3 gap-4">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="flex flex-col items-center gap-2">
-                                <div className="h-4 w-16 bg-muted animate-pulse rounded" />
-                                <div className="h-8 w-20 bg-muted animate-pulse rounded" />
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        )
-    }
+export function DailySummaryCard({ initialData, translations }: DailySummaryCardProps) {
+    const { totals } = useDailySummary(initialData)
 
     return (
         <Card>
