@@ -17,6 +17,7 @@ import {
     type TaskTimeEntryDisplay,
 } from "../schemas/task-time-entry-schemas"
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
+import { getPusherServer } from "@/lib/pusher-server"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -161,6 +162,31 @@ export async function startTimer(input: StartTimerInput) {
         await refreshDailyHourSummary()
         revalidatePath("/tasks")
         revalidatePath("/hours")
+        revalidatePath("/time-sheets")
+
+        setImmediate(() => {
+            const broadcastData = {
+                entryId: newEntry.id,
+                taskId,
+                startTime: newEntry.startTime,
+                type: newEntry.type,
+            }
+
+            const { sseManager } = require("@/lib/sse-manager")
+            sseManager.broadcast(session.user.id, "timer-started", broadcastData)
+
+            if (process.env.VERCEL) {
+                const pusher = getPusherServer()
+                if (pusher) {
+                    pusher.trigger(
+                        `private-user-${session.user.id}`,
+                        "timer-started",
+                        broadcastData
+                    )
+                }
+            }
+        })
+
         return { success: true, entryId: newEntry.id }
     } catch (error) {
         if (error instanceof Error) {
@@ -207,6 +233,23 @@ export async function stopTimer(input: StopTimerInput) {
         await refreshDailyHourSummary()
         revalidatePath("/tasks")
         revalidatePath("/hours")
+        revalidatePath("/time-sheets")
+
+        const broadcastData = {
+            entryId: id,
+            duration,
+        }
+
+        const { sseManager } = require("@/lib/sse-manager")
+        sseManager.broadcast(session.user.id, "timer-stopped", broadcastData)
+
+        if (process.env.VERCEL) {
+            const pusher = getPusherServer()
+            if (pusher) {
+                pusher.trigger(`private-user-${session.user.id}`, "timer-stopped", broadcastData)
+            }
+        }
+
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {

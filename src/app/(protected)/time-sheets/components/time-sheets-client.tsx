@@ -13,6 +13,8 @@ import { ExportDialog, type ExportFormat } from "@/features/export"
 import { TimeSheetsTable } from "./time-sheets-table"
 import type { TimeEntryDisplay } from "../schemas/time-sheet-schemas"
 import { useTranslations } from "next-intl"
+import { useTimeSheetsSSE } from "../hooks/use-time-sheets-sse"
+import { useTimeSheetsPusher } from "../hooks/use-time-sheets-pusher"
 
 interface TimeSheetsClientProps {
     initialData: TimeEntryDisplay[]
@@ -39,6 +41,8 @@ export function TimeSheetsClient({
     translations,
 }: TimeSheetsClientProps) {
     const tCommon = useTranslations("common")
+    useTimeSheetsSSE()
+    useTimeSheetsPusher()
     const router = useRouter()
     const storeViewMode = useTimeSheetsStore((state) => state.viewMode)
     const storeSelectedDate = useTimeSheetsStore((state) => state.selectedDate)

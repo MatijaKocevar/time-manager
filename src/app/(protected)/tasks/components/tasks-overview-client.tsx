@@ -7,6 +7,8 @@ import { getActiveTimer } from "../actions/task-time-actions"
 import { getLists } from "../actions/list-actions"
 import { taskKeys, listKeys } from "../query-keys"
 import { getElapsedSeconds } from "../utils/time-helpers"
+import { useTasksSSE } from "../hooks/use-tasks-sse"
+import { useTasksPusher } from "../hooks/use-tasks-pusher"
 import { TasksFlatTable } from "./tasks-flat-table"
 import { CreateTaskDialog } from "./create-task-dialog"
 import { DeleteTaskDialog } from "./delete-task-dialog"
@@ -31,6 +33,8 @@ interface TasksOverviewClientProps {
 }
 
 export function TasksOverviewClient({ groups, lists: initialLists }: TasksOverviewClientProps) {
+    useTasksSSE()
+    useTasksPusher()
     const activeTimers = useTasksStore((state) => state.activeTimers)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)

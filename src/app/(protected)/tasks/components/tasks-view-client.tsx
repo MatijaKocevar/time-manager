@@ -15,6 +15,8 @@ import { TimeEntriesDialog } from "./time-entries-dialog"
 import { CreateListDialog } from "./create-list-dialog"
 import { MoveTaskDialog } from "./move-task-dialog"
 import { getElapsedSeconds } from "../utils/time-helpers"
+import { useTasksSSE } from "../hooks/use-tasks-sse"
+import { useTasksPusher } from "../hooks/use-tasks-pusher"
 
 interface TasksViewClientProps {
     listId: string | null
@@ -22,6 +24,8 @@ interface TasksViewClientProps {
 
 export function TasksViewClient({ listId }: TasksViewClientProps) {
     const t = useTranslations("tasks.form")
+    useTasksSSE()
+    useTasksPusher()
     const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
     const setSelectedListId = useTasksStore((state) => state.setSelectedListId)
     const activeTimers = useTasksStore((state) => state.activeTimers)
