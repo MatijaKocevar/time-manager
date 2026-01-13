@@ -12,6 +12,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { DateTimePicker } from "@/components/ui/datetime-picker"
 import { useTasksStore } from "../stores/tasks-store"
 import {
@@ -54,7 +55,7 @@ export function TimeEntriesDialog() {
     const [editedEntries, setEditedEntries] = useState<Map<string, EditedEntry>>(new Map())
     const [isSaving, setIsSaving] = useState(false)
 
-    const { data } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: taskKeys.timeEntriesForTask(timeEntriesDialog.taskId ?? ""),
         queryFn: () => {
             if (!timeEntriesDialog.taskId) return { entries: [], childAggregation: null }
@@ -193,10 +194,15 @@ export function TimeEntriesDialog() {
 
                 <div className="flex flex-col gap-4">
                     <div
-                        className="rounded-md border overflow-hidden"
+                        className="rounded-md border overflow-hidden relative"
                         style={{ height: "300px", minHeight: "200px" }}
                     >
-                        {entries.length === 0 && !childAggregation ? (
+                        {isLoading && (
+                            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+                                <LoadingSpinner />
+                            </div>
+                        )}
+                        {entries.length === 0 && !childAggregation && !isLoading ? (
                             <div className="flex items-center justify-center h-full text-muted-foreground">
                                 {t("noTimeEntries")}
                             </div>

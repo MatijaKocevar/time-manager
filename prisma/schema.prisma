@@ -160,6 +160,7 @@ model TaskTimeEntry {
   @@index([startTime])
   @@index([userId, startTime])
   @@index([userId, endTime])
+  @@index([taskId, startTime])
 }
 
 model Request {
