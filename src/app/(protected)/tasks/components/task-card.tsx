@@ -1,14 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import {
-    ChevronDown,
-    ChevronRight,
-    Plus,
-    Trash2,
-    Folder,
-    FolderOpen,
-} from "lucide-react"
+import { ChevronDown, ChevronRight, Plus, Trash2, Folder, FolderOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 function generateColorFromId(id: string, excludeColor?: string): string {
@@ -22,17 +15,15 @@ function generateColorFromId(id: string, excludeColor?: string): string {
         "rgb(20, 184, 166)",
         "rgb(249, 115, 22)",
     ]
-    
-    const colors = excludeColor
-        ? allColors.filter((color) => color !== excludeColor)
-        : allColors
-    
+
+    const colors = excludeColor ? allColors.filter((color) => color !== excludeColor) : allColors
+
     let hash = 0
     for (let i = 0; i < id.length; i++) {
         hash = (hash << 5) - hash + id.charCodeAt(i)
         hash = hash & hash
     }
-    
+
     return colors[Math.abs(hash) % colors.length]
 }
 import {
@@ -124,30 +115,23 @@ export function TaskCard({ task, lists, parentColor }: TaskCardProps) {
 
     const currentList = lists.find((list) => list.id === task.listId)
     const isSubtask = task.depth > 0
-    
+
     const myColor = generateColorFromId(task.id, parentColor)
-    const colors =
-        isSubtask && parentColor
-            ? [parentColor, myColor]
-            : isSubtask
-              ? [myColor]
-              : []
-    
-    const borderStyle = colors.length > 0
-        ? {
-              boxShadow: colors
-                  .map((color, i) => `inset ${6 + i * 6}px 0 0 0 ${color}`)
-                  .join(", "),
-              paddingLeft: `${colors.length * 6 + 12}px`,
-          }
-        : {}
+    const colors = isSubtask && parentColor ? [parentColor, myColor] : isSubtask ? [myColor] : []
+
+    const borderStyle =
+        colors.length > 0
+            ? {
+                  boxShadow: colors
+                      .map((color, i) => `inset ${6 + i * 6}px 0 0 0 ${color}`)
+                      .join(", "),
+                  paddingLeft: `${colors.length * 6 + 12}px`,
+              }
+            : {}
 
     return (
         <div>
-            <div
-                className="rounded-lg border bg-card p-3 space-y-3"
-                style={borderStyle}
-            >
+            <div className="rounded-lg border bg-card p-3 space-y-3" style={borderStyle}>
                 <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 flex-1 min-w-0">
                         {hasSubtasks && (
@@ -171,7 +155,9 @@ export function TaskCard({ task, lists, parentColor }: TaskCardProps) {
                                     ))}
                                     <span>{t("subtask")}</span>
                                     {task.depth > 1 && (
-                                        <span className="text-xs">({t("level")} {task.depth})</span>
+                                        <span className="text-xs">
+                                            ({t("level")} {task.depth})
+                                        </span>
                                     )}
                                 </div>
                             )}

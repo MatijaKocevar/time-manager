@@ -82,7 +82,9 @@ export function TasksTable({ tasks, listId, lists }: TasksTableProps) {
                                                 <TableHead className="w-[150px]">
                                                     {tCommon("fields.status")}
                                                 </TableHead>
-                                                <TableHead className="w-[180px]">{t("list")}</TableHead>
+                                                <TableHead className="w-[180px]">
+                                                    {t("list")}
+                                                </TableHead>
                                                 <TableHead className="w-[200px]">
                                                     {t("timeTracker")}
                                                 </TableHead>
