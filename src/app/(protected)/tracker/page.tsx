@@ -16,15 +16,15 @@ export default async function TrackerPage() {
     const t = await getTranslations("tasks.tracker")
     const tTypes = await getTranslations("hours.types")
 
-    const [inProgressTasks, activeTimer, generalWorkTask, trackerPreferences, dailySummary] = await Promise.all([
-        getTasks({ status: TASK_STATUS.IN_PROGRESS }),
-        getActiveTrackingEntry(),
-        getGeneralWorkTask(),
-        getTrackerPreferences(),
-        getTodayTimeSummary(),
-    ])
+    const [inProgressTasks, activeTimer, generalWorkTask, trackerPreferences, dailySummary] =
+        await Promise.all([
+            getTasks({ status: TASK_STATUS.IN_PROGRESS }),
+            getActiveTrackingEntry(),
+            getGeneralWorkTask(),
+            getTrackerPreferences(),
+            getTodayTimeSummary(),
+        ])
 
-    // If the saved type is BREAK or PRIVATE, ensure we have the system task ID
     let finalSelectedTaskId = trackerPreferences.selectedTaskId
 
     if (
