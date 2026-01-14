@@ -242,6 +242,7 @@
             "createTask": "Ustvari nalogo",
             "createSubtask": "Ustvari podnalogo",
             "subtask": "Podnaloga",
+            "parent": "Nadrejena",
             "level": "Nivo",
             "editTask": "Uredi nalogo",
             "newTask": "Nova naloga",

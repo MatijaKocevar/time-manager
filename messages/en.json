@@ -242,6 +242,7 @@
             "createTask": "Create Task",
             "createSubtask": "Create Subtask",
             "subtask": "Subtask",
+            "parent": "Parent",
             "level": "Level",
             "editTask": "Edit Task",
             "newTask": "New Task",

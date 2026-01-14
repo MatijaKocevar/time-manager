@@ -4,27 +4,15 @@ import { useTranslations } from "next-intl"
 import { ChevronDown, ChevronRight, Plus, Trash2, Folder, FolderOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-function generateColorFromId(id: string, excludeColor?: string): string {
-    const allColors = [
-        "rgb(239, 68, 68)",
-        "rgb(34, 197, 94)",
-        "rgb(59, 130, 246)",
-        "rgb(234, 179, 8)",
-        "rgb(168, 85, 247)",
-        "rgb(236, 72, 153)",
-        "rgb(20, 184, 166)",
-        "rgb(249, 115, 22)",
+function getColorByDepth(depth: number): string {
+    const colors = [
+        "var(--chart-1)",
+        "var(--chart-2)",
+        "var(--chart-3)",
+        "var(--chart-4)",
+        "var(--chart-5)",
     ]
-
-    const colors = excludeColor ? allColors.filter((color) => color !== excludeColor) : allColors
-
-    let hash = 0
-    for (let i = 0; i < id.length; i++) {
-        hash = (hash << 5) - hash + id.charCodeAt(i)
-        hash = hash & hash
-    }
-
-    return colors[Math.abs(hash) % colors.length]
+    return colors[depth % colors.length]
 }
 import {
     Select,
@@ -48,9 +36,10 @@ interface TaskCardProps {
     task: TaskTreeNode
     lists: ListDisplay[]
     parentColor?: string
+    parentTitle?: string
 }
 
-export function TaskCard({ task, lists, parentColor }: TaskCardProps) {
+export function TaskCard({ task, lists, parentColor, parentTitle }: TaskCardProps) {
     const queryClient = useQueryClient()
     const t = useTranslations("tasks.form")
     const tTable = useTranslations("tasks.table")
@@ -116,18 +105,13 @@ export function TaskCard({ task, lists, parentColor }: TaskCardProps) {
     const currentList = lists.find((list) => list.id === task.listId)
     const isSubtask = task.depth > 0
 
-    const myColor = generateColorFromId(task.id, parentColor)
-    const colors = isSubtask && parentColor ? [parentColor, myColor] : isSubtask ? [myColor] : []
+    const myColor = getColorByDepth(task.depth)
+    const colors = parentColor ? [parentColor, myColor] : [myColor]
 
-    const borderStyle =
-        colors.length > 0
-            ? {
-                  boxShadow: colors
-                      .map((color, i) => `inset ${6 + i * 6}px 0 0 0 ${color}`)
-                      .join(", "),
-                  paddingLeft: `${colors.length * 6 + 12}px`,
-              }
-            : {}
+    const borderStyle = {
+        boxShadow: colors.map((color, i) => `inset ${6 + i * 6}px 0 0 0 ${color}`).join(", "),
+        paddingLeft: `${colors.length * 6 + 12}px`,
+    }
 
     return (
         <div>
@@ -148,17 +132,14 @@ export function TaskCard({ task, lists, parentColor }: TaskCardProps) {
                             </button>
                         )}
                         <div className="flex-1 min-w-0">
-                            {isSubtask && (
+                            {isSubtask && parentTitle && (
                                 <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
                                     {Array.from({ length: task.depth }).map((_, i) => (
                                         <ChevronRight key={i} className="h-3 w-3" />
                                     ))}
-                                    <span>{t("subtask")}</span>
-                                    {task.depth > 1 && (
-                                        <span className="text-xs">
-                                            ({t("level")} {task.depth})
-                                        </span>
-                                    )}
+                                    <span>
+                                        {t("parent")}: {parentTitle}
+                                    </span>
                                 </div>
                             )}
                             <EditableTaskTitle task={task} />
@@ -288,7 +269,8 @@ export function TaskCard({ task, lists, parentColor }: TaskCardProps) {
                         <TaskCard
                             task={subtask}
                             lists={lists}
-                            parentColor={isSubtask ? myColor : undefined}
+                            parentColor={myColor}
+                            parentTitle={task.title}
                         />
                     </div>
                 ))}
