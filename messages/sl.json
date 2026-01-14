@@ -241,6 +241,8 @@
         "form": {
             "createTask": "Ustvari nalogo",
             "createSubtask": "Ustvari podnalogo",
+            "subtask": "Podnaloga",
+            "level": "Nivo",
             "editTask": "Uredi nalogo",
             "newTask": "Nova naloga",
             "taskTitle": "Naslov naloge",
@@ -289,7 +291,8 @@
             "startTimer": "Začni štoparico",
             "stopTimer": "Ustavi štoparico",
             "addSubtask": "Dodaj podnalogo",
-            "moveToList": "Premakni na seznam"
+            "moveToList": "Premakni na seznam",
+            "delete": "Izbriši"
         },
         "list": {
             "createList": "Ustvari seznam",

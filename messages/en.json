@@ -241,6 +241,8 @@
         "form": {
             "createTask": "Create Task",
             "createSubtask": "Create Subtask",
+            "subtask": "Subtask",
+            "level": "Level",
             "editTask": "Edit Task",
             "newTask": "New Task",
             "taskTitle": "Task Title",
@@ -289,7 +291,8 @@
             "startTimer": "Start timer",
             "stopTimer": "Stop timer",
             "addSubtask": "Add subtask",
-            "moveToList": "Move to list"
+            "moveToList": "Move to list",
+            "delete": "Delete"
         },
         "list": {
             "createList": "Create List",
