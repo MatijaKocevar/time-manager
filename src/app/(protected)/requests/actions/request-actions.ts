@@ -1076,6 +1076,26 @@ export async function approveRequest(input: ApproveRequestInput) {
                                     type: targetHourType,
                                 },
                             })
+
+                            await tx.taskTimeEntry.updateMany({
+                                where: {
+                                    userId: request.userId,
+                                    startTime: {
+                                        gte: reqStartDateTime,
+                                        lt: reqEndDateTime,
+                                    },
+                                    endTime: null,
+                                    type: oldType as HourType,
+                                    NOT: {
+                                        taskId: {
+                                            in: systemTaskIds,
+                                        },
+                                    },
+                                },
+                                data: {
+                                    type: targetHourType,
+                                },
+                            })
                         }
                     }
                 }

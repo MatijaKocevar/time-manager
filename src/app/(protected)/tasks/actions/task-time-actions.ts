@@ -130,9 +130,9 @@ export async function startTimer(input: StartTimerInput) {
 
                     if (request.isFullDay || !request.startTime || !request.endTime) {
                         requestStart = new Date(request.startDate)
-                        requestStart.setHours(0, 0, 0, 0)
+                        requestStart.setUTCHours(0, 0, 0, 0)
                         requestEnd = new Date(request.endDate)
-                        requestEnd.setHours(23, 59, 59, 999)
+                        requestEnd.setUTCHours(23, 59, 59, 999)
                     } else {
                         const [startHour, startMin] = request.startTime.split(":").map(Number)
                         const [endHour, endMin] = request.endTime.split(":").map(Number)

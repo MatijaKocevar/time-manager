@@ -182,12 +182,57 @@ export async function startTracking(input: StartTrackingInput) {
                 throw new Error("Task ID is required")
             }
 
+            let finalType = type
+
+            if (finalType === "WORK") {
+                const now = new Date()
+
+                const approvedRequests = await tx.request.findMany({
+                    where: {
+                        userId: session.user.id,
+                        status: "APPROVED",
+                        affectsHourType: true,
+                        cancelledAt: null,
+                        type: {
+                            notIn: ["VACATION", "SICK_LEAVE"],
+                        },
+                    },
+                    orderBy: {
+                        approvedAt: "desc",
+                    },
+                })
+
+                for (const request of approvedRequests) {
+                    let requestStart: Date
+                    let requestEnd: Date
+
+                    if (request.isFullDay || !request.startTime || !request.endTime) {
+                        requestStart = new Date(request.startDate)
+                        requestStart.setUTCHours(0, 0, 0, 0)
+                        requestEnd = new Date(request.endDate)
+                        requestEnd.setUTCHours(23, 59, 59, 999)
+                    } else {
+                        const [startHour, startMin] = request.startTime.split(":").map(Number)
+                        const [endHour, endMin] = request.endTime.split(":").map(Number)
+                        requestStart = new Date(request.startDate)
+                        requestStart.setUTCHours(startHour, startMin, 0, 0)
+                        requestEnd = new Date(request.endDate)
+                        requestEnd.setUTCHours(endHour, endMin, 0, 0)
+                    }
+
+                    if (now >= requestStart && now <= requestEnd) {
+                        finalType = request.type
+                        break
+                    }
+                }
+            }
+
             const entry = await tx.taskTimeEntry.create({
                 data: {
                     taskId: finalTaskId,
                     userId: session.user.id,
                     startTime: new Date(),
-                    type,
+                    type: finalType,
                 },
             })
 
