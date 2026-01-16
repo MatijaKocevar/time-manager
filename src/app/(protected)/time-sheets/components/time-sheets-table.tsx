@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Play, Square } from "lucide-react"
 import {
@@ -20,7 +20,14 @@ import { useTasksStore } from "../../tasks/stores/tasks-store"
 import { startTimer, stopTimer } from "../../tasks/actions/task-time-actions"
 import { taskKeys } from "../../tasks/query-keys"
 import { timeSheetKeys } from "../query-keys"
-import { isWeekend, isToday, formatDateKey, formatDateHeader } from "../utils/date-helpers"
+import {
+    isWeekend,
+    isToday,
+    formatDateKey,
+    formatDateHeader,
+    buildHolidayMap,
+    getHolidayForDate,
+} from "../utils/date-helpers"
 import type { AggregatedTimeSheet } from "../utils/aggregation-helpers"
 
 interface TimeSheetsTableProps {
@@ -29,6 +36,7 @@ interface TimeSheetsTableProps {
     error: string | null
     currentTime: Date
     formatHoursMinutes: (seconds: number) => string
+    holidays?: Array<{ date: Date; name: string }>
     translations: {
         task: string
         total: string
@@ -45,6 +53,7 @@ export function TimeSheetsTable({
     error,
     currentTime,
     formatHoursMinutes,
+    holidays = [],
     translations,
 }: TimeSheetsTableProps) {
     const queryClient = useQueryClient()
@@ -100,6 +109,12 @@ export function TimeSheetsTable({
         dailyTotals.set(dateStr, total)
     })
 
+    const holidaysByDate = useMemo(() => buildHolidayMap(holidays), [holidays])
+
+    const isHoliday = (date: Date) => {
+        return getHolidayForDate(date, holidaysByDate)
+    }
+
     return (
         <div className="border rounded-lg overflow-auto h-full">
             <Table>
@@ -119,6 +134,7 @@ export function TimeSheetsTable({
                             const date = new Date(dateStr)
                             const isWeekendDay = isWeekend(date)
                             const isTodayDay = isToday(date)
+                            const holiday = isHoliday(date)
                             const totalSeconds = dailyTotals.get(dateStr) ?? 0
                             const totalHours = totalSeconds / 3600
 
@@ -127,7 +143,7 @@ export function TimeSheetsTable({
                                     key={dateStr}
                                     className={`text-center min-w-[100px] relative py-2 ${
                                         isWeekendDay ? "bg-muted/50" : ""
-                                    } ${isTodayDay ? "bg-blue-50 dark:bg-blue-950" : ""}`}
+                                    } ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isTodayDay ? "bg-blue-50 dark:bg-blue-950" : ""}`}
                                 >
                                     {totalHours > 0 && (
                                         <div className="absolute top-0 left-0 right-0 h-0.5 flex">
@@ -159,6 +175,11 @@ export function TimeSheetsTable({
                                                 ? formatHoursMinutes(totalSeconds)
                                                 : ""}
                                         </div>
+                                        {holiday && (
+                                            <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 mt-1">
+                                                {holiday.name}
+                                            </span>
+                                        )}
                                     </div>
                                 </TableHead>
                             )
@@ -304,6 +325,7 @@ export function TimeSheetsTable({
                                             const durationInSeconds = task.byDate.get(dateKey)
                                             const isWeekendDay = isWeekend(date)
                                             const isTodayDay = isToday(date)
+                                            const holiday = isHoliday(date)
 
                                             const displayDuration =
                                                 isTracking && isTodayDay && activeTimer
@@ -319,7 +341,7 @@ export function TimeSheetsTable({
                                                     key={dateStr}
                                                     className={`text-center tabular-nums ${
                                                         isWeekendDay ? "bg-muted/50" : ""
-                                                    } ${
+                                                    } ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${
                                                         isTodayDay
                                                             ? "bg-blue-50 dark:bg-blue-950"
                                                             : ""

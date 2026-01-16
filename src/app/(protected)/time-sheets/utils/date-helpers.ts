@@ -113,3 +113,24 @@ export function countWorkingDays(dates: Date[]): number {
         return day !== 0 && day !== 6
     }).length
 }
+
+export function buildHolidayMap(
+    holidays: Array<{ date: Date; name: string }> | undefined
+): Map<string, { name: string }> {
+    const map = new Map<string, { name: string }>()
+    if (!holidays) return map
+    holidays.forEach((holiday) => {
+        const holidayDate = new Date(holiday.date)
+        const key = formatDateKey(holidayDate)
+        map.set(key, { name: holiday.name })
+    })
+    return map
+}
+
+export function getHolidayForDate(
+    date: Date,
+    holidaysByDate: Map<string, { name: string }>
+): { name: string } | undefined {
+    const key = formatDateKey(date)
+    return holidaysByDate.get(key)
+}

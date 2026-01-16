@@ -15,11 +15,13 @@ import type { TimeEntryDisplay } from "../schemas/time-sheet-schemas"
 import { useTranslations } from "next-intl"
 import { useTimeSheetsSSE } from "../hooks/use-time-sheets-sse"
 import { useTimeSheetsPusher } from "../hooks/use-time-sheets-pusher"
+import { useHolidays } from "../hooks/use-holidays"
 
 interface TimeSheetsClientProps {
     initialData: TimeEntryDisplay[]
     initialViewMode: ViewMode
     initialSelectedDate: Date
+    initialHolidays?: Array<{ date: Date; name: string }>
     translations: {
         week: string
         month: string
@@ -38,6 +40,7 @@ export function TimeSheetsClient({
     initialData,
     initialViewMode,
     initialSelectedDate,
+    initialHolidays = [],
     translations,
 }: TimeSheetsClientProps) {
     const tCommon = useTranslations("common")
@@ -77,6 +80,12 @@ export function TimeSheetsClient({
     }, [viewMode, selectedDate, router])
 
     const dateRange = getDateRangeForView(selectedDate, viewMode)
+
+    const holidays = useHolidays(
+        dateRange.startDate.toISOString(),
+        dateRange.endDate.toISOString(),
+        initialHolidays
+    )
 
     const formatHoursMinutes = (seconds: number): string => {
         const totalHours = seconds / 3600
@@ -224,6 +233,7 @@ export function TimeSheetsClient({
                     error={error ? translations.error : null}
                     currentTime={currentTime}
                     formatHoursMinutes={formatHoursMinutes}
+                    holidays={holidays}
                     translations={{
                         task: translations.task,
                         total: translations.total,

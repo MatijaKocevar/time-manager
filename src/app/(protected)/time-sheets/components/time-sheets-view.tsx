@@ -6,9 +6,10 @@ import { getDateRangeForView, type ViewMode } from "../utils/date-helpers"
 
 interface TimeSheetsViewProps {
     searchParams: { mode?: string; date?: string }
+    initialHolidays?: Array<{ date: Date; name: string }>
 }
 
-export async function TimeSheetsView({ searchParams }: TimeSheetsViewProps) {
+export async function TimeSheetsView({ searchParams, initialHolidays = [] }: TimeSheetsViewProps) {
     const t = await getTranslations("timeSheets")
     const tSummary = await getTranslations("hours.summary")
 
@@ -29,6 +30,7 @@ export async function TimeSheetsView({ searchParams }: TimeSheetsViewProps) {
                 initialData={initialData}
                 initialViewMode={viewMode}
                 initialSelectedDate={selectedDate}
+                initialHolidays={initialHolidays}
                 translations={{
                     week: t("viewMode.week"),
                     month: t("viewMode.month"),
