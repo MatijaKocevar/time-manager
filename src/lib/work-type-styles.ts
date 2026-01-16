@@ -29,10 +29,10 @@ export const WORK_TYPE_COLORS: Record<WorkType, Record<WorkTypeVariant, string>>
         strong: "bg-green-200 text-green-900 dark:bg-green-900 dark:text-green-100",
     },
     SICK_LEAVE: {
-        default: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200",
-        light: "bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-300",
-        lighter: "bg-red-50 text-red-600 dark:bg-red-900/50 dark:text-red-400",
-        strong: "bg-red-200 text-red-900 dark:bg-red-900 dark:text-red-100",
+        default: "bg-[#F5E6B3] text-[#433600] dark:bg-[#2A2300] dark:text-[#D4C894]",
+        light: "bg-[#FAF0CC] text-[#433600] dark:bg-[#332B00] dark:text-[#E0D4A8]",
+        lighter: "bg-[#FEFBF0] text-[#5A4800] dark:bg-[#1F1A00] dark:text-[#E8DCBC]",
+        strong: "bg-[#E8D89F] text-[#2A2300] dark:bg-[#332B00] dark:text-[#FAF0CC]",
     },
     OTHER: {
         default: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
@@ -41,16 +41,16 @@ export const WORK_TYPE_COLORS: Record<WorkType, Record<WorkTypeVariant, string>>
         strong: "bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100",
     },
     BREAK: {
-        default: "bg-orange-100 text-orange-800 dark:bg-orange-950 dark:text-orange-200",
-        light: "bg-orange-50 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-        lighter: "bg-orange-50 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400",
-        strong: "bg-orange-200 text-orange-900 dark:bg-orange-900 dark:text-orange-100",
+        default: "bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200",
+        light: "bg-yellow-50 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+        lighter: "bg-yellow-50 text-yellow-600 dark:bg-yellow-900/50 dark:text-yellow-400",
+        strong: "bg-yellow-200 text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100",
     },
     PRIVATE: {
-        default: "bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-200",
-        light: "bg-pink-50 text-pink-700 dark:bg-pink-900 dark:text-pink-300",
-        lighter: "bg-pink-50 text-pink-600 dark:bg-pink-900/50 dark:text-pink-400",
-        strong: "bg-pink-200 text-pink-900 dark:bg-pink-900 dark:text-pink-100",
+        default: "bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-200",
+        light: "bg-cyan-50 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300",
+        lighter: "bg-cyan-50 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400",
+        strong: "bg-cyan-200 text-cyan-900 dark:bg-cyan-900 dark:text-cyan-100",
     },
 }
 

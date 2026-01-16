@@ -93,7 +93,7 @@ export function HourTypeRow({
                     return (
                         <TableCell
                             key={dateKey}
-                            className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
+                            className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-orange-100 dark:bg-orange-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                         >
                             <EditableHourCell
                                 date={new Date(dateKey)}
@@ -143,7 +143,7 @@ export function HourTypeRow({
                             return (
                                 <TableCell
                                     key={dateKey}
-                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
+                                    className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-orange-100 dark:bg-orange-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                 >
                                     <EditableHourCell
                                         date={date}
@@ -197,7 +197,7 @@ export function HourTypeRow({
                                     return (
                                         <TableCell
                                             key={dateKey}
-                                            className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
+                                            className={`text-center p-2 ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-amber-100 dark:bg-amber-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                         >
                                             <EditableHourCell
                                                 date={date}

@@ -10,11 +10,12 @@ export default async function TimeSheetsPage({ searchParams }: TimeSheetsPagePro
     const params = await searchParams
     const viewMode = params.mode === "month" ? "month" : "week"
     const selectedDate = params.date ? new Date(params.date) : new Date()
-    const dateRange = getDateRangeForView(selectedDate, viewMode)
+
+    const monthRange = getDateRangeForView(selectedDate, "month")
 
     const holidays = await getHolidaysInRange(
-        dateRange.startDate.toISOString(),
-        dateRange.endDate.toISOString()
+        monthRange.startDate.toISOString(),
+        monthRange.endDate.toISOString()
     )
 
     return (

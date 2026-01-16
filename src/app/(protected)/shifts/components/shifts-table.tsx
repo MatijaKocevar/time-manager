@@ -55,7 +55,7 @@ export function ShiftsTable({
                             return (
                                 <TableHead
                                     key={date.toISOString()}
-                                    className={`text-center min-w-[120px] ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/10" : ""}`}
+                                    className={`text-center min-w-[120px] ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-orange-100 dark:bg-orange-950" : ""} ${isToday(date) ? "bg-primary/10" : ""}`}
                                 >
                                     <div className="flex flex-col">
                                         <span className="text-xs font-normal text-muted-foreground">
@@ -69,11 +69,6 @@ export function ShiftsTable({
                                                 day: "numeric",
                                             })}
                                         </span>
-                                        {holiday && (
-                                            <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 mt-1">
-                                                {holiday.name}
-                                            </span>
-                                        )}
                                     </div>
                                 </TableHead>
                             )
@@ -119,7 +114,7 @@ export function ShiftsTable({
                                         key={date.toISOString()}
                                         className={`text-center p-2 cursor-pointer ${
                                             isWeekend ? "bg-muted/50" : ""
-                                        } ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
+                                        } ${holiday ? "bg-orange-100 dark:bg-orange-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                         onClick={() => onCellClick(date, user, shifts)}
                                     >
                                         <div className="flex flex-wrap gap-1 justify-center items-center min-h-[40px] p-1">

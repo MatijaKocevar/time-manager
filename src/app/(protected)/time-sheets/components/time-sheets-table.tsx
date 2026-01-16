@@ -143,7 +143,7 @@ export function TimeSheetsTable({
                                     key={dateStr}
                                     className={`text-center min-w-[100px] relative py-2 ${
                                         isWeekendDay ? "bg-muted/50" : ""
-                                    } ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isTodayDay ? "bg-blue-50 dark:bg-blue-950" : ""}`}
+                                    } ${holiday ? "bg-orange-100 dark:bg-orange-950" : ""} ${isTodayDay ? "bg-blue-50 dark:bg-blue-950" : ""}`}
                                 >
                                     {totalHours > 0 && (
                                         <div className="absolute top-0 left-0 right-0 h-0.5 flex">
@@ -175,11 +175,6 @@ export function TimeSheetsTable({
                                                 ? formatHoursMinutes(totalSeconds)
                                                 : ""}
                                         </div>
-                                        {holiday && (
-                                            <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 mt-1">
-                                                {holiday.name}
-                                            </span>
-                                        )}
                                     </div>
                                 </TableHead>
                             )
@@ -341,7 +336,7 @@ export function TimeSheetsTable({
                                                     key={dateStr}
                                                     className={`text-center tabular-nums ${
                                                         isWeekendDay ? "bg-muted/50" : ""
-                                                    } ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${
+                                                    } ${holiday ? "bg-orange-100 dark:bg-orange-950" : ""} ${
                                                         isTodayDay
                                                             ? "bg-blue-50 dark:bg-blue-950"
                                                             : ""

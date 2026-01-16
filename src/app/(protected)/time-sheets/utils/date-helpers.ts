@@ -34,12 +34,7 @@ export function getWeekRange(date: Date): DateRangeInfo {
     const startDay = monday.getDate()
     const endDay = sunday.getDate()
 
-    let title: string
-    if (startMonth === endMonth) {
-        title = `${startMonth} ${startDay} - ${endDay}`
-    } else {
-        title = `${startMonth} ${startDay} - ${endMonth} ${endDay}`
-    }
+    const title = `${startMonth} ${startDay} - ${endMonth} ${endDay}`
 
     return {
         startDate: monday,

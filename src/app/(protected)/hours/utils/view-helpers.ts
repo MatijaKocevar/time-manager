@@ -57,7 +57,9 @@ export function getViewTitle(
     if (mode === VIEW_MODE_VALUES.WEEKLY) {
         const start = dateRange.start
         const end = dateRange.end
-        return `${start.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })} - ${end.toLocaleDateString(dateLocale, { month: "short", day: "numeric" })}`
+        const startStr = `${start.toLocaleDateString(dateLocale, { month: "short" })} ${start.getDate()}`
+        const endStr = `${end.toLocaleDateString(dateLocale, { month: "short" })} ${end.getDate()}`
+        return `${startStr} - ${endStr}`
     } else if (mode === VIEW_MODE_VALUES.MONTHLY) {
         return currentDate.toLocaleDateString(dateLocale, { month: "long", year: "numeric" })
     } else if (mode === VIEW_MODE_VALUES.DAILY) {

@@ -64,13 +64,14 @@ export function ShiftsCalendarHeader({
             </div>
             <h2 className="text-xl font-semibold text-center lg:text-left lg:ml-4">
                 {viewMode === "week"
-                    ? translations.weekOf({
-                          date: startDate.toLocaleDateString(dateLocale, {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                          }),
-                      })
+                    ? (() => {
+                          const weekStart = startDate
+                          const weekEnd = new Date(startDate)
+                          weekEnd.setDate(weekEnd.getDate() + 6)
+                          const startStr = `${weekStart.toLocaleDateString(dateLocale, { month: "short" })} ${weekStart.getDate()}`
+                          const endStr = `${weekEnd.toLocaleDateString(dateLocale, { month: "short" })} ${weekEnd.getDate()}`
+                          return `${startStr} - ${endStr}`
+                      })()
                     : currentDate.toLocaleDateString(dateLocale, {
                           month: "long",
                           year: "numeric",

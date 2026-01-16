@@ -80,10 +80,11 @@ export function TimeSheetsClient({
     }, [viewMode, selectedDate, router])
 
     const dateRange = getDateRangeForView(selectedDate, viewMode)
+    const monthRange = getDateRangeForView(selectedDate, "month")
 
     const holidays = useHolidays(
-        dateRange.startDate.toISOString(),
-        dateRange.endDate.toISOString(),
+        monthRange.startDate.toISOString(),
+        monthRange.endDate.toISOString(),
         initialHolidays
     )
 

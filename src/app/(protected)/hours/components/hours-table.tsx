@@ -98,7 +98,7 @@ export function HoursTable({
                                 return (
                                     <TableHead
                                         key={date.toISOString()}
-                                        className={`text-center ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/10" : ""}`}
+                                        className={`text-center ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-orange-100 dark:bg-orange-950" : ""} ${isToday(date) ? "bg-primary/10" : ""}`}
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-normal text-muted-foreground">
@@ -107,11 +107,6 @@ export function HoursTable({
                                                 })}
                                             </span>
                                             <span>{date.getDate()}</span>
-                                            {holiday && (
-                                                <span className="text-[10px] font-medium text-purple-600 dark:text-purple-400 mt-1">
-                                                    {holiday.name}
-                                                </span>
-                                            )}
                                         </div>
                                     </TableHead>
                                 )
@@ -151,7 +146,7 @@ export function HoursTable({
                                 return (
                                     <TableCell
                                         key={dateKey}
-                                        className={`text-center p-2 relative ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-purple-100 dark:bg-purple-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
+                                        className={`text-center p-2 relative ${isWeekend ? "bg-muted/50" : ""} ${holiday ? "bg-orange-100 dark:bg-orange-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                     >
                                         {entry && entry.hours > 0 && (
                                             <div className="absolute top-0 left-0 right-0 h-0.5 flex">
