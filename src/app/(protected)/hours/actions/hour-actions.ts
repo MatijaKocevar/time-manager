@@ -630,11 +630,7 @@ export async function getAttendanceData(startDate: string, endDate: string) {
     }
 }
 
-export async function getAttendanceDataForUser(
-    userId: string,
-    startDate: string,
-    endDate: string
-) {
+export async function getAttendanceDataForUser(userId: string, startDate: string, endDate: string) {
     try {
         await requireAdmin()
 

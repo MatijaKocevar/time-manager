@@ -5,7 +5,10 @@ import { Separator } from "@/components/ui/separator"
 import { authConfig } from "@/lib/auth"
 import { getUserById } from "../actions/user-actions"
 import { EditUserForm } from "../components/edit-user-form"
-import { getHourEntriesForUser, getAttendanceDataForUser } from "@/app/(protected)/hours/actions/hour-actions"
+import {
+    getHourEntriesForUser,
+    getAttendanceDataForUser,
+} from "@/app/(protected)/hours/actions/hour-actions"
 import { getHolidaysInRange } from "../../holidays/actions/holiday-actions"
 import { getUserRequestsForAdmin } from "@/app/(protected)/requests/actions/request-actions"
 import { RequestsTable } from "@/app/(protected)/requests/components/requests-table"
