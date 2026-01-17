@@ -16,6 +16,7 @@ import Link from "next/link"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { approveRequest, rejectRequest } from "@/app/(protected)/requests/actions/request-actions"
 import { requestKeys } from "@/app/(protected)/requests/query-keys"
+import { hourKeys } from "@/app/(protected)/hours/query-keys"
 import { notificationKeys } from "../query-keys"
 import {
     getNotifications,
@@ -132,8 +133,10 @@ export function NotificationsDropdown({
         onSuccess: (data) => {
             if (data.error) {
                 alert(`Error: ${data.error}`)
+                queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            } else {
+                queryClient.invalidateQueries({ queryKey: hourKeys.all })
             }
-            queryClient.invalidateQueries({ queryKey: requestKeys.all })
             queryClient.invalidateQueries({ queryKey: notificationKeys.all })
         },
         onError: (error) => {
@@ -152,8 +155,10 @@ export function NotificationsDropdown({
         onSuccess: (data) => {
             if (data.error) {
                 alert(`Error: ${data.error}`)
+                queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            } else {
+                queryClient.invalidateQueries({ queryKey: hourKeys.all })
             }
-            queryClient.invalidateQueries({ queryKey: requestKeys.all })
             queryClient.invalidateQueries({ queryKey: notificationKeys.all })
         },
         onError: (error) => {
