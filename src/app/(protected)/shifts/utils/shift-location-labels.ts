@@ -5,7 +5,6 @@ export const SHIFT_LOCATION_KEYS: Record<ShiftLocation, string> = {
     HOME: "shifts.locations.home",
     VACATION: "shifts.locations.vacation",
     SICK_LEAVE: "shifts.locations.sickLeave",
-    OTHER: "shifts.locations.other",
 }
 
 export function getShiftLocationLabel(t: (key: string) => string, location: ShiftLocation): string {

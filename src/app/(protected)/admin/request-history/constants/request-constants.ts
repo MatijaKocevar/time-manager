@@ -5,7 +5,6 @@ export const TYPE_COLORS: Record<string, string> = {
     SICK_LEAVE: getWorkTypeColor("SICK_LEAVE", "default"),
     WORK_FROM_HOME: getWorkTypeColor("WORK_FROM_HOME", "default"),
     REMOTE_WORK: getWorkTypeColor("WORK_FROM_HOME", "default"),
-    OTHER: getWorkTypeColor("OTHER", "default"),
 }
 
 export const STATUS_COLORS: Record<string, string> = {

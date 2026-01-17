@@ -6,7 +6,6 @@ export const SHIFT_LOCATIONS = [
     { value: "HOME" as const, label: "Work from Home" },
     { value: "VACATION" as const, label: "Vacation" },
     { value: "SICK_LEAVE" as const, label: "Sick Leave" },
-    { value: "OTHER" as const, label: "Other" },
 ] as const
 
 export const SHIFT_LOCATION = {
@@ -14,7 +13,6 @@ export const SHIFT_LOCATION = {
     HOME: "HOME",
     VACATION: "VACATION",
     SICK_LEAVE: "SICK_LEAVE",
-    OTHER: "OTHER",
 } as const
 
 export const SHIFT_LOCATION_LABELS: Record<ShiftLocation, string> = {
@@ -22,7 +20,6 @@ export const SHIFT_LOCATION_LABELS: Record<ShiftLocation, string> = {
     HOME: "Work from Home",
     VACATION: "Vacation",
     SICK_LEAVE: "Sick Leave",
-    OTHER: "Other",
 }
 
 export const SHIFT_LOCATION_COLORS: Record<
@@ -48,10 +45,5 @@ export const SHIFT_LOCATION_COLORS: Record<
         bg: getWorkTypeColor("SICK_LEAVE", "default").split(" ").slice(0, 2).join(" "),
         text: getWorkTypeColor("SICK_LEAVE", "default").split(" ").slice(2).join(" "),
         label: "Sick Leave",
-    },
-    OTHER: {
-        bg: getWorkTypeColor("OTHER", "default").split(" ").slice(0, 2).join(" "),
-        text: getWorkTypeColor("OTHER", "default").split(" ").slice(2).join(" "),
-        label: "Other",
     },
 }

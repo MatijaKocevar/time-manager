@@ -34,8 +34,8 @@ export async function seedShiftsForUser(
     }
 
     const shifts = []
-    const locations: ShiftLocation[] = ["OFFICE", "HOME", "OTHER"]
-    const locationWeights = [70, 25, 5]
+    const locations: ShiftLocation[] = ["OFFICE", "HOME"]
+    const locationWeights = [75, 25]
 
     for (const date of dateRange(startDate, endDate)) {
         if (!isWeekday(date)) continue

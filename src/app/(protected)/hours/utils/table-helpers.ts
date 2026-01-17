@@ -80,7 +80,7 @@ export function formatEntryDate(date: Date | string): string {
 
 export function getTypeColor(type: string): string {
     const colorKey = type as keyof typeof HOUR_TYPE_COLORS
-    return HOUR_TYPE_COLORS[colorKey] || HOUR_TYPE_COLORS.OTHER
+    return HOUR_TYPE_COLORS[colorKey] || HOUR_TYPE_COLORS.WORK
 }
 
 export function getRowBgColor(type: string): string {

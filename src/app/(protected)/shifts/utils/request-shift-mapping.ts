@@ -3,7 +3,7 @@ import { REQUEST_TYPE } from "@/app/(protected)/requests/constants"
 import { SHIFT_LOCATION } from "../constants"
 
 type RequestType = (typeof REQUEST_TYPE)[keyof typeof REQUEST_TYPE]
-type HourType = "WORK" | "WORK_FROM_HOME" | "VACATION" | "SICK_LEAVE" | "OTHER"
+type HourType = "WORK" | "WORK_FROM_HOME" | "VACATION" | "SICK_LEAVE"
 
 export function mapRequestTypeToShiftLocation(type: RequestType): ShiftLocation {
     switch (type) {
@@ -13,8 +13,6 @@ export function mapRequestTypeToShiftLocation(type: RequestType): ShiftLocation 
             return SHIFT_LOCATION.SICK_LEAVE
         case REQUEST_TYPE.WORK_FROM_HOME:
             return SHIFT_LOCATION.HOME
-        case REQUEST_TYPE.OTHER:
-            return SHIFT_LOCATION.OTHER
     }
 }
 
@@ -28,8 +26,6 @@ export function mapShiftLocationToHourType(location: ShiftLocation): HourType {
             return "VACATION"
         case SHIFT_LOCATION.SICK_LEAVE:
             return "SICK_LEAVE"
-        case SHIFT_LOCATION.OTHER:
-            return "OTHER"
     }
 }
 
@@ -41,8 +37,6 @@ export function mapRequestTypeToHourType(type: RequestType): HourType {
             return "SICK_LEAVE"
         case REQUEST_TYPE.WORK_FROM_HOME:
             return "WORK_FROM_HOME"
-        case REQUEST_TYPE.OTHER:
-            return "OTHER"
     }
 }
 

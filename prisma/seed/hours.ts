@@ -55,9 +55,8 @@ export async function seedHourEntriesForUser(
 
         const rand = random.next()
         let type: HourType
-        if (rand < 0.8) type = "WORK"
-        else if (rand < 0.95) type = "WORK_FROM_HOME"
-        else type = "OTHER"
+        if (rand < 0.85) type = "WORK"
+        else type = "WORK_FROM_HOME"
 
         const hours = random.nextInt(1, 3)
         const isTaskLinked = random.next() < 0.3 && tasks.length > 0

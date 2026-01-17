@@ -6,7 +6,6 @@ export type HourTypeTranslationKey =
     | "workFromHome"
     | "vacation"
     | "sickLeave"
-    | "other"
     | "break"
     | "private"
 
@@ -15,13 +14,12 @@ const HOUR_TYPE_TO_TRANSLATION_KEY: Record<HourType, HourTypeTranslationKey> = {
     [HOUR_TYPE_VALUES.WORK_FROM_HOME]: "workFromHome",
     [HOUR_TYPE_VALUES.VACATION]: "vacation",
     [HOUR_TYPE_VALUES.SICK_LEAVE]: "sickLeave",
-    [HOUR_TYPE_VALUES.OTHER]: "other",
     [HOUR_TYPE_VALUES.BREAK]: "break",
     [HOUR_TYPE_VALUES.PRIVATE]: "private",
 }
 
 export function getHourTypeTranslationKey(type: string): HourTypeTranslationKey {
-    return HOUR_TYPE_TO_TRANSLATION_KEY[type as HourType] ?? "other"
+    return HOUR_TYPE_TO_TRANSLATION_KEY[type as HourType] ?? "work"
 }
 
 export const HOUR_TYPE_KEYS: Record<HourType, string> = {
@@ -29,7 +27,6 @@ export const HOUR_TYPE_KEYS: Record<HourType, string> = {
     WORK_FROM_HOME: "hours.types.workFromHome",
     VACATION: "hours.types.vacation",
     SICK_LEAVE: "hours.types.sickLeave",
-    OTHER: "hours.types.other",
     BREAK: "hours.types.break",
     PRIVATE: "hours.types.private",
 }

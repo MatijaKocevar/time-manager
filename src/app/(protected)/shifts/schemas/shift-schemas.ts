@@ -6,7 +6,6 @@ export const ShiftLocationSchema = z.enum([
     SHIFT_LOCATION.HOME,
     SHIFT_LOCATION.VACATION,
     SHIFT_LOCATION.SICK_LEAVE,
-    SHIFT_LOCATION.OTHER,
 ])
 
 export type ShiftLocation = z.infer<typeof ShiftLocationSchema>

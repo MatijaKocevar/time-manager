@@ -5,7 +5,6 @@ export const HOUR_TYPE_KEYS: Record<HourType, string> = {
     WORK_FROM_HOME: "hours.types.workFromHome",
     VACATION: "hours.types.vacation",
     SICK_LEAVE: "hours.types.sickLeave",
-    OTHER: "hours.types.other",
     BREAK: "hours.types.break",
     PRIVATE: "hours.types.private",
 }

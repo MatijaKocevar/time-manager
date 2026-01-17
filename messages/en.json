@@ -174,7 +174,6 @@
             "workFromHome": "Work From Home",
             "vacation": "Vacation",
             "sickLeave": "Sick Leave",
-            "other": "Other",
             "break": "Break",
             "private": "Private"
         },
@@ -336,8 +335,7 @@
             "vacation": "Vacation",
             "sickLeave": "Sick Leave",
             "workFromHome": "Work From Home",
-            "businessTrip": "Business Trip",
-            "other": "Other"
+            "businessTrip": "Business Trip"
         },
         "statuses": {
             "pending": "Pending",
@@ -388,15 +386,13 @@
             "office": "Office",
             "home": "Work from Home",
             "vacation": "Vacation",
-            "sickLeave": "Sick Leave",
-            "other": "Other"
+            "sickLeave": "Sick Leave"
         },
         "locationsShort": {
             "office": "OFF",
             "home": "WFH",
             "vacation": "VAC",
-            "sickLeave": "SL",
-            "other": "OTH"
+            "sickLeave": "SL"
         },
         "dialog": {
             "title": "Shift Details - {date}",

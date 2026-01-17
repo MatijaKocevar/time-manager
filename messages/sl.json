@@ -174,7 +174,6 @@
             "workFromHome": "Delo od doma",
             "vacation": "Dopust",
             "sickLeave": "Bolniška",
-            "other": "Drugo",
             "break": "Odmor",
             "private": "Zasebno"
         },
@@ -336,8 +335,7 @@
             "vacation": "Dopust",
             "sickLeave": "Bolniška",
             "workFromHome": "Delo od doma",
-            "businessTrip": "Službeno potovanje",
-            "other": "Drugo"
+            "businessTrip": "Službeno potovanje"
         },
         "statuses": {
             "pending": "V čakanju",
@@ -388,15 +386,13 @@
             "office": "Pisarna",
             "home": "Delo od doma",
             "vacation": "Dopust",
-            "sickLeave": "Bolniška",
-            "other": "Drugo"
+            "sickLeave": "Bolniška"
         },
         "locationsShort": {
             "office": "PIS",
             "home": "DDD",
             "vacation": "DOP",
-            "sickLeave": "BOL",
-            "other": "DRU"
+            "sickLeave": "BOL"
         },
         "dialog": {
             "title": "Podrobnosti izmene - {date}",

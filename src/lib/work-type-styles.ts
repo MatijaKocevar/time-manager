@@ -1,11 +1,4 @@
-export type WorkType =
-    | "WORK"
-    | "WORK_FROM_HOME"
-    | "VACATION"
-    | "SICK_LEAVE"
-    | "OTHER"
-    | "BREAK"
-    | "PRIVATE"
+export type WorkType = "WORK" | "WORK_FROM_HOME" | "VACATION" | "SICK_LEAVE" | "BREAK" | "PRIVATE"
 
 export type WorkTypeVariant = "default" | "light" | "lighter" | "strong"
 
@@ -34,12 +27,6 @@ export const WORK_TYPE_COLORS: Record<WorkType, Record<WorkTypeVariant, string>>
         lighter: "bg-[#FEFBF0] text-[#5A4800] dark:bg-[#1F1A00] dark:text-[#E8DCBC]",
         strong: "bg-[#E8D89F] text-[#2A2300] dark:bg-[#332B00] dark:text-[#FAF0CC]",
     },
-    OTHER: {
-        default: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
-        light: "bg-gray-50 text-gray-700 dark:bg-gray-700 dark:text-gray-300",
-        lighter: "bg-gray-50 text-gray-600 dark:bg-gray-700/50 dark:text-gray-400",
-        strong: "bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100",
-    },
     BREAK: {
         default: "bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200",
         light: "bg-yellow-50 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
@@ -54,14 +41,13 @@ export const WORK_TYPE_COLORS: Record<WorkType, Record<WorkTypeVariant, string>>
     },
 }
 
-export type ShiftLocation = "OFFICE" | "HOME" | "VACATION" | "SICK_LEAVE" | "OTHER"
+export type ShiftLocation = "OFFICE" | "HOME" | "VACATION" | "SICK_LEAVE"
 
 const SHIFT_LOCATION_TO_WORK_TYPE: Record<ShiftLocation, WorkType> = {
     OFFICE: "WORK",
     HOME: "WORK_FROM_HOME",
     VACATION: "VACATION",
     SICK_LEAVE: "SICK_LEAVE",
-    OTHER: "OTHER",
 }
 
 export function getWorkTypeColor(
@@ -73,7 +59,7 @@ export function getWorkTypeColor(
             ? SHIFT_LOCATION_TO_WORK_TYPE[type as ShiftLocation]
             : (type as WorkType)
 
-    return WORK_TYPE_COLORS[workType]?.[variant] || WORK_TYPE_COLORS.OTHER[variant]
+    return WORK_TYPE_COLORS[workType]?.[variant] || WORK_TYPE_COLORS.WORK[variant]
 }
 
 export type RequestStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED"

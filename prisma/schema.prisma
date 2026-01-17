@@ -341,7 +341,6 @@ enum HourType {
   VACATION
   SICK_LEAVE
   WORK_FROM_HOME
-  OTHER
   BREAK
   PRIVATE
 }
@@ -358,7 +357,6 @@ enum RequestType {
   VACATION
   SICK_LEAVE
   WORK_FROM_HOME
-  OTHER
 }
 
 enum RequestStatus {
@@ -373,7 +371,6 @@ enum ShiftLocation {
   HOME
   VACATION
   SICK_LEAVE
-  OTHER
 }
 
 enum NotificationType {

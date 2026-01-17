@@ -1,0 +1,1 @@
+-- Empty migration (was rolled back)
