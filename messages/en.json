@@ -216,6 +216,13 @@
             "inOffice": "In Office",
             "workFromHome": "Work from home"
         },
+        "breakdown": {
+            "title": "Daily Breakdown",
+            "date": "Date",
+            "hours": "Hours",
+            "noEntries": "No entries for this type",
+            "totalHours": "Total Hours"
+        },
         "actions": {
             "addNewEntry": "Add New Entry",
             "saveWithCount": "Save ({count})"

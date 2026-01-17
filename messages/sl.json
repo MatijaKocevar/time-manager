@@ -216,6 +216,13 @@
             "inOffice": "V pisarni",
             "workFromHome": "Delo od doma"
         },
+        "breakdown": {
+            "title": "Dnevni razčlenitev",
+            "date": "Datum",
+            "hours": "Ure",
+            "noEntries": "Ni vnosov za ta tip",
+            "totalHours": "Skupaj ur"
+        },
         "actions": {
             "addNewEntry": "Dodaj nov vnos",
             "saveWithCount": "Shrani ({count})"

@@ -23,6 +23,7 @@ interface HoursSummaryProps {
     holidays?: Array<{ date: Date }>
     initialAttendanceData?: { officeCount: number; remoteCount: number }
     userData?: { workHoursPerDay: number }
+    onHourTypeClick?: (type: string) => void
 }
 
 export function HoursSummary({
@@ -33,6 +34,7 @@ export function HoursSummary({
     holidays = [],
     initialAttendanceData,
     userData: userDataProp,
+    onHourTypeClick,
 }: HoursSummaryProps) {
     const t = useTranslations("hours.summary")
     const tCommon = useTranslations("common")
@@ -181,7 +183,11 @@ export function HoursSummary({
 
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {HOUR_TYPES.map((hourType) => (
-                            <div key={hourType.value} className="flex flex-col gap-0.5">
+                            <div
+                                key={hourType.value}
+                                className={`flex flex-col gap-0.5 ${onHourTypeClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
+                                onClick={() => onHourTypeClick?.(hourType.value)}
+                            >
                                 <div
                                     className={`px-1.5 py-0.5 rounded text-xs font-medium ${HOUR_TYPE_COLORS[hourType.value]}`}
                                 >

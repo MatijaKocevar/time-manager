@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Download } from "lucide-react"
 import { HoursSummary } from "@/app/(protected)/hours/components/hours-summary"
+import { HourTypeBreakdownDialog } from "@/app/(protected)/hours/components/hour-type-breakdown-dialog"
 import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
 import { getDateRange, getViewTitle } from "@/app/(protected)/hours/utils/view-helpers"
 import { VIEW_MODE_VALUES } from "@/app/(protected)/hours/schemas/hour-filter-schemas"
@@ -14,6 +15,9 @@ import { getHolidaysInRange } from "@/app/(protected)/admin/holidays/actions/hol
 import { exportUserDetailsWithHours } from "../../actions/export-actions"
 import { ExportDialog, type ExportFormat } from "@/features/export"
 import { userHourKeys } from "../../query-keys"
+import { useHoursStore } from "@/app/(protected)/hours/stores/hours-store"
+import { TASK_ID_VALUES } from "@/app/(protected)/hours/constants/hour-types"
+import type { HourEntryDisplay } from "@/app/(protected)/hours/schemas/hour-entry-schemas"
 
 interface UserHoursSectionProps {
     userId: string
@@ -34,6 +38,7 @@ export function UserHoursSection({
     const tCommon = useTranslations("common.actions")
     const [currentDate, setCurrentDate] = useState(new Date())
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+    const openHourTypeDialog = useHoursStore((state) => state.openHourTypeDialog)
 
     const { startDate, endDate, start, end } = getDateRange(VIEW_MODE_VALUES.MONTHLY, currentDate)
     const monthTitle = getViewTitle(VIEW_MODE_VALUES.MONTHLY, { start, end }, currentDate)
@@ -49,6 +54,34 @@ export function UserHoursSection({
         queryFn: () => getHolidaysInRange(startDate, endDate),
         initialData: initialHolidays,
     })
+
+    const prepareHourTypeData = useMemo(() => {
+        return (type: string) => {
+            const filteredEntries = entries.filter(
+                (entry: HourEntryDisplay) =>
+                    entry.type === type && entry.taskId === TASK_ID_VALUES.TOTAL
+            )
+
+            const entriesByDate = filteredEntries.reduce(
+                (acc, entry) => {
+                    const dateKey = entry.date.toISOString().split("T")[0]
+                    if (!acc[dateKey]) {
+                        acc[dateKey] = { date: entry.date, hours: 0 }
+                    }
+                    acc[dateKey].hours += entry.hours
+                    return acc
+                },
+                {} as Record<string, { date: Date; hours: number }>
+            )
+
+            return Object.values(entriesByDate).filter((entry) => entry.hours > 0)
+        }
+    }, [entries])
+
+    const handleHourTypeClick = (type: string) => {
+        const data = prepareHourTypeData(type)
+        openHourTypeDialog(type as any, data)
+    }
 
     const handleNavigate = (direction: "prev" | "next") => {
         const newDate = new Date(currentDate)
@@ -67,63 +100,68 @@ export function UserHoursSection({
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <div className="flex items-center justify-between">
-                    <div>
-                        <CardTitle>{t("hoursSummary")}</CardTitle>
-                        <CardDescription>{t("hoursSummaryDescription")}</CardDescription>
+        <>
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle>{t("hoursSummary")}</CardTitle>
+                            <CardDescription>{t("hoursSummaryDescription")}</CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleNavigate("prev")}
+                                disabled={isLoading}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <div className="min-w-[200px] text-center font-medium">{monthTitle}</div>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleNavigate("next")}
+                                disabled={isLoading}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsExportDialogOpen(true)}
+                            >
+                                <Download className="h-4 w-4 mr-1" />
+                                {tCommon("export")}
+                            </Button>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleNavigate("prev")}
-                            disabled={isLoading}
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <div className="min-w-[200px] text-center font-medium">{monthTitle}</div>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleNavigate("next")}
-                            disabled={isLoading}
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsExportDialogOpen(true)}
-                        >
-                            <Download className="h-4 w-4 mr-1" />
-                            {tCommon("export")}
-                        </Button>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent>
-                <HoursSummary
-                    entries={entries}
-                    viewMode={VIEW_MODE_VALUES.MONTHLY}
-                    weeklyEntries={[]}
-                    monthlyEntries={entries}
-                    isLoading={isLoading}
-                    dateRange={{ start, end }}
-                    holidays={holidays}
-                    userData={{ workHoursPerDay: user.workHoursPerDay || 8 }}
-                    initialAttendanceData={initialAttendanceData}
-                />
-            </CardContent>
+                </CardHeader>
+                <CardContent>
+                    <HoursSummary
+                        entries={entries}
+                        viewMode={VIEW_MODE_VALUES.MONTHLY}
+                        weeklyEntries={[]}
+                        monthlyEntries={entries}
+                        isLoading={isLoading}
+                        dateRange={{ start, end }}
+                        holidays={holidays}
+                        userData={{ workHoursPerDay: user.workHoursPerDay || 8 }}
+                        initialAttendanceData={initialAttendanceData}
+                        onHourTypeClick={handleHourTypeClick}
+                    />
+                </CardContent>
 
-            <ExportDialog
-                open={isExportDialogOpen}
-                onOpenChange={setIsExportDialogOpen}
-                defaultMonth={getCurrentMonth()}
-                onExport={handleExport}
-                filenamePrefix={`user-${userId}-hours`}
-            />
-        </Card>
+                <ExportDialog
+                    open={isExportDialogOpen}
+                    onOpenChange={setIsExportDialogOpen}
+                    defaultMonth={getCurrentMonth()}
+                    onExport={handleExport}
+                    filenamePrefix={`user-${userId}-hours`}
+                />
+            </Card>
+
+            <HourTypeBreakdownDialog />
+        </>
     )
 }

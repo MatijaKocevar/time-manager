@@ -7,6 +7,15 @@ import {
 import { type ViewMode, VIEW_MODE_VALUES } from "../schemas/hour-filter-schemas"
 import { DEFAULT_HOURS, ALL_HOUR_TYPES, HOUR_TYPE_VALUES } from "../constants/hour-types"
 import { saveUserPreferences } from "../actions/hour-actions"
+import type { z } from "zod"
+import { HourTypeSchema } from "../schemas/hour-action-schemas"
+
+type HourType = z.infer<typeof HourTypeSchema>
+
+interface HourTypeDialogEntry {
+    date: Date
+    hours: number
+}
 
 interface SingleEntryFormState {
     data: SingleEntryFormData
@@ -34,6 +43,11 @@ interface HoursStoreState {
     editForm: EditFormState
     viewMode: ViewMode
     selectedDate: Date
+    hourTypeDialog: {
+        isOpen: boolean
+        type: HourType | null
+        entries: HourTypeDialogEntry[] | null
+    }
 }
 
 interface HoursStoreActions {
@@ -57,6 +71,8 @@ interface HoursStoreActions {
     setEditError: (error: string) => void
     setViewMode: (mode: ViewMode) => void
     setSelectedDate: (date: Date) => void
+    openHourTypeDialog: (type: HourType, entries: HourTypeDialogEntry[]) => void
+    closeHourTypeDialog: () => void
 }
 
 const saveExpandedTypes = (types: Set<string>) => {
@@ -290,5 +306,26 @@ export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) =
             set({ viewMode: mode })
         },
         setSelectedDate: (date) => set({ selectedDate: date }),
+        hourTypeDialog: {
+            isOpen: false,
+            type: null,
+            entries: null,
+        },
+        openHourTypeDialog: (type, entries) =>
+            set({
+                hourTypeDialog: {
+                    isOpen: true,
+                    type,
+                    entries,
+                },
+            }),
+        closeHourTypeDialog: () =>
+            set({
+                hourTypeDialog: {
+                    isOpen: false,
+                    type: null,
+                    entries: null,
+                },
+            }),
     }
 })
