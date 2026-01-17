@@ -66,7 +66,6 @@ export default async function PendingRequestsPage() {
             vacation: tTypes("vacation"),
             sickLeave: tTypes("sickLeave"),
             workFromHome: tTypes("workFromHome"),
-            other: tTypes("other"),
         },
     }
 

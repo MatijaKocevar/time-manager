@@ -79,7 +79,6 @@ export interface RequestHistoryTranslations {
         vacation: string
         sickLeave: string
         workFromHome: string
-        other: string
     }
     statuses: {
         approved: string

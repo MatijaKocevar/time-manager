@@ -35,7 +35,6 @@ export function createColumns({
             vacation: translations.types.vacation,
             sickLeave: translations.types.sickLeave,
             workFromHome: translations.types.workFromHome,
-            other: translations.types.other,
         }
         return typeMap[key] || key
     }

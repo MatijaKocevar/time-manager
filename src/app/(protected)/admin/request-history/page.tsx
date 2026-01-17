@@ -68,7 +68,6 @@ export default async function RequestHistoryPage() {
             vacation: tTypes("vacation"),
             sickLeave: tTypes("sickLeave"),
             workFromHome: tTypes("workFromHome"),
-            other: tTypes("other"),
         },
         statuses: {
             approved: tStatuses("approved"),
