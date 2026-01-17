@@ -2,12 +2,7 @@
 
 import { useMemo } from "react"
 import { useTranslations } from "next-intl"
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useHoursStore } from "../stores/hours-store"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
@@ -58,7 +53,9 @@ export function HourTypeBreakdownDialog() {
 
                 <div className="overflow-y-auto" style={{ maxHeight: "500px" }}>
                     {sortedEntries.length === 0 ? (
-                        <div className="text-center text-muted-foreground py-8">{t("noEntries")}</div>
+                        <div className="text-center text-muted-foreground py-8">
+                            {t("noEntries")}
+                        </div>
                     ) : (
                         <>
                             {/* Desktop table view */}
@@ -76,7 +73,9 @@ export function HourTypeBreakdownDialog() {
                                     </thead>
                                     <tbody>
                                         {sortedEntries.map((entry, index) => {
-                                            const weekend = entry.date.getDay() === 0 || entry.date.getDay() === 6
+                                            const weekend =
+                                                entry.date.getDay() === 0 ||
+                                                entry.date.getDay() === 6
                                             return (
                                                 <tr
                                                     key={index}
@@ -98,7 +97,8 @@ export function HourTypeBreakdownDialog() {
                             {/* Mobile card view */}
                             <div className="md:hidden space-y-2">
                                 {sortedEntries.map((entry, index) => {
-                                    const weekend = entry.date.getDay() === 0 || entry.date.getDay() === 6
+                                    const weekend =
+                                        entry.date.getDay() === 0 || entry.date.getDay() === 6
                                     return (
                                         <div
                                             key={index}

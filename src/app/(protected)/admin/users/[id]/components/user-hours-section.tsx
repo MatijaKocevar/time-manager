@@ -117,7 +117,9 @@ export function UserHoursSection({
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </Button>
-                            <div className="min-w-[200px] text-center font-medium">{monthTitle}</div>
+                            <div className="min-w-[200px] text-center font-medium">
+                                {monthTitle}
+                            </div>
                             <Button
                                 variant="outline"
                                 size="icon"
