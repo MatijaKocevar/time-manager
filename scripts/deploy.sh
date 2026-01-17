@@ -26,6 +26,7 @@ tar -czf deploy.tar.gz \
     .next/standalone \
     .next/static \
     public \
+    .env.production \
     prisma/schema.prisma \
     prisma/migrations \
     ecosystem.config.js
@@ -58,9 +59,9 @@ echo "📦 Setting up static files..."
 cp -r .next/static .next/standalone/.next/
 cp -r public .next/standalone/
 
-# Copy .env file to standalone directory
-echo "📝 Copying environment file..."
-cp .env .next/standalone/
+# Copy .env.production file to standalone directory as .env
+echo "📝 Copying production environment file..."
+cp .env.production .next/standalone/.env
 
 # Create logs directory if it doesn't exist
 mkdir -p logs
