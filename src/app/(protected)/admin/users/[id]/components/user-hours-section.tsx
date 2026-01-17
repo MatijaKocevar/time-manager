@@ -103,40 +103,38 @@ export function UserHoursSection({
         <>
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                         <div>
                             <CardTitle>{t("hoursSummary")}</CardTitle>
                             <CardDescription>{t("hoursSummaryDescription")}</CardDescription>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleNavigate("prev")}
-                                disabled={isLoading}
-                            >
-                                <ChevronLeft className="h-4 w-4" />
-                            </Button>
-                            <div className="min-w-[200px] text-center font-medium">
-                                {monthTitle}
-                            </div>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleNavigate("next")}
-                                disabled={isLoading}
-                            >
-                                <ChevronRight className="h-4 w-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setIsExportDialogOpen(true)}
-                            >
-                                <Download className="h-4 w-4 mr-1" />
-                                {tCommon("export")}
-                            </Button>
-                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsExportDialogOpen(true)}
+                        >
+                            <Download className="h-4 w-4 mr-1" />
+                            {tCommon("export")}
+                        </Button>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleNavigate("prev")}
+                            disabled={isLoading}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <div className="min-w-[200px] text-center font-medium">{monthTitle}</div>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleNavigate("next")}
+                            disabled={isLoading}
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent>
