@@ -22,6 +22,7 @@ interface HoursSummaryProps {
     dateRange?: { start: Date; end: Date }
     holidays?: Array<{ date: Date }>
     initialAttendanceData?: { officeCount: number; remoteCount: number }
+    userData?: { workHoursPerDay: number }
 }
 
 export function HoursSummary({
@@ -31,6 +32,7 @@ export function HoursSummary({
     dateRange,
     holidays = [],
     initialAttendanceData,
+    userData: userDataProp,
 }: HoursSummaryProps) {
     const t = useTranslations("hours.summary")
     const tCommon = useTranslations("common")
@@ -39,11 +41,12 @@ export function HoursSummary({
     const { data: userData } = useQuery({
         queryKey: ["user-profile"],
         queryFn: () => getCurrentUser(),
+        enabled: !userDataProp,
     })
 
     const attendanceData = initialAttendanceData
 
-    const hoursPerDay = userData?.workHoursPerDay || 8
+    const hoursPerDay = userDataProp?.workHoursPerDay || userData?.workHoursPerDay || 8
 
     const weeklyGrandTotal = weeklyEntries
         .filter((entry) => entry.taskId === TASK_ID_VALUES.TOTAL)

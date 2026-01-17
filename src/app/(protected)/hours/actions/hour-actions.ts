@@ -630,6 +630,59 @@ export async function getAttendanceData(startDate: string, endDate: string) {
     }
 }
 
+export async function getAttendanceDataForUser(
+    userId: string,
+    startDate: string,
+    endDate: string
+) {
+    try {
+        await requireAdmin()
+
+        const workDays = await prisma.dailyHourSummary.findMany({
+            where: {
+                userId,
+                date: {
+                    gte: parseDate(startDate),
+                    lte: parseEndDate(endDate),
+                },
+                type: "WORK",
+                totalHours: {
+                    gt: 0,
+                },
+            },
+            select: {
+                date: true,
+            },
+            distinct: ["date"],
+        })
+
+        const wfhDays = await prisma.dailyHourSummary.findMany({
+            where: {
+                userId,
+                date: {
+                    gte: parseDate(startDate),
+                    lte: parseEndDate(endDate),
+                },
+                type: "WORK_FROM_HOME",
+                totalHours: {
+                    gt: 0,
+                },
+            },
+            select: {
+                date: true,
+            },
+            distinct: ["date"],
+        })
+
+        const officeCount = workDays.length
+        const remoteCount = wfhDays.length
+
+        return { officeCount, remoteCount }
+    } catch (error) {
+        throw new Error("Failed to fetch attendance data for user")
+    }
+}
+
 export async function getUserPreferences() {
     try {
         const session = await requireAuth()

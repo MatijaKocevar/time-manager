@@ -17,14 +17,18 @@ import { userHourKeys } from "../../query-keys"
 
 interface UserHoursSectionProps {
     userId: string
+    user: { workHoursPerDay: number | null }
     initialEntries: Awaited<ReturnType<typeof getHourEntriesForUser>>
     initialHolidays?: Array<{ date: Date }>
+    initialAttendanceData?: { officeCount: number; remoteCount: number }
 }
 
 export function UserHoursSection({
     userId,
+    user,
     initialEntries,
     initialHolidays = [],
+    initialAttendanceData,
 }: UserHoursSectionProps) {
     const t = useTranslations("admin.users.detail")
     const tCommon = useTranslations("common.actions")
@@ -108,6 +112,8 @@ export function UserHoursSection({
                     isLoading={isLoading}
                     dateRange={{ start, end }}
                     holidays={holidays}
+                    userData={{ workHoursPerDay: user.workHoursPerDay || 8 }}
+                    initialAttendanceData={initialAttendanceData}
                 />
             </CardContent>
 

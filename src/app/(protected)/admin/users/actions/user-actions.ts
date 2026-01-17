@@ -74,6 +74,7 @@ export async function getUserById(id: string) {
             isActive: true,
             deactivatedAt: true,
             anonymizedAt: true,
+            workHoursPerDay: true,
         },
     })
 
