@@ -356,7 +356,7 @@ export async function getTotalTaskTime(taskId: string): Promise<number> {
 async function getHourTypeForDate(
     userId: string,
     date: Date
-): Promise<"WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME" | "OTHER"> {
+): Promise<"WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME"> {
     const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
 
     const approvedRequest = await prisma.request.findFirst({

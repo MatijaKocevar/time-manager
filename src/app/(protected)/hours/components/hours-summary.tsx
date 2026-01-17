@@ -1,5 +1,6 @@
 "use client"
 
+import { useMemo } from "react"
 import { useTranslations } from "next-intl"
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent } from "@/components/ui/card"
@@ -55,6 +56,17 @@ export function HoursSummary({
     let expectedHours = 0
     let overtime = 0
     let workingDays = 0
+
+    const actualDaysWorked = useMemo(() => {
+        const uniqueDates = new Set<string>()
+        monthlyEntries
+            .filter((entry) => entry.taskId === TASK_ID_VALUES.TOTAL && entry.hours > 0)
+            .forEach((entry) => {
+                const dateKey = entry.date.toISOString().split("T")[0]
+                uniqueDates.add(dateKey)
+            })
+        return uniqueDates.size
+    }, [monthlyEntries])
 
     if (viewMode === VIEW_MODE_VALUES.MONTHLY && dateRange) {
         workingDays = calculateWorkingDaysSync(dateRange.start, dateRange.end, holidays)
@@ -120,8 +132,7 @@ export function HoursSummary({
                                         {t("expected")}
                                     </span>
                                     <span className="font-semibold">
-                                        {workingDays} {t("days")} /{" "}
-                                        {formatHoursMinutes(expectedHours)}
+                                        {workingDays} {t("days")} / {actualDaysWorked} {t("days")}
                                     </span>
                                 </div>
                                 <div className="flex flex-col gap-1">

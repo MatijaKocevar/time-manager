@@ -20,13 +20,11 @@ function getRequestTypeLabel(type: string, locale: "en" | "sl"): string {
             VACATION: "Vacation",
             SICK_LEAVE: "Sick Leave",
             WORK_FROM_HOME: "Work from Home",
-            OTHER: "Other",
         },
         sl: {
             VACATION: "Dopust",
             SICK_LEAVE: "Bolniška odsotnost",
             WORK_FROM_HOME: "Delo od doma",
-            OTHER: "Drugo",
         },
     }
     return labels[locale][type as keyof typeof labels.en] || type

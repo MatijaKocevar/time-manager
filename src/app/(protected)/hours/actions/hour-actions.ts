@@ -585,24 +585,44 @@ export async function getAttendanceData(startDate: string, endDate: string) {
     try {
         const session = await requireAuth()
 
-        const shifts = await prisma.shift.findMany({
+        const workDays = await prisma.dailyHourSummary.findMany({
             where: {
                 userId: session.user.id,
                 date: {
                     gte: parseDate(startDate),
                     lte: parseEndDate(endDate),
                 },
-                location: {
-                    in: ["OFFICE", "HOME"],
+                type: "WORK",
+                totalHours: {
+                    gt: 0,
                 },
             },
             select: {
-                location: true,
+                date: true,
             },
+            distinct: ["date"],
         })
 
-        const officeCount = shifts.filter((shift) => shift.location === "OFFICE").length
-        const remoteCount = shifts.filter((shift) => shift.location === "HOME").length
+        const wfhDays = await prisma.dailyHourSummary.findMany({
+            where: {
+                userId: session.user.id,
+                date: {
+                    gte: parseDate(startDate),
+                    lte: parseEndDate(endDate),
+                },
+                type: "WORK_FROM_HOME",
+                totalHours: {
+                    gt: 0,
+                },
+            },
+            select: {
+                date: true,
+            },
+            distinct: ["date"],
+        })
+
+        const officeCount = workDays.length
+        const remoteCount = wfhDays.length
 
         return { officeCount, remoteCount }
     } catch (error) {

@@ -72,7 +72,6 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
             VACATION: "Vacation",
             SICK_LEAVE: "Sick Leave",
             WORK_FROM_HOME: "Work from Home",
-            OTHER: "Other",
         }
 
         const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
@@ -166,7 +165,6 @@ export async function notifyUserApproval(params: NotifyUserApprovalParams) {
             VACATION: "Vacation",
             SICK_LEAVE: "Sick Leave",
             WORK_FROM_HOME: "Work from Home",
-            OTHER: "Other",
         }
 
         const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
@@ -246,7 +244,6 @@ export async function notifyUserRejection(params: NotifyUserRejectionParams) {
             VACATION: "Vacation",
             SICK_LEAVE: "Sick Leave",
             WORK_FROM_HOME: "Work from Home",
-            OTHER: "Other",
         }
 
         const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
@@ -329,7 +326,6 @@ export async function notifyUserCancellation(params: NotifyUserCancellationParam
             VACATION: "Vacation",
             SICK_LEAVE: "Sick Leave",
             WORK_FROM_HOME: "Work from Home",
-            OTHER: "Other",
         }
 
         const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
