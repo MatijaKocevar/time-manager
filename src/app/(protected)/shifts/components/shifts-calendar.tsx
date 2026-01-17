@@ -245,7 +245,7 @@ export function ShiftsCalendar({
     const locationsMap: Record<string, string> = {}
     const locationsShortMap: Record<string, string> = {}
 
-    ;["office", "home", "vacation", "sickLeave", "other"].forEach((key) => {
+    ;["office", "home", "vacation", "sickLeave"].forEach((key) => {
         locationsMap[key] = tLocations(key as never)
         locationsShortMap[key] = tLocationsShort(key as never)
     })
@@ -317,9 +317,10 @@ export function ShiftsCalendar({
                     location: tCommon("fields.location"),
                 }}
                 requestTypesTranslations={Object.fromEntries(
-                    ["vacation", "sickLeave", "workFromHome", "businessTrip", "other"].map(
-                        (key) => [key, tRequestTypes(key as never)]
-                    )
+                    ["vacation", "sickLeave", "workFromHome"].map((key) => [
+                        key,
+                        tRequestTypes(key as never),
+                    ])
                 )}
             />
 

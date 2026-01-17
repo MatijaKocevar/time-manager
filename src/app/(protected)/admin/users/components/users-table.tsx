@@ -13,6 +13,12 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,7 +37,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Edit, Search, Plus, Download } from "lucide-react"
+import { Edit, Search, Plus, Download, MoreVertical } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { UserTableItem } from "../schemas/user-table-schemas"
 import { USER_ROLE_COLORS } from "../constants/user-constants"
@@ -140,20 +146,26 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                         </label>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <Button
-                        variant="outline"
-                        onClick={() => handleExportUsers("excel")}
-                        disabled={isExporting}
-                    >
-                        <Download className="h-4 w-4 mr-2" />
-                        {tCommon("export")}
-                    </Button>
-                    <Button onClick={() => setIsNewUserOpen(true)}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        {tUsers("createUser")}
-                    </Button>
-                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setIsNewUserOpen(true)}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            {tUsers("createUser")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                            onClick={() => handleExportUsers("excel")}
+                            disabled={isExporting}
+                        >
+                            <Download className="h-4 w-4 mr-2" />
+                            {tCommon("export")}
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             <div className="rounded-md border overflow-auto flex-1 min-h-0">
                 <Table>

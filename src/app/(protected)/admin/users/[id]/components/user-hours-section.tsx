@@ -18,6 +18,7 @@ import { userHourKeys } from "../../query-keys"
 import { useHoursStore } from "@/app/(protected)/hours/stores/hours-store"
 import { TASK_ID_VALUES } from "@/app/(protected)/hours/constants/hour-types"
 import type { HourEntryDisplay } from "@/app/(protected)/hours/schemas/hour-entry-schemas"
+import type { HourType } from "@/app/(protected)/hours/schemas/hour-action-schemas"
 
 interface UserHoursSectionProps {
     userId: string
@@ -80,7 +81,7 @@ export function UserHoursSection({
 
     const handleHourTypeClick = (type: string) => {
         const data = prepareHourTypeData(type)
-        openHourTypeDialog(type as any, data)
+        openHourTypeDialog(type as HourType, data)
     }
 
     const handleNavigate = (direction: "prev" | "next") => {
@@ -103,38 +104,40 @@ export function UserHoursSection({
         <>
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
                             <CardTitle>{t("hoursSummary")}</CardTitle>
                             <CardDescription>{t("hoursSummaryDescription")}</CardDescription>
                         </div>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsExportDialogOpen(true)}
-                        >
-                            <Download className="h-4 w-4 mr-1" />
-                            {tCommon("export")}
-                        </Button>
-                    </div>
-                    <div className="flex items-center justify-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleNavigate("prev")}
-                            disabled={isLoading}
-                        >
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <div className="min-w-[200px] text-center font-medium">{monthTitle}</div>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleNavigate("next")}
-                            disabled={isLoading}
-                        >
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
+                        <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleNavigate("prev")}
+                                disabled={isLoading}
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <div className="min-w-[140px] text-center font-medium">
+                                {monthTitle}
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleNavigate("next")}
+                                disabled={isLoading}
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsExportDialogOpen(true)}
+                            >
+                                <Download className="h-4 w-4 lg:mr-1" />
+                                <span className="hidden lg:inline">{tCommon("export")}</span>
+                            </Button>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent>
