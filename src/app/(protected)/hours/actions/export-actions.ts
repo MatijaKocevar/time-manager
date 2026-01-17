@@ -17,6 +17,7 @@ import { requireAuth, requireAdmin } from "../utils/auth-helpers"
 import { formatDateKey } from "../utils/date-helpers"
 import { calculateWorkingDaysSync, calculateOvertime } from "../utils/calculation-helpers"
 import { HOUR_TYPES } from "../constants/hour-types"
+import { getAttendanceDataForUser } from "./hour-actions"
 
 export async function fetchMonthlyHourData(
     userId: string,
@@ -120,6 +121,12 @@ export async function fetchMonthlyHourData(
 
     const monthLabel = startDate.toLocaleString("en-US", { month: "long", year: "numeric" })
 
+    const attendanceData = await getAttendanceDataForUser(
+        userId,
+        formatDateKey(startDate),
+        formatDateKey(endDate)
+    )
+
     return {
         monthKey: month,
         monthLabel,
@@ -134,6 +141,8 @@ export async function fetchMonthlyHourData(
             totalHours,
             overtime,
             hoursByType,
+            officeCount: attendanceData.officeCount,
+            remoteCount: attendanceData.remoteCount,
         },
         dailyData,
     }

@@ -6,7 +6,7 @@ export async function generateExcel(monthData: MonthlyHourExportData): Promise<B
     const worksheet = workbook.addWorksheet(monthData.monthLabel)
 
     const { summaryStats, dailyData } = monthData
-    const hourTypes = ["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE"]
+    const hourTypes = ["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE", "BREAK", "PRIVATE"]
     const numCols = hourTypes.length + 2
 
     let currentRow = 1
@@ -29,19 +29,24 @@ export async function generateExcel(monthData: MonthlyHourExportData): Promise<B
     currentRow++
 
     worksheet.getCell(currentRow, 1).value = "Expected Hours:"
-    worksheet.getCell(currentRow, 2).value = summaryStats.expectedHours
-    worksheet.getCell(currentRow, 2).font = { bold: true }
+    const expectedHoursCell = worksheet.getCell(currentRow, 2)
+    expectedHoursCell.value = summaryStats.expectedHours / 24
+    expectedHoursCell.numFmt = "[h]:mm"
+    expectedHoursCell.font = { bold: true }
     currentRow++
 
     worksheet.getCell(currentRow, 1).value = "Total Hours:"
-    worksheet.getCell(currentRow, 2).value = summaryStats.totalHours
-    worksheet.getCell(currentRow, 2).font = { bold: true }
+    const totalHoursCell = worksheet.getCell(currentRow, 2)
+    totalHoursCell.value = summaryStats.totalHours / 24
+    totalHoursCell.numFmt = "[h]:mm"
+    totalHoursCell.font = { bold: true }
     currentRow++
 
     worksheet.getCell(currentRow, 1).value = "Overtime:"
-    worksheet.getCell(currentRow, 2).value = summaryStats.overtime
-    worksheet.getCell(currentRow, 2).font = { bold: true }
     const overtimeCell = worksheet.getCell(currentRow, 2)
+    overtimeCell.value = summaryStats.overtime / 24
+    overtimeCell.numFmt = "[h]:mm"
+    overtimeCell.font = { bold: true }
     if (summaryStats.overtime > 0) {
         overtimeCell.font = { bold: true, color: { argb: "FFDC2626" } }
     } else if (summaryStats.overtime < 0) {
@@ -56,10 +61,29 @@ export async function generateExcel(monthData: MonthlyHourExportData): Promise<B
     hourTypes.forEach((type) => {
         const typeLabel = type.replace(/_/g, " ")
         worksheet.getCell(currentRow, 1).value = `${typeLabel}:`
-        worksheet.getCell(currentRow, 2).value = summaryStats.hoursByType[type] || 0
-        worksheet.getCell(currentRow, 2).font = { bold: true }
+        const hours = summaryStats.hoursByType[type] || 0
+        const cell = worksheet.getCell(currentRow, 2)
+        cell.value = hours / 24
+        cell.numFmt = "[h]:mm"
+        cell.font = { bold: true }
         currentRow++
     })
+
+    if (summaryStats.officeCount !== undefined || summaryStats.remoteCount !== undefined) {
+        currentRow++
+        if (summaryStats.officeCount !== undefined) {
+            worksheet.getCell(currentRow, 1).value = "Days in Office:"
+            worksheet.getCell(currentRow, 2).value = summaryStats.officeCount
+            worksheet.getCell(currentRow, 2).font = { bold: true }
+            currentRow++
+        }
+        if (summaryStats.remoteCount !== undefined) {
+            worksheet.getCell(currentRow, 1).value = "Days From Home:"
+            worksheet.getCell(currentRow, 2).value = summaryStats.remoteCount
+            worksheet.getCell(currentRow, 2).font = { bold: true }
+            currentRow++
+        }
+    }
 
     currentRow++
 
@@ -134,8 +158,8 @@ export async function generateExcel(monthData: MonthlyHourExportData): Promise<B
             const col = index + 2
             const cell = worksheet.getCell(dateRow, col)
             const hours = day.byType[type] || 0
-            cell.value = hours
-            cell.numFmt = "0.00"
+            cell.value = hours / 24
+            cell.numFmt = "[h]:mm"
             cell.alignment = { horizontal: "center" }
 
             if (day.isHoliday) {
@@ -154,8 +178,8 @@ export async function generateExcel(monthData: MonthlyHourExportData): Promise<B
         })
 
         const totalCell = worksheet.getCell(dateRow, totalCol)
-        totalCell.value = day.grandTotal
-        totalCell.numFmt = "0.00"
+        totalCell.value = day.grandTotal / 24
+        totalCell.numFmt = "[h]:mm"
         totalCell.font = { bold: true }
         totalCell.alignment = { horizontal: "center" }
 
@@ -195,7 +219,7 @@ export async function generateExcel(monthData: MonthlyHourExportData): Promise<B
         cell.value = {
             formula: `SUM(${colLetter}${dataStartRow}:${colLetter}${dataEndRow})`,
         }
-        cell.numFmt = "0.00"
+        cell.numFmt = "[h]:mm"
         cell.font = { bold: true }
         cell.alignment = { horizontal: "center" }
         cell.fill = {
@@ -210,7 +234,7 @@ export async function generateExcel(monthData: MonthlyHourExportData): Promise<B
     grandTotalCell.value = {
         formula: `SUM(${totalColLetter}${dataStartRow}:${totalColLetter}${dataEndRow})`,
     }
-    grandTotalCell.numFmt = "0.00"
+    grandTotalCell.numFmt = "[h]:mm"
     grandTotalCell.font = { bold: true }
     grandTotalCell.alignment = { horizontal: "center" }
     grandTotalCell.fill = {
@@ -249,7 +273,7 @@ export async function generateMultiSheetExcel(
         const worksheet = workbook.addWorksheet(sheetName)
 
         const { summaryStats, dailyData } = monthData
-        const hourTypes = ["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE"]
+        const hourTypes = ["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE", "BREAK", "PRIVATE"]
         const numCols = hourTypes.length + 2
 
         let currentRow = 1
@@ -272,19 +296,24 @@ export async function generateMultiSheetExcel(
         currentRow++
 
         worksheet.getCell(currentRow, 1).value = "Expected Hours:"
-        worksheet.getCell(currentRow, 2).value = summaryStats.expectedHours
-        worksheet.getCell(currentRow, 2).font = { bold: true }
+        const expectedHoursCell = worksheet.getCell(currentRow, 2)
+        expectedHoursCell.value = summaryStats.expectedHours / 24
+        expectedHoursCell.numFmt = "[h]:mm"
+        expectedHoursCell.font = { bold: true }
         currentRow++
 
         worksheet.getCell(currentRow, 1).value = "Total Hours:"
-        worksheet.getCell(currentRow, 2).value = summaryStats.totalHours
-        worksheet.getCell(currentRow, 2).font = { bold: true }
+        const totalHoursCell = worksheet.getCell(currentRow, 2)
+        totalHoursCell.value = summaryStats.totalHours / 24
+        totalHoursCell.numFmt = "[h]:mm"
+        totalHoursCell.font = { bold: true }
         currentRow++
 
         worksheet.getCell(currentRow, 1).value = "Overtime:"
-        worksheet.getCell(currentRow, 2).value = summaryStats.overtime
-        worksheet.getCell(currentRow, 2).font = { bold: true }
         const overtimeCell = worksheet.getCell(currentRow, 2)
+        overtimeCell.value = summaryStats.overtime / 24
+        overtimeCell.numFmt = "[h]:mm"
+        overtimeCell.font = { bold: true }
         if (summaryStats.overtime > 0) {
             overtimeCell.font = { bold: true, color: { argb: "FFDC2626" } }
         } else if (summaryStats.overtime < 0) {
@@ -299,10 +328,29 @@ export async function generateMultiSheetExcel(
         hourTypes.forEach((type) => {
             const typeLabel = type.replace(/_/g, " ")
             worksheet.getCell(currentRow, 1).value = `${typeLabel}:`
-            worksheet.getCell(currentRow, 2).value = summaryStats.hoursByType[type] || 0
-            worksheet.getCell(currentRow, 2).font = { bold: true }
+            const hours = summaryStats.hoursByType[type] || 0
+            const cell = worksheet.getCell(currentRow, 2)
+            cell.value = hours / 24
+            cell.numFmt = "[h]:mm"
+            cell.font = { bold: true }
             currentRow++
         })
+
+        if (summaryStats.officeCount !== undefined || summaryStats.remoteCount !== undefined) {
+            currentRow++
+            if (summaryStats.officeCount !== undefined) {
+                worksheet.getCell(currentRow, 1).value = "Days in Office:"
+                worksheet.getCell(currentRow, 2).value = summaryStats.officeCount
+                worksheet.getCell(currentRow, 2).font = { bold: true }
+                currentRow++
+            }
+            if (summaryStats.remoteCount !== undefined) {
+                worksheet.getCell(currentRow, 1).value = "Days From Home:"
+                worksheet.getCell(currentRow, 2).value = summaryStats.remoteCount
+                worksheet.getCell(currentRow, 2).font = { bold: true }
+                currentRow++
+            }
+        }
 
         currentRow++
 
@@ -380,8 +428,8 @@ export async function generateMultiSheetExcel(
                 const col = index + 2
                 const cell = worksheet.getCell(dateRow, col)
                 const hours = day.byType[type] || 0
-                cell.value = hours
-                cell.numFmt = "0.00"
+                cell.value = hours / 24
+                cell.numFmt = "[h]:mm"
                 cell.alignment = { horizontal: "center" }
 
                 if (day.isHoliday) {
@@ -400,8 +448,8 @@ export async function generateMultiSheetExcel(
             })
 
             const totalCell = worksheet.getCell(dateRow, totalCol)
-            totalCell.value = day.grandTotal
-            totalCell.numFmt = "0.00"
+            totalCell.value = day.grandTotal / 24
+            totalCell.numFmt = "[h]:mm"
             totalCell.font = { bold: true }
             totalCell.alignment = { horizontal: "center" }
 
@@ -441,7 +489,7 @@ export async function generateMultiSheetExcel(
             cell.value = {
                 formula: `SUM(${colLetter}${dataStartRow}:${colLetter}${dataEndRow})`,
             }
-            cell.numFmt = "0.00"
+            cell.numFmt = "[h]:mm"
             cell.font = { bold: true }
             cell.alignment = { horizontal: "center" }
             cell.fill = {
@@ -456,7 +504,7 @@ export async function generateMultiSheetExcel(
         grandTotalCell.value = {
             formula: `SUM(${totalColLetter}${dataStartRow}:${totalColLetter}${dataEndRow})`,
         }
-        grandTotalCell.numFmt = "0.00"
+        grandTotalCell.numFmt = "[h]:mm"
         grandTotalCell.font = { bold: true }
         grandTotalCell.alignment = { horizontal: "center" }
         grandTotalCell.fill = {

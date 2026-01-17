@@ -28,6 +28,8 @@ export interface MonthSummaryStats {
     totalHours: number
     overtime: number
     hoursByType: Record<string, number>
+    officeCount?: number
+    remoteCount?: number
 }
 
 export interface DailyHourData {

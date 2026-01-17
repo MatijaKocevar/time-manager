@@ -24,7 +24,7 @@ export function generateCSV(monthlyDataArray: MonthlyHourExportData[]): string {
         monthSection.push(`Overtime,${summaryStats.overtime}`)
         monthSection.push("")
 
-        const hourTypes = ["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE"]
+        const hourTypes = ["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE", "BREAK", "PRIVATE"]
 
         monthSection.push("Hours by Type")
         hourTypes.forEach((type) => {
@@ -32,6 +32,17 @@ export function generateCSV(monthlyDataArray: MonthlyHourExportData[]): string {
             monthSection.push(`${typeLabel},${summaryStats.hoursByType[type] || 0}`)
         })
         monthSection.push("")
+
+        if (summaryStats.officeCount !== undefined || summaryStats.remoteCount !== undefined) {
+            monthSection.push("Attendance")
+            if (summaryStats.officeCount !== undefined) {
+                monthSection.push(`Days in Office,${summaryStats.officeCount}`)
+            }
+            if (summaryStats.remoteCount !== undefined) {
+                monthSection.push(`Days From Home,${summaryStats.remoteCount}`)
+            }
+            monthSection.push("")
+        }
 
         const headerRow = ["Date", ...hourTypes.map((t) => t.replace(/_/g, " ")), "Total"]
         monthSection.push(headerRow.join(","))
