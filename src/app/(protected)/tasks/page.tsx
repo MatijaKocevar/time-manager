@@ -24,5 +24,9 @@ export default async function TasksPage() {
         })),
     ]
 
-    return <TasksOverview groups={allGroups} lists={lists} />
+    return (
+        <div className="h-full overflow-auto">
+            <TasksOverview groups={allGroups} lists={lists} />
+        </div>
+    )
 }

@@ -20,9 +20,13 @@ export default async function ListPage({ params }: ListPageProps) {
     ])
 
     return (
-        <div className="space-y-4">
-            <TasksViewClient listId={actualListId} />
-            <TasksTable tasks={tasks} listId={actualListId} lists={lists} />
+        <div className="flex flex-col h-full">
+            <div className="flex-none space-y-4">
+                <TasksViewClient listId={actualListId} />
+            </div>
+            <div className="flex-1 min-h-0 overflow-auto">
+                <TasksTable tasks={tasks} listId={actualListId} lists={lists} />
+            </div>
         </div>
     )
 }
