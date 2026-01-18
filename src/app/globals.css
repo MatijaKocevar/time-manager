@@ -128,7 +128,7 @@
     /* Scrollbar styling */
     * {
         scrollbar-width: thin;
-        scrollbar-color: hsl(var(--muted-foreground) / 0.3) hsl(var(--muted) / 0.3);
+        scrollbar-color: color-mix(in srgb, var(--muted-foreground) 35%, transparent) transparent;
     }
 
     *::-webkit-scrollbar {
@@ -137,17 +137,17 @@
     }
 
     *::-webkit-scrollbar-track {
-        background: hsl(var(--muted) / 0.3);
+        background: transparent;
         border-radius: 4px;
     }
 
     *::-webkit-scrollbar-thumb {
-        background: hsl(var(--muted-foreground) / 0.3);
+        background: color-mix(in srgb, var(--muted-foreground) 35%, transparent);
         border-radius: 4px;
     }
 
     *::-webkit-scrollbar-thumb:hover {
-        background: hsl(var(--muted-foreground) / 0.5);
+        background: color-mix(in srgb, var(--muted-foreground) 50%, transparent);
     }
 }
 
