@@ -52,9 +52,8 @@ export function SettingsMenu({ translations }: SettingsMenuProps) {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" aria-label={translations.settings}>
                     <Settings className="h-5 w-5" />
-                    <span className="sr-only">{translations.settings}</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">

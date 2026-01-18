@@ -83,9 +83,9 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
                 onClick={isRunning ? handleStop : handleStart}
                 disabled={isLoading}
                 className="h-8 w-8 p-0"
+                aria-label={isRunning ? t("stopTimer") : t("startTimer")}
             >
                 {isRunning ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                <span className="sr-only">{isRunning ? t("stopTimer") : t("startTimer")}</span>
             </Button>
             <button
                 onClick={handleClick}

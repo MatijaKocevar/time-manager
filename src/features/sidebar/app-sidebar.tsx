@@ -230,13 +230,11 @@ export function AppSidebar({
                                                                             size="sm"
                                                                             className="h-6 w-6 p-0"
                                                                             disabled={isDeleting}
+                                                                            aria-label={tTasks(
+                                                                                "list.listOptions"
+                                                                            )}
                                                                         >
                                                                             <MoreHorizontal className="h-3 w-3" />
-                                                                            <span className="sr-only">
-                                                                                {tTasks(
-                                                                                    "list.listOptions"
-                                                                                )}
-                                                                            </span>
                                                                         </Button>
                                                                     </DropdownMenuTrigger>
                                                                     <DropdownMenuContent align="end">

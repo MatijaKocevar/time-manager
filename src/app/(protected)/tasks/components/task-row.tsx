@@ -202,18 +202,18 @@ export function TaskRow({ task, lists }: TaskRowProps) {
                             size="sm"
                             onClick={handleAddSubtask}
                             className="h-8 w-8 p-0"
+                            aria-label={tActions("addSubtask")}
                         >
                             <Plus className="h-4 w-4" />
-                            <span className="sr-only">{tActions("addSubtask")}</span>
                         </Button>
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={handleDelete}
                             className="h-8 w-8 p-0 text-destructive"
+                            aria-label={t("deleteTask")}
                         >
                             <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">{t("deleteTask")}</span>
                         </Button>
                     </div>
                 </TableCell>

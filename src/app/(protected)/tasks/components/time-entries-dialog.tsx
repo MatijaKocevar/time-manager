@@ -189,7 +189,6 @@ export function TimeEntriesDialog() {
             <DialogContent className="w-[95vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col p-4 sm:p-6">
                 <DialogHeader>
                     <DialogTitle>{t("timeEntries")}</DialogTitle>
-                    <DialogDescription className="sr-only">{t("noTimeEntries")}</DialogDescription>
                 </DialogHeader>
 
                 <div className="flex flex-col gap-4">
@@ -332,11 +331,9 @@ export function TimeEntriesDialog() {
                                                                 }}
                                                                 disabled={stopMutation.isPending}
                                                                 className="h-8 w-8 p-0"
+                                                                aria-label="Stop"
                                                             >
                                                                 <Square className="h-4 w-4" />
-                                                                <span className="sr-only">
-                                                                    Stop
-                                                                </span>
                                                             </Button>
                                                         ) : (
                                                             <Button
@@ -350,11 +347,9 @@ export function TimeEntriesDialog() {
                                                                     deleteMutation.isPending
                                                                 }
                                                                 className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                                aria-label="Delete"
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
-                                                                <span className="sr-only">
-                                                                    Delete
-                                                                </span>
                                                             </Button>
                                                         )}
                                                     </td>
@@ -476,9 +471,9 @@ export function TimeEntriesDialog() {
                                                             }}
                                                             disabled={stopMutation.isPending}
                                                             className="h-8 w-8 p-0"
+                                                            aria-label="Stop"
                                                         >
                                                             <Square className="h-4 w-4" />
-                                                            <span className="sr-only">Stop</span>
                                                         </Button>
                                                     ) : (
                                                         <Button
@@ -489,9 +484,9 @@ export function TimeEntriesDialog() {
                                                                 isSaving || deleteMutation.isPending
                                                             }
                                                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                            aria-label="Delete"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
-                                                            <span className="sr-only">Delete</span>
                                                         </Button>
                                                     )}
                                                 </div>
