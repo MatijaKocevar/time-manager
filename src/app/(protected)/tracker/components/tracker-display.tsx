@@ -141,7 +141,7 @@ export function TrackerDisplay({
                                     <SelectTrigger className="w-full" suppressHydrationWarning>
                                         <SelectValue>{getSelectedTaskLabel()}</SelectValue>
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="max-h-[300px]">
                                         {generalWorkTask && (
                                             <SelectItem value={generalWorkTask.id}>
                                                 <div className="flex items-center gap-2">
