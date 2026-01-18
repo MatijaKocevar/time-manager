@@ -321,7 +321,7 @@
             "selectType": "Izberite tip",
             "selectTask": "Izberite nalogo",
             "trackingType": "Tip sledenja",
-            "todayEntries": "Današnji vnosi časa",
+            "todayEntries": "Vnosi časa",
             "noEntriesForType": "Ni vnosov časa za ta tip danes",
             "dailySummaryTitle": "Današnji čas"
         },

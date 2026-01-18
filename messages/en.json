@@ -321,7 +321,7 @@
             "selectType": "Select Type",
             "selectTask": "Select Task",
             "trackingType": "Tracking Type",
-            "todayEntries": "Today's Time Entries",
+            "todayEntries": "Time Entries",
             "noEntriesForType": "No time entries for this type today",
             "dailySummaryTitle": "Today's Time"
         },

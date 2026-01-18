@@ -102,33 +102,31 @@ export function TrackerDisplay({
     }
 
     return (
-        <>
-            <Card>
-                <CardContent className="pt-6">
-                    <div className="space-y-6">
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">
-                                    {translations.trackingType}
-                                </label>
-                                <Select
-                                    value={selectedType}
-                                    onValueChange={handleTypeChange}
-                                    disabled={isTimerRunning || isLoading}
-                                >
-                                    <SelectTrigger className="w-full" suppressHydrationWarning>
-                                        <SelectValue>{getTypeLabel(selectedType)}</SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="WORK">{translations.work}</SelectItem>
-                                        <SelectItem value="BREAK">{translations.break}</SelectItem>
-                                        <SelectItem value="PRIVATE">
-                                            {translations.private}
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+        <Card className="h-full">
+            <CardContent className="pt-4 h-full overflow-auto xl:overflow-visible flex flex-col">
+                <div className="space-y-4 flex-1 min-h-0 flex flex-col">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="text-sm font-medium mb-2 block">
+                                {translations.trackingType}
+                            </label>
+                            <Select
+                                value={selectedType}
+                                onValueChange={handleTypeChange}
+                                disabled={isTimerRunning || isLoading}
+                            >
+                                <SelectTrigger className="w-full" suppressHydrationWarning>
+                                    <SelectValue>{getTypeLabel(selectedType)}</SelectValue>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="WORK">{translations.work}</SelectItem>
+                                    <SelectItem value="BREAK">{translations.break}</SelectItem>
+                                    <SelectItem value="PRIVATE">{translations.private}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
 
+                        <div className="grid grid-cols-[1fr_auto] gap-4">
                             <div>
                                 <label className="text-sm font-medium mb-2 block">
                                     {translations.selectTask}
@@ -173,25 +171,40 @@ export function TrackerDisplay({
                                     </SelectContent>
                                 </Select>
                             </div>
+                            <div>
+                                <label className="text-sm font-medium mb-2 block opacity-0">
+                                    -
+                                </label>
+                                <Button
+                                    variant="outline"
+                                    onClick={handleViewEntries}
+                                    disabled={taskEntries.length === 0}
+                                >
+                                    <Clock className="mr-2 h-4 w-4" />
+                                    {translations.todayEntries} ({taskEntries.length})
+                                </Button>
+                            </div>
                         </div>
+                    </div>
 
-                        <div className="space-y-2 p-4 bg-muted rounded-lg min-h-[60px] flex items-center">
-                            {isTimerRunning && activeTimerData ? (
-                                <div className="flex items-center justify-between w-full">
-                                    <Badge variant="secondary">
-                                        {getTypeLabel(activeTimerData.type)}
-                                    </Badge>
-                                    <span className="text-sm text-muted-foreground truncate ml-2">
-                                        {!activeTimerData.task.isSystemTask
-                                            ? activeTimerData.task.title
-                                            : ""}
-                                    </span>
-                                </div>
-                            ) : (
-                                <div className="text-sm text-muted-foreground opacity-0">-</div>
-                            )}
-                        </div>
+                    <div className="space-y-2 p-4 bg-muted rounded-lg min-h-[60px] flex items-center">
+                        {isTimerRunning && activeTimerData ? (
+                            <div className="flex items-center justify-between w-full">
+                                <Badge variant="secondary">
+                                    {getTypeLabel(activeTimerData.type)}
+                                </Badge>
+                                <span className="text-sm text-muted-foreground truncate ml-2">
+                                    {!activeTimerData.task.isSystemTask
+                                        ? activeTimerData.task.title
+                                        : ""}
+                                </span>
+                            </div>
+                        ) : (
+                            <div className="text-sm text-muted-foreground opacity-0">-</div>
+                        )}
+                    </div>
 
+                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-center flex-1 xl:min-h-0">
                         <div className="flex flex-col items-center justify-center gap-6 py-8">
                             <div
                                 className="text-6xl font-mono font-bold tabular-nums"
@@ -218,32 +231,24 @@ export function TrackerDisplay({
                             </Button>
                         </div>
 
-                        <div className="min-h-[20px] text-sm text-destructive text-center">
-                            {trackerError || ""}
+                        <div className="xl:col-span-2">
+                            <DailySummaryCard
+                                initialData={initialDailySummary}
+                                translations={{
+                                    title: translations.dailySummaryTitle,
+                                    work: translations.work,
+                                    break: translations.break,
+                                    private: translations.private,
+                                }}
+                            />
                         </div>
-
-                        <Button
-                            variant="outline"
-                            onClick={handleViewEntries}
-                            className="w-full"
-                            disabled={taskEntries.length === 0}
-                        >
-                            <Clock className="mr-2 h-4 w-4" />
-                            {translations.todayEntries} ({taskEntries.length})
-                        </Button>
                     </div>
-                </CardContent>
-            </Card>
 
-            <DailySummaryCard
-                initialData={initialDailySummary}
-                translations={{
-                    title: translations.dailySummaryTitle,
-                    work: translations.work,
-                    break: translations.break,
-                    private: translations.private,
-                }}
-            />
-        </>
+                    <div className="min-h-[20px] text-sm text-destructive text-center">
+                        {trackerError || ""}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     )
 }

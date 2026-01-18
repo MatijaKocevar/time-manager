@@ -51,17 +51,19 @@ export default async function TrackerPage() {
     }
 
     return (
-        <div className="space-y-6">
-            <TrackerDisplay
-                inProgressTasks={inProgressTasks}
-                generalWorkTask={generalWorkTask}
-                initialSelectedType={trackerPreferences.selectedType}
-                initialSelectedTaskId={finalSelectedTaskId}
-                initialActiveTimer={activeTimer}
-                initialTodayEntries={initialTaskEntries}
-                initialDailySummary={dailySummary}
-                translations={translations}
-            />
+        <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex-1 overflow-auto">
+                <TrackerDisplay
+                    inProgressTasks={inProgressTasks}
+                    generalWorkTask={generalWorkTask}
+                    initialSelectedType={trackerPreferences.selectedType}
+                    initialSelectedTaskId={finalSelectedTaskId}
+                    initialActiveTimer={activeTimer}
+                    initialTodayEntries={initialTaskEntries}
+                    initialDailySummary={dailySummary}
+                    translations={translations}
+                />
+            </div>
             <TimeEntriesDialog />
         </div>
     )
