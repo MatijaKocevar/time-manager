@@ -1026,7 +1026,7 @@ export async function approveRequest(input: ApproveRequestInput) {
                     const { startDateTime: reqStartDateTime, endDateTime: reqEndDateTime } =
                         getRequestDateTimeRange(request)
 
-                    const typesToRemap = ["WORK", "WORK_FROM_HOME", "OTHER"]
+                    const typesToRemap = ["WORK", "WORK_FROM_HOME"]
 
                     const systemTasks = await tx.task.findMany({
                         where: {
