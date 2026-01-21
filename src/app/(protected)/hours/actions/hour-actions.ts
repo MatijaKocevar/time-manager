@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import type { HourType } from "@/../../prisma/generated/client"
-import { refreshDailyHourSummary, refreshDailyHourSummaryInTransaction } from "@/lib/materialized-views"
+import {
+    refreshDailyHourSummary,
+    refreshDailyHourSummaryInTransaction,
+} from "@/lib/materialized-views"
 import { TASK_ID_VALUES } from "../constants/hour-types"
 import {
     CreateHourEntrySchema,
