@@ -1,17 +1,14 @@
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
 import { VIEW_MODE_VALUES } from "../schemas/hour-filter-schemas"
 
 export function useHoursNavigation(initialViewMode: ViewMode, initialDate: Date) {
-    const router = useRouter()
     const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode)
     const [currentDate, setCurrentDate] = useState<Date>(initialDate)
 
     const handleViewModeChange = (mode: ViewMode) => {
         setViewMode(mode)
         setCurrentDate(new Date())
-        router.push(`/hours?view=${mode.toLowerCase()}`)
     }
 
     const handleNavigate = (direction: "prev" | "next") => {
@@ -24,8 +21,6 @@ export function useHoursNavigation(initialViewMode: ViewMode, initialDate: Date)
         }
 
         setCurrentDate(newDate)
-        const dateStr = newDate.toISOString().split("T")[0]
-        router.push(`/hours?view=${viewMode.toLowerCase()}&date=${dateStr}`)
     }
 
     const getCurrentMonth = () => {
