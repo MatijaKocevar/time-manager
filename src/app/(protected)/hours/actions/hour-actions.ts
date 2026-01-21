@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import type { HourType } from "@/../../prisma/generated/client"
-import { refreshDailyHourSummary } from "@/lib/materialized-views"
+import { refreshDailyHourSummary, refreshDailyHourSummaryInTransaction } from "@/lib/materialized-views"
 import { TASK_ID_VALUES } from "../constants/hour-types"
 import {
     CreateHourEntrySchema,
@@ -61,9 +61,9 @@ export async function createHourEntry(input: CreateHourEntryInput) {
                     },
                 })
             }
-        })
 
-        await refreshDailyHourSummary()
+            await refreshDailyHourSummaryInTransaction(tx)
+        })
         revalidatePath("/hours")
         return { success: true }
     } catch (error) {
@@ -103,9 +103,9 @@ export async function updateHourEntry(input: UpdateHourEntryInput) {
                     description,
                 },
             })
-        })
 
-        await refreshDailyHourSummary()
+            await refreshDailyHourSummaryInTransaction(tx)
+        })
         revalidatePath("/hours")
         return { success: true }
     } catch (error) {
@@ -139,9 +139,9 @@ export async function deleteHourEntry(input: DeleteHourEntryInput) {
             await tx.hourEntry.delete({
                 where: { id },
             })
-        })
 
-        await refreshDailyHourSummary()
+            await refreshDailyHourSummaryInTransaction(tx)
+        })
         revalidatePath("/hours")
         return { success: true }
     } catch (error) {
@@ -240,9 +240,9 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
                         })
                     }
                 }
-            })
 
-            await refreshDailyHourSummary()
+                await refreshDailyHourSummaryInTransaction(tx)
+            })
         }
 
         revalidatePath("/hours")
