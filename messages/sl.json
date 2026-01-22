@@ -162,6 +162,17 @@
             "overtime": "Nadure",
             "undertime": "Manjkajoče ure"
         },
+        "dayEntriesDialog": {
+            "title": "Vnosi časa",
+            "description": "Vsi vnosi časa za ta dan",
+            "startedAt": "Začetek",
+            "endedAt": "Konec",
+            "duration": "Trajanje",
+            "task": "Naloga",
+            "active": "Aktivno",
+            "noEntries": "Ni vnosov časa za ta dan",
+            "close": "Zapri"
+        },
         "messages": {
             "noData": "Ni najdenih vnosov časa za to obdobje",
             "loading": "Nalaganje časovnic...",

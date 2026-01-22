@@ -17,6 +17,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { formatDuration } from "../../tasks/utils/time-helpers"
 import { getStatusColor } from "../../tasks/constants/task-statuses"
 import { useTasksStore } from "../../tasks/stores/tasks-store"
+import { useTimeSheetsStore } from "../stores/time-sheets-store"
 import { startTimer, stopTimer } from "../../tasks/actions/task-time-actions"
 import { taskKeys } from "../../tasks/query-keys"
 import { timeSheetKeys } from "../query-keys"
@@ -59,6 +60,7 @@ export function TimeSheetsTable({
     const queryClient = useQueryClient()
     const openTimeEntriesDialog = useTasksStore((state) => state.openTimeEntriesDialog)
     const activeTimers = useTasksStore((state) => state.activeTimers)
+    const openDayEntriesDialog = useTimeSheetsStore((state) => state.openDayEntriesDialog)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
     const [loadingTask, setLoadingTask] = useState<string | null>(null)
@@ -168,7 +170,12 @@ export function TimeSheetsTable({
                                     <div className="flex flex-col gap-0.5 items-center">
                                         <div>{formatDateHeader(date)}</div>
                                         <div
-                                            className="text-xs font-normal text-muted-foreground h-4"
+                                            className="text-xs font-normal text-muted-foreground h-4 cursor-pointer hover:text-foreground transition-colors"
+                                            onClick={() => {
+                                                if (totalSeconds > 0) {
+                                                    openDayEntriesDialog(date.toISOString())
+                                                }
+                                            }}
                                             suppressHydrationWarning
                                         >
                                             {totalSeconds > 0

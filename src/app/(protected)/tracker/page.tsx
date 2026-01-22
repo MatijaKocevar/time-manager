@@ -10,11 +10,13 @@ import {
 import { TASK_STATUS } from "@/app/(protected)/tasks/constants/task-statuses"
 import { TrackerDisplay } from "./components/tracker-display"
 import { TimeEntriesDialog } from "@/app/(protected)/tasks/components/time-entries-dialog"
+import { DayEntriesDialog } from "@/app/(protected)/time-sheets/components/day-entries-dialog"
 import { getTranslations } from "next-intl/server"
 
 export default async function TrackerPage() {
     const t = await getTranslations("tasks.tracker")
     const tTypes = await getTranslations("hours.types")
+    const tDialog = await getTranslations("timeSheets.dayEntriesDialog")
 
     const [inProgressTasks, activeTimer, generalWorkTask, trackerPreferences, dailySummary] =
         await Promise.all([
@@ -64,6 +66,19 @@ export default async function TrackerPage() {
                     translations={translations}
                 />
             </div>
+            <DayEntriesDialog
+                translations={{
+                    title: tDialog("title"),
+                    description: tDialog("description"),
+                    startedAt: tDialog("startedAt"),
+                    endedAt: tDialog("endedAt"),
+                    duration: tDialog("duration"),
+                    task: tDialog("task"),
+                    active: tDialog("active"),
+                    noEntries: tDialog("noEntries"),
+                    close: tDialog("close"),
+                }}
+            />
             <TimeEntriesDialog />
         </div>
     )

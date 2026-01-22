@@ -162,6 +162,17 @@
             "overtime": "Overtime",
             "undertime": "Undertime"
         },
+        "dayEntriesDialog": {
+            "title": "Time Entries",
+            "description": "All time entries for this day",
+            "startedAt": "Started At",
+            "endedAt": "Ended At",
+            "duration": "Duration",
+            "task": "Task",
+            "active": "Active",
+            "noEntries": "No time entries found for this day",
+            "close": "Close"
+        },
         "messages": {
             "noData": "No time entries found for this period",
             "loading": "Loading time sheets...",

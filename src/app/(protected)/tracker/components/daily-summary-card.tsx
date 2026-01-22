@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Clock } from "lucide-react"
 import { useDailySummary } from "../hooks/use-daily-summary"
 import { formatHoursMinutes } from "@/app/(protected)/hours/utils/time-helpers"
+import { useTimeSheetsStore } from "@/app/(protected)/time-sheets/stores/time-sheets-store"
 import type { HourType } from "@/../../prisma/generated/client"
 
 interface DailySummaryCardProps {
@@ -25,6 +26,13 @@ interface DailySummaryCardProps {
 
 export function DailySummaryCard({ initialData, translations }: DailySummaryCardProps) {
     const { totals } = useDailySummary(initialData)
+    const openDayEntriesDialog = useTimeSheetsStore((state) => state.openDayEntriesDialog)
+
+    const handleTypeClick = (type: "WORK" | "BREAK" | "PRIVATE") => {
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        openDayEntriesDialog(today.toISOString(), type)
+    }
 
     return (
         <Card>
@@ -36,7 +44,10 @@ export function DailySummaryCard({ initialData, translations }: DailySummaryCard
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-3 gap-4">
-                    <div className="flex flex-col items-center gap-2">
+                    <div
+                        className="flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors"
+                        onClick={() => handleTypeClick("WORK")}
+                    >
                         <span className="text-sm text-muted-foreground font-medium">
                             {translations.work}
                         </span>
@@ -44,7 +55,10 @@ export function DailySummaryCard({ initialData, translations }: DailySummaryCard
                             {formatHoursMinutes(totals.WORK)}
                         </span>
                     </div>
-                    <div className="flex flex-col items-center gap-2">
+                    <div
+                        className="flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors"
+                        onClick={() => handleTypeClick("BREAK")}
+                    >
                         <span className="text-sm text-muted-foreground font-medium">
                             {translations.break}
                         </span>
@@ -52,7 +66,10 @@ export function DailySummaryCard({ initialData, translations }: DailySummaryCard
                             {formatHoursMinutes(totals.BREAK)}
                         </span>
                     </div>
-                    <div className="flex flex-col items-center gap-2">
+                    <div
+                        className="flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors"
+                        onClick={() => handleTypeClick("PRIVATE")}
+                    >
                         <span className="text-sm text-muted-foreground font-medium">
                             {translations.private}
                         </span>

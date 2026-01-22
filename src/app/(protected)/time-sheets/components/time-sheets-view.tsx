@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server"
 import { TimeSheetsClient } from "./time-sheets-client"
 import { TimeEntriesDialog } from "../../tasks/components/time-entries-dialog"
+import { DayEntriesDialog } from "./day-entries-dialog"
 import { getTimeSheetEntries } from "../actions/time-sheet-actions"
 import { getDateRangeForView, type ViewMode } from "../utils/date-helpers"
 
@@ -12,6 +13,7 @@ interface TimeSheetsViewProps {
 export async function TimeSheetsView({ searchParams, initialHolidays = [] }: TimeSheetsViewProps) {
     const t = await getTranslations("timeSheets")
     const tSummary = await getTranslations("hours.summary")
+    const tDialog = await getTranslations("timeSheets.dayEntriesDialog")
 
     const viewMode = (searchParams.mode === "month" ? "month" : "week") as ViewMode
     const selectedDate = searchParams.date ? new Date(searchParams.date) : new Date()
@@ -45,6 +47,19 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
                 }}
             />
             <TimeEntriesDialog />
+            <DayEntriesDialog
+                translations={{
+                    title: tDialog("title"),
+                    description: tDialog("description"),
+                    startedAt: tDialog("startedAt"),
+                    endedAt: tDialog("endedAt"),
+                    duration: tDialog("duration"),
+                    task: tDialog("task"),
+                    active: tDialog("active"),
+                    noEntries: tDialog("noEntries"),
+                    close: tDialog("close"),
+                }}
+            />
         </>
     )
 }

@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma"
 import {
     GetTimeSheetEntriesSchema,
     type GetTimeSheetEntriesInput,
+    GetDayEntriesSchema,
+    type GetDayEntriesInput,
 } from "../schemas/time-sheet-schemas"
 
 async function requireAuth() {
@@ -78,5 +80,53 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
     } catch (error) {
         console.error("Error fetching time sheet entries:", error)
         return { error: "Failed to fetch time sheet entries" }
+    }
+}
+
+export async function getDayEntries(input: GetDayEntriesInput) {
+    const session = await requireAuth()
+
+    const validation = GetDayEntriesSchema.safeParse(input)
+    if (!validation.success) {
+        return { error: validation.error.message }
+    }
+
+    const { date, type } = validation.data
+
+    try {
+        const startOfDay = new Date(date)
+        startOfDay.setHours(0, 0, 0, 0)
+        const endOfDay = new Date(date)
+        endOfDay.setHours(23, 59, 59, 999)
+
+        const entries = await prisma.taskTimeEntry.findMany({
+            where: {
+                userId: session.user.id,
+                startTime: {
+                    gte: startOfDay,
+                    lte: endOfDay,
+                },
+                ...(type && { type }),
+            },
+            orderBy: { startTime: "asc" },
+            select: {
+                id: true,
+                taskId: true,
+                startTime: true,
+                endTime: true,
+                duration: true,
+                type: true,
+                task: {
+                    select: {
+                        title: true,
+                    },
+                },
+            },
+        })
+
+        return { success: true, data: entries }
+    } catch (error) {
+        console.error("Error fetching day entries:", error)
+        return { error: "Failed to fetch day entries" }
     }
 }

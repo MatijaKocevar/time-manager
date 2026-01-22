@@ -7,6 +7,15 @@ export const GetTimeSheetEntriesSchema = z.object({
 
 export type GetTimeSheetEntriesInput = z.infer<typeof GetTimeSheetEntriesSchema>
 
+export const GetDayEntriesSchema = z.object({
+    date: z.string().datetime(),
+    type: z
+        .enum(["WORK", "VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "BREAK", "PRIVATE"])
+        .optional(),
+})
+
+export type GetDayEntriesInput = z.infer<typeof GetDayEntriesSchema>
+
 export const TimeEntryTaskSchema = z.object({
     title: z.string(),
     status: z.string(),

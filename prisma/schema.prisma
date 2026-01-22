@@ -162,6 +162,7 @@ model TaskTimeEntry {
   @@index([userId, startTime])
   @@index([userId, endTime])
   @@index([taskId, startTime])
+  @@index([userId, startTime, type])
 }
 
 model Request {
