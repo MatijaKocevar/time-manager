@@ -1,15 +1,16 @@
 export function formatHoursToTime(hours: number): string {
-    const h = Math.floor(hours)
-    const m = Math.round((hours - h) * 60)
-    return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`
+    const sign = hours < 0 ? "-" : ""
+    const totalMinutes = Math.round(Math.abs(hours) * 60)
+    const h = Math.floor(totalMinutes / 60)
+    const m = totalMinutes % 60
+    return `${sign}${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`
 }
 
 export function formatHoursMinutes(hours: number): string {
-    const isNegative = hours < 0
-    const absHours = Math.abs(hours)
-    const h = Math.floor(absHours)
-    const m = Math.round((absHours - h) * 60)
-    const sign = isNegative ? "-" : ""
+    const sign = hours < 0 ? "-" : ""
+    const totalMinutes = Math.round(Math.abs(hours) * 60)
+    const h = Math.floor(totalMinutes / 60)
+    const m = totalMinutes % 60
     if (m === 0) return `${sign}${h}h`
     return `${sign}${h}h ${m}m`
 }

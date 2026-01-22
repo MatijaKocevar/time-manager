@@ -16,6 +16,7 @@ import { useTranslations } from "next-intl"
 import { useTimeSheetsSSE } from "../hooks/use-time-sheets-sse"
 import { useTimeSheetsPusher } from "../hooks/use-time-sheets-pusher"
 import { useHolidays } from "../hooks/use-holidays"
+import { formatHoursMinutes as formatHoursMinutesFromHours } from "../../hours/utils/time-helpers"
 
 interface TimeSheetsClientProps {
     initialData: TimeEntryDisplay[]
@@ -90,10 +91,7 @@ export function TimeSheetsClient({
 
     const formatHoursMinutes = (seconds: number): string => {
         const totalHours = seconds / 3600
-        const h = Math.floor(totalHours)
-        const m = Math.round((totalHours - h) * 60)
-        if (m === 0) return `${h}h`
-        return `${h}h ${m}m`
+        return formatHoursMinutesFromHours(totalHours)
     }
 
     const data = initialData

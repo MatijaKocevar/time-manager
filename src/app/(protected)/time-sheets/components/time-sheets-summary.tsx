@@ -1,13 +1,7 @@
 "use client"
 
 import { Card, CardHeader } from "@/components/ui/card"
-
-function formatHoursMinutes(hours: number): string {
-    const h = Math.floor(hours)
-    const m = Math.round((hours - h) * 60)
-    if (m === 0) return `${h}h`
-    return `${h}h ${m}m`
-}
+import { formatHoursMinutes } from "../../hours/utils/time-helpers"
 
 interface TimeSheetsSummaryProps {
     totalSeconds: number
