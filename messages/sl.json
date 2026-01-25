@@ -137,6 +137,7 @@
         "hours": "Ure",
         "timeSheets": "Časovnice",
         "shifts": "Izmene",
+        "yearlyCalendar": "Letni koledar",
         "requests": "Zahtevki",
         "admin": "Administracija",
         "profile": "Profil",
@@ -898,6 +899,24 @@
             "newRequestBody": "{userName} je oddal/a novo zahtevo tipa {requestType}",
             "approvedBody": "Vaša zahteva za {requestType} je bila odobrena",
             "rejectedBody": "Vaša zahteva za {requestType} je bila zavrnjena"
+        }
+    },
+    "yearlyCalendar": {
+        "title": "Moj koledar",
+        "year": "Leto",
+        "months": {
+            "0": "Januar",
+            "1": "Februar",
+            "2": "Marec",
+            "3": "April",
+            "4": "Maj",
+            "5": "Junij",
+            "6": "Julij",
+            "7": "Avgust",
+            "8": "September",
+            "9": "Oktober",
+            "10": "November",
+            "11": "December"
         }
     },
     "export": {

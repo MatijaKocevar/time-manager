@@ -12,6 +12,7 @@ import {
     Wrench,
     LucideIcon,
     FileSpreadsheet,
+    CalendarRange,
 } from "lucide-react"
 import { UserRole } from "@/types"
 
@@ -46,6 +47,12 @@ export const navigationItems: NavigationItem[] = [
         title: "navigation.shifts",
         url: "/shifts",
         icon: CalendarDays,
+        roles: ["USER", "ADMIN"],
+    },
+    {
+        title: "navigation.yearlyCalendar",
+        url: "/yearly-calendar",
+        icon: CalendarRange,
         roles: ["USER", "ADMIN"],
     },
     {
