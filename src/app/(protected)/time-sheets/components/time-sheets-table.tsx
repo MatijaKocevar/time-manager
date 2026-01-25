@@ -21,6 +21,7 @@ import { useTimeSheetsStore } from "../stores/time-sheets-store"
 import { startTimer, stopTimer } from "../../tasks/actions/task-time-actions"
 import { taskKeys } from "../../tasks/query-keys"
 import { timeSheetKeys } from "../query-keys"
+import { TaskStatusSelect } from "../../tasks/components/task-status-select"
 import {
     isWeekend,
     isToday,
@@ -243,46 +244,30 @@ export function TimeSheetsTable({
                                                     <div
                                                         className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`}
                                                     />
-                                                    <div className="flex flex-col gap-1 min-w-0">
+                                                    <div className="flex flex-col gap-0.5 min-w-0">
                                                         <span className="font-medium text-sm leading-tight truncate">
                                                             {task.taskTitle}
                                                         </span>
-                                                        <div className="flex items-center gap-1.5 flex-wrap">
-                                                            <Badge
-                                                                variant="outline"
-                                                                className={`text-[10px] h-5 px-1.5 py-0 rounded ${statusColor}`}
+                                                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                            <div
+                                                                className="inline-flex [&_button]:!h-auto [&_button]:!p-0 [&_button]:!m-0 [&_button]:!text-xs [&_button]:!font-normal [&_button]:!border-0 [&_button]:!shadow-none [&_button]:!bg-transparent [&_button]:hover:!bg-transparent [&_button]:hover:underline [&_button]:!text-muted-foreground [&_svg]:!hidden [&_button]:!w-auto [&_button]:!min-h-0 [&_button]:!gap-0 [&_div]:!border-0 [&_div]:!bg-transparent [&_div]:!p-0 [&_div]:!m-0 [&_div]:!text-xs [&_div]:!font-normal [&_div]:!h-auto [&_div]:!rounded-none [&_div]:!shadow-none [&_div]:!gap-0 [&_*]:!border-0 [&_*]:!bg-transparent [&_*]:!shadow-none"
+                                                                onClick={(e) => e.stopPropagation()}
                                                             >
-                                                                {task.status === "IN_PROGRESS"
-                                                                    ? "In Progress"
-                                                                    : task.status === "DONE"
-                                                                      ? "Complete"
-                                                                      : task.status === "ON_HOLD"
-                                                                        ? "On Hold"
-                                                                        : task.status === "CANCELED"
-                                                                          ? "Canceled"
-                                                                          : "To Do"}
-                                                            </Badge>
+                                                                <TaskStatusSelect
+                                                                    task={
+                                                                        {
+                                                                            id: task.taskId,
+                                                                            status: task.status,
+                                                                        } as any
+                                                                    }
+                                                                />
+                                                            </div>
                                                             {task.listName &&
                                                                 task.listName !== "No List" && (
-                                                                    <Badge
-                                                                        variant="outline"
-                                                                        className="text-[10px] h-5 px-1.5 py-0 rounded text-muted-foreground"
-                                                                        style={{
-                                                                            borderColor:
-                                                                                task.listColor ??
-                                                                                undefined,
-                                                                            color:
-                                                                                task.listColor ??
-                                                                                undefined,
-                                                                        }}
-                                                                    >
-                                                                        {task.listIcon && (
-                                                                            <span className="mr-0.5">
-                                                                                {task.listIcon}
-                                                                            </span>
-                                                                        )}
-                                                                        {task.listName}
-                                                                    </Badge>
+                                                                    <>
+                                                                        <span>•</span>
+                                                                        <span>{task.listName}</span>
+                                                                    </>
                                                                 )}
                                                         </div>
                                                     </div>

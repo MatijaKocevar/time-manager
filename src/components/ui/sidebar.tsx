@@ -187,6 +187,7 @@ function Sidebar({
                     }
                     side={side}
                 >
+                    <SheetTitle className="sr-only">Navigation</SheetTitle>
                     <div className="flex h-full w-full flex-col">{children}</div>
                 </SheetContent>
             </Sheet>
