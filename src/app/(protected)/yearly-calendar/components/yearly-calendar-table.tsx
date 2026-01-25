@@ -86,7 +86,7 @@ export function YearlyCalendarTable({ year, data, translations }: YearlyCalendar
                                         return (
                                             <TableCell
                                                 key={day}
-                                                className="p-0.5 text-center opacity-30 pointer-events-none bg-muted/30"
+                                                className="p-0.5 text-center opacity-30 pointer-events-none bg-muted/30 align-middle"
                                             />
                                         )
                                     }
@@ -109,7 +109,7 @@ export function YearlyCalendarTable({ year, data, translations }: YearlyCalendar
                                     return (
                                         <TableCell
                                             key={day}
-                                            className={`p-0.5 text-center align-top ${bgClass} ${hasData ? "cursor-pointer hover:ring-2 hover:ring-primary" : ""}`}
+                                            className={`p-0.5 text-center align-middle ${bgClass} ${hasData ? "cursor-pointer hover:ring-2 hover:ring-primary" : ""}`}
                                             onClick={() => handleCellClick(dateKey, hasData)}
                                         >
                                             {hasData && (

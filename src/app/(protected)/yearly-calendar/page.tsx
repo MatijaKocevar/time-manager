@@ -13,7 +13,7 @@ export default async function YearlyCalendarPage() {
     const months = Array.from({ length: 12 }, (_, i) => t(`months.${i}`))
 
     return (
-        <div className="flex flex-col gap-4 h-full p-4">
+        <div className="flex flex-col gap-4 h-full">
             <YearlyCalendarClient
                 initialYear={currentYear}
                 initialData={initialData}
