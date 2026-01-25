@@ -36,8 +36,8 @@ function buildHolidayMap(holidays: Array<{ date: Date; name: string }>) {
 
 export function YearlyCalendarTable({ year, data, translations }: YearlyCalendarTableProps) {
     const openDayEntriesDialog = useTimeSheetsStore((state) => state.openDayEntriesDialog)
-    const startOfYear = `${year}-01-01`
-    const endOfYear = `${year}-12-31`
+    const startOfYear = new Date(year, 0, 1).toISOString()
+    const endOfYear = new Date(year, 11, 31, 23, 59, 59).toISOString()
     const holidays = useHolidays(startOfYear, endOfYear, [])
 
     const holidaysByDate = useMemo(() => buildHolidayMap(holidays), [holidays])
@@ -53,7 +53,7 @@ export function YearlyCalendarTable({ year, data, translations }: YearlyCalendar
 
     return (
         <div className="border rounded-lg overflow-auto h-full">
-            <Table>
+            <Table className="h-full">
                 <colgroup>
                     <col style={{ width: "120px", minWidth: "120px" }} />
                     {days.map((day) => (
@@ -70,13 +70,13 @@ export function YearlyCalendarTable({ year, data, translations }: YearlyCalendar
                         ))}
                     </TableRow>
                 </TableHeader>
-                <TableBody>
+                <TableBody className="[&_tr]:h-[calc((100vh-240px)/12)] landscape:sm:[&_tr]:min-h-[80px] landscape:sm:[&_tr]:h-auto">
                     {Array.from({ length: 12 }, (_, monthIndex) => {
                         const month = monthIndex + 1
 
                         return (
                             <TableRow key={month}>
-                                <TableCell className="sticky left-0 z-20 bg-background border-r font-semibold text-center">
+                                <TableCell className="sticky left-0 z-20 bg-background border-r font-semibold text-center align-middle">
                                     {translations.months[monthIndex]}
                                 </TableCell>
                                 {days.map((day) => {

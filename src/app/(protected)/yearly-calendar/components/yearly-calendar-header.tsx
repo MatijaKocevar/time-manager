@@ -51,10 +51,6 @@ export function YearlyCalendarHeader({ translations }: YearlyCalendarHeaderProps
                     </SelectContent>
                 </Select>
             </div>
-            <h2 className="text-xl font-semibold text-center lg:text-left lg:ml-4">
-                {translations.title}
-            </h2>
-            <div className="hidden lg:block lg:w-32" />
         </div>
     )
 }

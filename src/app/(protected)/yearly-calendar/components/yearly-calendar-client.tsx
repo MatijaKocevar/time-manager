@@ -60,11 +60,13 @@ export function YearlyCalendarClient({
     return (
         <div className="flex flex-col gap-4 h-full">
             <YearlyCalendarHeader translations={translations.header} />
-            <YearlyCalendarTable
-                year={selectedYear}
-                data={yearData || {}}
-                translations={translations}
-            />
+            <div className="flex-1 min-h-0">
+                <YearlyCalendarTable
+                    year={selectedYear}
+                    data={yearData || {}}
+                    translations={translations}
+                />
+            </div>
             <DayEntriesDialog translations={translations.dayEntriesDialog} />
         </div>
     )
