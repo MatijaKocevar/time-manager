@@ -10,11 +10,22 @@ SERVER_HOST="192.168.0.10"
 SERVER_PATH="/home/server/time-management-app"
 LOCAL_PATH="$(pwd)"
 
+# Check for --no-migrate flag
+NO_MIGRATE=false
+if [ "$1" == "--no-migrate" ]; then
+    NO_MIGRATE=true
+fi
+
 echo "🚀 Starting deployment to $SERVER_HOST..."
 
 # Build the application locally
 echo "📦 Building application..."
-npm run build
+if [ "$NO_MIGRATE" = true ]; then
+    echo "⚠️  Skipping migrations..."
+    npm run build:no-migrate
+else
+    npm run build
+fi
 
 # Generate Prisma client
 echo "🔧 Generating Prisma client..."

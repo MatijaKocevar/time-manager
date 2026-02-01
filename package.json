@@ -9,6 +9,7 @@
         "build:no-migrate": "next build",
         "start": "next start --hostname 0.0.0.0",
         "deploy": "./scripts/deploy.sh",
+        "deploy:no-migrate": "./scripts/deploy.sh --no-migrate",
         "lint": "eslint",
         "db:generate": "prisma generate",
         "db:push": "prisma db push",
