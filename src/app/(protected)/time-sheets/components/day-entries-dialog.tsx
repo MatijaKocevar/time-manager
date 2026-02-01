@@ -82,26 +82,26 @@ export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
 
     return (
         <Dialog open={dayEntriesDialog.isOpen} onOpenChange={closeDayEntriesDialog}>
-            <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
-                <DialogHeader>
+            <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col gap-0">
+                <DialogHeader className="flex-shrink-0 pb-4">
                     <DialogTitle>{translations.title}</DialogTitle>
                     <DialogDescription>{translations.description}</DialogDescription>
                 </DialogHeader>
-                <div className="flex-1 relative min-h-0">
+                <div className="min-h-[400px] max-h-[60vh] border rounded-md overflow-y-auto relative">
                     {isLoading && (
                         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
                             <LoadingSpinner />
                         </div>
                     )}
                     {entries.length === 0 && !isLoading ? (
-                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                        <div className="flex items-center justify-center min-h-[400px] text-muted-foreground">
                             {translations.noEntries}
                         </div>
                     ) : (
-                        <div className="h-full overflow-y-auto">
+                        <div>
                             <table className="hidden sm:table w-full caption-bottom text-sm">
-                                <thead className="sticky top-0 bg-background z-10 [&_tr]:border-b">
-                                    <tr className="border-b transition-colors">
+                                <thead className="sticky top-0 bg-background z-10 border-b shadow-sm">
+                                    <tr className="transition-colors">
                                         <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium text-muted-foreground bg-background">
                                             {translations.startedAt}
                                         </th>
@@ -173,7 +173,7 @@ export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
                                 </tbody>
                             </table>
 
-                            <div className="sm:hidden space-y-4">
+                            <div className="sm:hidden space-y-4 p-4">
                                 {entries.map((entry) => {
                                     const isActive = entry.endTime === null
                                     const elapsed = isActive

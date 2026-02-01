@@ -1,4 +1,4 @@
-import { Clock } from "lucide-react"
+import Image from "next/image"
 import { useTranslations } from "next-intl"
 
 interface AppLogoProps {
@@ -16,27 +16,28 @@ export function AppLogo({ size = "md", showText = true, className = "" }: AppLog
         lg: "h-10 w-10",
     }
 
-    const iconSizes = {
-        sm: "h-3 w-3",
-        md: "h-4 w-4",
-        lg: "h-5 w-5",
-    }
-
     const textSizes = {
         sm: "text-xs",
         md: "text-sm",
         lg: "text-base",
     }
 
+    const imgSizes = {
+        sm: 24,
+        md: 32,
+        lg: 40,
+    }
+
     return (
         <div className={`flex items-center gap-2 ${className}`}>
-            <div
-                className={`flex ${sizeClasses[size]} items-center justify-center rounded-lg text-white shadow-md`}
-                style={{
-                    background: "linear-gradient(to bottom right, #3b82f6, #9333ea)",
-                }}
-            >
-                <Clock className={iconSizes[size]} strokeWidth={2.5} />
+            <div className={`flex ${sizeClasses[size]} items-center justify-center`}>
+                <Image
+                    src="/logo.svg"
+                    alt="Time Manager Logo"
+                    width={imgSizes[size]}
+                    height={imgSizes[size]}
+                    priority
+                />
             </div>
             {showText && (
                 <div className="flex flex-col leading-tight">
