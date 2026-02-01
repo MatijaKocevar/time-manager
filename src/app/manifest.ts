@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next"
 export default function manifest(): MetadataRoute.Manifest {
     return {
         name: "Time Management App",
-        short_name: "TimeManager",
+        short_name: "Time Manager",
         description: "Manage your time, tasks, and hours efficiently",
         start_url: "/",
         display: "standalone",

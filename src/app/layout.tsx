@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     appleWebApp: {
         capable: true,
         statusBarStyle: "default",
-        title: "TimeManager",
+        title: "Time Manager",
     },
     formatDetection: {
         telephone: false,
