@@ -18,6 +18,8 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LanguageToggle } from "@/features/locale/components/language-toggle"
 import { useTranslations } from "next-intl"
+import { AppLogo } from "@/components/app-logo"
+import { Separator } from "@/components/ui/separator"
 
 export default function LoginPage() {
     const router = useRouter()
@@ -79,6 +81,10 @@ export default function LoginPage() {
             </div>
             <Card className="w-full max-w-md">
                 <CardHeader>
+                    <div className="flex justify-center mb-6">
+                        <AppLogo size="lg" showText />
+                    </div>
+                    <Separator className="mb-6" />
                     <CardTitle>{t("signIn")}</CardTitle>
                     <CardDescription>{t("signInDescription")}</CardDescription>
                 </CardHeader>
@@ -116,6 +122,7 @@ export default function LoginPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col space-y-4 pt-4">
+                        <Separator />
                         <Button type="submit" className="w-full" disabled={isLoading}>
                             {isLoading ? tCommon("status.signingIn") : tCommon("actions.signIn")}
                         </Button>

@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { verifyEmail } from "./actions/verify-actions"
+import { AppLogo } from "@/components/app-logo"
+import { Separator } from "@/components/ui/separator"
 import { useVerifyEmailStore } from "./stores/verify-store"
 
 export default function VerifyEmailContent() {
@@ -46,6 +48,10 @@ export default function VerifyEmailContent() {
             <div className="flex min-h-screen items-center justify-center p-4">
                 <Card className="w-full max-w-md">
                     <CardHeader>
+                        <div className="flex justify-center mb-6">
+                            <AppLogo size="lg" showText />
+                        </div>
+                        <Separator className="mb-6" />
                         <CardTitle>{t("verifying")}</CardTitle>
                         <CardDescription>{t("pleaseWait")}</CardDescription>
                     </CardHeader>
@@ -64,6 +70,10 @@ export default function VerifyEmailContent() {
             <div className="flex min-h-screen items-center justify-center p-4">
                 <Card className="w-full max-w-md">
                     <CardHeader>
+                        <div className="flex justify-center mb-6">
+                            <AppLogo size="lg" showText />
+                        </div>
+                        <Separator className="mb-6" />
                         <CardTitle>{t("verificationFailed")}</CardTitle>
                         <CardDescription>{t("errorOccurred")}</CardDescription>
                     </CardHeader>
@@ -89,6 +99,10 @@ export default function VerifyEmailContent() {
         <div className="flex min-h-screen items-center justify-center p-4">
             <Card className="w-full max-w-md">
                 <CardHeader>
+                    <div className="flex justify-center mb-6">
+                        <AppLogo size="lg" showText />
+                    </div>
+                    <Separator className="mb-6" />
                     <CardTitle>{t("emailVerified")}</CardTitle>
                     <CardDescription>{t("successMessage")}</CardDescription>
                 </CardHeader>

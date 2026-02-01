@@ -12,6 +12,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LanguageToggle } from "@/features/locale/components/language-toggle"
 import { Eye, EyeOff } from "lucide-react"
 import { registerUser } from "./actions/register-actions"
+import { AppLogo } from "@/components/app-logo"
+import { Separator } from "@/components/ui/separator"
 import { PASSWORD_MIN_LENGTH } from "./schemas/register-schemas"
 import { useRegisterStore } from "./stores/register-store"
 
@@ -60,6 +62,10 @@ export default function RegisterPage() {
                 </div>
                 <Card className="w-full max-w-md">
                     <CardHeader>
+                        <div className="flex justify-center mb-6">
+                            <AppLogo size="lg" showText />
+                        </div>
+                        <Separator className="mb-6" />
                         <CardTitle>{t("checkYourEmail")}</CardTitle>
                         <CardDescription>{t("verificationEmailSent")}</CardDescription>
                     </CardHeader>
@@ -87,6 +93,10 @@ export default function RegisterPage() {
             </div>
             <Card className="w-full max-w-md">
                 <CardHeader>
+                    <div className="flex justify-center mb-6">
+                        <AppLogo size="lg" showText />
+                    </div>
+                    <Separator className="mb-6" />
                     <CardTitle>{t("createAccount")}</CardTitle>
                     <CardDescription>{t("createAccountDescription")}</CardDescription>
                 </CardHeader>
@@ -191,6 +201,8 @@ export default function RegisterPage() {
                                 </Button>
                             </div>
                         </div>
+
+                        <Separator />
 
                         <Button type="submit" className="w-full" disabled={isLoading}>
                             {isLoading ? t("creatingAccount") : t("createAccount")}
