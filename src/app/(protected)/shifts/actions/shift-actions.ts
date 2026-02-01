@@ -30,6 +30,10 @@ export async function getShiftsForPeriod(input: GetShiftsForPeriodInput) {
                     gte: startDate,
                     lte: endDate,
                 },
+                user: {
+                    deactivatedAt: null,
+                    anonymizedAt: null,
+                },
             },
             include: {
                 user: {
@@ -58,6 +62,10 @@ export async function getAllUsers() {
 
     try {
         const users = await prisma.user.findMany({
+            where: {
+                deactivatedAt: null,
+                anonymizedAt: null,
+            },
             select: {
                 id: true,
                 name: true,
