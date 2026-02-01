@@ -4,6 +4,7 @@ import type { HourType } from "@/../../prisma/generated/client"
 import { getActiveTrackingEntry } from "../actions/tracker-actions"
 import { getElapsedSeconds } from "@/app/(protected)/tasks/utils/time-helpers"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
+import { sharedKeys } from "@/app/(protected)/shared/query-keys"
 
 interface UseTimerStateProps {
     initialActiveTimer: {
@@ -30,12 +31,10 @@ export function useTimerState({ initialActiveTimer }: UseTimerStateProps) {
     const [elapsedSeconds, setElapsedSeconds] = useState(0)
 
     const { data: activeTimerData } = useQuery({
-        queryKey: ["tracker", "activeTimer"],
-        queryFn: getActiveTrackingEntry,
+        queryKey: sharedKeys.activeTimer(),
+        queryFn: () => getActiveTrackingEntry(),
         initialData: initialActiveTimer,
         refetchOnWindowFocus: false,
-        refetchOnMount: false,
-        staleTime: Infinity,
     })
 
     const isTimerRunning = Boolean(activeTimerData)
@@ -57,7 +56,7 @@ export function useTimerState({ initialActiveTimer }: UseTimerStateProps) {
         } else {
             setElapsedSeconds(0)
         }
-    }, [activeTimerData, queryClient])
+    }, [activeTimerData, setActiveTimer])
 
     return {
         activeTimerData,

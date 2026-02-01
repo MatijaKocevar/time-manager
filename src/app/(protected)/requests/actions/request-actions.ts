@@ -1102,10 +1102,6 @@ export async function approveRequest(input: ApproveRequestInput) {
             }
         })
 
-        if (request.affectsHourType) {
-            await refreshDailyHourSummary()
-        }
-
         await refreshDailyHourSummary()
 
         const requestUser = await prisma.user.findUnique({

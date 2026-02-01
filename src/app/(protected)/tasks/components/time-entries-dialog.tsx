@@ -24,22 +24,14 @@ import {
 import { taskKeys } from "../query-keys"
 import { hourKeys } from "@/app/(protected)/hours/query-keys"
 import { timeSheetKeys } from "@/app/(protected)/time-sheets/query-keys"
+import { sharedKeys } from "@/app/(protected)/shared/query-keys"
 import { formatDuration } from "../utils/time-helpers"
 import type { TaskTimeEntryDisplay } from "../schemas/task-time-entry-schemas"
 
-function formatDateTimeLocal(date: Date): string {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, "0")
-    const day = String(date.getDate()).padStart(2, "0")
-    const hours = String(date.getHours()).padStart(2, "0")
-    const minutes = String(date.getMinutes()).padStart(2, "0")
-    return `${year}-${month}-${day}T${hours}:${minutes}`
-}
-
 interface EditedEntry {
     id: string
-    startTime: string
-    endTime: string | null
+    startTime: Date
+    endTime: Date | null
 }
 
 export function TimeEntriesDialog() {
@@ -50,6 +42,7 @@ export function TimeEntriesDialog() {
     const timeEntriesDialog = useTasksStore((state) => state.timeEntriesDialog)
     const closeTimeEntriesDialog = useTasksStore((state) => state.closeTimeEntriesDialog)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
+    const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
     const activeTimers = useTasksStore((state) => state.activeTimers)
     const [currentTime, setCurrentTime] = useState(new Date())
     const [editedEntries, setEditedEntries] = useState<Map<string, EditedEntry>>(new Map())
@@ -86,8 +79,7 @@ export function TimeEntriesDialog() {
     ): Date | undefined => {
         const edited = editedEntries.get(entry.id)
         if (edited) {
-            const dateStr = field === "startTime" ? edited.startTime : edited.endTime
-            return dateStr ? new Date(dateStr) : undefined
+            return field === "startTime" ? edited.startTime : (edited.endTime ?? undefined)
         }
         if (field === "startTime") {
             return entry.startTime
@@ -105,14 +97,14 @@ export function TimeEntriesDialog() {
 
         const edited = editedEntries.get(entryId) || {
             id: entryId,
-            startTime: formatDateTimeLocal(entry.startTime),
-            endTime: entry.endTime ? formatDateTimeLocal(entry.endTime) : null,
+            startTime: entry.startTime,
+            endTime: entry.endTime,
         }
 
         if (field === "startTime") {
-            edited.startTime = formatDateTimeLocal(date)
+            edited.startTime = date
         } else {
-            edited.endTime = formatDateTimeLocal(date)
+            edited.endTime = date
         }
 
         const newMap = new Map(editedEntries)
@@ -131,21 +123,33 @@ export function TimeEntriesDialog() {
 
                 const result = await updateTaskTimeEntry({
                     id: edited.id,
-                    startTime: new Date(edited.startTime),
-                    endTime: edited.endTime ? new Date(edited.endTime) : null,
+                    startTime: edited.startTime,
+                    endTime: edited.endTime,
                 })
 
-                if (result.success && entry.endTime === null && entry.taskId) {
-                    const currentTimer = activeTimers.get(entry.taskId)
-                    if (currentTimer && currentTimer.entryId === entry.id) {
-                        setActiveTimer(entry.taskId, entry.id, new Date(edited.startTime))
+                if (result.error) {
+                    alert(`Failed to update entry: ${result.error}`)
+                    continue
+                }
+
+                if (entry.endTime === null && entry.taskId) {
+                    const updatedEntry = {
+                        ...entry,
+                        startTime: edited.startTime,
+                        endTime: edited.endTime,
                     }
+
+                    queryClient.setQueryData(sharedKeys.activeTimer(), updatedEntry)
+                    setActiveTimer(entry.taskId, entry.id, edited.startTime)
                 }
             }
 
-            await queryClient.invalidateQueries({ queryKey: taskKeys.all })
-            await queryClient.invalidateQueries({ queryKey: hourKeys.all })
-            await queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
+            queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
+            queryClient.invalidateQueries({ queryKey: taskKeys.all })
+            queryClient.invalidateQueries({ queryKey: hourKeys.all })
+            queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
+
             setEditedEntries(new Map())
         } finally {
             setIsSaving(false)
@@ -155,18 +159,28 @@ export function TimeEntriesDialog() {
     const deleteMutation = useMutation({
         mutationFn: deleteTaskTimeEntry,
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
             queryClient.invalidateQueries({ queryKey: hourKeys.all })
             queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
         },
     })
 
     const stopMutation = useMutation({
         mutationFn: stopTimer,
-        onSuccess: () => {
+        onSuccess: (result, variables) => {
+            const stoppedEntry = entries.find((e) => e.id === variables.id)
+            if (stoppedEntry?.taskId) {
+                clearActiveTimer(stoppedEntry.taskId)
+            }
+            queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
             queryClient.invalidateQueries({ queryKey: hourKeys.all })
             queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
         },
     })
 
@@ -280,6 +294,7 @@ export function TimeEntriesDialog() {
                                                                 minute: true,
                                                                 second: false,
                                                             }}
+                                                            timezone="Europe/Ljubljana"
                                                         />
                                                     </td>
                                                     <td className="p-2 sm:p-4 align-middle">
@@ -313,6 +328,7 @@ export function TimeEntriesDialog() {
                                                                     minute: true,
                                                                     second: false,
                                                                 }}
+                                                                timezone="Europe/Ljubljana"
                                                             />
                                                         )}
                                                     </td>

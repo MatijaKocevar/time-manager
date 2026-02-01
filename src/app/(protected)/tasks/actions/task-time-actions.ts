@@ -18,6 +18,7 @@ import {
 } from "../schemas/task-time-entry-schemas"
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
 import { getPusherServer } from "@/lib/pusher-server"
+import { sseManager } from "@/lib/sse-manager"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -161,31 +162,25 @@ export async function startTimer(input: StartTimerInput) {
 
         await refreshDailyHourSummary()
         revalidatePath("/tasks")
+        revalidatePath("/tracker")
         revalidatePath("/hours")
         revalidatePath("/time-sheets")
 
-        setImmediate(() => {
-            const broadcastData = {
-                entryId: newEntry.id,
-                taskId,
-                startTime: newEntry.startTime,
-                type: newEntry.type,
-            }
+        const broadcastData = {
+            entryId: newEntry.id,
+            taskId,
+            startTime: newEntry.startTime,
+            type: newEntry.type,
+        }
 
-            const { sseManager } = require("@/lib/sse-manager")
-            sseManager.broadcast(session.user.id, "timer-started", broadcastData)
+        sseManager.broadcast(session.user.id, "timer-started", broadcastData)
 
-            if (process.env.VERCEL) {
-                const pusher = getPusherServer()
-                if (pusher) {
-                    pusher.trigger(
-                        `private-user-${session.user.id}`,
-                        "timer-started",
-                        broadcastData
-                    )
-                }
+        if (process.env.VERCEL) {
+            const pusher = getPusherServer()
+            if (pusher) {
+                pusher.trigger(`private-user-${session.user.id}`, "timer-started", broadcastData)
             }
-        })
+        }
 
         return { success: true, entryId: newEntry.id }
     } catch (error) {
@@ -232,6 +227,7 @@ export async function stopTimer(input: StopTimerInput) {
 
         await refreshDailyHourSummary()
         revalidatePath("/tasks")
+        revalidatePath("/tracker")
         revalidatePath("/hours")
         revalidatePath("/time-sheets")
 
@@ -240,7 +236,6 @@ export async function stopTimer(input: StopTimerInput) {
             duration,
         }
 
-        const { sseManager } = require("@/lib/sse-manager")
         sseManager.broadcast(session.user.id, "timer-stopped", broadcastData)
 
         if (process.env.VERCEL) {
@@ -353,29 +348,6 @@ export async function getTotalTaskTime(taskId: string): Promise<number> {
     }
 }
 
-async function getHourTypeForDate(
-    userId: string,
-    date: Date
-): Promise<"WORK" | "VACATION" | "SICK_LEAVE" | "WORK_FROM_HOME"> {
-    const dateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-
-    const approvedRequest = await prisma.request.findFirst({
-        where: {
-            userId,
-            status: "APPROVED",
-            affectsHourType: true,
-            startDate: { lte: dateUTC },
-            endDate: { gte: dateUTC },
-            cancelledAt: null,
-        },
-        orderBy: {
-            approvedAt: "desc",
-        },
-    })
-
-    return approvedRequest ? approvedRequest.type : "WORK"
-}
-
 export async function updateTaskTimeEntry(input: UpdateTaskTimeEntryInput) {
     try {
         const session = await requireAuth()
@@ -435,8 +407,29 @@ export async function updateTaskTimeEntry(input: UpdateTaskTimeEntryInput) {
 
         await refreshDailyHourSummary()
         revalidatePath("/tasks")
+        revalidatePath("/tracker")
         revalidatePath("/hours")
         revalidatePath("/time-sheets")
+
+        const broadcastData = {
+            entryId: id,
+            startTime,
+            endTime,
+            duration,
+        }
+
+        sseManager.broadcast(session.user.id, "time-entry-updated", broadcastData)
+
+        if (process.env.VERCEL) {
+            const pusher = getPusherServer()
+            if (pusher) {
+                pusher.trigger(
+                    `private-user-${session.user.id}`,
+                    "time-entry-updated",
+                    broadcastData
+                )
+            }
+        }
 
         return { success: true }
     } catch (error) {
@@ -477,6 +470,7 @@ export async function deleteTaskTimeEntry(input: DeleteTaskTimeEntryInput) {
 
         await refreshDailyHourSummary()
         revalidatePath("/tasks")
+        revalidatePath("/tracker")
         revalidatePath("/hours")
         revalidatePath("/time-sheets")
 

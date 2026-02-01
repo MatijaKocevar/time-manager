@@ -243,6 +243,7 @@ export async function startTracking(input: StartTrackingInput) {
         revalidatePath("/tracker")
         revalidatePath("/tasks")
         revalidatePath("/hours")
+        revalidatePath("/time-sheets")
 
         setImmediate(() => {
             const broadcastData = {
@@ -308,6 +309,7 @@ export async function stopTracking(input: StopTrackingInput) {
         revalidatePath("/tracker")
         revalidatePath("/tasks")
         revalidatePath("/hours")
+        revalidatePath("/time-sheets")
 
         const broadcastData = {
             entryId,

@@ -56,14 +56,17 @@ export function TasksView({ initialTasks, listId }: TasksViewProps) {
     const { data: activeTimerData } = useQuery({
         queryKey: taskKeys.activeTimer(),
         queryFn: getActiveTimer,
-        staleTime: 5000,
     })
 
     useEffect(() => {
         if (activeTimerData && activeTimerData.endTime === null) {
             const currentTimer = activeTimers.get(activeTimerData.taskId)
 
-            if (!currentTimer || currentTimer.entryId !== activeTimerData.id) {
+            if (
+                !currentTimer ||
+                currentTimer.entryId !== activeTimerData.id ||
+                currentTimer.startTime.getTime() !== activeTimerData.startTime.getTime()
+            ) {
                 const clearAllActiveTimers = useTasksStore.getState().clearAllActiveTimers
                 clearAllActiveTimers()
                 setActiveTimer(

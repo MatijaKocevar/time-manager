@@ -68,6 +68,8 @@ export async function createHourEntry(input: CreateHourEntryInput) {
             await refreshDailyHourSummaryInTransaction(tx)
         })
         revalidatePath("/hours")
+        revalidatePath("/tracker")
+        revalidatePath("/time-sheets")
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {
@@ -96,6 +98,9 @@ export async function updateHourEntry(input: UpdateHourEntryInput) {
             return { error: "Hour entry not found" }
         }
 
+        const dateChanged = existing.date.getTime() !== date.getTime()
+        const typeChanged = existing.type !== type
+
         await prisma.$transaction(async (tx) => {
             await tx.hourEntry.update({
                 where: { id },
@@ -110,6 +115,8 @@ export async function updateHourEntry(input: UpdateHourEntryInput) {
             await refreshDailyHourSummaryInTransaction(tx)
         })
         revalidatePath("/hours")
+        revalidatePath("/tracker")
+        revalidatePath("/time-sheets")
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {
@@ -146,6 +153,8 @@ export async function deleteHourEntry(input: DeleteHourEntryInput) {
             await refreshDailyHourSummaryInTransaction(tx)
         })
         revalidatePath("/hours")
+        revalidatePath("/tracker")
+        revalidatePath("/time-sheets")
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {
@@ -249,6 +258,8 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
         }
 
         revalidatePath("/hours")
+        revalidatePath("/tracker")
+        revalidatePath("/time-sheets")
         return { success: true, count: entriesToUpsert.length }
     } catch (error) {
         if (error instanceof Error) {
@@ -511,9 +522,9 @@ export async function batchUpdateHourEntries(input: BatchUpdateHourEntriesInput)
             return new Date(Date.UTC(year, month - 1, day))
         }
 
-        await prisma.$transaction(async (tx) => {
-            const affectedDates = new Set<string>()
+        const affectedDates = new Set<string>()
 
+        await prisma.$transaction(async (tx) => {
             for (const change of changes) {
                 affectedDates.add(`${change.date}-${change.type}`)
 
@@ -575,6 +586,8 @@ export async function batchUpdateHourEntries(input: BatchUpdateHourEntriesInput)
 
         await refreshDailyHourSummary()
         revalidatePath("/hours")
+        revalidatePath("/tracker")
+        revalidatePath("/time-sheets")
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {

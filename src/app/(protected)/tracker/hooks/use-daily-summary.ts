@@ -20,26 +20,11 @@ export function useDailySummary(initialData: DailySummaryData) {
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["tracker", "dailySummary"],
-        queryFn: getTodayTimeSummary,
+        queryFn: () => getTodayTimeSummary(),
         initialData,
         refetchOnWindowFocus: false,
         staleTime: 60000,
     })
-
-    useEffect(() => {
-        const handleTimerChange = () => {
-            queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
-        }
-
-        queryClient.getQueryCache().subscribe((event) => {
-            if (
-                event?.query.queryKey[0] === "tracker" &&
-                event?.query.queryKey[1] === "activeTimer"
-            ) {
-                handleTimerChange()
-            }
-        })
-    }, [queryClient])
 
     useEffect(() => {
         if (data?.activeTimer) {

@@ -114,7 +114,11 @@ export function TimeSheetsClient({
 
         if (activeEntry) {
             const currentTimer = activeTimers.get(activeEntry.taskId)
-            if (!currentTimer || currentTimer.entryId !== activeEntry.id) {
+            if (
+                !currentTimer ||
+                currentTimer.entryId !== activeEntry.id ||
+                currentTimer.startTime.getTime() !== activeEntry.startTime.getTime()
+            ) {
                 clearAllActiveTimers()
                 setActiveTimer(activeEntry.taskId, activeEntry.id, activeEntry.startTime)
             }
