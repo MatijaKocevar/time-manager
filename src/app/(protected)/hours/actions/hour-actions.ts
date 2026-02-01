@@ -658,7 +658,7 @@ export async function getAttendanceDataForUser(userId: string, startDate: string
                     lte: parseEndDate(endDate),
                 },
                 type: "WORK",
-                totalHours: {
+                trackedHours: {
                     gt: 0,
                 },
             },
@@ -676,7 +676,7 @@ export async function getAttendanceDataForUser(userId: string, startDate: string
                     lte: parseEndDate(endDate),
                 },
                 type: "WORK_FROM_HOME",
-                totalHours: {
+                trackedHours: {
                     gt: 0,
                 },
             },
