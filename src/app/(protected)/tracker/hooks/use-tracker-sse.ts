@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTrackerStore } from "../stores/tracker-store"
+import { sharedKeys } from "@/app/(protected)/shared/query-keys"
 
 export function useTrackerSSE() {
     const queryClient = useQueryClient()
@@ -21,12 +22,17 @@ export function useTrackerSSE() {
                     setSelectedTaskId(data.taskId)
                 }
             } catch {}
-            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+            queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
         }
 
         const handleTimerStopped = () => {
-            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+            queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+        }
+
+        const handleTimeEntryUpdated = () => {
+            queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
         }
 
@@ -34,7 +40,7 @@ export function useTrackerSSE() {
             const reconnectCount = reconnectCountRef.current
 
             if (reconnectCount > 0) {
-                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+                queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
                 queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
             }
 
@@ -43,12 +49,14 @@ export function useTrackerSSE() {
 
         eventSource.addEventListener("timer-started", handleTimerStarted)
         eventSource.addEventListener("timer-stopped", handleTimerStopped)
+        eventSource.addEventListener("time-entry-updated", handleTimeEntryUpdated)
 
         eventSource.onerror = () => {}
 
         return () => {
             eventSource.removeEventListener("timer-started", handleTimerStarted)
             eventSource.removeEventListener("timer-stopped", handleTimerStopped)
+            eventSource.removeEventListener("time-entry-updated", handleTimeEntryUpdated)
             eventSource.close()
         }
     }, [queryClient, setSelectedType, setSelectedTaskId])

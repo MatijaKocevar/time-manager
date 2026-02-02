@@ -11,8 +11,13 @@ import {
     isBreakOrPrivate,
     type SystemTaskType,
 } from "../utils/system-task-helpers"
-import { sseManager } from "@/lib/sse-manager"
-import { getPusherServer } from "@/lib/pusher-server"
+import {
+    broadcastTimerEvent,
+    stopActiveTimer,
+    determineHourType,
+    refreshTimerData,
+    type TimerBroadcastData,
+} from "@/lib/timer-utils"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -138,27 +143,7 @@ export async function startTracking(input: StartTrackingInput) {
         }
 
         const newEntry = await prisma.$transaction(async (tx) => {
-            const existingActiveTimer = await tx.taskTimeEntry.findFirst({
-                where: {
-                    userId: session.user.id,
-                    endTime: null,
-                },
-            })
-
-            if (existingActiveTimer) {
-                const endTime = new Date()
-                const duration = Math.floor(
-                    (endTime.getTime() - existingActiveTimer.startTime.getTime()) / 1000
-                )
-
-                await tx.taskTimeEntry.update({
-                    where: { id: existingActiveTimer.id },
-                    data: {
-                        endTime,
-                        duration,
-                    },
-                })
-            }
+            await stopActiveTimer(tx, session.user.id)
 
             let finalTaskId = taskId
 
@@ -182,50 +167,9 @@ export async function startTracking(input: StartTrackingInput) {
                 throw new Error("Task ID is required")
             }
 
-            let finalType = type
-
-            if (finalType === "WORK") {
-                const now = new Date()
-
-                const approvedRequests = await tx.request.findMany({
-                    where: {
-                        userId: session.user.id,
-                        status: "APPROVED",
-                        affectsHourType: true,
-                        cancelledAt: null,
-                        type: {
-                            notIn: ["VACATION", "SICK_LEAVE"],
-                        },
-                    },
-                    orderBy: {
-                        approvedAt: "desc",
-                    },
-                })
-
-                for (const request of approvedRequests) {
-                    let requestStart: Date
-                    let requestEnd: Date
-
-                    if (request.isFullDay || !request.startTime || !request.endTime) {
-                        requestStart = new Date(request.startDate)
-                        requestStart.setUTCHours(0, 0, 0, 0)
-                        requestEnd = new Date(request.endDate)
-                        requestEnd.setUTCHours(23, 59, 59, 999)
-                    } else {
-                        const [startHour, startMin] = request.startTime.split(":").map(Number)
-                        const [endHour, endMin] = request.endTime.split(":").map(Number)
-                        requestStart = new Date(request.startDate)
-                        requestStart.setUTCHours(startHour, startMin, 0, 0)
-                        requestEnd = new Date(request.endDate)
-                        requestEnd.setUTCHours(endHour, endMin, 0, 0)
-                    }
-
-                    if (now >= requestStart && now <= requestEnd) {
-                        finalType = request.type
-                        break
-                    }
-                }
-            }
+            const isBreak = type === "BREAK"
+            const isPrivate = type === "PRIVATE"
+            const finalType = await determineHourType(tx, session.user.id, type, isBreak, isPrivate)
 
             const entry = await tx.taskTimeEntry.create({
                 data: {
@@ -239,33 +183,16 @@ export async function startTracking(input: StartTrackingInput) {
             return { entry, taskId: finalTaskId }
         })
 
-        await refreshDailyHourSummary()
-        revalidatePath("/tracker")
-        revalidatePath("/tasks")
-        revalidatePath("/hours")
-        revalidatePath("/time-sheets")
+        await refreshTimerData()
 
-        setImmediate(() => {
-            const broadcastData = {
-                entryId: newEntry.entry.id,
-                taskId: newEntry.taskId,
-                startTime: newEntry.entry.startTime,
-                type,
-            }
+        const broadcastData: TimerBroadcastData = {
+            entryId: newEntry.entry.id,
+            taskId: newEntry.taskId,
+            startTime: newEntry.entry.startTime,
+            type: newEntry.entry.type,
+        }
 
-            sseManager.broadcast(session.user.id, "timer-started", broadcastData)
-
-            if (process.env.VERCEL) {
-                const pusher = getPusherServer()
-                if (pusher) {
-                    pusher.trigger(
-                        `private-user-${session.user.id}`,
-                        "timer-started",
-                        broadcastData
-                    )
-                }
-            }
-        })
+        await broadcastTimerEvent(session.user.id, "timer-started", broadcastData)
 
         return { success: true, entryId: newEntry.entry.id }
     } catch (error) {
@@ -305,25 +232,14 @@ export async function stopTracking(input: StopTrackingInput) {
             },
         })
 
-        await refreshDailyHourSummary()
-        revalidatePath("/tracker")
-        revalidatePath("/tasks")
-        revalidatePath("/hours")
-        revalidatePath("/time-sheets")
+        await refreshTimerData()
 
-        const broadcastData = {
+        const broadcastData: TimerBroadcastData = {
             entryId,
             duration,
         }
 
-        sseManager.broadcast(session.user.id, "timer-stopped", broadcastData)
-
-        if (process.env.VERCEL) {
-            const pusher = getPusherServer()
-            if (pusher) {
-                pusher.trigger(`private-user-${session.user.id}`, "timer-stopped", broadcastData)
-            }
-        }
+        await broadcastTimerEvent(session.user.id, "timer-stopped", broadcastData)
 
         return { success: true }
     } catch (error) {

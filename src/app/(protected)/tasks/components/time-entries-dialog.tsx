@@ -133,13 +133,6 @@ export function TimeEntriesDialog() {
                 }
 
                 if (entry.endTime === null && entry.taskId) {
-                    const updatedEntry = {
-                        ...entry,
-                        startTime: edited.startTime,
-                        endTime: edited.endTime,
-                    }
-
-                    queryClient.setQueryData(sharedKeys.activeTimer(), updatedEntry)
                     setActiveTimer(entry.taskId, entry.id, edited.startTime)
                 }
             }

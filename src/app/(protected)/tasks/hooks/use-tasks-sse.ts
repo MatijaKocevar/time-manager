@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { taskKeys } from "../query-keys"
+import { sharedKeys } from "@/app/(protected)/shared/query-keys"
 
 export function useTasksSSE() {
     const queryClient = useQueryClient()
@@ -12,12 +13,12 @@ export function useTasksSSE() {
         eventSourceRef.current = eventSource
 
         const handleTimerStarted = () => {
-            queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
+            queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
         }
 
         const handleTimerStopped = () => {
-            queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
+            queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
         }
 
@@ -25,7 +26,7 @@ export function useTasksSSE() {
             const reconnectCount = reconnectCountRef.current
 
             if (reconnectCount > 0) {
-                queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
+                queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
                 queryClient.invalidateQueries({ queryKey: taskKeys.all })
             }
 

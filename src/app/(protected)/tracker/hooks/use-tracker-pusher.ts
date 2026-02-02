@@ -5,6 +5,7 @@ import type { Channel } from "pusher-js"
 import type { HourType } from "@/../../prisma/generated/client"
 import { getPusherClient } from "@/lib/pusher-client"
 import { useTrackerStore } from "../stores/tracker-store"
+import { sharedKeys } from "@/app/(protected)/shared/query-keys"
 
 export function useTrackerPusher() {
     const queryClient = useQueryClient()
@@ -35,13 +36,18 @@ export function useTrackerPusher() {
                     setSelectedType(data.type)
                     setSelectedTaskId(data.taskId)
                 }
-                queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+                queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
                 queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
             }
         )
 
         channel.bind("timer-stopped", () => {
-            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+            queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+        })
+
+        channel.bind("time-entry-updated", () => {
+            queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
         })
 
