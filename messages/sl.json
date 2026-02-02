@@ -139,6 +139,7 @@
         "shifts": "Izmene",
         "yearlyCalendar": "Letni koledar",
         "requests": "Zahtevki",
+        "urnikSync": "urnik.net sinhronizacija",
         "admin": "Administracija",
         "profile": "Profil",
         "management": "Upravljanje",
@@ -787,7 +788,40 @@
             "confirmButton": "Da, deaktiviraj moj račun",
             "deactivating": "Deaktiviram...",
             "deactivationFailed": "Deaktivacija računa ni uspela"
+        },
+        "urnikCredentials": {
+            "title": "urnik.net integracija",
+            "description": "Nastavite svoje urnik.net poverilnice za samodejno sinhronizacijo",
+            "username": "urnik.net uporabniško ime",
+            "password": "urnik.net geslo",
+            "usernamePlaceholder": "Vnesite svoje urnik.net uporabniško ime",
+            "passwordPlaceholder": "Vnesite svoje urnik.net geslo",
+            "saveCredentials": "Shrani poverilnice",
+            "testConnection": "Preveri povezavo",
+            "clearCredentials": "Počisti poverilnice",
+            "updateSuccess": "urnik.net poverilnice so bile uspešno posodobljene",
+            "testSuccess": "Test povezave uspešen - prijava na urnik.net uspešna",
+            "clearSuccess": "urnik.net poverilnice so bile počiščene",
+            "lastTested": "Nazadnje testirano",
+            "notTested": "Še ni testirano",
+            "testing": "Testiram...",
+            "saving": "Shranjujem...",
+            "validation": {
+                "usernamePasswordRequired": "Uporabniško ime in geslo sta obvezna",
+                "noCredentialsSaved": "Ni najdenih urnik.net poverilnic. Najprej shranite poverilnice.",
+                "connectionFailed": "Test povezave ni uspel. Preverite svoje poverilnice.",
+                "updateFailed": "Posodobitev urnik.net poverilnic ni uspela"
+            }
         }
+    },
+    "urnikSync": {
+        "pageTitle": "urnik.net sinhronizacija",
+        "noCredentials": "Poverilnice niso konfigurirane",
+        "goToProfile": "Pojdi na nastavitve profila",
+        "connectionStatus": "Stanje povezave",
+        "connected": "Povezan",
+        "notConnected": "Ni povezan",
+        "lastTested": "Nazadnje testirano"
     },
     "auth": {
         "signIn": "Prijava",

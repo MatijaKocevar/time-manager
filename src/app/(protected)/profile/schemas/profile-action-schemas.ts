@@ -21,3 +21,11 @@ export const DeactivateAccountSchema = z.object({
 })
 
 export type DeactivateAccountInput = z.infer<typeof DeactivateAccountSchema>
+
+export const UpdateUrnikCredentialsSchema = z.object({
+    username: z.string().min(1, "Username is required").optional(),
+    password: z.string().min(1, "Password is required").optional(),
+    clearCredentials: z.boolean().optional(),
+})
+
+export type UpdateUrnikCredentialsInput = z.infer<typeof UpdateUrnikCredentialsSchema>

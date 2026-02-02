@@ -13,6 +13,7 @@ import {
     LucideIcon,
     FileSpreadsheet,
     CalendarRange,
+    RefreshCw,
 } from "lucide-react"
 import { UserRole } from "@/types"
 
@@ -65,6 +66,12 @@ export const navigationItems: NavigationItem[] = [
         title: "navigation.requests",
         url: "/requests",
         icon: FileText,
+        roles: ["USER", "ADMIN"],
+    },
+    {
+        title: "navigation.urnikSync",
+        url: "/urnik-sync",
+        icon: RefreshCw,
         roles: ["USER", "ADMIN"],
     },
     {

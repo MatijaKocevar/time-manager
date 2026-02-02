@@ -6,11 +6,14 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
 import { requireNotDemo } from "@/app/(protected)/hours/utils/auth-helpers"
+import { attemptUrnikLogin } from "@/app/(protected)/urnik-sync/actions/urnik-actions"
 import {
     UpdateProfileSchema,
     type UpdateProfileInput,
     DeactivateAccountSchema,
     type DeactivateAccountInput,
+    UpdateUrnikCredentialsSchema,
+    type UpdateUrnikCredentialsInput,
 } from "../schemas/profile-action-schemas"
 import { BCRYPT_SALT_ROUNDS, WORK_HOURS_VALIDATION } from "../constants/profile-constants"
 
@@ -32,6 +35,9 @@ export async function getCurrentUser() {
             workStartTime: true,
             workEndTime: true,
             workHoursPerDay: true,
+            urnikUsername: true,
+            urnikPassword: true,
+            lastUrnikTestAt: true,
         },
     })
 
@@ -184,4 +190,100 @@ export async function deactivateAccount(input: DeactivateAccountInput) {
         console.error("Failed to deactivate account:", error)
         return { error: "profile.deactivation.deactivationFailed" }
     }
+}
+
+export async function updateUrnikCredentials(input: UpdateUrnikCredentialsInput) {
+    const session = await getServerSession(authConfig)
+
+    if (!session?.user) {
+        return { error: "profile.validation.unauthorized" }
+    }
+
+    await requireNotDemo(session.user.id)
+
+    const validation = UpdateUrnikCredentialsSchema.safeParse(input)
+
+    if (!validation.success) {
+        return { error: validation.error.issues[0].message }
+    }
+
+    try {
+        if (input.clearCredentials) {
+            await prisma.user.update({
+                where: { id: session.user.id },
+                data: {
+                    urnikUsername: null,
+                    urnikPassword: null,
+                    lastUrnikTestAt: null,
+                },
+            })
+
+            revalidatePath("/profile")
+            revalidatePath("/urnik-sync")
+            return { success: true }
+        }
+
+        if (!input.username || !input.password) {
+            return { error: "profile.urnikCredentials.validation.usernamePasswordRequired" }
+        }
+
+        await prisma.user.update({
+            where: { id: session.user.id },
+            data: {
+                urnikUsername: input.username,
+                urnikPassword: input.password,
+            },
+        })
+
+        revalidatePath("/profile")
+        revalidatePath("/urnik-sync")
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to update urnik credentials:", error)
+        return { error: "profile.urnikCredentials.validation.updateFailed" }
+    }
+}
+
+export async function testUrnikConnection() {
+    const session = await getServerSession(authConfig)
+
+    if (!session?.user) {
+        return { error: "profile.validation.unauthorized" }
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: {
+                urnikUsername: true,
+                urnikPassword: true,
+            },
+        })
+
+        if (!user?.urnikUsername || !user?.urnikPassword) {
+            return { error: "profile.urnikCredentials.validation.noCredentialsSaved" }
+        }
+
+        const result = await attemptUrnikLogin()
+
+        if (!result.success) {
+            return { error: result.error || "profile.urnikCredentials.validation.connectionFailed" }
+        }
+
+        revalidatePath("/profile")
+        revalidatePath("/urnik-sync")
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to test urnik connection:", error)
+        return {
+            error:
+                error instanceof Error
+                    ? error.message
+                    : "profile.urnikCredentials.validation.connectionFailed",
+        }
+    }
+}
+
+export async function clearUrnikCredentials() {
+    return updateUrnikCredentials({ clearCredentials: true })
 }

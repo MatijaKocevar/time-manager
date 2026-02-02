@@ -139,6 +139,7 @@
         "shifts": "Shifts",
         "yearlyCalendar": "Yearly Calendar",
         "requests": "Requests",
+        "urnikSync": "urnik.net Sync",
         "admin": "Admin",
         "profile": "Profile",
         "management": "Management",
@@ -787,7 +788,40 @@
             "confirmButton": "Yes, Deactivate My Account",
             "deactivating": "Deactivating...",
             "deactivationFailed": "Failed to deactivate account"
+        },
+        "urnikCredentials": {
+            "title": "urnik.net Integration",
+            "description": "Configure your urnik.net credentials for automatic synchronization",
+            "username": "urnik.net Username",
+            "password": "urnik.net Password",
+            "usernamePlaceholder": "Enter your urnik.net username",
+            "passwordPlaceholder": "Enter your urnik.net password",
+            "saveCredentials": "Save Credentials",
+            "testConnection": "Test Connection",
+            "clearCredentials": "Clear Credentials",
+            "updateSuccess": "urnik.net credentials updated successfully",
+            "testSuccess": "Connection test successful - logged in to urnik.net",
+            "clearSuccess": "urnik.net credentials cleared",
+            "lastTested": "Last tested",
+            "notTested": "Not tested yet",
+            "testing": "Testing...",
+            "saving": "Saving...",
+            "validation": {
+                "usernamePasswordRequired": "Both username and password are required",
+                "noCredentialsSaved": "No urnik.net credentials found. Please save credentials first.",
+                "connectionFailed": "Connection test failed. Please check your credentials.",
+                "updateFailed": "Failed to update urnik.net credentials"
+            }
         }
+    },
+    "urnikSync": {
+        "pageTitle": "urnik.net Sync",
+        "noCredentials": "No Credentials Configured",
+        "goToProfile": "Go to Profile Settings",
+        "connectionStatus": "Connection Status",
+        "connected": "Connected",
+        "notConnected": "Not Connected",
+        "lastTested": "Last tested"
     },
     "auth": {
         "signIn": "Sign in",
