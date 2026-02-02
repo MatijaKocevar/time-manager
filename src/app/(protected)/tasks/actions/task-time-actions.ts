@@ -16,9 +16,13 @@ import {
     type DeleteTaskTimeEntryInput,
     type TaskTimeEntryDisplay,
 } from "../schemas/task-time-entry-schemas"
-import { refreshDailyHourSummary } from "@/lib/materialized-views"
-import { getPusherServer } from "@/lib/pusher-server"
-import { sseManager } from "@/lib/sse-manager"
+import {
+    broadcastTimerEvent,
+    stopActiveTimer,
+    determineHourType,
+    refreshTimerData,
+    type TimerBroadcastData,
+} from "@/lib/timer-utils"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -78,86 +82,17 @@ export async function startTimer(input: StartTimerInput) {
         }
 
         const newEntry = await prisma.$transaction(async (tx) => {
-            const existingActiveTimer = await tx.taskTimeEntry.findFirst({
-                where: {
-                    userId: session.user.id,
-                    endTime: null,
-                },
-            })
+            await stopActiveTimer(tx, session.user.id)
 
-            if (existingActiveTimer) {
-                const endTime = new Date()
-                const duration = Math.floor(
-                    (endTime.getTime() - existingActiveTimer.startTime.getTime()) / 1000
-                )
-
-                await tx.taskTimeEntry.update({
-                    where: { id: existingActiveTimer.id },
-                    data: {
-                        endTime,
-                        duration,
-                    },
-                })
-            }
-
-            // Determine type - BREAK and PRIVATE system tasks ALWAYS use their type
-            let newEntryType: HourType = "WORK"
-
-            // Check if this is a BREAK or PRIVATE system task (these override requests)
-            if (task.isSystemTask && task.title) {
-                if (task.title === "System: BREAK") {
-                    newEntryType = "BREAK"
-                } else if (task.title === "System: PRIVATE") {
-                    newEntryType = "PRIVATE"
-                }
-            }
-
-            // If not BREAK/PRIVATE, check for approved requests (applies to General Work and all regular tasks)
-            if (newEntryType === "WORK") {
-                // Check for approved request for the current date/time to set the correct type for new timer
-                // BUT: NEVER use VACATION or SICK_LEAVE for manually tracked time
-                // Those types are ONLY for automatic entries created by request approval
-                const now = new Date()
-
-                const approvedRequests = await tx.request.findMany({
-                    where: {
-                        userId: session.user.id,
-                        status: "APPROVED",
-                        affectsHourType: true,
-                        cancelledAt: null,
-                        type: {
-                            notIn: ["VACATION", "SICK_LEAVE"],
-                        },
-                    },
-                    orderBy: {
-                        approvedAt: "desc",
-                    },
-                })
-
-                for (const request of approvedRequests) {
-                    let requestStart: Date
-                    let requestEnd: Date
-
-                    if (request.isFullDay || !request.startTime || !request.endTime) {
-                        requestStart = new Date(request.startDate)
-                        requestStart.setUTCHours(0, 0, 0, 0)
-                        requestEnd = new Date(request.endDate)
-                        requestEnd.setUTCHours(23, 59, 59, 999)
-                    } else {
-                        const [startHour, startMin] = request.startTime.split(":").map(Number)
-                        const [endHour, endMin] = request.endTime.split(":").map(Number)
-                        requestStart = new Date(request.startDate)
-                        requestStart.setUTCHours(startHour, startMin, 0, 0)
-                        requestEnd = new Date(request.endDate)
-                        requestEnd.setUTCHours(endHour, endMin, 0, 0)
-                    }
-
-                    if (now >= requestStart && now <= requestEnd) {
-                        newEntryType = request.type
-                        break
-                    }
-                }
-            }
+            const isBreak = task.isSystemTask && task.title === "System: BREAK"
+            const isPrivate = task.isSystemTask && task.title === "System: PRIVATE"
+            const newEntryType = await determineHourType(
+                tx,
+                session.user.id,
+                "WORK",
+                isBreak,
+                isPrivate
+            )
 
             return await tx.taskTimeEntry.create({
                 data: {
@@ -169,27 +104,16 @@ export async function startTimer(input: StartTimerInput) {
             })
         })
 
-        await refreshDailyHourSummary()
-        revalidatePath("/tasks")
-        revalidatePath("/tracker")
-        revalidatePath("/hours")
-        revalidatePath("/time-sheets")
+        await refreshTimerData()
 
-        const broadcastData = {
+        const broadcastData: TimerBroadcastData = {
             entryId: newEntry.id,
             taskId,
             startTime: newEntry.startTime,
             type: newEntry.type,
         }
 
-        sseManager.broadcast(session.user.id, "timer-started", broadcastData)
-
-        if (process.env.VERCEL) {
-            const pusher = getPusherServer()
-            if (pusher) {
-                pusher.trigger(`private-user-${session.user.id}`, "timer-started", broadcastData)
-            }
-        }
+        await broadcastTimerEvent(session.user.id, "timer-started", broadcastData)
 
         return { success: true, entryId: newEntry.id }
     } catch (error) {
@@ -234,25 +158,14 @@ export async function stopTimer(input: StopTimerInput) {
             },
         })
 
-        await refreshDailyHourSummary()
-        revalidatePath("/tasks")
-        revalidatePath("/tracker")
-        revalidatePath("/hours")
-        revalidatePath("/time-sheets")
+        await refreshTimerData()
 
-        const broadcastData = {
+        const broadcastData: TimerBroadcastData = {
             entryId: id,
             duration,
         }
 
-        sseManager.broadcast(session.user.id, "timer-stopped", broadcastData)
-
-        if (process.env.VERCEL) {
-            const pusher = getPusherServer()
-            if (pusher) {
-                pusher.trigger(`private-user-${session.user.id}`, "timer-stopped", broadcastData)
-            }
-        }
+        await broadcastTimerEvent(session.user.id, "timer-stopped", broadcastData)
 
         return { success: true }
     } catch (error) {
@@ -423,31 +336,15 @@ export async function updateTaskTimeEntry(input: UpdateTaskTimeEntryInput) {
             })
         })
 
-        await refreshDailyHourSummary()
-        revalidatePath("/tasks")
-        revalidatePath("/tracker")
-        revalidatePath("/hours")
-        revalidatePath("/time-sheets")
+        await refreshTimerData()
 
-        const broadcastData = {
+        const broadcastData: TimerBroadcastData = {
             entryId: id,
             startTime,
-            endTime,
             duration,
         }
 
-        sseManager.broadcast(session.user.id, "time-entry-updated", broadcastData)
-
-        if (process.env.VERCEL) {
-            const pusher = getPusherServer()
-            if (pusher) {
-                pusher.trigger(
-                    `private-user-${session.user.id}`,
-                    "time-entry-updated",
-                    broadcastData
-                )
-            }
-        }
+        await broadcastTimerEvent(session.user.id, "time-entry-updated", broadcastData)
 
         return { success: true }
     } catch (error) {
@@ -486,11 +383,7 @@ export async function deleteTaskTimeEntry(input: DeleteTaskTimeEntryInput) {
             })
         })
 
-        await refreshDailyHourSummary()
-        revalidatePath("/tasks")
-        revalidatePath("/tracker")
-        revalidatePath("/hours")
-        revalidatePath("/time-sheets")
+        await refreshTimerData()
 
         return { success: true }
     } catch (error) {

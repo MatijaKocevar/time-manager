@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import type { Channel } from "pusher-js"
 import { getPusherClient } from "@/lib/pusher-client"
 import { taskKeys } from "../query-keys"
+import { sharedKeys } from "@/app/(protected)/shared/query-keys"
 
 export function useTasksPusher() {
     const queryClient = useQueryClient()
@@ -26,12 +27,12 @@ export function useTasksPusher() {
         pusherChannelRef.current = channel
 
         channel.bind("timer-started", () => {
-            queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
+            queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
         })
 
         channel.bind("timer-stopped", () => {
-            queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
+            queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
         })
 
