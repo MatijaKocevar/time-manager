@@ -268,6 +268,15 @@ export async function getTaskTimeEntries(taskId: string) {
 
         const entries = await prisma.taskTimeEntry.findMany({
             where: { taskId },
+            include: {
+                task: {
+                    select: {
+                        id: true,
+                        title: true,
+                        isSystemTask: true,
+                    },
+                },
+            },
             orderBy: { startTime: "desc" },
         })
 

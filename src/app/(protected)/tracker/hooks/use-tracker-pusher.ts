@@ -45,6 +45,11 @@ export function useTrackerPusher() {
             queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
         })
 
+        channel.bind("time-entry-updated", () => {
+            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+        })
+
         return () => {
             channel.unbind_all()
             pusher.unsubscribe(`private-user-${session.user.id}`)

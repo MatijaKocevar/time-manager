@@ -30,6 +30,11 @@ export function useTrackerSSE() {
             queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
         }
 
+        const handleTimeEntryUpdated = () => {
+            queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
+            queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+        }
+
         eventSource.onopen = () => {
             const reconnectCount = reconnectCountRef.current
 
@@ -43,12 +48,14 @@ export function useTrackerSSE() {
 
         eventSource.addEventListener("timer-started", handleTimerStarted)
         eventSource.addEventListener("timer-stopped", handleTimerStopped)
+        eventSource.addEventListener("time-entry-updated", handleTimeEntryUpdated)
 
         eventSource.onerror = () => {}
 
         return () => {
             eventSource.removeEventListener("timer-started", handleTimerStarted)
             eventSource.removeEventListener("timer-stopped", handleTimerStopped)
+            eventSource.removeEventListener("time-entry-updated", handleTimeEntryUpdated)
             eventSource.close()
         }
     }, [queryClient, setSelectedType, setSelectedTaskId])

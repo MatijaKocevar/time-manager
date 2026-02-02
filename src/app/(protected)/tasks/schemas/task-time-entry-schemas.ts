@@ -9,6 +9,11 @@ export const TaskTimeEntryDisplaySchema = z.object({
     duration: z.number().int().nullable(),
     createdAt: z.date(),
     updatedAt: z.date(),
+    task: z.object({
+        id: z.string(),
+        title: z.string(),
+        isSystemTask: z.boolean(),
+    }),
 })
 
 export const ChildTimeAggregationSchema = z.object({
