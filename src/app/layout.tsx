@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { getServerSession } from "next-auth"
 import { getTranslations } from "next-intl/server"
+import { Toaster } from "sonner"
 import "./globals.css"
 import SessionWrapper from "@/providers/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
@@ -182,6 +183,7 @@ export default async function RootLayout({
                                 </BreadcrumbProvider>
                             </SessionWrapper>
                         </QueryProvider>
+                        <Toaster />
                     </ThemeProvider>
                 </NextIntlClientProvider>
             </body>

@@ -80,6 +80,7 @@ model User {
   shifts                 Shift[]
   tasks                  Task[]
   taskTimeEntries        TaskTimeEntry[]
+  urnikRequests          UrnikRequest[]
 }
 
 model HourEntry {
@@ -382,4 +383,34 @@ enum NotificationType {
   REQUEST_APPROVED
   REQUEST_REJECTED
   REQUEST_CANCELLED
+}
+
+enum UrnikRequestStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  FAILED
+}
+
+model UrnikRequest {
+  id              String              @id @default(cuid())
+  userId          String
+  date            DateTime
+  startTime       String
+  endTime         String
+  hours           Float
+  type            HourType
+  urnikType       Int
+  status          UrnikRequestStatus  @default(PENDING)
+  submittedAt     DateTime            @default(now())
+  confirmedAt     DateTime?
+  errorMessage    String?
+  urnikRequestNo  String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([date])
 }

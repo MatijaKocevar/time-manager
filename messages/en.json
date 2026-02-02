@@ -821,7 +821,12 @@
         "connectionStatus": "Connection Status",
         "connected": "Connected",
         "notConnected": "Not Connected",
-        "lastTested": "Last tested"
+        "lastTested": "Last tested",
+        "pendingRequest": "PENDING",
+        "submitButton": "Submit",
+        "calculatedFrom": "Calculated",
+        "inOffice": "In Office",
+        "remote": "Work from Home"
     },
     "auth": {
         "signIn": "Sign in",
