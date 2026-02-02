@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { UrnikSyncView } from "./components/urnik-sync-view"
 import { getCurrentUser } from "../profile/actions/profile-actions"
-import { attemptUrnikLogin } from "./actions/urnik-actions"
+import { attemptUrnikLogin, fetchUrnikRequests } from "./actions/urnik-actions"
 
 export default async function UrnikSyncPage() {
     const session = await getServerSession(authConfig)
@@ -20,9 +20,13 @@ export default async function UrnikSyncPage() {
     }
 
     let loginResult: { success: boolean; error?: string } | null = null
+    let requestsResult = null
 
     if (user.urnikUsername && user.urnikPassword) {
         loginResult = await attemptUrnikLogin()
+        if (loginResult.success) {
+            requestsResult = await fetchUrnikRequests()
+        }
     }
 
     const t = await getTranslations("urnikSync")
@@ -37,5 +41,14 @@ export default async function UrnikSyncPage() {
         lastTested: t("lastTested"),
     }
 
-    return <UrnikSyncView user={user} translations={urnikTranslations} loginResult={loginResult} />
+    return (
+        <div className="flex flex-col gap-4 h-full">
+            <UrnikSyncView
+                user={user}
+                translations={urnikTranslations}
+                loginResult={loginResult}
+                requestsResult={requestsResult}
+            />
+        </div>
+    )
 }
