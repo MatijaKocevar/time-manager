@@ -17,24 +17,13 @@ export async function broadcastTimerEvent(
     event: "timer-started" | "timer-stopped" | "time-entry-updated",
     data: TimerBroadcastData
 ) {
-    const timestamp = new Date().toISOString()
-    console.log(`[Timer Broadcast ${timestamp}] Broadcasting ${event} for user ${userId}`)
-    console.log(`[Timer Broadcast ${timestamp}] Data:`, JSON.stringify(data))
-
     sseManager.broadcast(userId, event, data)
-    console.log(`[Timer Broadcast ${timestamp}] SSE broadcast completed for ${event}`)
 
     if (process.env.VERCEL) {
-        console.log(`[Timer Broadcast ${timestamp}] Vercel environment detected, using Pusher`)
         const pusher = getPusherServer()
         if (pusher) {
             await pusher.trigger(`private-user-${userId}`, event, data)
-            console.log(`[Timer Broadcast ${timestamp}] Pusher broadcast completed for ${event}`)
-        } else {
-            console.warn(`[Timer Broadcast ${timestamp}] Pusher not available`)
         }
-    } else {
-        console.log(`[Timer Broadcast ${timestamp}] Non-Vercel environment, SSE only`)
     }
 }
 
@@ -63,10 +52,6 @@ export async function stopActiveTimer(tx: Prisma.TransactionClient, userId: stri
                 duration,
             },
         })
-
-        console.log(
-            `[Timer Utils] Stopped existing timer ${existingActiveTimer.id}, duration: ${duration}s`
-        )
     }
 }
 
@@ -78,18 +63,15 @@ export async function determineHourType(
     isPrivate: boolean
 ): Promise<HourType> {
     if (isBreak) {
-        console.log("[Timer Utils] Task is BREAK type, using BREAK")
         return "BREAK"
     }
 
     if (isPrivate) {
-        console.log("[Timer Utils] Task is PRIVATE type, using PRIVATE")
         return "PRIVATE"
     }
 
     if (baseType === "WORK") {
         const now = new Date()
-        console.log("[Timer Utils] Checking for approved requests affecting hour type")
 
         const approvedRequests = await tx.request.findMany({
             where: {
@@ -125,21 +107,15 @@ export async function determineHourType(
             }
 
             if (now >= requestStart && now <= requestEnd) {
-                console.log(
-                    `[Timer Utils] Found active request with type ${request.type}, overriding to ${request.type}`
-                )
                 return request.type
             }
         }
-
-        console.log("[Timer Utils] No active requests, using base type WORK")
     }
 
     return baseType
 }
 
 export async function revalidateTimerPaths() {
-    console.log("[Timer Utils] Revalidating all timer-related paths")
     revalidatePath("/tracker")
     revalidatePath("/tasks")
     revalidatePath("/hours")
@@ -147,7 +123,6 @@ export async function revalidateTimerPaths() {
 }
 
 export async function refreshTimerData() {
-    console.log("[Timer Utils] Refreshing daily hour summary")
     await refreshDailyHourSummary()
     await revalidateTimerPaths()
 }
