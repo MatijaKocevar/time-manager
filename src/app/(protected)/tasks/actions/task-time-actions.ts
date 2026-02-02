@@ -37,6 +37,15 @@ export async function getActiveTimer(): Promise<TaskTimeEntryDisplay | null> {
                 userId: session.user.id,
                 endTime: null,
             },
+            include: {
+                task: {
+                    select: {
+                        id: true,
+                        title: true,
+                        isSystemTask: true,
+                    },
+                },
+            },
             orderBy: { startTime: "desc" },
         })
 
