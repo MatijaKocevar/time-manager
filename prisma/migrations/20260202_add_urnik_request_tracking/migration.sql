@@ -2,9 +2,10 @@
 CREATE TYPE "UrnikRequestStatus" AS ENUM ('PENDING', 'CONFIRMED', 'REJECTED', 'FAILED');
 
 -- AlterTable
-ALTER TABLE "User" ADD COLUMN     "lastUrnikTestAt" TIMESTAMP(3),
-ADD COLUMN     "urnikPassword" TEXT,
-ADD COLUMN     "urnikUsername" TEXT;
+ALTER TABLE "User"
+ADD COLUMN "lastUrnikTestAt" TIMESTAMP(3),
+ADD COLUMN "urnikPassword" TEXT,
+ADD COLUMN "urnikUsername" TEXT;
 
 -- CreateTable
 CREATE TABLE "UrnikRequest" (
@@ -23,18 +24,18 @@ CREATE TABLE "UrnikRequest" (
     "urnikRequestNo" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "UrnikRequest_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE INDEX "UrnikRequest_userId_idx" ON "UrnikRequest"("userId");
+CREATE INDEX "UrnikRequest_userId_idx" ON "UrnikRequest" ("userId");
 
 -- CreateIndex
-CREATE INDEX "UrnikRequest_status_idx" ON "UrnikRequest"("status");
+CREATE INDEX "UrnikRequest_status_idx" ON "UrnikRequest" ("status");
 
 -- CreateIndex
-CREATE INDEX "UrnikRequest_date_idx" ON "UrnikRequest"("date");
+CREATE INDEX "UrnikRequest_date_idx" ON "UrnikRequest" ("date");
 
 -- AddForeignKey
-ALTER TABLE "UrnikRequest" ADD CONSTRAINT "UrnikRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UrnikRequest"
+ADD CONSTRAINT "UrnikRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
