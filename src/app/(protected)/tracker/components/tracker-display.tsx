@@ -41,26 +41,37 @@ export function TrackerDisplay({
 
     const trackerError = useTrackerStore((state) => state.error)
 
+    const { activeTimerData, elapsedSeconds, isTimerRunning } = useTimerState({
+        initialActiveTimer,
+    })
+
     const { selectedType, selectedTaskId, handleTypeChange, handleTaskChange } =
         useTrackerSelection({
             initialSelectedType,
             initialSelectedTaskId,
+            activeTimerData: activeTimerData
+                ? {
+                      type: activeTimerData.type,
+                      taskId: activeTimerData.taskId,
+                  }
+                : null,
         })
-
-    const { activeTimerData, elapsedSeconds, isTimerRunning } = useTimerState({
-        initialActiveTimer,
-    })
 
     const { startMutation, stopMutation, isLoading } = useTrackerMutations()
 
     const { taskEntries } = useTaskTimeEntries(selectedTaskId, initialTodayEntries)
 
+    const isTrackingCurrentSelection =
+        isTimerRunning &&
+        activeTimerData &&
+        activeTimerData.type === selectedType &&
+        activeTimerData.taskId === selectedTaskId
+
     const canStart =
-        !isTimerRunning &&
-        (selectedType === "BREAK" || selectedType === "PRIVATE" || selectedType === "WORK")
+        selectedType === "BREAK" || selectedType === "PRIVATE" || selectedType === "WORK"
 
     const handlePlayStop = () => {
-        if (isTimerRunning && activeTimerData) {
+        if (isTrackingCurrentSelection && activeTimerData) {
             stopMutation.mutate({ entryId: activeTimerData.id })
         } else if (canStart) {
             startMutation.mutate({
@@ -134,9 +145,7 @@ export function TrackerDisplay({
                                 <Select
                                     value={selectedTaskId ?? ""}
                                     onValueChange={handleTaskChange}
-                                    disabled={
-                                        selectedType !== "WORK" || isTimerRunning || isLoading
-                                    }
+                                    disabled={selectedType !== "WORK" || isLoading}
                                 >
                                     <SelectTrigger className="w-full" suppressHydrationWarning>
                                         <SelectValue>{getSelectedTaskLabel()}</SelectValue>
@@ -210,20 +219,20 @@ export function TrackerDisplay({
                                 className="text-6xl font-mono font-bold tabular-nums"
                                 suppressHydrationWarning
                             >
-                                {formatDuration(elapsedSeconds)}
+                                {formatDuration(isTrackingCurrentSelection ? elapsedSeconds : 0)}
                             </div>
 
                             <Button
                                 size="lg"
                                 onClick={handlePlayStop}
-                                disabled={isLoading || (!isTimerRunning && !canStart)}
+                                disabled={isLoading || !canStart}
                                 className={`w-28 h-28 rounded-full text-white shadow-lg transition-all ${
-                                    isTimerRunning
+                                    isTrackingCurrentSelection
                                         ? "bg-red-600 hover:bg-red-700"
                                         : "bg-green-600 hover:bg-green-700"
                                 }`}
                             >
-                                {isTimerRunning ? (
+                                {isTrackingCurrentSelection ? (
                                     <Square className="h-10 w-10" fill="currentColor" />
                                 ) : (
                                     <Play className="h-10 w-10" fill="currentColor" />

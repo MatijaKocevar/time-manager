@@ -6,11 +6,16 @@ import { saveTrackerPreferences, getSystemTaskByType } from "../actions/tracker-
 interface UseTrackerSelectionProps {
     initialSelectedType: HourType
     initialSelectedTaskId: string | null
+    activeTimerData?: {
+        type: HourType
+        taskId: string
+    } | null
 }
 
 export function useTrackerSelection({
     initialSelectedType,
     initialSelectedTaskId,
+    activeTimerData,
 }: UseTrackerSelectionProps) {
     // Use useState with server values to prevent flash
     const [selectedType, setSelectedTypeLocal] = useState(initialSelectedType)
@@ -19,11 +24,24 @@ export function useTrackerSelection({
     const setSelectedTypeStore = useTrackerStore((state) => state.setSelectedType)
     const setSelectedTaskIdStore = useTrackerStore((state) => state.setSelectedTaskId)
 
-    // Sync with store on mount
+    // Sync with active timer on mount/update
     useEffect(() => {
-        setSelectedTypeStore(initialSelectedType)
-        setSelectedTaskIdStore(initialSelectedTaskId)
-    }, [initialSelectedType, initialSelectedTaskId])
+        if (activeTimerData) {
+            setSelectedTypeLocal(activeTimerData.type)
+            setSelectedTaskIdLocal(activeTimerData.taskId)
+            setSelectedTypeStore(activeTimerData.type)
+            setSelectedTaskIdStore(activeTimerData.taskId)
+        } else {
+            setSelectedTypeStore(initialSelectedType)
+            setSelectedTaskIdStore(initialSelectedTaskId)
+        }
+    }, [
+        activeTimerData,
+        initialSelectedType,
+        initialSelectedTaskId,
+        setSelectedTypeStore,
+        setSelectedTaskIdStore,
+    ])
 
     const handleTypeChange = async (type: string) => {
         const newType = type as HourType
