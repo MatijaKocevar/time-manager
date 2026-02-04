@@ -826,7 +826,9 @@
         "submitButton": "Oddaj",
         "calculatedFrom": "Izračunano",
         "inOffice": "V pisarni",
-        "remote": "Delo od doma"
+        "remote": "Delo od doma",
+        "previousMonth": "Prejšnji mesec",
+        "nextMonth": "Naslednji mesec"
     },
     "auth": {
         "signIn": "Prijava",

@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertTriangle, Send, Loader2 } from "lucide-react"
+import { AlertTriangle, Send, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
 import { toast } from "sonner"
 import {
     Table,
@@ -81,6 +81,8 @@ interface UrnikSyncViewProps {
         calculatedFrom: string
         inOffice: string
         remote: string
+        previousMonth: string
+        nextMonth: string
     }
     requestsResult: {
         success: boolean
@@ -94,6 +96,7 @@ interface UrnikSyncViewProps {
         error?: string
     } | null
     submittedRequests: SubmittedRequest[]
+    currentMonth: string
 }
 
 export function UrnikSyncView({
@@ -101,10 +104,11 @@ export function UrnikSyncView({
     translations: t,
     requestsResult,
     pendingRequestsResult,
-    submittedRequests,
+    currentMonth,
 }: UrnikSyncViewProps) {
     const router = useRouter()
     const [submittingIds, setSubmittingIds] = useState<Set<string>>(new Set())
+    const [isPending, startTransition] = useTransition()
 
     const hasCredentials = !!user.urnikUsername
     const isConnected = !!user.lastUrnikTestAt
@@ -116,6 +120,35 @@ export function UrnikSyncView({
     const pendingRequests = pendingRequestsResult?.data || []
     const error = requestsResult?.error || null
     const structureChanged = requestsResult?.structureChanged || false
+
+    const formatMonthLabel = (monthKey: string): string => {
+        const [year, month] = monthKey.split("-")
+        const date = new Date(parseInt(year), parseInt(month) - 1, 1)
+        return new Intl.DateTimeFormat("en-US", {
+            year: "numeric",
+            month: "long",
+        }).format(date)
+    }
+
+    const getPreviousMonth = (): string => {
+        const [year, month] = currentMonth.split("-").map(Number)
+        const date = new Date(year, month - 1, 1)
+        date.setMonth(date.getMonth() - 1)
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+    }
+
+    const getNextMonth = (): string => {
+        const [year, month] = currentMonth.split("-").map(Number)
+        const date = new Date(year, month - 1, 1)
+        date.setMonth(date.getMonth() + 1)
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`
+    }
+
+    const handleMonthChange = (newMonth: string) => {
+        startTransition(() => {
+            router.push(`?month=${newMonth}`)
+        })
+    }
 
     const handleSubmit = async (pendingRequest: PendingUrnikRequest) => {
         const requestKey = pendingRequest.date.toISOString()
@@ -150,18 +183,50 @@ export function UrnikSyncView({
     const existingRequestDates = new Set<string>()
     for (const req of requests) {
         try {
-            const periodMatch = req.period.match(/(\d{2})\.(\d{2})\.(\d{4})/)
-            if (periodMatch) {
-                const [, day, month, year] = periodMatch
-                const dateStr = `${year}-${month}-${day}`
-                existingRequestDates.add(dateStr)
+            const statusLower = req.status.toLowerCase()
+            const isCanceledOrRejected =
+                statusLower.includes("cancel") || statusLower.includes("reject")
+
+            if (isCanceledOrRejected) {
+                continue
+            }
+
+            const hasHours = req.hours && req.hours.trim() !== "" && req.hours !== "0"
+            const hasArrival = req.arrival && req.arrival.trim() !== ""
+            const hasDeparture = req.departure && req.departure.trim() !== ""
+            const isWorkTypeChangeOnly = !hasHours && !hasArrival && !hasDeparture
+
+            if (isWorkTypeChangeOnly) {
+                continue
+            }
+
+            const rangeMatch = req.period.match(
+                /(\d{2})\.(\d{2})\.(\d{4})-(\d{2})\.(\d{2})\.(\d{4})/
+            )
+            if (rangeMatch) {
+                const [, day1, month1, year1, day2, month2, year2] = rangeMatch
+                const start = new Date(parseInt(year1), parseInt(month1) - 1, parseInt(day1))
+                const end = new Date(parseInt(year2), parseInt(month2) - 1, parseInt(day2))
+                const current = new Date(start)
+                while (current <= end) {
+                    const dateStr = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}-${String(current.getDate()).padStart(2, "0")}`
+                    existingRequestDates.add(dateStr)
+                    current.setDate(current.getDate() + 1)
+                }
+            } else {
+                const singleMatch = req.period.match(/(\d{2})\.(\d{2})\.(\d{4})/)
+                if (singleMatch) {
+                    const [, day, month, year] = singleMatch
+                    const dateStr = `${year}-${month}-${day}`
+                    existingRequestDates.add(dateStr)
+                }
             }
         } catch {
             // Skip invalid period formats
         }
     }
 
-    const filteredPendingRequests = pendingRequests.filter((pr) => {
+    const filteredPending = pendingRequests.filter((pr) => {
         const year = pr.date.getFullYear()
         const month = String(pr.date.getMonth() + 1).padStart(2, "0")
         const day = String(pr.date.getDate()).padStart(2, "0")
@@ -169,8 +234,11 @@ export function UrnikSyncView({
         return !existingRequestDates.has(dateStr)
     })
 
-    const allRows = [
-        ...filteredPendingRequests.map((pr) => ({
+    const allRows: Array<{
+        type: "pending" | "existing"
+        data: PendingUrnikRequest | UrnikRequest
+    }> = [
+        ...filteredPending.map((pr) => ({
             type: "pending" as const,
             data: pr,
         })),
@@ -179,6 +247,32 @@ export function UrnikSyncView({
             data: req,
         })),
     ]
+
+    allRows.sort((a, b) => {
+        const getDate = (item: typeof a): Date => {
+            if (item.type === "pending") {
+                return (item.data as PendingUrnikRequest).date
+            } else {
+                const match = (item.data as UrnikRequest).period.match(/(\d{2})\.(\d{2})\.(\d{4})/)
+                if (match) {
+                    const [, day, month, year] = match
+                    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+                }
+                return new Date(0)
+            }
+        }
+
+        const dateA = getDate(a)
+        const dateB = getDate(b)
+
+        if (dateA.getTime() !== dateB.getTime()) {
+            return dateA.getTime() - dateB.getTime()
+        }
+
+        if (a.type === "pending" && b.type === "existing") return -1
+        if (a.type === "existing" && b.type === "pending") return 1
+        return 0
+    })
 
     if (!hasCredentials) {
         return (
@@ -197,16 +291,37 @@ export function UrnikSyncView({
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <div className="flex items-center justify-end gap-2">
-                <span className="text-sm text-muted-foreground">{t.connectionStatus}:</span>
-                <Badge variant={isConnected ? "default" : "destructive"}>
-                    {isConnected ? t.connected : t.notConnected}
-                </Badge>
-                {lastTestedText && (
-                    <span className="text-sm text-muted-foreground">
-                        ({t.lastTested}: {lastTestedText})
-                    </span>
-                )}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleMonthChange(getPreviousMonth())}
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <h2 className="text-xl font-semibold min-w-0 text-center">
+                        {formatMonthLabel(currentMonth)}
+                    </h2>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleMonthChange(getNextMonth())}
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">{t.connectionStatus}:</span>
+                    <Badge variant={isConnected ? "default" : "destructive"}>
+                        {isConnected ? t.connected : t.notConnected}
+                    </Badge>
+                    {lastTestedText && (
+                        <span className="text-sm text-muted-foreground">
+                            ({t.lastTested}: {lastTestedText})
+                        </span>
+                    )}
+                </div>
             </div>
 
             {structureChanged && (
@@ -223,7 +338,7 @@ export function UrnikSyncView({
             {error && !structureChanged && <p className="text-red-600">Error: {error}</p>}
 
             {allRows.length > 0 && (
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden relative">
                     <div className="rounded-md border overflow-auto h-full">
                         <Table>
                             <TableHeader className="sticky top-0 z-30 bg-background">
@@ -247,7 +362,7 @@ export function UrnikSyncView({
                             <TableBody>
                                 {allRows.map((row, idx) => {
                                     if (row.type === "pending") {
-                                        const pr = row.data
+                                        const pr = row.data as PendingUrnikRequest
                                         const requestKey = pr.date.toISOString()
                                         const isSubmitting = submittingIds.has(requestKey)
 
@@ -262,7 +377,7 @@ export function UrnikSyncView({
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {pr.date.toLocaleDateString()}
+                                                    {pr.date.toLocaleDateString("en-GB")}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge
@@ -276,7 +391,12 @@ export function UrnikSyncView({
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {pr.date.toLocaleDateString("en-GB")}
+                                                    {String(pr.date.getDate()).padStart(2, "0")}.
+                                                    {String(pr.date.getMonth() + 1).padStart(
+                                                        2,
+                                                        "0"
+                                                    )}
+                                                    .{pr.date.getFullYear()}
                                                 </TableCell>
                                                 <TableCell className="text-right">1</TableCell>
                                                 <TableCell className="text-right">
@@ -311,7 +431,7 @@ export function UrnikSyncView({
                                             </TableRow>
                                         )
                                     } else {
-                                        const req = row.data
+                                        const req = row.data as UrnikRequest
                                         return (
                                             <TableRow key={`existing-${req.no}-${idx}`}>
                                                 <TableCell>{req.no}</TableCell>
@@ -329,9 +449,11 @@ export function UrnikSyncView({
                                                 <TableCell className="text-center">
                                                     <span
                                                         className={
-                                                            req.status.includes("Confirmed")
+                                                            req.status.includes("Confirmed") &&
+                                                            !req.status.includes("cancel")
                                                                 ? "text-green-600"
-                                                                : req.status.includes("Rejected")
+                                                                : req.status.includes("Rejected") ||
+                                                                    req.status.includes("cancel")
                                                                   ? "text-red-600"
                                                                   : "text-muted-foreground"
                                                         }
@@ -349,6 +471,11 @@ export function UrnikSyncView({
                             </TableBody>
                         </Table>
                     </div>
+                    {isPending && (
+                        <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-40">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                    )}
                 </div>
             )}
         </div>

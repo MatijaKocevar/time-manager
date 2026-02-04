@@ -342,7 +342,7 @@ export async function attemptUrnikLogin() {
     return result
 }
 
-export async function fetchUrnikRequests() {
+export async function fetchUrnikRequests(month?: string) {
     const session = await getServerSession(authConfig)
 
     if (!session?.user) {
@@ -399,7 +399,21 @@ export async function fetchUrnikRequests() {
             return { success: false, error: parsed.error || "Failed to parse HTML" }
         }
 
-        return { success: true, data: parsed.data }
+        let filteredData = parsed.data || []
+
+        if (month) {
+            const [year, monthNum] = month.split("-")
+            filteredData = filteredData.filter((req) => {
+                const match = req.period.match(/(\d{2})\.(\d{2})\.(\d{4})/)
+                if (match) {
+                    const [, , reqMonth, reqYear] = match
+                    return reqYear === year && reqMonth === monthNum.padStart(2, "0")
+                }
+                return false
+            })
+        }
+
+        return { success: true, data: filteredData }
     } catch (error) {
         return {
             success: false,

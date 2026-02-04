@@ -12,7 +12,14 @@ import {
     getSubmittedRequests,
 } from "./actions/urnik-actions"
 
-export default async function UrnikSyncPage() {
+export const dynamic = "force-dynamic"
+
+export default async function UrnikSyncPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ month?: string }>
+}) {
+    const params = await searchParams
     const session = await getServerSession(authConfig)
 
     if (!session?.user) {
@@ -24,6 +31,14 @@ export default async function UrnikSyncPage() {
     if (!user) {
         redirect("/login")
     }
+
+    const today = new Date()
+    const currentMonth =
+        params.month || `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`
+    const [year, month] = currentMonth.split("-").map(Number)
+
+    const startDate = new Date(year, month - 1, 1)
+    const endDate = new Date(year, month, 0)
 
     let loginResult: { success: boolean; error?: string } | null = null
     let requestsResult = null
@@ -46,14 +61,10 @@ export default async function UrnikSyncPage() {
     if (user.urnikUsername && user.urnikPassword) {
         loginResult = await attemptUrnikLogin()
         if (loginResult.success) {
-            requestsResult = await fetchUrnikRequests()
+            requestsResult = await fetchUrnikRequests(currentMonth)
         }
 
         await syncUrnikStatuses()
-
-        const today = new Date()
-        const startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1)
-        const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0)
 
         pendingRequestsResult = await calculatePendingRequests({
             startDate: startDate.toISOString().split("T")[0],
@@ -81,6 +92,8 @@ export default async function UrnikSyncPage() {
         calculatedFrom: t("calculatedFrom"),
         inOffice: t("inOffice"),
         remote: t("remote"),
+        previousMonth: t("previousMonth"),
+        nextMonth: t("nextMonth"),
     }
 
     return (
@@ -91,6 +104,7 @@ export default async function UrnikSyncPage() {
                 requestsResult={requestsResult}
                 pendingRequestsResult={pendingRequestsResult}
                 submittedRequests={submittedRequests}
+                currentMonth={currentMonth}
             />
         </div>
     )
