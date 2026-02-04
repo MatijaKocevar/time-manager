@@ -291,33 +291,40 @@ export function UrnikSyncView({
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleMonthChange(getPreviousMonth())}
+                        className="h-8 w-8 p-0 sm:h-9 sm:w-9"
                     >
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <h2 className="text-xl font-semibold min-w-0 text-center">
+                    <h2 className="text-base sm:text-xl font-semibold min-w-0 text-center">
                         {formatMonthLabel(currentMonth)}
                     </h2>
                     <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleMonthChange(getNextMonth())}
+                        className="h-8 w-8 p-0 sm:h-9 sm:w-9"
                     >
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">{t.connectionStatus}:</span>
-                    <Badge variant={isConnected ? "default" : "destructive"}>
+                <div className="flex items-center gap-1 sm:gap-2">
+                    <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">
+                        {t.connectionStatus}:
+                    </span>
+                    <Badge
+                        variant={isConnected ? "default" : "destructive"}
+                        className="text-xs py-0 h-5"
+                    >
                         {isConnected ? t.connected : t.notConnected}
                     </Badge>
                     {lastTestedText && (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-xs text-muted-foreground hidden lg:inline">
                             ({t.lastTested}: {lastTestedText})
                         </span>
                     )}
