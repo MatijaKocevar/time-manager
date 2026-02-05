@@ -4,7 +4,7 @@ import { Play, Square } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { useQueryClient } from "@tanstack/react-query"
-import { startTimer, stopTimer } from "../actions/task-time-actions"
+import { startTimer, stopTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import { useTasksStore } from "../stores/tasks-store"
 import { taskKeys } from "../query-keys"
 import { formatDuration } from "../utils/time-helpers"
@@ -17,8 +17,8 @@ interface TaskTimeTrackerProps {
 export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
     const queryClient = useQueryClient()
     const t = useTranslations("tasks.actions")
-    const activeTimers = useTasksStore((state) => state.activeTimers)
-    const elapsedTimes = useTasksStore((state) => state.elapsedTimes)
+    const activeTimer = useTasksStore((state) => state.activeTimer)
+    const elapsedSeconds = useTasksStore((state) => state.elapsedSeconds)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
     const openTimeEntriesDialog = useTasksStore((state) => state.openTimeEntriesDialog)
@@ -27,9 +27,7 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
         (state) => state.taskOperations.get(task.id)?.isLoading ?? false
     )
 
-    const activeTimer = activeTimers.get(task.id)
-    const elapsedSeconds = elapsedTimes.get(task.id) ?? 0
-    const isRunning = !!activeTimer
+    const isRunning = activeTimer?.taskId === task.id
 
     const handleStart = async () => {
         setTaskOperationLoading(task.id, true)
@@ -37,8 +35,8 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
             const result = await startTimer({ taskId: task.id })
 
             if (result.success && result.entryId) {
-                const clearAllActiveTimers = useTasksStore.getState().clearAllActiveTimers
-                clearAllActiveTimers()
+                const clearActiveTimer = useTasksStore.getState().clearActiveTimer
+                clearActiveTimer()
                 setActiveTimer(task.id, result.entryId, new Date())
                 await queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
             } else {
@@ -59,7 +57,7 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
             const result = await stopTimer({ id: activeTimer.entryId })
 
             if (result.success) {
-                clearActiveTimer(task.id)
+                clearActiveTimer()
                 await queryClient.invalidateQueries({ queryKey: taskKeys.all })
             } else {
                 console.error("Failed to stop timer:", result.error)

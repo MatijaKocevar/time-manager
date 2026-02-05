@@ -72,7 +72,7 @@ export function TrackerDisplay({
 
     const handlePlayStop = () => {
         if (isTrackingCurrentSelection && activeTimerData) {
-            stopMutation.mutate({ entryId: activeTimerData.id })
+            stopMutation.mutate({ id: activeTimerData.id })
         } else if (canStart) {
             startMutation.mutate({
                 type: selectedType,
@@ -124,7 +124,7 @@ export function TrackerDisplay({
                             <Select
                                 value={selectedType}
                                 onValueChange={handleTypeChange}
-                                disabled={isTimerRunning || isLoading}
+                                disabled={isLoading}
                             >
                                 <SelectTrigger className="w-full" suppressHydrationWarning>
                                     <SelectValue>{getTypeLabel(selectedType)}</SelectValue>

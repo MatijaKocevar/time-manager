@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import type { HourType } from "@/../../prisma/generated/client"
-import { getActiveTrackingEntry } from "../actions/tracker-actions"
+import { getActiveTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import { getElapsedSeconds } from "@/app/(protected)/tasks/utils/time-helpers"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
 import { sharedKeys } from "@/app/(protected)/shared/query-keys"
@@ -32,7 +32,7 @@ export function useTimerState({ initialActiveTimer }: UseTimerStateProps) {
 
     const { data: activeTimerData } = useQuery({
         queryKey: sharedKeys.activeTimer(),
-        queryFn: () => getActiveTrackingEntry(),
+        queryFn: () => getActiveTimer(),
         initialData: initialActiveTimer,
         refetchOnWindowFocus: false,
     })

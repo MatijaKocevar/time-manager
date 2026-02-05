@@ -19,8 +19,8 @@ import {
     getTaskTimeEntries,
     updateTaskTimeEntry,
     deleteTaskTimeEntry,
-    stopTimer,
 } from "../actions/task-time-actions"
+import { stopTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import { taskKeys } from "../query-keys"
 import { hourKeys } from "@/app/(protected)/hours/query-keys"
 import { timeSheetKeys } from "@/app/(protected)/time-sheets/query-keys"
@@ -43,7 +43,7 @@ export function TimeEntriesDialog() {
     const closeTimeEntriesDialog = useTasksStore((state) => state.closeTimeEntriesDialog)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
-    const activeTimers = useTasksStore((state) => state.activeTimers)
+    const activeTimer = useTasksStore((state) => state.activeTimer)
     const [currentTime, setCurrentTime] = useState(new Date())
     const [editedEntries, setEditedEntries] = useState<Map<string, EditedEntry>>(new Map())
     const [isSaving, setIsSaving] = useState(false)
@@ -163,11 +163,8 @@ export function TimeEntriesDialog() {
 
     const stopMutation = useMutation({
         mutationFn: stopTimer,
-        onSuccess: (result, variables) => {
-            const stoppedEntry = entries.find((e) => e.id === variables.id)
-            if (stoppedEntry?.taskId) {
-                clearActiveTimer(stoppedEntry.taskId)
-            }
+        onSuccess: () => {
+            clearActiveTimer()
             queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
             queryClient.invalidateQueries({ queryKey: hourKeys.all })

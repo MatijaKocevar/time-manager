@@ -55,9 +55,9 @@ export function TimeSheetsClient({
     const goToPreviousPeriod = useTimeSheetsStore((state) => state.goToPreviousPeriod)
     const goToNextPeriod = useTimeSheetsStore((state) => state.goToNextPeriod)
 
-    const activeTimers = useTasksStore((state) => state.activeTimers)
+    const activeTimer = useTasksStore((state) => state.activeTimer)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
-    const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
+    const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
 
     const [isInitialized, setIsInitialized] = useState(false)
     const [currentTime, setCurrentTime] = useState(new Date())
@@ -113,19 +113,19 @@ export function TimeSheetsClient({
         const activeEntry = data.find((entry) => entry.endTime === null)
 
         if (activeEntry) {
-            const currentTimer = activeTimers.get(activeEntry.taskId)
             if (
-                !currentTimer ||
-                currentTimer.entryId !== activeEntry.id ||
-                currentTimer.startTime.getTime() !== activeEntry.startTime.getTime()
+                !activeTimer ||
+                activeTimer.taskId !== activeEntry.taskId ||
+                activeTimer.entryId !== activeEntry.id ||
+                activeTimer.startTime.getTime() !== activeEntry.startTime.getTime()
             ) {
-                clearAllActiveTimers()
+                clearActiveTimer()
                 setActiveTimer(activeEntry.taskId, activeEntry.id, activeEntry.startTime)
             }
-        } else if (activeTimers.size > 0) {
-            clearAllActiveTimers()
+        } else if (activeTimer) {
+            clearActiveTimer()
         }
-    }, [data, activeTimers, setActiveTimer, clearAllActiveTimers])
+    }, [data, activeTimer, setActiveTimer, clearActiveTimer])
 
     const aggregatedData = useMemo(
         () =>

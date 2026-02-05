@@ -18,7 +18,7 @@ import { formatDuration } from "../../tasks/utils/time-helpers"
 import { getStatusColor } from "../../tasks/constants/task-statuses"
 import { useTasksStore } from "../../tasks/stores/tasks-store"
 import { useTimeSheetsStore } from "../stores/time-sheets-store"
-import { startTimer, stopTimer } from "../../tasks/actions/task-time-actions"
+import { startTimer, stopTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import { taskKeys } from "../../tasks/query-keys"
 import { timeSheetKeys } from "../query-keys"
 import { TaskStatusSelect } from "../../tasks/components/task-status-select"
@@ -60,10 +60,10 @@ export function TimeSheetsTable({
 }: TimeSheetsTableProps) {
     const queryClient = useQueryClient()
     const openTimeEntriesDialog = useTasksStore((state) => state.openTimeEntriesDialog)
-    const activeTimers = useTasksStore((state) => state.activeTimers)
+    const activeTimer = useTasksStore((state) => state.activeTimer)
     const openDayEntriesDialog = useTimeSheetsStore((state) => state.openDayEntriesDialog)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
-    const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
+    const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
     const [loadingTask, setLoadingTask] = useState<string | null>(null)
 
     const { tasks, dates } = aggregatedData
@@ -71,8 +71,8 @@ export function TimeSheetsTable({
     const startMutation = useMutation({
         mutationFn: startTimer,
         onSuccess: (data, variables) => {
-            if (data.success && data.entryId) {
-                clearAllActiveTimers()
+            if (data.success && data.entryId && variables.taskId) {
+                clearActiveTimer()
                 setActiveTimer(variables.taskId, data.entryId, new Date())
                 queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
                 queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
@@ -87,7 +87,7 @@ export function TimeSheetsTable({
     const stopMutation = useMutation({
         mutationFn: stopTimer,
         onSuccess: () => {
-            clearAllActiveTimers()
+            clearActiveTimer()
             queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
             queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
             setLoadingTask(null)
@@ -232,8 +232,7 @@ export function TimeSheetsTable({
                                               ? "bg-red-500"
                                               : "bg-gray-400"
 
-                                const activeTimer = activeTimers.get(task.taskId)
-                                const isTracking = !!activeTimer
+                                const isTracking = activeTimer?.taskId === task.taskId
                                 const isLoadingThis = loadingTask === task.taskId
 
                                 return (

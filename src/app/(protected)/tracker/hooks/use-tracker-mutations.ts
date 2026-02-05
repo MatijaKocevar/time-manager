@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { startTracking, stopTracking } from "../actions/tracker-actions"
+import { startTimer, stopTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import { useTrackerStore } from "../stores/tracker-store"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
 import { taskKeys } from "@/app/(protected)/tasks/query-keys"
@@ -8,12 +8,13 @@ import { sharedKeys } from "@/app/(protected)/shared/query-keys"
 export function useTrackerMutations() {
     const queryClient = useQueryClient()
     const setError = useTrackerStore((state) => state.setError)
-    const clearAllActiveTimers = useTasksStore((state) => state.clearAllActiveTimers)
+    const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
 
     const startMutation = useMutation({
-        mutationFn: startTracking,
+        mutationFn: startTimer,
         onMutate: () => {
             setError("")
+            clearActiveTimer()
         },
         onSuccess: (data) => {
             if (data.error) {
@@ -31,7 +32,7 @@ export function useTrackerMutations() {
     })
 
     const stopMutation = useMutation({
-        mutationFn: stopTracking,
+        mutationFn: stopTimer,
         onMutate: () => {
             setError("")
         },
@@ -39,7 +40,7 @@ export function useTrackerMutations() {
             if (data.error) {
                 setError(data.error)
             } else {
-                clearAllActiveTimers()
+                clearActiveTimer()
                 queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
                 queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
                 queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })

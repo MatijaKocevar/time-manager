@@ -1,6 +1,6 @@
 import { getTasks } from "@/app/(protected)/tasks/actions/task-actions"
+import { getActiveTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import {
-    getActiveTrackingEntry,
     getGeneralWorkTask,
     getTrackerPreferences,
     getTaskTimeEntries,
@@ -21,7 +21,7 @@ export default async function TrackerPage() {
     const [inProgressTasks, activeTimer, generalWorkTask, trackerPreferences, dailySummary] =
         await Promise.all([
             getTasks({ status: TASK_STATUS.IN_PROGRESS }),
-            getActiveTrackingEntry(),
+            getActiveTimer(),
             getGeneralWorkTask(),
             getTrackerPreferences(),
             getTodayTimeSummary(),

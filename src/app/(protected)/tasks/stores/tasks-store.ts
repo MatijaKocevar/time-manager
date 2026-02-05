@@ -4,6 +4,7 @@ import type { TaskTimeEntryDisplay } from "../schemas/task-time-entry-schemas"
 import { TASK_STATUS } from "../constants/task-statuses"
 
 interface ActiveTimer {
+    taskId: string
     entryId: string
     startTime: Date
 }
@@ -18,8 +19,8 @@ interface TasksStoreState {
     expandedRows: Set<string>
     expandedTasks: Set<string>
     expandedStatusSections: Map<string, Set<TaskStatus>>
-    activeTimers: Map<string, ActiveTimer>
-    elapsedTimes: Map<string, number>
+    activeTimer: ActiveTimer | null
+    elapsedSeconds: number
     selectedListId: string | null
     createDialog: {
         isOpen: boolean
@@ -81,15 +82,8 @@ interface TasksStoreActions {
     expandAll: (taskIds: string[]) => void
     collapseAll: () => void
     setActiveTimer: (taskId: string, entryId: string, startTime: Date) => void
-    clearActiveTimer: (taskId: string) => void
-    clearAllActiveTimers: () => void
-    updateElapsedTime: (taskId: string, seconds: number) => void
-    syncActiveTimerFromServer: (
-        serverTimer: { taskId: string; id: string; startTime: Date; endTime: Date | null } | null,
-        activeTimers: Map<string, ActiveTimer>,
-        clearAll: () => void,
-        setTimer: (taskId: string, entryId: string, startTime: Date) => void
-    ) => void
+    clearActiveTimer: () => void
+    updateElapsedTime: (seconds: number) => void
     setSelectedListId: (listId: string | null) => void
     openCreateDialog: (parentId?: string, listId?: string | null) => void
     closeCreateDialog: () => void
@@ -245,46 +239,23 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
             return {}
         }),
 
-    activeTimers: new Map(),
+    activeTimer: null,
     setActiveTimer: (taskId, entryId, startTime) =>
-        set((state) => {
-            const newTimers = new Map(state.activeTimers)
-            newTimers.set(taskId, { entryId, startTime })
-            return { activeTimers: newTimers }
-        }),
-    clearActiveTimer: (taskId) =>
-        set((state) => {
-            const newTimers = new Map(state.activeTimers)
-            newTimers.delete(taskId)
-            const newElapsed = new Map(state.elapsedTimes)
-            newElapsed.delete(taskId)
-            return { activeTimers: newTimers, elapsedTimes: newElapsed }
-        }),
-    clearAllActiveTimers: () =>
         set(() => ({
-            activeTimers: new Map(),
-            elapsedTimes: new Map(),
+            activeTimer: { taskId, entryId, startTime },
+            elapsedSeconds: 0,
+        })),
+    clearActiveTimer: () =>
+        set(() => ({
+            activeTimer: null,
+            elapsedSeconds: 0,
         })),
 
-    elapsedTimes: new Map(),
-    updateElapsedTime: (taskId, seconds) =>
-        set((state) => {
-            const newElapsed = new Map(state.elapsedTimes)
-            newElapsed.set(taskId, seconds)
-            return { elapsedTimes: newElapsed }
-        }),
-    syncActiveTimerFromServer: (serverTimer, activeTimers, clearAll, setTimer) => {
-        if (serverTimer && serverTimer.endTime === null) {
-            const currentTimer = activeTimers.get(serverTimer.taskId)
-
-            if (!currentTimer || currentTimer.entryId !== serverTimer.id) {
-                clearAll()
-                setTimer(serverTimer.taskId, serverTimer.id, serverTimer.startTime)
-            }
-        } else if (!serverTimer && activeTimers.size > 0) {
-            clearAll()
-        }
-    },
+    elapsedSeconds: 0,
+    updateElapsedTime: (seconds) =>
+        set(() => ({
+            elapsedSeconds: seconds,
+        })),
 
     selectedListId: null,
     setSelectedListId: (listId) => set(() => ({ selectedListId: listId })),

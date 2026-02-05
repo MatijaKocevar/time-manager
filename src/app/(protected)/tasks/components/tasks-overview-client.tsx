@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { useTasksStore } from "../stores/tasks-store"
-import { getActiveTimer } from "../actions/task-time-actions"
+import { getActiveTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import { getLists } from "../actions/list-actions"
 import { taskKeys, listKeys } from "../query-keys"
 import { getElapsedSeconds } from "../utils/time-helpers"
@@ -35,7 +35,7 @@ interface TasksOverviewClientProps {
 export function TasksOverviewClient({ groups, lists: initialLists }: TasksOverviewClientProps) {
     useTasksSSE()
     useTasksPusher()
-    const activeTimers = useTasksStore((state) => state.activeTimers)
+    const activeTimer = useTasksStore((state) => state.activeTimer)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
     const updateElapsedTime = useTasksStore((state) => state.updateElapsedTime)
@@ -55,36 +55,33 @@ export function TasksOverviewClient({ groups, lists: initialLists }: TasksOvervi
 
     useEffect(() => {
         if (activeTimerData && activeTimerData.endTime === null) {
-            const currentTimer = activeTimers.get(activeTimerData.taskId)
-
-            if (!currentTimer || currentTimer.entryId !== activeTimerData.id) {
-                const clearAllActiveTimers = useTasksStore.getState().clearAllActiveTimers
-                clearAllActiveTimers()
+            if (
+                !activeTimer ||
+                activeTimer.taskId !== activeTimerData.taskId ||
+                activeTimer.entryId !== activeTimerData.id
+            ) {
+                clearActiveTimer()
                 setActiveTimer(
                     activeTimerData.taskId,
                     activeTimerData.id,
                     activeTimerData.startTime
                 )
             }
-        } else if (!activeTimerData && activeTimers.size > 0) {
-            Array.from(activeTimers.keys()).forEach((taskId) => {
-                clearActiveTimer(taskId)
-            })
+        } else if (!activeTimerData && activeTimer) {
+            clearActiveTimer()
         }
-    }, [activeTimerData, activeTimers, setActiveTimer, clearActiveTimer])
+    }, [activeTimerData, activeTimer, setActiveTimer, clearActiveTimer])
 
     useEffect(() => {
-        if (activeTimers.size === 0) return
+        if (!activeTimer) return
 
         const interval = setInterval(() => {
-            activeTimers.forEach((timer, taskId) => {
-                const elapsed = getElapsedSeconds(timer.startTime)
-                updateElapsedTime(taskId, elapsed)
-            })
+            const elapsed = getElapsedSeconds(activeTimer.startTime)
+            updateElapsedTime(elapsed)
         }, 1000)
 
         return () => clearInterval(interval)
-    }, [activeTimers, updateElapsedTime])
+    }, [activeTimer, updateElapsedTime])
 
     return (
         <div className="space-y-8">

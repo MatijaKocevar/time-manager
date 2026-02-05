@@ -6,23 +6,12 @@ import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
 import type { HourType } from "@/../../prisma/generated/client"
 import {
-    StartTimerSchema,
-    StopTimerSchema,
     UpdateTaskTimeEntrySchema,
     DeleteTaskTimeEntrySchema,
-    type StartTimerInput,
-    type StopTimerInput,
     type UpdateTaskTimeEntryInput,
     type DeleteTaskTimeEntryInput,
-    type TaskTimeEntryDisplay,
 } from "../schemas/task-time-entry-schemas"
-import {
-    broadcastTimerEvent,
-    stopActiveTimer,
-    determineHourType,
-    refreshTimerData,
-    type TimerBroadcastData,
-} from "@/lib/timer-utils"
+import { broadcastTimerEvent, refreshTimerData, type TimerBroadcastData } from "@/lib/timer-utils"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -30,150 +19,6 @@ async function requireAuth() {
         throw new Error("Unauthorized")
     }
     return session
-}
-
-export async function getActiveTimer(): Promise<TaskTimeEntryDisplay | null> {
-    try {
-        const session = await requireAuth()
-
-        const activeTimer = await prisma.taskTimeEntry.findFirst({
-            where: {
-                userId: session.user.id,
-                endTime: null,
-            },
-            include: {
-                task: {
-                    select: {
-                        id: true,
-                        title: true,
-                        isSystemTask: true,
-                    },
-                },
-            },
-            orderBy: { startTime: "desc" },
-        })
-
-        return activeTimer
-    } catch (error) {
-        if (error instanceof Error) {
-            throw error
-        }
-        throw new Error("Failed to fetch active timer")
-    }
-}
-
-export async function startTimer(input: StartTimerInput) {
-    try {
-        const session = await requireAuth()
-
-        const validation = StartTimerSchema.safeParse(input)
-        if (!validation.success) {
-            return { error: validation.error.issues[0].message }
-        }
-
-        const { taskId } = validation.data
-
-        const task = await prisma.task.findUnique({
-            where: { id: taskId },
-        })
-
-        if (!task || task.userId !== session.user.id) {
-            return { error: "Task not found" }
-        }
-
-        const newEntry = await prisma.$transaction(async (tx) => {
-            await stopActiveTimer(tx, session.user.id)
-
-            const isBreak = task.isSystemTask && task.title === "System: BREAK"
-            const isPrivate = task.isSystemTask && task.title === "System: PRIVATE"
-            const newEntryType = await determineHourType(
-                tx,
-                session.user.id,
-                "WORK",
-                isBreak,
-                isPrivate
-            )
-
-            return await tx.taskTimeEntry.create({
-                data: {
-                    taskId,
-                    userId: session.user.id,
-                    startTime: new Date(),
-                    type: newEntryType,
-                },
-            })
-        })
-
-        await refreshTimerData()
-
-        const broadcastData: TimerBroadcastData = {
-            entryId: newEntry.id,
-            taskId,
-            startTime: newEntry.startTime,
-            type: newEntry.type,
-        }
-
-        await broadcastTimerEvent(session.user.id, "timer-started", broadcastData)
-
-        return { success: true, entryId: newEntry.id }
-    } catch (error) {
-        if (error instanceof Error) {
-            return { error: error.message }
-        }
-        return { error: "Failed to start timer" }
-    }
-}
-
-export async function stopTimer(input: StopTimerInput) {
-    try {
-        const session = await requireAuth()
-
-        const validation = StopTimerSchema.safeParse(input)
-        if (!validation.success) {
-            return { error: validation.error.issues[0].message }
-        }
-
-        const { id } = validation.data
-
-        const entry = await prisma.taskTimeEntry.findUnique({
-            where: { id },
-        })
-
-        if (!entry || entry.userId !== session.user.id) {
-            return { error: "Timer entry not found" }
-        }
-
-        if (entry.endTime) {
-            return { error: "Timer already stopped" }
-        }
-
-        const endTime = new Date()
-        const duration = Math.floor((endTime.getTime() - entry.startTime.getTime()) / 1000)
-
-        await prisma.taskTimeEntry.update({
-            where: { id },
-            data: {
-                endTime,
-                duration,
-            },
-        })
-
-        await refreshTimerData()
-
-        const broadcastData: TimerBroadcastData = {
-            entryId: id,
-            duration,
-        }
-
-        await broadcastTimerEvent(session.user.id, "timer-stopped", broadcastData)
-
-        return { success: true }
-    } catch (error) {
-        if (error instanceof Error) {
-            return { error: error.message }
-        }
-        return { error: "Failed to stop timer" }
-    }
 }
 
 export async function getTaskTimeEntries(taskId: string) {
@@ -309,14 +154,6 @@ export async function updateTaskTimeEntry(input: UpdateTaskTimeEntryInput) {
         if (endTime && endTime > new Date()) {
             return { error: "End time cannot be in the future" }
         }
-
-        const oldDate = new Date(existing.startTime)
-        oldDate.setHours(0, 0, 0, 0)
-
-        const newDate = new Date(startTime)
-        newDate.setHours(0, 0, 0, 0)
-
-        const dateChanged = oldDate.getTime() !== newDate.getTime()
 
         let duration = existing.duration
         if (endTime) {
