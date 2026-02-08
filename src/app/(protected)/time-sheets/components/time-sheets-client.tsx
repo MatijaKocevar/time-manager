@@ -1,9 +1,16 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, ChevronRight, Download } from "lucide-react"
+import { ChevronLeft, ChevronRight, Download, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useTimeSheetsStore } from "../stores/time-sheets-store"
 import { useTasksStore } from "../../tasks/stores/tasks-store"
 import { getDateRangeForView, type ViewMode } from "../utils/date-helpers"
@@ -15,14 +22,23 @@ import type { TimeEntryDisplay } from "../schemas/time-sheet-schemas"
 import { useTranslations } from "next-intl"
 import { useTimeSheetsSSE } from "../hooks/use-time-sheets-sse"
 import { useTimeSheetsPusher } from "../hooks/use-time-sheets-pusher"
-import { useHolidays } from "../hooks/use-holidays"
 import { formatHoursMinutes as formatHoursMinutesFromHours } from "../../hours/utils/time-helpers"
+import {
+    calculateExpectedHoursToDate,
+    calculateBalance,
+    formatBalance,
+    formatHoursMinutes as formatHoursMinutesLib,
+    getBalanceColor,
+} from "@/lib/balance-helpers"
 
 interface TimeSheetsClientProps {
     initialData: TimeEntryDisplay[]
     initialViewMode: ViewMode
     initialSelectedDate: Date
     initialHolidays?: Array<{ date: Date; name: string }>
+    userWorkHoursPerDay: number
+    initialBalance: number
+    initialExpectedHours: number
     translations: {
         week: string
         month: string
@@ -42,6 +58,9 @@ export function TimeSheetsClient({
     initialViewMode,
     initialSelectedDate,
     initialHolidays = [],
+    userWorkHoursPerDay,
+    initialBalance,
+    initialExpectedHours,
     translations,
 }: TimeSheetsClientProps) {
     const tCommon = useTranslations("common")
@@ -62,11 +81,16 @@ export function TimeSheetsClient({
     const [isInitialized, setIsInitialized] = useState(false)
     const [currentTime, setCurrentTime] = useState(new Date())
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+    const [isNavigating, setIsNavigating] = useState(false)
+    const currentPeriodRef = useRef<string>(
+        `${initialViewMode}-${initialSelectedDate.toISOString()}`
+    )
 
     useEffect(() => {
         setViewMode(initialViewMode)
         setSelectedDate(initialSelectedDate)
         setIsInitialized(true)
+        setIsNavigating(false)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -74,20 +98,30 @@ export function TimeSheetsClient({
     const selectedDate = isInitialized ? storeSelectedDate : initialSelectedDate
 
     useEffect(() => {
+        const serverPeriodKey = `${initialViewMode}-${initialSelectedDate.toISOString()}`
+        const clientPeriodKey = `${viewMode}-${selectedDate.toISOString()}`
+
+        if (serverPeriodKey === clientPeriodKey) {
+            currentPeriodRef.current = serverPeriodKey
+            setIsNavigating(false)
+        }
+    }, [initialViewMode, initialSelectedDate, viewMode, selectedDate])
+
+    useEffect(() => {
         const params = new URLSearchParams()
         params.set("mode", viewMode)
         params.set("date", selectedDate.toISOString().split("T")[0])
+
+        const newPeriodKey = `${viewMode}-${selectedDate.toISOString()}`
+        if (newPeriodKey !== currentPeriodRef.current) {
+            setIsNavigating(true)
+        }
+
         router.replace(`?${params.toString()}`, { scroll: false })
     }, [viewMode, selectedDate, router])
 
     const dateRange = getDateRangeForView(selectedDate, viewMode)
     const monthRange = getDateRangeForView(selectedDate, "month")
-
-    const holidays = useHolidays(
-        monthRange.startDate.toISOString(),
-        monthRange.endDate.toISOString(),
-        initialHolidays
-    )
 
     const formatHoursMinutes = (seconds: number): string => {
         const totalHours = seconds / 3600
@@ -134,14 +168,32 @@ export function TimeSheetsClient({
                 : {
                       tasks: new Map(),
                       dates: dateRange.dates.map((d) => d.toISOString().split("T")[0]),
+                      dailyTotals: new Map(),
                   },
         [data, dateRange.dates, currentTime]
     )
 
-    const totalSeconds = Array.from(aggregatedData.tasks.values()).reduce(
-        (sum, task) => sum + task.totalDuration,
+    const totalSeconds = Array.from(aggregatedData.dailyTotals.values()).reduce(
+        (sum, daily) => sum + daily,
         0
     )
+
+    const hasActiveTimer = useMemo(() => data.some((entry) => entry.endTime === null), [data])
+
+    const expectedHours = useMemo(() => {
+        if (!hasActiveTimer) return initialExpectedHours
+        return calculateExpectedHoursToDate(
+            dateRange.startDate,
+            dateRange.endDate,
+            initialHolidays,
+            userWorkHoursPerDay
+        )
+    }, [hasActiveTimer, initialExpectedHours, dateRange, initialHolidays, userWorkHoursPerDay])
+
+    const balance = useMemo(() => {
+        if (!hasActiveTimer) return initialBalance
+        return calculateBalance(totalSeconds, expectedHours)
+    }, [hasActiveTimer, initialBalance, totalSeconds, expectedHours])
 
     const handleExport = async (format: ExportFormat, months: string[]) => {
         if (!months || months.length === 0) {
@@ -174,19 +226,26 @@ export function TimeSheetsClient({
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="text-sm hidden md:block">
-                            <span className="text-muted-foreground">{translations.total}: </span>
-                            <span
-                                className={`font-semibold ${
-                                    viewMode === "week" && totalSeconds / 3600 > 40
-                                        ? "text-red-600 dark:text-red-500"
-                                        : ""
-                                }`}
-                            >
-                                {formatHoursMinutes(totalSeconds)}
-                            </span>
+                        <div className="text-sm hidden md:block min-w-[180px]">
+                            {isNavigating ? (
+                                <>
+                                    <Skeleton className="inline-block h-4 w-14 align-middle" />
+                                    <span className="text-muted-foreground"> | </span>
+                                    <Skeleton className="inline-block h-4 w-14 align-middle" />
+                                </>
+                            ) : (
+                                <>
+                                    <span className="font-semibold">
+                                        {formatHoursMinutesLib(totalSeconds)}
+                                    </span>
+                                    <span className="text-muted-foreground"> | </span>
+                                    <span className={`font-semibold ${getBalanceColor(balance)}`}>
+                                        {formatBalance(balance)}
+                                    </span>
+                                </>
+                            )}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="hidden md:flex gap-2">
                             <Button
                                 variant={viewMode === "week" ? "default" : "outline"}
                                 size="sm"
@@ -207,25 +266,52 @@ export function TimeSheetsClient({
                                 onClick={() => setIsExportDialogOpen(true)}
                             >
                                 <Download className="h-4 w-4 mr-1" />
-                                <span className="hidden sm:inline">
-                                    {tCommon("actions.export")}
-                                </span>
+                                {tCommon("actions.export")}
                             </Button>
                         </div>
+                        <div className="md:hidden flex items-center gap-2">
+                            <div className="text-sm">
+                                {isNavigating ? (
+                                    <>
+                                        <Skeleton className="inline-block h-4 w-12 align-middle" />
+                                        <span className="text-muted-foreground"> | </span>
+                                        <Skeleton className="inline-block h-4 w-12 align-middle" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="font-semibold">
+                                            {formatHoursMinutesLib(totalSeconds)}
+                                        </span>
+                                        <span className="text-muted-foreground"> | </span>
+                                        <span
+                                            className={`font-semibold ${getBalanceColor(balance)}`}
+                                        >
+                                            {formatBalance(balance)}
+                                        </span>
+                                    </>
+                                )}
+                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm">
+                                        <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => setViewMode("week")}>
+                                        {translations.week}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setViewMode("month")}>
+                                        {translations.month}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)}>
+                                        <Download className="h-4 w-4 mr-2" />
+                                        {tCommon("actions.export")}
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
-                </div>
-
-                <div className="text-sm text-center md:hidden">
-                    <span className="text-muted-foreground">{translations.total}: </span>
-                    <span
-                        className={`font-semibold ${
-                            viewMode === "week" && totalSeconds / 3600 > 40
-                                ? "text-red-600 dark:text-red-500"
-                                : ""
-                        }`}
-                    >
-                        {formatHoursMinutes(totalSeconds)}
-                    </span>
                 </div>
             </div>
 
@@ -236,7 +322,8 @@ export function TimeSheetsClient({
                     error={error ? translations.error : null}
                     currentTime={currentTime}
                     formatHoursMinutes={formatHoursMinutes}
-                    holidays={holidays}
+                    holidays={initialHolidays}
+                    userWorkHoursPerDay={userWorkHoursPerDay}
                     translations={{
                         task: translations.task,
                         total: translations.total,

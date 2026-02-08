@@ -11,6 +11,10 @@ import { VIEW_MODE_VALUES } from "../schemas/hour-filter-schemas"
 import { getHourTypeTranslationKey } from "../utils/translation-helpers"
 import { formatHoursMinutes } from "../utils/time-helpers"
 import { calculateWorkingDaysSync, calculateOvertime } from "../utils/calculation-helpers"
+import {
+    calculateExpectedHoursToDate,
+    formatBalance as formatBalanceLib,
+} from "@/lib/balance-helpers"
 import { getCurrentUser } from "../../profile/actions/profile-actions"
 
 interface HoursSummaryProps {
@@ -73,10 +77,21 @@ export function HoursSummary({
         return uniqueDates.size
     }, [monthlyEntries])
 
-    if (viewMode === VIEW_MODE_VALUES.MONTHLY && dateRange) {
+    if (dateRange) {
         workingDays = calculateWorkingDaysSync(dateRange.start, dateRange.end, holidays)
-        expectedHours = workingDays * hoursPerDay
-        overtime = calculateOvertime(monthlyGrandTotal, workingDays, hoursPerDay)
+        const expectedForPeriod = calculateExpectedHoursToDate(
+            dateRange.start,
+            dateRange.end,
+            holidays,
+            hoursPerDay
+        )
+        expectedHours = expectedForPeriod
+
+        if (viewMode === VIEW_MODE_VALUES.WEEKLY) {
+            overtime = weeklyGrandTotal - expectedHours
+        } else {
+            overtime = monthlyGrandTotal - expectedHours
+        }
     }
 
     const weeklyTypeTotals = weeklyEntries.filter((entry) => entry.taskId === TASK_ID_VALUES.TOTAL)
@@ -104,7 +119,7 @@ export function HoursSummary({
     )
 
     const showWeekly = viewMode === VIEW_MODE_VALUES.WEEKLY
-    const showOvertime = viewMode === VIEW_MODE_VALUES.MONTHLY && workingDays > 0
+    const showBalance = dateRange && workingDays > 0
 
     return (
         <Card>
@@ -119,42 +134,51 @@ export function HoursSummary({
                             >
                                 {t("totalHours")}
                             </div>
-                            <span className="text-xl font-bold">
-                                {showWeekly
-                                    ? formatHoursMinutes(weeklyGrandTotal)
-                                    : formatHoursMinutes(monthlyGrandTotal)}
-                            </span>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-xl font-bold">
+                                    {showWeekly
+                                        ? formatHoursMinutes(weeklyGrandTotal)
+                                        : formatHoursMinutes(monthlyGrandTotal)}
+                                </span>
+                                {showBalance && (
+                                    <>
+                                        <span className="text-muted-foreground text-sm">|</span>
+                                        <span
+                                            className={`text-sm font-bold ${
+                                                Math.abs(overtime) < 0.25
+                                                    ? "text-green-600 dark:text-green-500"
+                                                    : overtime > 0
+                                                      ? "text-red-600 dark:text-red-500"
+                                                      : "text-orange-600 dark:text-orange-500"
+                                            }`}
+                                        >
+                                            {formatBalanceLib(overtime)}
+                                        </span>
+                                    </>
+                                )}
+                            </div>
                             {showWeekly && (
                                 <span className="text-xs text-muted-foreground">
                                     {formatHoursMinutes(monthlyGrandTotal)} {tCommon("time.month")}
                                 </span>
                             )}
                         </div>
-                        {showOvertime && (
+                        {viewMode === VIEW_MODE_VALUES.MONTHLY && showBalance && (
                             <>
                                 <div className="flex flex-col gap-1">
                                     <span className="text-xs text-muted-foreground">
                                         {t("expected")}
                                     </span>
                                     <span className="font-semibold">
-                                        {workingDays} {t("days")} / {actualDaysWorked} {t("days")}
+                                        {formatHoursMinutes(expectedHours)}
                                     </span>
                                 </div>
                                 <div className="flex flex-col gap-1">
                                     <span className="text-xs text-muted-foreground">
-                                        {t("overtime")}
+                                        {t("workingDays")}
                                     </span>
-                                    <span
-                                        className={`font-bold ${
-                                            overtime > 0
-                                                ? "text-red-600 dark:text-red-500"
-                                                : overtime < 0
-                                                  ? "text-orange-600 dark:text-orange-500"
-                                                  : "text-green-600 dark:text-green-500"
-                                        }`}
-                                    >
-                                        {overtime > 0 && "+"}
-                                        {formatHoursMinutes(overtime)}
+                                    <span className="font-semibold">
+                                        {workingDays} / {actualDaysWorked}
                                     </span>
                                 </div>
                             </>

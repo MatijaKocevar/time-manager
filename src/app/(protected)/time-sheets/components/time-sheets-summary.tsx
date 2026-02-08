@@ -6,6 +6,7 @@ import { formatHoursMinutes } from "../../hours/utils/time-helpers"
 interface TimeSheetsSummaryProps {
     totalSeconds: number
     workingDays: number
+    userWorkHoursPerDay: number
     translations: {
         workingDays: string
         expected: string
@@ -17,10 +18,11 @@ interface TimeSheetsSummaryProps {
 export function TimeSheetsSummary({
     totalSeconds,
     workingDays,
+    userWorkHoursPerDay,
     translations,
 }: TimeSheetsSummaryProps) {
     const totalHours = totalSeconds / 3600
-    const expectedHours = workingDays * 8
+    const expectedHours = workingDays * userWorkHoursPerDay
     const overtime = totalHours - expectedHours
 
     if (workingDays === 0) return null

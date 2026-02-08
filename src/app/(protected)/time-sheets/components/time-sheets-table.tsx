@@ -11,11 +11,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { formatDuration } from "../../tasks/utils/time-helpers"
-import { getStatusColor } from "../../tasks/constants/task-statuses"
 import { useTasksStore } from "../../tasks/stores/tasks-store"
 import { useTimeSheetsStore } from "../stores/time-sheets-store"
 import { startTimer, stopTimer } from "@/app/(protected)/shared/actions/timer-actions"
@@ -39,6 +37,7 @@ interface TimeSheetsTableProps {
     currentTime: Date
     formatHoursMinutes: (seconds: number) => string
     holidays?: Array<{ date: Date; name: string }>
+    userWorkHoursPerDay: number
     translations: {
         task: string
         total: string
@@ -56,6 +55,7 @@ export function TimeSheetsTable({
     currentTime,
     formatHoursMinutes,
     holidays = [],
+    userWorkHoursPerDay,
     translations,
 }: TimeSheetsTableProps) {
     const queryClient = useQueryClient()
@@ -101,16 +101,7 @@ export function TimeSheetsTable({
         (a, b) => a.firstTrackedAt.getTime() - b.firstTrackedAt.getTime()
     )
 
-    const dailyTotals = new Map<string, number>()
-    dates.forEach((dateStr) => {
-        let total = 0
-        tasksArray.forEach((task) => {
-            const dateKey = formatDateKey(new Date(dateStr))
-            const duration = task.byDate.get(dateKey) ?? 0
-            total += duration
-        })
-        dailyTotals.set(dateStr, total)
-    })
+    const dailyTotals = aggregatedData.dailyTotals
 
     const holidaysByDate = useMemo(() => buildHolidayMap(holidays), [holidays])
 
@@ -153,15 +144,15 @@ export function TimeSheetsTable({
                                             <div
                                                 className="bg-blue-500"
                                                 style={{
-                                                    width: `${Math.min((totalHours / 8) * 100, 100)}%`,
+                                                    width: `${Math.min((totalHours / userWorkHoursPerDay) * 100, 100)}%`,
                                                 }}
                                                 suppressHydrationWarning
                                             />
-                                            {totalHours > 8 && (
+                                            {totalHours > userWorkHoursPerDay && (
                                                 <div
                                                     className="bg-red-500"
                                                     style={{
-                                                        width: `${((totalHours - 8) / 8) * 100}%`,
+                                                        width: `${((totalHours - userWorkHoursPerDay) / userWorkHoursPerDay) * 100}%`,
                                                     }}
                                                     suppressHydrationWarning
                                                 />
@@ -220,7 +211,6 @@ export function TimeSheetsTable({
                     ) : (
                         <>
                             {tasksArray.map((task) => {
-                                const statusColor = getStatusColor(task.status)
                                 const dotColor =
                                     task.status === "DONE"
                                         ? "bg-green-500"
@@ -253,12 +243,21 @@ export function TimeSheetsTable({
                                                                 onClick={(e) => e.stopPropagation()}
                                                             >
                                                                 <TaskStatusSelect
-                                                                    task={
-                                                                        {
-                                                                            id: task.taskId,
-                                                                            status: task.status,
-                                                                        } as any
-                                                                    }
+                                                                    task={{
+                                                                        id: task.taskId,
+                                                                        userId: "",
+                                                                        listId: null,
+                                                                        title: task.taskTitle,
+                                                                        description: null,
+                                                                        status: task.status,
+                                                                        parentId: null,
+                                                                        order: 0,
+                                                                        isExpanded: false,
+                                                                        createdAt: new Date(),
+                                                                        updatedAt: new Date(),
+                                                                        subtasks: [],
+                                                                        depth: 0,
+                                                                    }}
                                                                 />
                                                             </div>
                                                             {task.listName &&

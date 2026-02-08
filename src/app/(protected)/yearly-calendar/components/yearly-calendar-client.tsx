@@ -2,7 +2,11 @@
 
 import { useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
-import { getYearlyCalendarData, DayData } from "../actions/yearly-calendar-actions"
+import {
+    getYearlyCalendarData,
+    getYearlyBalance,
+    DayData,
+} from "../actions/yearly-calendar-actions"
 import { yearlyCalendarKeys } from "../query-keys"
 import { useYearlyCalendarStore } from "../stores/yearly-calendar-store"
 import { YearlyCalendarHeader } from "./yearly-calendar-header"
@@ -12,6 +16,7 @@ import { DayEntriesDialog } from "@/app/(protected)/time-sheets/components/day-e
 interface YearlyCalendarClientProps {
     initialYear: number
     initialData: Record<string, DayData>
+    yearlyBalance: number
     translations: {
         header: {
             title: string
@@ -35,6 +40,7 @@ interface YearlyCalendarClientProps {
 export function YearlyCalendarClient({
     initialYear,
     initialData,
+    yearlyBalance,
     translations,
 }: YearlyCalendarClientProps) {
     const selectedYear = useYearlyCalendarStore((state) => state.selectedYear)
@@ -57,9 +63,25 @@ export function YearlyCalendarClient({
         staleTime: 1000 * 60 * 5,
     })
 
+    const { data: balance } = useQuery({
+        queryKey: yearlyCalendarKeys.balance(selectedYear),
+        queryFn: async () => {
+            const result = await getYearlyBalance({ year: selectedYear })
+            if (result.error) {
+                throw new Error(result.error)
+            }
+            return result.data!
+        },
+        initialData: selectedYear === initialYear ? yearlyBalance : undefined,
+        staleTime: 1000 * 60 * 5,
+    })
+
     return (
         <div className="flex flex-col gap-4 h-full">
-            <YearlyCalendarHeader translations={translations.header} />
+            <YearlyCalendarHeader
+                translations={translations.header}
+                yearlyBalance={balance ?? yearlyBalance}
+            />
             <div className="flex-1 min-h-0">
                 <YearlyCalendarTable
                     year={selectedYear}

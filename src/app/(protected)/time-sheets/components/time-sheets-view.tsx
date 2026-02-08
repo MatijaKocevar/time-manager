@@ -4,6 +4,9 @@ import { TimeEntriesDialog } from "../../tasks/components/time-entries-dialog"
 import { DayEntriesDialog } from "./day-entries-dialog"
 import { getTimeSheetEntries } from "../actions/time-sheet-actions"
 import { getDateRangeForView, type ViewMode } from "../utils/date-helpers"
+import { getCurrentUser } from "../../profile/actions/profile-actions"
+import { aggregateTimeEntriesByTaskAndDate } from "../utils/aggregation-helpers"
+import { calculateExpectedHoursToDate, calculateBalance } from "@/lib/balance-helpers"
 
 interface TimeSheetsViewProps {
     searchParams: { mode?: string; date?: string }
@@ -26,6 +29,28 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
 
     const initialData = "data" in result && result.data ? result.data : []
 
+    const currentUser = await getCurrentUser()
+    const userWorkHoursPerDay = currentUser?.workHoursPerDay || 8
+
+    const aggregatedData = aggregateTimeEntriesByTaskAndDate(
+        initialData,
+        dateRange.dates,
+        new Date()
+    )
+    const totalSeconds = Array.from(aggregatedData.dailyTotals.values()).reduce(
+        (sum, daily) => sum + daily,
+        0
+    )
+
+    const expectedHours = calculateExpectedHoursToDate(
+        dateRange.startDate,
+        dateRange.endDate,
+        initialHolidays,
+        userWorkHoursPerDay
+    )
+
+    const balance = calculateBalance(totalSeconds, expectedHours)
+
     return (
         <>
             <TimeSheetsClient
@@ -33,6 +58,9 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
                 initialViewMode={viewMode}
                 initialSelectedDate={selectedDate}
                 initialHolidays={initialHolidays}
+                userWorkHoursPerDay={userWorkHoursPerDay}
+                initialBalance={balance}
+                initialExpectedHours={expectedHours}
                 translations={{
                     week: t("viewMode.week"),
                     month: t("viewMode.month"),

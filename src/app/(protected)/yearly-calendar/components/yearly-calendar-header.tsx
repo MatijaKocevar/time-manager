@@ -10,15 +10,17 @@ import {
 } from "@/components/ui/select"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useYearlyCalendarStore } from "../stores/yearly-calendar-store"
+import { formatBalance, getBalanceColor } from "@/lib/balance-helpers"
 
 interface YearlyCalendarHeaderProps {
     translations: {
         title: string
         year: string
     }
+    yearlyBalance: number
 }
 
-export function YearlyCalendarHeader({ translations }: YearlyCalendarHeaderProps) {
+export function YearlyCalendarHeader({ translations, yearlyBalance }: YearlyCalendarHeaderProps) {
     const selectedYear = useYearlyCalendarStore((state) => state.selectedYear)
     const setSelectedYear = useYearlyCalendarStore((state) => state.setSelectedYear)
     const goToPreviousYear = useYearlyCalendarStore((state) => state.goToPreviousYear)
@@ -50,6 +52,12 @@ export function YearlyCalendarHeader({ translations }: YearlyCalendarHeaderProps
                         ))}
                     </SelectContent>
                 </Select>
+            </div>
+            <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Total Balance:</span>
+                <span className={`text-lg font-bold ${getBalanceColor(yearlyBalance)}`}>
+                    {formatBalance(yearlyBalance)}
+                </span>
             </div>
         </div>
     )

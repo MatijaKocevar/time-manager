@@ -30,6 +30,7 @@ export interface AggregatedTimeSheet {
         }
     >
     dates: string[]
+    dailyTotals: Map<string, number>
 }
 
 export function aggregateTimeEntriesByTaskAndDate(
@@ -87,9 +88,20 @@ export function aggregateTimeEntriesByTaskAndDate(
         taskData.totalDuration += duration
     }
 
+    const dailyTotals = new Map<string, number>()
+    dateStrings.forEach((dateStr) => {
+        let total = 0
+        tasks.forEach((task) => {
+            const duration = task.byDate.get(dateStr) ?? 0
+            total += duration
+        })
+        dailyTotals.set(dateStr, total)
+    })
+
     return {
         tasks,
         dates: dateStrings,
+        dailyTotals,
     }
 }
 

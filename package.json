@@ -5,8 +5,8 @@
     "scripts": {
         "dev": "./scripts/dev-https.sh",
         "dev:https": "next dev --hostname 0.0.0.0",
-        "build": "prisma migrate deploy && next build",
-        "build:no-migrate": "next build",
+        "build": "next build",
+        "migrate": "prisma migrate deploy",
         "start": "next start --hostname 0.0.0.0",
         "deploy": "./scripts/deploy.sh",
         "deploy:no-migrate": "./scripts/deploy.sh --no-migrate",
