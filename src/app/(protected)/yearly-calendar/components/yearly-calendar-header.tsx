@@ -29,7 +29,7 @@ export function YearlyCalendarHeader({ translations, yearlyBalance }: YearlyCale
     const years = Array.from({ length: 31 }, (_, i) => 2020 + i)
 
     return (
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 shrink-0">
+        <div className="flex items-center justify-between gap-3 shrink-0">
             <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={goToPreviousYear}>
                     <ChevronLeft className="h-4 w-4" />
@@ -54,7 +54,9 @@ export function YearlyCalendarHeader({ translations, yearlyBalance }: YearlyCale
                 </Select>
             </div>
             <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Total Balance:</span>
+                <span className="text-sm text-muted-foreground hidden sm:inline">
+                    Total Balance:
+                </span>
                 <span className={`text-lg font-bold ${getBalanceColor(yearlyBalance)}`}>
                     {formatBalance(yearlyBalance)}
                 </span>
