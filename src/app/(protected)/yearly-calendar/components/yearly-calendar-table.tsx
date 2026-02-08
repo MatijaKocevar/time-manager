@@ -20,6 +20,7 @@ import { useHolidays } from "@/app/(protected)/time-sheets/hooks/use-holidays"
 interface YearlyCalendarTableProps {
     year: number
     data: Record<string, DayData>
+    initialHolidays: Array<{ date: Date; name: string }>
     translations: {
         months: string[]
     }
@@ -34,11 +35,16 @@ function buildHolidayMap(holidays: Array<{ date: Date; name: string }>) {
     return map
 }
 
-export function YearlyCalendarTable({ year, data, translations }: YearlyCalendarTableProps) {
+export function YearlyCalendarTable({
+    year,
+    data,
+    initialHolidays,
+    translations,
+}: YearlyCalendarTableProps) {
     const openDayEntriesDialog = useTimeSheetsStore((state) => state.openDayEntriesDialog)
     const startOfYear = new Date(year, 0, 1).toISOString()
     const endOfYear = new Date(year, 11, 31, 23, 59, 59).toISOString()
-    const holidays = useHolidays(startOfYear, endOfYear, [])
+    const holidays = useHolidays(startOfYear, endOfYear, initialHolidays)
 
     const holidaysByDate = useMemo(() => buildHolidayMap(holidays), [holidays])
 

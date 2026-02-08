@@ -33,16 +33,12 @@ export default async function YearlyCalendarPage() {
               )
             : new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59, 999))
 
-    const holidays = await getHolidaysInRange(startOfYear.toISOString(), endDate.toISOString())
+    const endOfYear = new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59, 999))
+
+    const holidays = await getHolidaysInRange(startOfYear.toISOString(), endOfYear.toISOString())
 
     let yearlyBalance = 0
     const currentMonth = today.getMonth()
-
-    console.log("\n=== YEARLY BALANCE DEBUG ===")
-    console.log("Current year:", currentYear)
-    console.log("Current month:", currentMonth)
-    console.log("User ID:", session.user.id)
-    console.log("Work hours per day:", userWorkHoursPerDay)
 
     for (let month = 0; month <= currentMonth; month++) {
         const monthStart = new Date(Date.UTC(currentYear, month, 1))
@@ -58,26 +54,10 @@ export default async function YearlyCalendarPage() {
             },
         })
 
-        console.log(
-            `\nMONTH ${month} (${monthStart.toISOString().split("T")[0]} to ${monthEnd.toISOString().split("T")[0]}):`
-        )
-        console.log(`  Summaries found: ${monthSummaries.length}`)
-        console.log(
-            `  Sample summaries:`,
-            monthSummaries.slice(0, 3).map((s) => ({
-                date: s.date.toISOString().split("T")[0],
-                type: s.type,
-                totalHours: Number(s.totalHours),
-            }))
-        )
-
         const monthTotalHours = monthSummaries.reduce((sum, s) => sum + Number(s.totalHours), 0)
 
         const monthStartLocal = new Date(currentYear, month, 1)
         const monthEndLocal = new Date(currentYear, month + 1, 0)
-
-        console.log(`  monthStart local: ${monthStartLocal.toISOString()}`)
-        console.log(`  monthEnd local: ${monthEndLocal.toISOString()}`)
 
         const monthExpectedHours = calculateExpectedHoursToDate(
             monthStartLocal,
@@ -86,18 +66,9 @@ export default async function YearlyCalendarPage() {
             userWorkHoursPerDay
         )
 
-        console.log(`  Total worked hours: ${monthTotalHours}`)
-        console.log(`  Expected hours: ${monthExpectedHours}`)
-
         const monthBalance = monthTotalHours - monthExpectedHours
-        console.log(`  Balance: ${monthBalance}`)
-
         yearlyBalance += monthBalance
-        console.log(`  Running yearly balance: ${yearlyBalance}`)
     }
-
-    console.log(`\nFINAL YEARLY BALANCE: ${yearlyBalance}`)
-    console.log("=== END DEBUG ===\n")
 
     const months = Array.from({ length: 12 }, (_, i) => t(`months.${i}`))
 
@@ -107,6 +78,7 @@ export default async function YearlyCalendarPage() {
                 initialYear={currentYear}
                 initialData={initialData}
                 yearlyBalance={yearlyBalance}
+                initialHolidays={holidays}
                 translations={{
                     header: {
                         title: t("title"),

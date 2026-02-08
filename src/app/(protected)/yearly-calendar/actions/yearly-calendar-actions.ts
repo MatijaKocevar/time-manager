@@ -132,12 +132,6 @@ export async function getYearlyBalance(input: GetYearlyCalendarDataInput) {
         let yearlyBalance = 0
         const currentMonth = year === today.getFullYear() ? today.getMonth() : 11
 
-        console.log("\n=== SERVER ACTION YEARLY BALANCE DEBUG ===")
-        console.log("Year:", year)
-        console.log("Current month:", currentMonth)
-        console.log("User ID:", session.user.id)
-        console.log("Work hours per day:", workHoursPerDay)
-
         for (let month = 0; month <= currentMonth; month++) {
             const monthStart = new Date(Date.UTC(year, month, 1))
             const monthEnd = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999))
@@ -152,9 +146,6 @@ export async function getYearlyBalance(input: GetYearlyCalendarDataInput) {
                 },
             })
 
-            console.log(`\nMONTH ${month}:`)
-            console.log(`  Summaries: ${monthSummaries.length}`)
-
             const monthTotalHours = monthSummaries.reduce((sum, s) => sum + Number(s.totalHours), 0)
 
             const monthStartLocal = new Date(year, month, 1)
@@ -167,16 +158,9 @@ export async function getYearlyBalance(input: GetYearlyCalendarDataInput) {
                 workHoursPerDay
             )
 
-            console.log(`  Worked: ${monthTotalHours}, Expected: ${monthExpectedHours}`)
-
             const monthBalance = monthTotalHours - monthExpectedHours
-            console.log(`  Balance: ${monthBalance}`)
-
             yearlyBalance += monthBalance
         }
-
-        console.log(`\nFINAL: ${yearlyBalance}`)
-        console.log("=== END DEBUG ===\n")
 
         return { data: yearlyBalance }
     } catch (error) {

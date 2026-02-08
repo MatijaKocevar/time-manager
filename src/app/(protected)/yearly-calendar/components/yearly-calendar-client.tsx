@@ -17,6 +17,7 @@ interface YearlyCalendarClientProps {
     initialYear: number
     initialData: Record<string, DayData>
     yearlyBalance: number
+    initialHolidays: Array<{ date: Date; name: string }>
     translations: {
         header: {
             title: string
@@ -41,6 +42,7 @@ export function YearlyCalendarClient({
     initialYear,
     initialData,
     yearlyBalance,
+    initialHolidays,
     translations,
 }: YearlyCalendarClientProps) {
     const selectedYear = useYearlyCalendarStore((state) => state.selectedYear)
@@ -86,6 +88,7 @@ export function YearlyCalendarClient({
                 <YearlyCalendarTable
                     year={selectedYear}
                     data={yearData || {}}
+                    initialHolidays={initialHolidays}
                     translations={translations}
                 />
             </div>
