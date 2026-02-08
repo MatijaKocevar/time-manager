@@ -20,11 +20,12 @@ echo "🚀 Starting deployment to $SERVER_HOST..."
 
 # Build the application locally
 echo "📦 Building application..."
-if [ "$NO_MIGRATE" = true ]; then
-    echo "⚠️  Skipping migrations..."
-    npm run build:no-migrate
-else
-    npm run build
+npm run build
+
+# Run migrations if needed
+if [ "$NO_MIGRATE" = false ]; then
+    echo "🔄 Running migrations..."
+    npm run migrate
 fi
 
 # Generate Prisma client
