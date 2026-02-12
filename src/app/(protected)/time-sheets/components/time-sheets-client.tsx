@@ -99,13 +99,9 @@ export function TimeSheetsClient({
 
     useEffect(() => {
         const serverPeriodKey = `${initialViewMode}-${initialSelectedDate.toISOString()}`
-        const clientPeriodKey = `${viewMode}-${selectedDate.toISOString()}`
-
-        if (serverPeriodKey === clientPeriodKey) {
-            currentPeriodRef.current = serverPeriodKey
-            setIsNavigating(false)
-        }
-    }, [initialViewMode, initialSelectedDate, viewMode, selectedDate])
+        currentPeriodRef.current = serverPeriodKey
+        setIsNavigating(false)
+    }, [initialViewMode, initialSelectedDate, initialData])
 
     useEffect(() => {
         const params = new URLSearchParams()
@@ -225,8 +221,8 @@ export function TimeSheetsClient({
                         </Button>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="text-sm hidden md:block min-w-[180px]">
+                    <div className="flex items-center gap-2">
+                        <div className="text-sm hidden md:block">
                             {isNavigating ? (
                                 <>
                                     <Skeleton className="inline-block h-4 w-14 align-middle" />

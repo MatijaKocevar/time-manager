@@ -67,16 +67,26 @@ export function calculateBalance(workedSeconds: number, expectedHours: number): 
 export function formatBalance(balanceHours: number): string {
     const sign = balanceHours >= 0 ? "+" : "-"
     const absHours = Math.abs(balanceHours)
-    const hours = Math.floor(absHours)
-    const minutes = Math.round((absHours - hours) * 60)
+    let hours = Math.floor(absHours)
+    let minutes = Math.round((absHours - hours) * 60)
+
+    if (minutes === 60) {
+        hours++
+        minutes = 0
+    }
 
     return `${sign}${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
 }
 
 export function formatHoursMinutes(seconds: number): string {
     const totalHours = seconds / 3600
-    const hours = Math.floor(totalHours)
-    const minutes = Math.round((totalHours - hours) * 60)
+    let hours = Math.floor(totalHours)
+    let minutes = Math.round((totalHours - hours) * 60)
+
+    if (minutes === 60) {
+        hours++
+        minutes = 0
+    }
 
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`
 }
