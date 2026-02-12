@@ -1,0 +1,96 @@
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:16-alpine
+    container_name: timeapp-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: timeapp
+      POSTGRES_PASSWORD: timeapp_password
+      POSTGRES_DB: timeapp
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "54320:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timeapp -d timeapp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timeapp-network
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: timeapp-app
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    environment:
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - timeapp-network
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000', (res) => process.exit(res.statusCode < 400 ? 0 : 1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # pgAdmin - Database Management UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: timeapp-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_LISTEN_PORT: 80
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "8888:80"
+    depends_on:
+      - db
+    networks:
+      - timeapp-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: timeapp-nginx
+    restart: unless-stopped
+    ports:
+      - "6280:80"
+    volumes:
+      - nginx_cache:/var/cache/nginx
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - timeapp-network
+
+volumes:
+  postgres_data:
+    name: timeapp-postgres-data
+  pgadmin_data:
+    name: timeapp-pgadmin-data
+  nginx_cache:
+    name: timeapp-nginx-cache
+
+networks:
+  timeapp-network:
+    name: timeapp-network
+    driver: bridge

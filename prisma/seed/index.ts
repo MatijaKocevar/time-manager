@@ -102,6 +102,13 @@ async function main() {
         console.log(`  Role:                ADMIN`)
         console.log("=".repeat(60) + "\n")
 
+        try {
+            await seedHolidays(prisma)
+        } catch (error) {
+            console.error("❌ Failed to seed holidays:", error)
+            console.error("   Continuing with user creation...")
+        }
+
         await seedUsers(prisma, random, 0, 0, true)
 
         console.log("\n" + "=".repeat(60))

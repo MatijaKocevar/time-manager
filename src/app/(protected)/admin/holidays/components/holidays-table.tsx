@@ -75,6 +75,15 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
     const queryClient = useQueryClient()
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [errorDialog, setErrorDialog] = useState<{
+        open: boolean
+        title: string
+        message: string
+    }>({
+        open: false,
+        title: "",
+        message: "",
+    })
     const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null)
     const [formData, setFormData] = useState({
         date: "",
@@ -135,10 +144,20 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
                         nextYear: nextYear,
                     })
                 )
+            } else {
+                setErrorDialog({
+                    open: true,
+                    title: "Holiday Import Failed",
+                    message: data.error || "Unknown error occurred during holiday import",
+                })
             }
         },
         onError: (error) => {
-            alert(tActions("importError", { error: error.message }))
+            setErrorDialog({
+                open: true,
+                title: "Holiday Import Error",
+                message: error instanceof Error ? error.message : String(error),
+            })
         },
     })
 
@@ -422,6 +441,29 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
                     </TableBody>
                 </Table>
             </div>
+
+            <Dialog
+                open={errorDialog.open}
+                onOpenChange={(open) => setErrorDialog({ ...errorDialog, open })}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{errorDialog.title}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="rounded-md bg-red-50 p-4 border border-red-200">
+                            <pre className="text-sm text-red-800 whitespace-pre-wrap font-mono overflow-auto max-h-96">
+                                {errorDialog.message}
+                            </pre>
+                        </div>
+                        <Button
+                            onClick={() => setErrorDialog({ open: false, title: "", message: "" })}
+                        >
+                            Close
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

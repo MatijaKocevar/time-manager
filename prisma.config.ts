@@ -1,8 +1,13 @@
 import { defineConfig } from "prisma/config"
-import { config } from "dotenv"
 
-// Load environment variables from .env files
-config({ path: [".env.development.local", ".env.local", ".env"] })
+// Load environment variables from .env files (only in development)
+// In Docker, environment variables are injected by docker-compose
+try {
+    const { config } = await import("dotenv")
+    config({ path: [".env.development.local", ".env.local", ".env"] })
+} catch {
+    // dotenv not available (Docker/production), environment variables already set
+}
 
 export default defineConfig({
     schema: "prisma/schema.prisma",

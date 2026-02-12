@@ -66,3 +66,51 @@ Open [http://localhost:3000](http://localhost:3000) and log in with:
 
 - Email: `demo@example.com`
 - Password: `password123`
+
+## Docker Deployment
+
+Run the complete application stack with Docker (includes Next.js app, PostgreSQL, pgAdmin, Nginx):
+
+```bash
+# One command setup
+./scripts/docker-setup.sh
+```
+
+**That's it!** The script will:
+- Create `.env.docker` with Docker-specific configuration
+- Generate secure secrets automatically
+- Start all services (app, database, pgAdmin, nginx)
+
+**Access the application:**
+- Main app: http://localhost:6280
+- pgAdmin: http://localhost:8888
+- Default credentials: `demo@example.com` / `password123`
+
+**For HTTPS/SSL:**
+This setup uses HTTP only for simplicity. If you need HTTPS:
+- Use Caddy, Traefik, or nginx reverse proxy
+- Use Cloudflare Tunnel
+- Use your domain's SSL termination
+
+**Management commands:**
+```bash
+# View logs
+docker compose logs -f app
+
+# Update to latest version
+./scripts/docker-update.sh
+
+# Backup database
+./scripts/docker-backup-db.sh
+
+# Restore from backup
+./scripts/docker-restore-db.sh backups/timeapp-20260211.sql
+
+# Stop services
+docker compose down
+
+# Restart services
+docker compose restart
+```
+
+**Full documentation:** [docs/DOCKER.md](docs/DOCKER.md)

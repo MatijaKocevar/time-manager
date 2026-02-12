@@ -149,9 +149,15 @@ export function YearlyCalendarTable({
                                                     </div>
                                                     <div className="text-[10px] font-semibold text-foreground mt-0.5">
                                                         {(() => {
-                                                            const hours = Math.floor(dayData.totalHours)
-                                                            const minutes = Math.round((dayData.totalHours - hours) * 60)
-                                                            return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
+                                                            const hours = Math.floor(
+                                                                dayData.totalHours
+                                                            )
+                                                            const minutes = Math.round(
+                                                                (dayData.totalHours - hours) * 60
+                                                            )
+                                                            return minutes > 0
+                                                                ? `${hours}h ${minutes}m`
+                                                                : `${hours}h`
                                                         })()}
                                                     </div>
                                                 </div>
