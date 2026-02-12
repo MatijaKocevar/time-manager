@@ -225,7 +225,7 @@ export function TrackerDisplay({
                             <Button
                                 size="lg"
                                 onClick={handlePlayStop}
-                                disabled={isLoading || !canStart}
+                                disabled={isLoading || (!isTrackingCurrentSelection && !canStart)}
                                 className={`w-28 h-28 rounded-full text-white shadow-lg transition-all ${
                                     isTrackingCurrentSelection
                                         ? "bg-red-600 hover:bg-red-700"
