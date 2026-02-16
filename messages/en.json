@@ -140,6 +140,7 @@
         "yearlyCalendar": "Yearly Calendar",
         "requests": "Requests",
         "urnikSync": "urnik.net Sync",
+        "clock": "Clock In/Out",
         "admin": "Admin",
         "profile": "Profile",
         "management": "Management",
@@ -812,6 +813,40 @@
                 "connectionFailed": "Connection test failed. Please check your credentials.",
                 "updateFailed": "Failed to update urnik.net credentials"
             }
+        }
+    },
+    "clock": {
+        "page": {
+            "title": "Clock In/Out",
+            "noCredentialsTitle": "No urnik.net Credentials",
+            "noCredentialsDescription": "Please configure your urnik.net credentials in your profile to use this feature.",
+            "profileLink": "profile settings"
+        },
+        "view": {
+            "title": "Arrival & Departure",
+            "description": "Clock in when you arrive and clock out when you leave"
+        },
+        "actions": {
+            "clockIn": "Clock In",
+            "clockOut": "Clock Out",
+            "clockOutAndStop": "Clock Out & Stop Timer"
+        },
+        "messages": {
+            "clockInSuccess": "Successfully clocked in",
+            "clockOutSuccess": "Successfully clocked out"
+        },
+        "arrivalDialog": {
+            "title": "Log Arrival?",
+            "message": "Do you want to log your arrival to urnik.net now?",
+            "yesButton": "Yes, Log Arrival",
+            "noButton": "No, Not Yet",
+            "successMessage": "Arrival logged successfully"
+        },
+        "status": {
+            "arrival": "Arrival",
+            "leave": "Leave",
+            "logged": "Logged at",
+            "notLogged": "Not logged"
         }
     },
     "urnikSync": {

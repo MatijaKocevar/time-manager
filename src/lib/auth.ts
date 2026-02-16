@@ -93,13 +93,40 @@ export const authConfig = {
         strategy: "jwt" as const,
     },
     callbacks: {
-        jwt: ({ token, user }: { token: JWT; user: User | undefined }) => {
+        jwt: async ({ token, user }: { token: JWT; user: User | undefined }) => {
             if (user) {
                 token.id = user.id
                 token.role = user.role
                 token.locale = user.locale || "en"
                 token.isDemo = user.isDemo || false
+
+                prisma.user
+                    .findUnique({
+                        where: { id: user.id },
+                        select: { urnikUsername: true, urnikPassword: true },
+                    })
+                    .then(async (urnikUser) => {
+                        if (urnikUser?.urnikUsername && urnikUser?.urnikPassword) {
+                            const { loginToUrnik } =
+                                await import("@/app/(protected)/urnik-sync/actions/urnik-actions")
+                            const result = await loginToUrnik(
+                                urnikUser.urnikUsername,
+                                urnikUser.urnikPassword
+                            )
+
+                            if (result.success) {
+                                await prisma.user.update({
+                                    where: { id: user.id },
+                                    data: { lastUrnikTestAt: new Date() },
+                                })
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Background urnik.net login failed:", error)
+                    })
             }
+
             return token
         },
         session: ({ session, token }: { session: Session; token: JWT }) => {

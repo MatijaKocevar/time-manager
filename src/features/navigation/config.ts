@@ -14,6 +14,7 @@ import {
     FileSpreadsheet,
     CalendarRange,
     RefreshCw,
+    LogIn,
 } from "lucide-react"
 import { UserRole } from "@/types"
 
@@ -72,6 +73,12 @@ export const navigationItems: NavigationItem[] = [
         title: "navigation.urnikSync",
         url: "/urnik-sync",
         icon: RefreshCw,
+        roles: ["USER", "ADMIN"],
+    },
+    {
+        title: "navigation.clock",
+        url: "/clock",
+        icon: LogIn,
         roles: ["USER", "ADMIN"],
     },
     {

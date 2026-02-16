@@ -17,6 +17,8 @@ export default async function TrackerPage() {
     const t = await getTranslations("tasks.tracker")
     const tTypes = await getTranslations("hours.types")
     const tDialog = await getTranslations("timeSheets.dayEntriesDialog")
+    const tClock = await getTranslations("clock")
+    const tCommon = await getTranslations("common")
 
     const [inProgressTasks, activeTimer, generalWorkTask, trackerPreferences, dailySummary] =
         await Promise.all([
@@ -50,6 +52,12 @@ export default async function TrackerPage() {
         noTasksAvailable: t("noTasksAvailable"),
         generalWork: "General",
         dailySummaryTitle: t("dailySummaryTitle"),
+        arrivalDialogTitle: tClock("arrivalDialog.title"),
+        arrivalDialogMessage: tClock("arrivalDialog.message"),
+        arrivalDialogYes: tClock("arrivalDialog.yesButton"),
+        arrivalDialogNo: tClock("arrivalDialog.noButton"),
+        arrivalDialogSuccess: tClock("arrivalDialog.successMessage"),
+        errorTitle: tCommon("messages.error"),
     }
 
     return (

@@ -21,6 +21,7 @@ import {
     type StopTimerInput,
     type TimerDisplay,
 } from "../schemas/timer-schemas"
+import { hasLoggedArrivalToday } from "@/lib/clock-status"
 
 async function requireAuth() {
     const session = await getServerSession(authConfig)
@@ -137,7 +138,13 @@ export async function startTimer(input: StartTimerInput) {
 
         await broadcastTimerEvent(session.user.id, "timer-started", broadcastData)
 
-        return { success: true, entryId: newEntry.entry.id }
+        const shouldShowArrivalDialog = !(await hasLoggedArrivalToday())
+
+        return {
+            success: true,
+            entryId: newEntry.entry.id,
+            shouldShowArrivalDialog,
+        }
     } catch (error) {
         if (error instanceof Error) {
             return { error: error.message }

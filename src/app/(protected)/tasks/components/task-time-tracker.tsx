@@ -1,8 +1,10 @@
 "use client"
 
+import { useState } from "react"
 import { Play, Square } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
+import { ArrivalDialog } from "@/components/arrival-dialog"
 import { useQueryClient } from "@tanstack/react-query"
 import { startTimer, stopTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import { useTasksStore } from "../stores/tasks-store"
@@ -15,8 +17,11 @@ interface TaskTimeTrackerProps {
 }
 
 export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
+    const [showArrivalDialog, setShowArrivalDialog] = useState(false)
     const queryClient = useQueryClient()
     const t = useTranslations("tasks.actions")
+    const tClock = useTranslations("clock")
+    const tCommon = useTranslations("common")
     const activeTimer = useTasksStore((state) => state.activeTimer)
     const elapsedSeconds = useTasksStore((state) => state.elapsedSeconds)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
@@ -39,6 +44,10 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
                 clearActiveTimer()
                 setActiveTimer(task.id, result.entryId, new Date())
                 await queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
+
+                if (result.shouldShowArrivalDialog) {
+                    setShowArrivalDialog(true)
+                }
             } else {
                 console.error("Failed to start timer:", result.error)
             }
@@ -73,24 +82,42 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
         openTimeEntriesDialog(task.id)
     }
 
+    const arrivalDialogTranslations = {
+        title: tClock("arrivalDialog.title"),
+        message: tClock("arrivalDialog.message"),
+        yesButton: tClock("arrivalDialog.yesButton"),
+        noButton: tClock("arrivalDialog.noButton"),
+        successMessage: tClock("arrivalDialog.successMessage"),
+        errorTitle: tCommon("error.title"),
+    }
+
     return (
-        <div className="flex items-center gap-2">
-            <Button
-                variant={isRunning ? "destructive" : "default"}
-                size="sm"
-                onClick={isRunning ? handleStop : handleStart}
-                disabled={isLoading}
-                className="h-8 w-8 p-0"
-                aria-label={isRunning ? t("stopTimer") : t("startTimer")}
-            >
-                {isRunning ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-            <button
-                onClick={handleClick}
-                className="text-sm font-mono hover:underline cursor-pointer"
-            >
-                {isRunning ? formatDuration(elapsedSeconds) : formatDuration(task.totalTime ?? 0)}
-            </button>
-        </div>
+        <>
+            <div className="flex items-center gap-2">
+                <Button
+                    variant={isRunning ? "destructive" : "default"}
+                    size="sm"
+                    onClick={isRunning ? handleStop : handleStart}
+                    disabled={isLoading}
+                    className="h-8 w-8 p-0"
+                    aria-label={isRunning ? t("stopTimer") : t("startTimer")}
+                >
+                    {isRunning ? <Square className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                </Button>
+                <button
+                    onClick={handleClick}
+                    className="text-sm font-mono hover:underline cursor-pointer"
+                >
+                    {isRunning
+                        ? formatDuration(elapsedSeconds)
+                        : formatDuration(task.totalTime ?? 0)}
+                </button>
+            </div>
+            <ArrivalDialog
+                open={showArrivalDialog}
+                onOpenChange={setShowArrivalDialog}
+                translations={arrivalDialogTranslations}
+            />
+        </>
     )
 }

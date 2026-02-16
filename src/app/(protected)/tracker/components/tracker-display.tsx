@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { Play, Square, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,6 +12,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { ArrivalDialog } from "@/components/arrival-dialog"
 import { useTrackerStore } from "../stores/tracker-store"
 import { formatDuration } from "@/app/(protected)/tasks/utils/time-helpers"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
@@ -36,6 +38,8 @@ export function TrackerDisplay({
     initialDailySummary,
     translations,
 }: TrackerDisplayProps) {
+    const [showArrivalDialog, setShowArrivalDialog] = useState(false)
+
     useTrackerSSE()
     useTrackerPusher()
 
@@ -57,7 +61,9 @@ export function TrackerDisplay({
                 : null,
         })
 
-    const { startMutation, stopMutation, isLoading } = useTrackerMutations()
+    const { startMutation, stopMutation, isLoading } = useTrackerMutations(() => {
+        setShowArrivalDialog(true)
+    })
 
     const { taskEntries } = useTaskTimeEntries(selectedTaskId, initialTodayEntries)
 
@@ -258,6 +264,18 @@ export function TrackerDisplay({
                     </div>
                 </div>
             </CardContent>
+            <ArrivalDialog
+                open={showArrivalDialog}
+                onOpenChange={setShowArrivalDialog}
+                translations={{
+                    title: translations.arrivalDialogTitle,
+                    message: translations.arrivalDialogMessage,
+                    yesButton: translations.arrivalDialogYes,
+                    noButton: translations.arrivalDialogNo,
+                    successMessage: translations.arrivalDialogSuccess,
+                    errorTitle: translations.errorTitle,
+                }}
+            />
         </Card>
     )
 }

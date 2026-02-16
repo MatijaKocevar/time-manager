@@ -169,7 +169,7 @@ function parseUrnikRequestsHtml(html: string): {
     }
 }
 
-async function loginToUrnik(username: string, password: string) {
+export async function loginToUrnik(username: string, password: string) {
     try {
         const loginPageResponse = await fetch("https://urnik.net/Account/Login", {
             method: "GET",

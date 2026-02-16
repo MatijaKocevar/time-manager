@@ -5,7 +5,7 @@ import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
 import { taskKeys } from "@/app/(protected)/tasks/query-keys"
 import { sharedKeys } from "@/app/(protected)/shared/query-keys"
 
-export function useTrackerMutations() {
+export function useTrackerMutations(onArrivalNeeded?: () => void) {
     const queryClient = useQueryClient()
     const setError = useTrackerStore((state) => state.setError)
     const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
@@ -20,6 +20,9 @@ export function useTrackerMutations() {
             if (data.error) {
                 setError(data.error)
             } else if (data.success) {
+                if (data.shouldShowArrivalDialog && onArrivalNeeded) {
+                    onArrivalNeeded()
+                }
                 queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
                 queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
                 queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })

@@ -140,6 +140,7 @@
         "yearlyCalendar": "Letni koledar",
         "requests": "Zahtevki",
         "urnikSync": "urnik.net sinhronizacija",
+        "clock": "Prihod/Odhod",
         "admin": "Administracija",
         "profile": "Profil",
         "management": "Upravljanje",
@@ -812,6 +813,40 @@
                 "connectionFailed": "Test povezave ni uspel. Preverite svoje poverilnice.",
                 "updateFailed": "Posodobitev urnik.net poverilnic ni uspela"
             }
+        }
+    },
+    "clock": {
+        "page": {
+            "title": "Prihod/Odhod",
+            "noCredentialsTitle": "Ni urnik.net poverilnic",
+            "noCredentialsDescription": "Prosimo, konfigurirajte svoje urnik.net poverilnice v profilu, da lahko uporabljate to funkcijo.",
+            "profileLink": "nastavitve profila"
+        },
+        "view": {
+            "title": "Prihod in odhod",
+            "description": "Označite prihod, ko pridete, in odhod, ko odidete"
+        },
+        "actions": {
+            "clockIn": "Prihod",
+            "clockOut": "Odhod",
+            "clockOutAndStop": "Odhod in ustavi časovnik"
+        },
+        "messages": {
+            "clockInSuccess": "Prihod uspešno zabeležen",
+            "clockOutSuccess": "Odhod uspešno zabeležen"
+        },
+        "arrivalDialog": {
+            "title": "Zabeleži prihod?",
+            "message": "Ali želite zdaj zabeležiti svoj prihod v urnik.net?",
+            "yesButton": "Da, zabeleži prihod",
+            "noButton": "Ne, še ne",
+            "successMessage": "Prihod uspešno zabeležen"
+        },
+        "status": {
+            "arrival": "Prihod",
+            "leave": "Odhod",
+            "logged": "Zabeleženo ob",
+            "notLogged": "Ni zabeleženo"
         }
     },
     "urnikSync": {

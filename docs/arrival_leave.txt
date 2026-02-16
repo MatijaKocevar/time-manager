@@ -1,0 +1,108 @@
+ARRIVAL:
+https://urnik.net/App/Main?handler=SetTimeInNow&rid=null&ClockInType=0 GET
+
+LEAVE:
+https://urnik.net/App/Main?handler=SetTimeOutPicker&type=0 GET
+
+MonthDay data:
+https://urnik.net/App/Main?handler=LoadMonthDayInfo
+
+MonthDay RESPONSE:  
+
+<style>
+    .timeButtonsTimeBreak{
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 300; 
+    }
+</style>
+
+<div class="row">
+    <div class="col-xl-12">
+        <div class="timeButtonsMain">
+            <p class="timeButtonsTitleBox" style="text-align: left; font-weight: 300">TODAY&#x27;S DATA - 16. februar</p>
+            
+                 <div class="row">
+                     <div class="col-xl-6">
+                         <div style="width: 100%; display: inline-flex">
+                            <span style="font-weight: 400">Total annual balance yesterday: </span><span style="margin-left: auto; margin-right: 5px; font-weight: 400">4h 27min</span>
+                         </div>
+                     </div>
+                     <div class="col-xl-6">
+                        <span style="font-weight: 400">Total balance now: </span><span style="margin-left: auto; margin-right: 5px; font-weight: 400">-3h 28min</span>
+                     </div>
+                 </div>
+            
+            <div class="row">
+                <div class="col-xl-3">
+                    <div style="width: 100%; display: inline-flex">
+                        <span style="font-weight: 400;
+   ">Last year vacation: </span><span style="margin-left: 5px; font-weight: 400;">0 dni</span>
+                    </div>
+                </div>
+                <div class="col-xl-3" style="display: inline-flex">
+                    <div style="margin-left: auto; margin-right: 0">
+                        <span style="font-weight: 400">This year&#x27;s leave: </span><span style="margin-left: 5px; font-weight: 400">24 dni</span>
+                    </div>
+                    
+                </div>
+                <div class="col-xl-6">
+                    <span style="font-weight: 400">Total vacations days: </span><span style="margin-left: 5px; font-weight: 400">21 dni</span>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-xl-12">
+                    <span style="font-weight: 400">Set work time: Free (7:00-17:00)</span>
+                </div>
+            </div>
+            
+            <hr>
+            <div class="row">
+
+                <div class="col-xl-6" style="font-weight: 200">
+                    
+                        <div style="width: 100%; display: inline-flex">
+                                <span style="font-weight: 400">Arrival at work: </span><span style="margin-left: auto; margin-right: 5px; font-weight: 400">20:19</span><span style="color: #1cb0f6; cursor: pointer; font-weight: 400" onclick="loadTimeSelectIn()">Edit</span>
+                        </div>
+                        <div style="width: 100%; display: inline-flex">
+                            <span style="font-weight: 400">Lunch break: </span><span style="margin-left: auto; margin-right: 5px; font-weight: 400">Ni podatka</span> <span style="color: #1cb0f6; cursor: pointer; font-weight: 400" onclick="loadBreakUpdate()">Edit</span>
+                            </div>
+                        <div style="width: 100%; display: inline-flex">
+                                <span style="font-weight: 400">Departure from work: </span><span style="margin-left: auto; margin-right: 5px; font-weight: 400">20:58</span><span style="color: #1cb0f6; cursor: pointer; font-weight: 400" onclick="loadTimeSelectOut()">Edit</span>
+                        </div>
+                   
+                    <div style="width: 100%; display: inline-flex">
+                        <span style="font-weight: 400">Total hours: </span><span style="margin-left: auto; margin-right: 5px; font-weight: 400">0h 04min</span><span style="visibility: hidden; display: none;; font-weight: 400">Edit</span>
+                    </div>
+
+                </div>
+                <div class="col-xl-6" style="font-weight: 200">
+
+                    <div style="width: 100%; display: inline-flex">
+                        <span style="font-weight: 400">Overtime work: </span><span style="margin-left: auto; margin-right: 0px; font-weight: 400">0h 0min</span>
+                    </div>
+                     
+                         <div style="width: 100%; display: inline-flex">
+                            <span style="font-weight: 400">Balance today: </span><span style="margin-left: auto; margin-right: 0px; font-weight: 400">-7h 55min</span>
+                         </div>
+                  
+                    <div style="width: 100%; display: inline-flex">
+                        <span style="font-weight: 400">Planned: </span><span style="margin-left: auto; margin-right: 0px; font-weight: 400">8h</span>
+                    </div>
+                    <div style="width: 100%; display: inline-flex">
+                        <span style="font-weight: 400">Shift ends at: </span><span style="margin-left: auto; margin-right: 0px; font-weight: 400">1.04:</span>
+                    </div>
+                </div>
+            </div>
+            <div style="width: 50%;">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+

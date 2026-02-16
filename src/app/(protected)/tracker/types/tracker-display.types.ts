@@ -52,5 +52,11 @@ export interface TrackerDisplayProps {
         noTasksAvailable: string
         generalWork: string
         dailySummaryTitle: string
+        arrivalDialogTitle: string
+        arrivalDialogMessage: string
+        arrivalDialogYes: string
+        arrivalDialogNo: string
+        arrivalDialogSuccess: string
+        errorTitle: string
     }
 }
