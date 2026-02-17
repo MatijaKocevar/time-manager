@@ -61,6 +61,8 @@ export function TimeSheetsTable({
     translations,
 }: TimeSheetsTableProps) {
     const [showArrivalDialog, setShowArrivalDialog] = useState(false)
+    const [hasApprovedWFH, setHasApprovedWFH] = useState<boolean>(false)
+    const [wfhLocation, setWfhLocation] = useState<string | null>(null)
     const queryClient = useQueryClient()
     const tClock = useTranslations("clock")
     const tCommon = useTranslations("common")
@@ -83,6 +85,8 @@ export function TimeSheetsTable({
                 queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
 
                 if (data.shouldShowArrivalDialog) {
+                    setHasApprovedWFH(data.hasApprovedWFH ?? false)
+                    setWfhLocation(data.wfhLocation ?? null)
                     setShowArrivalDialog(true)
                 }
             }
@@ -125,6 +129,8 @@ export function TimeSheetsTable({
         noButton: tClock("arrivalDialog.noButton"),
         successMessage: tClock("arrivalDialog.successMessage"),
         errorTitle: tCommon("error.title"),
+        workFromHomeCheckbox: tClock("arrivalDialog.workFromHomeCheckbox"),
+        workFromHomeApproved: tClock("arrivalDialog.workFromHomeApproved"),
     }
 
     return (
@@ -397,6 +403,8 @@ export function TimeSheetsTable({
                 open={showArrivalDialog}
                 onOpenChange={setShowArrivalDialog}
                 translations={arrivalDialogTranslations}
+                hasApprovedWFH={hasApprovedWFH}
+                wfhLocation={wfhLocation}
             />
         </>
     )

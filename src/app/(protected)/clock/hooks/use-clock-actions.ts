@@ -6,7 +6,11 @@ export function useClockIn() {
     const clockIn = useClockStore((state) => state.clockIn)
     const isClockingIn = useClockStore((state) => state.isClockingIn)
 
-    const handleClockIn = async (translations: { clockInSuccess: string; errorTitle: string }) => {
+    const handleClockIn = async (translations: {
+        clockInSuccess: string
+        errorTitle: string
+        isWorkFromHome: boolean
+    }) => {
         const result = await clockIn(translations)
         if (result.shouldRefresh) {
             router.refresh()

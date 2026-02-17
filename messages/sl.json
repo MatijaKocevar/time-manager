@@ -840,7 +840,10 @@
             "message": "Ali želite zdaj zabeležiti svoj prihod v urnik.net?",
             "yesButton": "Da, zabeleži prihod",
             "noButton": "Ne, še ne",
-            "successMessage": "Prihod uspešno zabeležen"
+            "successMessage": "Prihod uspešno zabeležen",
+            "workFromHomeCheckbox": "Zabeleži kot delo od doma",
+            "workFromHomeApproved": "Imate odobreno delo od doma za danes",
+            "atLocation": "lokacija: {location}"
         },
         "status": {
             "arrival": "Prihod",

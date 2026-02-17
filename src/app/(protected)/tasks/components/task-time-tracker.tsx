@@ -18,6 +18,8 @@ interface TaskTimeTrackerProps {
 
 export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
     const [showArrivalDialog, setShowArrivalDialog] = useState(false)
+    const [hasApprovedWFH, setHasApprovedWFH] = useState<boolean>(false)
+    const [wfhLocation, setWfhLocation] = useState<string | null>(null)
     const queryClient = useQueryClient()
     const t = useTranslations("tasks.actions")
     const tClock = useTranslations("clock")
@@ -46,6 +48,8 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
                 await queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
 
                 if (result.shouldShowArrivalDialog) {
+                    setHasApprovedWFH(result.hasApprovedWFH ?? false)
+                    setWfhLocation(result.wfhLocation ?? null)
                     setShowArrivalDialog(true)
                 }
             } else {
@@ -89,6 +93,8 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
         noButton: tClock("arrivalDialog.noButton"),
         successMessage: tClock("arrivalDialog.successMessage"),
         errorTitle: tCommon("error.title"),
+        workFromHomeCheckbox: tClock("arrivalDialog.workFromHomeCheckbox"),
+        workFromHomeApproved: tClock("arrivalDialog.workFromHomeApproved"),
     }
 
     return (
@@ -117,6 +123,8 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
                 open={showArrivalDialog}
                 onOpenChange={setShowArrivalDialog}
                 translations={arrivalDialogTranslations}
+                hasApprovedWFH={hasApprovedWFH}
+                wfhLocation={wfhLocation}
             />
         </>
     )

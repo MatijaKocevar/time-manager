@@ -840,7 +840,10 @@
             "message": "Do you want to log your arrival to urnik.net now?",
             "yesButton": "Yes, Log Arrival",
             "noButton": "No, Not Yet",
-            "successMessage": "Arrival logged successfully"
+            "successMessage": "Arrival logged successfully",
+            "workFromHomeCheckbox": "Log as Work from Home",
+            "workFromHomeApproved": "You have Work from Home approved for today",
+            "atLocation": "at {location}"
         },
         "status": {
             "arrival": "Arrival",

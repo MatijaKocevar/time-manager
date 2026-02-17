@@ -11,6 +11,7 @@ interface ClockStoreActions {
     clockIn: (translations: {
         clockInSuccess: string
         errorTitle: string
+        isWorkFromHome: boolean
     }) => Promise<{ success: boolean; shouldRefresh: boolean }>
     clockOut: (translations: {
         clockOutSuccess: string
@@ -26,7 +27,7 @@ export const useClockStore = create<ClockStoreState & ClockStoreActions>((set) =
     clockIn: async (translations) => {
         set({ isClockingIn: true })
         try {
-            const result = await clockInToUrnik()
+            const result = await clockInToUrnik(translations.isWorkFromHome)
             if (result.success) {
                 toast.success(translations.clockInSuccess)
                 return { success: true, shouldRefresh: true }

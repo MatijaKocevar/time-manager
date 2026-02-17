@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import {
     Dialog,
     DialogContent,
@@ -10,12 +11,15 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { clockInToUrnik } from "@/app/(protected)/clock/actions/clock-actions"
 import { toast } from "sonner"
 
 interface ArrivalDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
+    hasApprovedWFH?: boolean
+    wfhLocation?: string | null
     translations: {
         title: string
         message: string
@@ -23,16 +27,26 @@ interface ArrivalDialogProps {
         noButton: string
         successMessage: string
         errorTitle: string
+        workFromHomeCheckbox: string
+        workFromHomeApproved: string
     }
 }
 
-export function ArrivalDialog({ open, onOpenChange, translations }: ArrivalDialogProps) {
+export function ArrivalDialog({
+    open,
+    onOpenChange,
+    hasApprovedWFH,
+    wfhLocation,
+    translations,
+}: ArrivalDialogProps) {
     const [isLogging, setIsLogging] = useState(false)
+    const [isWorkFromHome, setIsWorkFromHome] = useState(hasApprovedWFH ?? false)
+    const tClock = useTranslations("clock.arrivalDialog")
 
     async function handleYes() {
         setIsLogging(true)
         try {
-            const result = await clockInToUrnik()
+            const result = await clockInToUrnik(isWorkFromHome)
             if (result.success) {
                 toast.success(translations.successMessage)
                 onOpenChange(false)
@@ -59,8 +73,29 @@ export function ArrivalDialog({ open, onOpenChange, translations }: ArrivalDialo
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{translations.title}</DialogTitle>
-                    <DialogDescription>{translations.message}</DialogDescription>
+                    <DialogDescription>
+                        {translations.message}
+                        {hasApprovedWFH && wfhLocation && (
+                            <div className="mt-2 text-sm text-muted-foreground">
+                                {translations.workFromHomeApproved}{" "}
+                                {tClock("atLocation", { location: wfhLocation })}
+                            </div>
+                        )}
+                    </DialogDescription>
                 </DialogHeader>
+                <div className="flex items-center space-x-2 py-2">
+                    <Checkbox
+                        id="wfh"
+                        checked={isWorkFromHome}
+                        onCheckedChange={(checked) => setIsWorkFromHome(checked === true)}
+                    />
+                    <label
+                        htmlFor="wfh"
+                        className="text-sm cursor-pointer font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        {translations.workFromHomeCheckbox}
+                    </label>
+                </div>
                 <DialogFooter>
                     <Button variant="outline" onClick={handleNo} disabled={isLogging}>
                         {translations.noButton}

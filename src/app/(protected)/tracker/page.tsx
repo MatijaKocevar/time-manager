@@ -58,6 +58,8 @@ export default async function TrackerPage() {
         arrivalDialogNo: tClock("arrivalDialog.noButton"),
         arrivalDialogSuccess: tClock("arrivalDialog.successMessage"),
         errorTitle: tCommon("messages.error"),
+        arrivalDialogWorkFromHome: tClock("arrivalDialog.workFromHomeCheckbox"),
+        arrivalDialogWorkFromHomeApproved: tClock("arrivalDialog.workFromHomeApproved"),
     }
 
     return (

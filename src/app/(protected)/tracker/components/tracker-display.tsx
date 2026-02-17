@@ -39,6 +39,8 @@ export function TrackerDisplay({
     translations,
 }: TrackerDisplayProps) {
     const [showArrivalDialog, setShowArrivalDialog] = useState(false)
+    const [hasApprovedWFH, setHasApprovedWFH] = useState(false)
+    const [wfhLocation, setWfhLocation] = useState<string | null>(null)
 
     useTrackerSSE()
     useTrackerPusher()
@@ -61,7 +63,9 @@ export function TrackerDisplay({
                 : null,
         })
 
-    const { startMutation, stopMutation, isLoading } = useTrackerMutations(() => {
+    const { startMutation, stopMutation, isLoading } = useTrackerMutations((hasWFH, location) => {
+        setHasApprovedWFH(hasWFH)
+        setWfhLocation(location)
         setShowArrivalDialog(true)
     })
 
@@ -267,6 +271,8 @@ export function TrackerDisplay({
             <ArrivalDialog
                 open={showArrivalDialog}
                 onOpenChange={setShowArrivalDialog}
+                hasApprovedWFH={hasApprovedWFH}
+                wfhLocation={wfhLocation}
                 translations={{
                     title: translations.arrivalDialogTitle,
                     message: translations.arrivalDialogMessage,
@@ -274,6 +280,8 @@ export function TrackerDisplay({
                     noButton: translations.arrivalDialogNo,
                     successMessage: translations.arrivalDialogSuccess,
                     errorTitle: translations.errorTitle,
+                    workFromHomeCheckbox: translations.arrivalDialogWorkFromHome,
+                    workFromHomeApproved: translations.arrivalDialogWorkFromHomeApproved,
                 }}
             />
         </Card>

@@ -7,7 +7,7 @@ import { ClockView } from "./components/clock-view"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import Link from "next/link"
-import { getArrivalLeaveStatus } from "@/lib/clock-status"
+import { getArrivalLeaveStatus, getTodayWorkFromHomeStatus } from "@/lib/clock-status"
 
 export default async function ClockPage() {
     const session = await getServerSession(authConfig)
@@ -48,6 +48,7 @@ export default async function ClockPage() {
     }
 
     const status = await getArrivalLeaveStatus()
+    const wfhStatus = await getTodayWorkFromHomeStatus()
 
     const translations = {
         title: t("view.title"),
@@ -61,6 +62,11 @@ export default async function ClockPage() {
         leaveLabel: t("status.leave"),
         loggedLabel: t("status.logged"),
         notLoggedLabel: t("status.notLogged"),
+        workFromHomeCheckbox: t("arrivalDialog.workFromHomeCheckbox"),
+        workFromHomeApproved: t("arrivalDialog.workFromHomeApproved"),
+        atLocation: wfhStatus.location
+            ? t("arrivalDialog.atLocation", { location: wfhStatus.location })
+            : "",
     }
 
     return (
@@ -82,7 +88,12 @@ export default async function ClockPage() {
                     </AlertDescription>
                 </Alert>
             )}
-            <ClockView translations={translations} status={status} />
+            <ClockView
+                translations={translations}
+                status={status}
+                hasApprovedWFH={wfhStatus.hasApprovedWFH}
+                wfhLocation={wfhStatus.location}
+            />
         </div>
     )
 }

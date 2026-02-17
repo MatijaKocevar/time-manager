@@ -58,5 +58,7 @@ export interface TrackerDisplayProps {
         arrivalDialogNo: string
         arrivalDialogSuccess: string
         errorTitle: string
+        arrivalDialogWorkFromHome: string
+        arrivalDialogWorkFromHomeApproved: string
     }
 }

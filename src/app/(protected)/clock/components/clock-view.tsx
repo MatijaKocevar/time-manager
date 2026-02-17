@@ -17,6 +17,9 @@ interface ClockViewProps {
         leaveLabel: string
         loggedLabel: string
         notLoggedLabel: string
+        workFromHomeCheckbox: string
+        workFromHomeApproved: string
+        atLocation: string
     }
     status: {
         success: boolean
@@ -24,6 +27,8 @@ interface ClockViewProps {
         error?: string
         structureValid?: boolean
     }
+    hasApprovedWFH: boolean
+    wfhLocation: string | null
 }
 
 const DataRow = ({ label, value }: { label: string; value: string | null }) => (
@@ -33,7 +38,7 @@ const DataRow = ({ label, value }: { label: string; value: string | null }) => (
     </div>
 )
 
-export function ClockView({ translations, status }: ClockViewProps) {
+export function ClockView({ translations, status, hasApprovedWFH, wfhLocation }: ClockViewProps) {
     const data = status.data
 
     if (!status.success || !data) {
@@ -102,7 +107,12 @@ export function ClockView({ translations, status }: ClockViewProps) {
                             clockInSuccess: translations.clockInSuccess,
                             clockOutSuccess: translations.clockOutSuccess,
                             errorTitle: translations.errorTitle,
+                            workFromHomeCheckbox: translations.workFromHomeCheckbox,
+                            workFromHomeApproved: translations.workFromHomeApproved,
+                            atLocation: translations.atLocation,
                         }}
+                        hasApprovedWFH={hasApprovedWFH}
+                        wfhLocation={wfhLocation}
                     />
                 </CardContent>
             </Card>

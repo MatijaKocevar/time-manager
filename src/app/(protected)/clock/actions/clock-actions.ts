@@ -161,7 +161,7 @@ export async function getTodayDayInfo(): Promise<DayInfoResult> {
     }
 }
 
-export async function clockInToUrnik() {
+export async function clockInToUrnik(isWorkFromHome: boolean = false) {
     try {
         const session = await getServerSession(authConfig)
 
@@ -175,8 +175,9 @@ export async function clockInToUrnik() {
             return { success: false, error: "No urnik credentials or login failed" }
         }
 
+        const clockInType = isWorkFromHome ? "14" : "0"
         const response = await fetch(
-            "https://urnik.net/App/Main?handler=SetTimeInNow&rid=null&ClockInType=0",
+            `https://urnik.net/App/Main?handler=SetTimeInNow&rid=null&ClockInType=${clockInType}`,
             {
                 method: "GET",
                 headers: {
