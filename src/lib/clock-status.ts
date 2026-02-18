@@ -1,5 +1,5 @@
-import { getTodayDayInfo } from "@/app/(protected)/clock/actions/clock-actions"
-import type { DayInfo } from "@/app/(protected)/clock/schemas/day-info-schema"
+import { getTodayDayInfo } from "@/app/(protected)/urnik-net-overview/actions/clock-actions"
+import type { DayInfo } from "@/app/(protected)/urnik-net-overview/schemas/day-info-schema"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"

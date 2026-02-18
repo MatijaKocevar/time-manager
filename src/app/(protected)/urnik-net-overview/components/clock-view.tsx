@@ -20,6 +20,21 @@ interface ClockViewProps {
         workFromHomeCheckbox: string
         workFromHomeApproved: string
         atLocation: string
+        todayWorkTimeTitle: string
+        lunchBreak: string
+        totalHours: string
+        overtimeWork: string
+        shiftEndsAt: string
+        planned: string
+        balanceTitle: string
+        balanceToday: string
+        totalBalanceNow: string
+        totalAnnualBalanceYesterday: string
+        vacationTitle: string
+        lastYearVacation: string
+        thisYearLeave: string
+        totalVacationDays: string
+        setWorkTime: string
     }
     status: {
         success: boolean
@@ -63,9 +78,9 @@ export function ClockView({ translations, status, hasApprovedWFH, wfhLocation }:
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Clock className="h-5 w-5" />
-                        Clock In/Out
+                        {translations.title}
                     </CardTitle>
-                    <CardDescription>Manage your work time tracking</CardDescription>
+                    <CardDescription>{translations.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid gap-3 md:grid-cols-2">
@@ -122,16 +137,16 @@ export function ClockView({ translations, status, hasApprovedWFH, wfhLocation }:
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Clock className="h-5 w-5" />
-                            Today&apos;s Work Time
+                            {translations.todayWorkTimeTitle}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-1">
-                            <DataRow label="Lunch Break" value={data.lunchBreak} />
-                            <DataRow label="Total Hours" value={data.totalHours} />
-                            <DataRow label="Overtime Work" value={data.overtimeWork} />
-                            <DataRow label="Shift Ends At" value={data.shiftEndsAt} />
-                            <DataRow label="Planned" value={data.planned} />
+                            <DataRow label={translations.lunchBreak} value={data.lunchBreak} />
+                            <DataRow label={translations.totalHours} value={data.totalHours} />
+                            <DataRow label={translations.overtimeWork} value={data.overtimeWork} />
+                            <DataRow label={translations.shiftEndsAt} value={data.shiftEndsAt} />
+                            <DataRow label={translations.planned} value={data.planned} />
                         </div>
                     </CardContent>
                 </Card>
@@ -140,15 +155,18 @@ export function ClockView({ translations, status, hasApprovedWFH, wfhLocation }:
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <TrendingUp className="h-5 w-5" />
-                            Balance Overview
+                            {translations.balanceTitle}
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-1">
-                            <DataRow label="Balance Today" value={data.balanceToday} />
-                            <DataRow label="Total Balance Now" value={data.totalBalanceNow} />
+                            <DataRow label={translations.balanceToday} value={data.balanceToday} />
                             <DataRow
-                                label="Total Annual Balance Yesterday"
+                                label={translations.totalBalanceNow}
+                                value={data.totalBalanceNow}
+                            />
+                            <DataRow
+                                label={translations.totalAnnualBalanceYesterday}
                                 value={data.totalAnnualBalanceYesterday}
                             />
                         </div>
@@ -160,18 +178,27 @@ export function ClockView({ translations, status, hasApprovedWFH, wfhLocation }:
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Calendar className="h-5 w-5" />
-                        Vacation & Leave
+                        {translations.vacationTitle}
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-1">
-                            <DataRow label="Last Year Vacation" value={data.lastYearVacation} />
-                            <DataRow label="This Year's Leave" value={data.thisYearLeave} />
-                            <DataRow label="Total Vacation Days" value={data.totalVacationDays} />
+                            <DataRow
+                                label={translations.lastYearVacation}
+                                value={data.lastYearVacation}
+                            />
+                            <DataRow
+                                label={translations.thisYearLeave}
+                                value={data.thisYearLeave}
+                            />
+                            <DataRow
+                                label={translations.totalVacationDays}
+                                value={data.totalVacationDays}
+                            />
                         </div>
                         <div className="space-y-1">
-                            <DataRow label="Set Work Time" value={data.setWorkTime} />
+                            <DataRow label={translations.setWorkTime} value={data.setWorkTime} />
                         </div>
                     </div>
                 </CardContent>

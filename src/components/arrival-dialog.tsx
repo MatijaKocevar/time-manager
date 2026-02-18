@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { clockInToUrnik } from "@/app/(protected)/clock/actions/clock-actions"
+import { clockInToUrnik } from "@/app/(protected)/urnik-net-overview/actions/clock-actions"
 import { toast } from "sonner"
 
 interface ArrivalDialogProps {

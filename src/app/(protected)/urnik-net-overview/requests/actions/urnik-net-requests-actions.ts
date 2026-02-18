@@ -6,12 +6,12 @@ import { authConfig } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import type { HourType } from "@/../../prisma/generated/client"
 import {
-    GetPendingRequestsInputSchema,
-    type GetPendingRequestsInput,
-    type PendingUrnikRequest,
-} from "../schemas/pending-request-schemas"
+    GetPendingUrnikNetRequestsInputSchema,
+    type GetPendingUrnikNetRequestsInput,
+    type PendingUrnikNetRequest,
+} from "../schemas/urnik-net-requests-schemas"
 
-interface UrnikRequest {
+interface UrnikNetRequest {
     no: string
     requestDate: string
     requestType: string
@@ -32,9 +32,9 @@ interface UrnikRequest {
     hasActions: boolean
 }
 
-function parseUrnikRequestsHtml(html: string): {
+function parseUrnikNetRequestsHtml(html: string): {
     success: boolean
-    data?: UrnikRequest[]
+    data?: UrnikNetRequest[]
     error?: string
     structureValid: boolean
 } {
@@ -106,7 +106,7 @@ function parseUrnikRequestsHtml(html: string): {
         }
 
         const rowMatches = [...tbodyMatch[1].matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)]
-        const requests: UrnikRequest[] = []
+        const urnikNetRequests: UrnikNetRequest[] = []
 
         for (const rowMatch of rowMatches) {
             const row = rowMatch[1]
@@ -133,7 +133,7 @@ function parseUrnikRequestsHtml(html: string): {
 
             const hasActions = cellMatches[17]?.[1].includes("<button") || false
 
-            requests.push({
+            urnikNetRequests.push({
                 no: getCellText(0),
                 requestDate: getCellText(1),
                 requestType: getCellText(2),
@@ -157,7 +157,7 @@ function parseUrnikRequestsHtml(html: string): {
 
         return {
             success: true,
-            data: requests,
+            data: urnikNetRequests,
             structureValid: true,
         }
     } catch (error) {
@@ -169,7 +169,7 @@ function parseUrnikRequestsHtml(html: string): {
     }
 }
 
-export async function loginToUrnik(username: string, password: string) {
+export async function loginToUrnikNet(username: string, password: string) {
     try {
         const loginPageResponse = await fetch("https://urnik.net/Account/Login", {
             method: "GET",
@@ -311,7 +311,7 @@ export async function loginToUrnik(username: string, password: string) {
     }
 }
 
-export async function attemptUrnikLogin() {
+export async function attemptUrnikNetLogin() {
     const session = await getServerSession(authConfig)
 
     if (!session?.user) {
@@ -330,7 +330,7 @@ export async function attemptUrnikLogin() {
         return { success: false, error: "No credentials saved" }
     }
 
-    const result = await loginToUrnik(user.urnikUsername, user.urnikPassword)
+    const result = await loginToUrnikNet(user.urnikUsername, user.urnikPassword)
 
     if (result.success) {
         await prisma.user.update({
@@ -342,7 +342,7 @@ export async function attemptUrnikLogin() {
     return result
 }
 
-export async function fetchUrnikRequests(month?: string) {
+export async function fetchUrnikNetRequests(month?: string) {
     const session = await getServerSession(authConfig)
 
     if (!session?.user) {
@@ -361,7 +361,7 @@ export async function fetchUrnikRequests(month?: string) {
         return { success: false, error: "No credentials saved" }
     }
 
-    const loginResult = await loginToUrnik(user.urnikUsername, user.urnikPassword)
+    const loginResult = await loginToUrnikNet(user.urnikUsername, user.urnikPassword)
 
     if (!loginResult.success || !loginResult.cookie) {
         return { success: false, error: loginResult.error || "Login failed" }
@@ -385,7 +385,7 @@ export async function fetchUrnikRequests(month?: string) {
         }
 
         const html = await response.text()
-        const parsed = parseUrnikRequestsHtml(html)
+        const parsed = parseUrnikNetRequestsHtml(html)
 
         if (!parsed.structureValid) {
             return {
@@ -430,13 +430,13 @@ async function requireAuth() {
     return session
 }
 
-export async function calculatePendingRequests(
-    input: GetPendingRequestsInput
-): Promise<{ success: boolean; data?: PendingUrnikRequest[]; error?: string }> {
+export async function calculatePendingUrnikNetRequests(
+    input: GetPendingUrnikNetRequestsInput
+): Promise<{ success: boolean; data?: PendingUrnikNetRequest[]; error?: string }> {
     try {
         const session = await requireAuth()
 
-        const validation = GetPendingRequestsInputSchema.safeParse(input)
+        const validation = GetPendingUrnikNetRequestsInputSchema.safeParse(input)
         if (!validation.success) {
             return { success: false, error: validation.error.message }
         }
@@ -506,31 +506,30 @@ export async function calculatePendingRequests(
             }
         }
 
-        const pendingRequests: PendingUrnikRequest[] = Array.from(dailyRanges.values()).map(
-            (range) => {
-                const startHours = String(range.firstStart.getHours()).padStart(2, "0")
-                const startMinutes = String(range.firstStart.getMinutes()).padStart(2, "0")
-                const endHours = String(range.lastEnd.getHours()).padStart(2, "0")
-                const endMinutes = String(range.lastEnd.getMinutes()).padStart(2, "0")
+        const pendingUrnikNetRequests: PendingUrnikNetRequest[] = Array.from(
+            dailyRanges.values()
+        ).map((range) => {
+            const startHours = String(range.firstStart.getHours()).padStart(2, "0")
+            const startMinutes = String(range.firstStart.getMinutes()).padStart(2, "0")
+            const endHours = String(range.lastEnd.getHours()).padStart(2, "0")
+            const endMinutes = String(range.lastEnd.getMinutes()).padStart(2, "0")
 
-                const hours =
-                    (range.lastEnd.getTime() - range.firstStart.getTime()) / (1000 * 60 * 60)
+            const hours = (range.lastEnd.getTime() - range.firstStart.getTime()) / (1000 * 60 * 60)
 
-                const dateOnly = new Date(range.date)
-                dateOnly.setHours(0, 0, 0, 0)
+            const dateOnly = new Date(range.date)
+            dateOnly.setHours(0, 0, 0, 0)
 
-                return {
-                    date: dateOnly,
-                    startTime: `${startHours}:${startMinutes}`,
-                    endTime: `${endHours}:${endMinutes}`,
-                    hours: Math.round(hours * 100) / 100,
-                    type: range.type,
-                    isPending: true as const,
-                }
+            return {
+                date: dateOnly,
+                startTime: `${startHours}:${startMinutes}`,
+                endTime: `${endHours}:${endMinutes}`,
+                hours: Math.round(hours * 100) / 100,
+                type: range.type,
+                isPending: true as const,
             }
-        )
+        })
 
-        return { success: true, data: pendingRequests }
+        return { success: true, data: pendingUrnikNetRequests }
     } catch (error) {
         return {
             success: false,
@@ -539,8 +538,8 @@ export async function calculatePendingRequests(
     }
 }
 
-export async function submitPendingRequestToUrnik(
-    pendingRequest: PendingUrnikRequest
+export async function submitPendingUrnikNetRequestToUrnik(
+    pendingUrnikNetRequest: PendingUrnikNetRequest
 ): Promise<{ success: boolean; trackingId?: string; error?: string }> {
     try {
         const session = await requireAuth()
@@ -554,36 +553,36 @@ export async function submitPendingRequestToUrnik(
             return { success: false, error: "Urnik.net credentials not configured" }
         }
 
-        const loginResult = await loginToUrnik(user.urnikUsername, user.urnikPassword)
+        const loginResult = await loginToUrnikNet(user.urnikUsername, user.urnikPassword)
         if (!loginResult.success || !loginResult.cookie) {
             return { success: false, error: loginResult.error || "Authentication failed" }
         }
 
-        const urnikRequest = await prisma.urnikRequest.create({
+        const urnikNetRequestRecord = await prisma.urnikRequest.create({
             data: {
                 userId: session.user.id,
-                date: pendingRequest.date,
-                startTime: pendingRequest.startTime,
-                endTime: pendingRequest.endTime,
-                hours: pendingRequest.hours,
-                type: pendingRequest.type,
-                urnikType: pendingRequest.type === "WORK" ? 110 : 124,
+                date: pendingUrnikNetRequest.date,
+                startTime: pendingUrnikNetRequest.startTime,
+                endTime: pendingUrnikNetRequest.endTime,
+                hours: pendingUrnikNetRequest.hours,
+                type: pendingUrnikNetRequest.type,
+                urnikType: pendingUrnikNetRequest.type === "WORK" ? 110 : 124,
                 status: "PENDING",
             },
         })
 
-        const year = pendingRequest.date.getFullYear()
-        const month = String(pendingRequest.date.getMonth() + 1).padStart(2, "0")
-        const day = String(pendingRequest.date.getDate()).padStart(2, "0")
+        const year = pendingUrnikNetRequest.date.getFullYear()
+        const month = String(pendingUrnikNetRequest.date.getMonth() + 1).padStart(2, "0")
+        const day = String(pendingUrnikNetRequest.date.getDate()).padStart(2, "0")
         const dateTime = `${year}/${month}/${day}`
 
         const url = new URL("https://urnik.net/App/Main")
         url.searchParams.append("handler", "SaveRequestHours")
-        url.searchParams.append("timeStart", pendingRequest.startTime)
-        url.searchParams.append("timeEnd", pendingRequest.endTime)
+        url.searchParams.append("timeStart", pendingUrnikNetRequest.startTime)
+        url.searchParams.append("timeEnd", pendingUrnikNetRequest.endTime)
         url.searchParams.append("dateTime", dateTime)
-        url.searchParams.append("type", String(urnikRequest.urnikType))
-        url.searchParams.append("comment", urnikRequest.id)
+        url.searchParams.append("type", String(urnikNetRequestRecord.urnikType))
+        url.searchParams.append("comment", urnikNetRequestRecord.id)
 
         const response = await fetch(url.toString(), {
             method: "GET",
@@ -600,7 +599,7 @@ export async function submitPendingRequestToUrnik(
 
         if (!response.ok) {
             await prisma.urnikRequest.update({
-                where: { id: urnikRequest.id },
+                where: { id: urnikNetRequestRecord.id },
                 data: {
                     status: "FAILED",
                     errorMessage: `HTTP ${response.status}: ${response.statusText}`,
@@ -612,18 +611,18 @@ export async function submitPendingRequestToUrnik(
             }
         }
 
-        return { success: true, trackingId: urnikRequest.id }
+        return { success: true, trackingId: urnikNetRequestRecord.id }
     } catch (error) {
         return {
             success: false,
             error: error instanceof Error ? error.message : "Failed to submit request",
         }
     } finally {
-        revalidatePath("/urnik-sync")
+        revalidatePath("/urnik-net-overview/requests")
     }
 }
 
-export async function syncUrnikStatuses(): Promise<{
+export async function syncUrnikNetStatuses(): Promise<{
     success: boolean
     syncedCount?: number
     error?: string
@@ -631,22 +630,22 @@ export async function syncUrnikStatuses(): Promise<{
     try {
         const session = await requireAuth()
 
-        let urnikRequestsResult = await fetchUrnikRequests()
+        let urnikNetRequestsResult = await fetchUrnikNetRequests()
 
-        if (!urnikRequestsResult.success) {
-            const loginResult = await attemptUrnikLogin()
+        if (!urnikNetRequestsResult.success) {
+            const loginResult = await attemptUrnikNetLogin()
             if (!loginResult.success) {
                 return { success: false, error: "Authentication failed" }
             }
 
-            urnikRequestsResult = await fetchUrnikRequests()
-            if (!urnikRequestsResult.success) {
-                return { success: false, error: urnikRequestsResult.error }
+            urnikNetRequestsResult = await fetchUrnikNetRequests()
+            if (!urnikNetRequestsResult.success) {
+                return { success: false, error: urnikNetRequestsResult.error }
             }
         }
 
-        const urnikRequests = urnikRequestsResult.data || []
-        const pendingRequests = await prisma.urnikRequest.findMany({
+        const urnikNetRequests = urnikNetRequestsResult.data || []
+        const pendingUrnikNetRequests = await prisma.urnikRequest.findMany({
             where: {
                 userId: session.user.id,
                 status: "PENDING",
@@ -656,20 +655,20 @@ export async function syncUrnikStatuses(): Promise<{
         let syncedCount = 0
         const cuidPattern = /\b(c[a-z0-9]{24})\b/i
 
-        for (const urnikReq of urnikRequests) {
-            const match = urnikReq.notes.match(cuidPattern)
+        for (const urnikNetReq of urnikNetRequests) {
+            const match = urnikNetReq.notes.match(cuidPattern)
             if (!match) continue
 
             const trackingId = match[1]
-            const localRequest = pendingRequests.find((req) => req.id === trackingId)
+            const localRequest = pendingUrnikNetRequests.find((req) => req.id === trackingId)
             if (!localRequest) continue
 
             let newStatus: "CONFIRMED" | "REJECTED" | null = null
-            if (urnikReq.status.toLowerCase().includes("confirm")) {
+            if (urnikNetReq.status.toLowerCase().includes("confirm")) {
                 newStatus = "CONFIRMED"
             } else if (
-                urnikReq.status.toLowerCase().includes("cancel") ||
-                urnikReq.status.toLowerCase().includes("reject")
+                urnikNetReq.status.toLowerCase().includes("cancel") ||
+                urnikNetReq.status.toLowerCase().includes("reject")
             ) {
                 newStatus = "REJECTED"
             }
@@ -680,7 +679,7 @@ export async function syncUrnikStatuses(): Promise<{
                     data: {
                         status: newStatus,
                         confirmedAt: newStatus === "CONFIRMED" ? new Date() : undefined,
-                        urnikRequestNo: urnikReq.no,
+                        urnikRequestNo: urnikNetReq.no,
                     },
                 })
                 syncedCount++
@@ -696,11 +695,11 @@ export async function syncUrnikStatuses(): Promise<{
     }
 }
 
-export async function getSubmittedRequests() {
+export async function getSubmittedUrnikNetRequests() {
     try {
         const session = await requireAuth()
 
-        const submittedRequests = await prisma.urnikRequest.findMany({
+        const submittedUrnikNetRequests = await prisma.urnikRequest.findMany({
             where: { userId: session.user.id },
             orderBy: { date: "desc" },
             select: {
@@ -719,7 +718,7 @@ export async function getSubmittedRequests() {
             },
         })
 
-        return { success: true, data: submittedRequests }
+        return { success: true, data: submittedUrnikNetRequests }
     } catch (error) {
         return {
             success: false,

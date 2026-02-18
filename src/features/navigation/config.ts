@@ -70,16 +70,18 @@ export const navigationItems: NavigationItem[] = [
         roles: ["USER", "ADMIN"],
     },
     {
-        title: "navigation.urnikSync",
-        url: "/urnik-sync",
-        icon: RefreshCw,
-        roles: ["USER", "ADMIN"],
-    },
-    {
-        title: "navigation.clock",
-        url: "/clock",
+        title: "navigation.urnikNetOverview",
+        url: "/urnik-net-overview",
         icon: LogIn,
         roles: ["USER", "ADMIN"],
+        children: [
+            {
+                title: "navigation.urnikNetRequests",
+                url: "/urnik-net-overview/requests",
+                icon: RefreshCw,
+                roles: ["USER", "ADMIN"],
+            },
+        ],
     },
     {
         title: "navigation.admin",

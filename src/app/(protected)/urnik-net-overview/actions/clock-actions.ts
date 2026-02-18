@@ -210,7 +210,7 @@ export async function clockInToUrnik(isWorkFromHome: boolean = false) {
             return { success: false, error: responseData.msg }
         }
 
-        revalidatePath("/clock")
+        revalidatePath("/urnik-net-overview")
         return { success: true, message: "Clocked in successfully" }
     } catch (error) {
         return {
@@ -265,7 +265,7 @@ export async function clockOutFromUrnik() {
             return { success: false, error: responseData.msg }
         }
 
-        revalidatePath("/clock")
+        revalidatePath("/urnik-net-overview")
         return { success: true, message: "Clocked out successfully" }
     } catch (error) {
         return {

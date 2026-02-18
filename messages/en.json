@@ -139,8 +139,8 @@
         "shifts": "Shifts",
         "yearlyCalendar": "Yearly Calendar",
         "requests": "Requests",
-        "urnikSync": "Urnik.net Sync",
-        "clock": "Clock In/Out",
+        "urnikNetOverview": "Urnik.net Overview",
+        "urnikNetRequests": "Requests",
         "admin": "Admin",
         "profile": "Profile",
         "management": "Management",
@@ -817,14 +817,35 @@
     },
     "clock": {
         "page": {
-            "title": "Clock In/Out",
+            "title": "Urnik.net Overview",
             "noCredentialsTitle": "No urnik.net Credentials",
             "noCredentialsDescription": "Please configure your urnik.net credentials in your profile to use this feature.",
             "profileLink": "profile settings"
         },
         "view": {
-            "title": "Arrival & Departure",
-            "description": "Clock in when you arrive and clock out when you leave"
+            "title": "Clock In/Out",
+            "description": "Manage your work time tracking"
+        },
+        "todayWorkTime": {
+            "title": "Today's Work Time",
+            "lunchBreak": "Lunch Break",
+            "totalHours": "Total Hours",
+            "overtimeWork": "Overtime Work",
+            "shiftEndsAt": "Shift Ends At",
+            "planned": "Planned"
+        },
+        "balance": {
+            "title": "Balance Overview",
+            "balanceToday": "Balance Today",
+            "totalBalanceNow": "Total Balance Now",
+            "totalAnnualBalanceYesterday": "Total Annual Balance Yesterday"
+        },
+        "vacation": {
+            "title": "Vacation & Leave",
+            "lastYearVacation": "Last Year Vacation",
+            "thisYearLeave": "This Year's Leave",
+            "totalVacationDays": "Total Vacation Days",
+            "setWorkTime": "Set Work Time"
         },
         "actions": {
             "clockIn": "Clock In",
@@ -833,7 +854,10 @@
         },
         "messages": {
             "clockInSuccess": "Successfully clocked in",
-            "clockOutSuccess": "Successfully clocked out"
+            "clockOutSuccess": "Successfully clocked out",
+            "errorLoadingDayInfo": "Error Loading Day Info",
+            "structureChangedWarning": "Warning: HTML Structure Changed",
+            "structureChangedDescription": "The urnik.net page structure may have changed. Some data might not be displayed correctly. Please report this issue."
         },
         "arrivalDialog": {
             "title": "Log Arrival?",
@@ -850,23 +874,23 @@
             "leave": "Leave",
             "logged": "Logged at",
             "notLogged": "Not logged"
+        },
+        "urnikNetRequests": {
+            "pageTitle": "Requests",
+            "noCredentials": "No Credentials Configured",
+            "goToProfile": "Go to Profile Settings",
+            "connectionStatus": "Connection Status",
+            "connected": "Connected",
+            "notConnected": "Not Connected",
+            "lastTested": "Last tested",
+            "pendingRequest": "PENDING",
+            "submitButton": "Submit",
+            "calculatedFrom": "Calculated",
+            "inOffice": "In Office",
+            "remote": "Work from Home",
+            "previousMonth": "Previous Month",
+            "nextMonth": "Next Month"
         }
-    },
-    "urnikSync": {
-        "pageTitle": "urnik.net Sync",
-        "noCredentials": "No Credentials Configured",
-        "goToProfile": "Go to Profile Settings",
-        "connectionStatus": "Connection Status",
-        "connected": "Connected",
-        "notConnected": "Not Connected",
-        "lastTested": "Last tested",
-        "pendingRequest": "PENDING",
-        "submitButton": "Submit",
-        "calculatedFrom": "Calculated",
-        "inOffice": "In Office",
-        "remote": "Work from Home",
-        "previousMonth": "Previous Month",
-        "nextMonth": "Next Month"
     },
     "auth": {
         "signIn": "Sign in",

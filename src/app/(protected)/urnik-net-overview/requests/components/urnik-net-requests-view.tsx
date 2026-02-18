@@ -17,10 +17,10 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import type { PendingUrnikRequest } from "../schemas/pending-request-schemas"
-import { submitPendingRequestToUrnik } from "../actions/urnik-actions"
+import type { PendingUrnikNetRequest } from "../schemas/urnik-net-requests-schemas"
+import { submitPendingUrnikNetRequestToUrnik } from "../actions/urnik-net-requests-actions"
 
-interface UrnikRequest {
+interface UrnikNetRequest {
     no: string
     requestDate: string
     requestType: string
@@ -51,7 +51,7 @@ interface User {
     lastUrnikTestAt: Date | null
 }
 
-interface SubmittedRequest {
+interface SubmittedUrnikNetRequest {
     id: string
     date: Date
     startTime: string
@@ -66,7 +66,7 @@ interface SubmittedRequest {
     urnikRequestNo: string | null
 }
 
-interface UrnikSyncViewProps {
+interface UrnikNetRequestsViewProps {
     user: User
     translations: {
         pageTitle: string
@@ -86,26 +86,26 @@ interface UrnikSyncViewProps {
     }
     requestsResult: {
         success: boolean
-        data?: UrnikRequest[]
+        data?: UrnikNetRequest[]
         error?: string
         structureChanged?: boolean
     } | null
     pendingRequestsResult: {
         success: boolean
-        data?: PendingUrnikRequest[]
+        data?: PendingUrnikNetRequest[]
         error?: string
     } | null
-    submittedRequests: SubmittedRequest[]
+    submittedRequests: SubmittedUrnikNetRequest[]
     currentMonth: string
 }
 
-export function UrnikSyncView({
+export function UrnikNetRequestsView({
     user,
     translations: t,
     requestsResult,
     pendingRequestsResult,
     currentMonth,
-}: UrnikSyncViewProps) {
+}: UrnikNetRequestsViewProps) {
     const router = useRouter()
     const [submittingIds, setSubmittingIds] = useState<Set<string>>(new Set())
     const [isPending, startTransition] = useTransition()
@@ -116,8 +116,8 @@ export function UrnikSyncView({
         ? new Date(user.lastUrnikTestAt).toLocaleString()
         : null
 
-    const requests = requestsResult?.data || []
-    const pendingRequests = pendingRequestsResult?.data || []
+    const urnikNetRequests = requestsResult?.data || []
+    const pendingUrnikNetRequests = pendingRequestsResult?.data || []
     const error = requestsResult?.error || null
     const structureChanged = requestsResult?.structureChanged || false
 
@@ -150,12 +150,12 @@ export function UrnikSyncView({
         })
     }
 
-    const handleSubmit = async (pendingRequest: PendingUrnikRequest) => {
-        const requestKey = pendingRequest.date.toISOString()
+    const handleSubmit = async (pendingUrnikNetRequest: PendingUrnikNetRequest) => {
+        const requestKey = pendingUrnikNetRequest.date.toISOString()
         setSubmittingIds((prev) => new Set(prev).add(requestKey))
 
         try {
-            const result = await submitPendingRequestToUrnik(pendingRequest)
+            const result = await submitPendingUrnikNetRequestToUrnik(pendingUrnikNetRequest)
 
             if (result.success) {
                 toast.success("Request submitted to urnik.net", {
@@ -181,9 +181,9 @@ export function UrnikSyncView({
     }
 
     const existingRequestDates = new Set<string>()
-    for (const req of requests) {
+    for (const urnikNetReq of urnikNetRequests) {
         try {
-            const statusLower = req.status.toLowerCase()
+            const statusLower = urnikNetReq.status.toLowerCase()
             const isCanceledOrRejected =
                 statusLower.includes("cancel") || statusLower.includes("reject")
 
@@ -191,16 +191,17 @@ export function UrnikSyncView({
                 continue
             }
 
-            const hasHours = req.hours && req.hours.trim() !== "" && req.hours !== "0"
-            const hasArrival = req.arrival && req.arrival.trim() !== ""
-            const hasDeparture = req.departure && req.departure.trim() !== ""
+            const hasHours =
+                urnikNetReq.hours && urnikNetReq.hours.trim() !== "" && urnikNetReq.hours !== "0"
+            const hasArrival = urnikNetReq.arrival && urnikNetReq.arrival.trim() !== ""
+            const hasDeparture = urnikNetReq.departure && urnikNetReq.departure.trim() !== ""
             const isWorkTypeChangeOnly = !hasHours && !hasArrival && !hasDeparture
 
             if (isWorkTypeChangeOnly) {
                 continue
             }
 
-            const rangeMatch = req.period.match(
+            const rangeMatch = urnikNetReq.period.match(
                 /(\d{2})\.(\d{2})\.(\d{4})-(\d{2})\.(\d{2})\.(\d{4})/
             )
             if (rangeMatch) {
@@ -214,7 +215,7 @@ export function UrnikSyncView({
                     current.setDate(current.getDate() + 1)
                 }
             } else {
-                const singleMatch = req.period.match(/(\d{2})\.(\d{2})\.(\d{4})/)
+                const singleMatch = urnikNetReq.period.match(/(\d{2})\.(\d{2})\.(\d{4})/)
                 if (singleMatch) {
                     const [, day, month, year] = singleMatch
                     const dateStr = `${year}-${month}-${day}`
@@ -226,34 +227,34 @@ export function UrnikSyncView({
         }
     }
 
-    const filteredPending = pendingRequests.filter((pr) => {
-        const year = pr.date.getFullYear()
-        const month = String(pr.date.getMonth() + 1).padStart(2, "0")
-        const day = String(pr.date.getDate()).padStart(2, "0")
+    const filteredPending = pendingUrnikNetRequests.filter((pendingUrnikNetReq) => {
+        const year = pendingUrnikNetReq.date.getFullYear()
+        const month = String(pendingUrnikNetReq.date.getMonth() + 1).padStart(2, "0")
+        const day = String(pendingUrnikNetReq.date.getDate()).padStart(2, "0")
         const dateStr = `${year}-${month}-${day}`
         return !existingRequestDates.has(dateStr)
     })
 
     const allRows: Array<{
         type: "pending" | "existing"
-        data: PendingUrnikRequest | UrnikRequest
+        data: PendingUrnikNetRequest | UrnikNetRequest
     }> = [
-        ...filteredPending.map((pr) => ({
+        ...filteredPending.map((pendingUrnikNetReq) => ({
             type: "pending" as const,
-            data: pr,
+            data: pendingUrnikNetReq,
         })),
-        ...requests.map((req) => ({
+        ...urnikNetRequests.map((urnikNetReq) => ({
             type: "existing" as const,
-            data: req,
+            data: urnikNetReq,
         })),
     ]
 
     allRows.sort((a, b) => {
         const getDate = (item: typeof a): Date => {
             if (item.type === "pending") {
-                return (item.data as PendingUrnikRequest).date
+                return (item.data as PendingUrnikNetRequest).date
             } else {
-                const match = (item.data as UrnikRequest).period.match(/(\d{2})\.(\d{2})\.(\d{4})/)
+                const match = (item.data as UrnikNetRequest).period.match(/(\d{2})\.(\d{2})\.(\d{4})/)
                 if (match) {
                     const [, day, month, year] = match
                     return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
@@ -369,13 +370,13 @@ export function UrnikSyncView({
                             <TableBody>
                                 {allRows.map((row, idx) => {
                                     if (row.type === "pending") {
-                                        const pr = row.data as PendingUrnikRequest
-                                        const requestKey = pr.date.toISOString()
+                                        const pendingUrnikNetReq = row.data as PendingUrnikNetRequest
+                                        const requestKey = pendingUrnikNetReq.date.toISOString()
                                         const isSubmitting = submittingIds.has(requestKey)
 
                                         return (
                                             <TableRow
-                                                key={`pending-${pr.date.toISOString()}`}
+                                                key={`pending-${pendingUrnikNetReq.date.toISOString()}`}
                                                 className="bg-blue-50 dark:bg-blue-950/20"
                                             >
                                                 <TableCell>
@@ -384,33 +385,38 @@ export function UrnikSyncView({
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {pr.date.toLocaleDateString("en-GB")}
+                                                    {pendingUrnikNetReq.date.toLocaleDateString("en-GB")}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge
                                                         variant={
-                                                            pr.type === "WORK"
+                                                            pendingUrnikNetReq.type === "WORK"
                                                                 ? "default"
                                                                 : "outline"
                                                         }
                                                     >
-                                                        {pr.type === "WORK" ? t.inOffice : t.remote}
+                                                        {pendingUrnikNetReq.type === "WORK"
+                                                            ? t.inOffice
+                                                            : t.remote}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {String(pr.date.getDate()).padStart(2, "0")}.
-                                                    {String(pr.date.getMonth() + 1).padStart(
+                                                    {String(pendingUrnikNetReq.date.getDate()).padStart(
                                                         2,
                                                         "0"
                                                     )}
-                                                    .{pr.date.getFullYear()}
+                                                    .
+                                                    {String(
+                                                        pendingUrnikNetReq.date.getMonth() + 1
+                                                    ).padStart(2, "0")}
+                                                    .{pendingUrnikNetReq.date.getFullYear()}
                                                 </TableCell>
                                                 <TableCell className="text-right">1</TableCell>
                                                 <TableCell className="text-right">
-                                                    {pr.hours.toFixed(2)}
+                                                    {pendingUrnikNetReq.hours.toFixed(2)}
                                                 </TableCell>
-                                                <TableCell>{pr.startTime}</TableCell>
-                                                <TableCell>{pr.endTime}</TableCell>
+                                                <TableCell>{pendingUrnikNetReq.startTime}</TableCell>
+                                                <TableCell>{pendingUrnikNetReq.endTime}</TableCell>
                                                 <TableCell className="text-center">
                                                     <span className="text-muted-foreground italic text-xs">
                                                         {t.calculatedFrom}
@@ -424,7 +430,7 @@ export function UrnikSyncView({
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
-                                                        onClick={() => handleSubmit(pr)}
+                                                        onClick={() => handleSubmit(pendingUrnikNetReq)}
                                                         disabled={isSubmitting}
                                                     >
                                                         {isSubmitting ? (
@@ -438,38 +444,40 @@ export function UrnikSyncView({
                                             </TableRow>
                                         )
                                     } else {
-                                        const req = row.data as UrnikRequest
+                                        const urnikNetReq = row.data as UrnikNetRequest
                                         return (
-                                            <TableRow key={`existing-${req.no}-${idx}`}>
-                                                <TableCell>{req.no}</TableCell>
-                                                <TableCell>{req.requestDate}</TableCell>
-                                                <TableCell>{req.requestType}</TableCell>
-                                                <TableCell>{req.period}</TableCell>
+                                            <TableRow key={`existing-${urnikNetReq.no}-${idx}`}>
+                                                <TableCell>{urnikNetReq.no}</TableCell>
+                                                <TableCell>{urnikNetReq.requestDate}</TableCell>
+                                                <TableCell>{urnikNetReq.requestType}</TableCell>
+                                                <TableCell>{urnikNetReq.period}</TableCell>
                                                 <TableCell className="text-right">
-                                                    {req.days}
+                                                    {urnikNetReq.days}
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    {req.hours}
+                                                    {urnikNetReq.hours}
                                                 </TableCell>
-                                                <TableCell>{req.arrivalRequests}</TableCell>
-                                                <TableCell>{req.departureRequests}</TableCell>
+                                                <TableCell>{urnikNetReq.arrivalRequests}</TableCell>
+                                                <TableCell>{urnikNetReq.departureRequests}</TableCell>
                                                 <TableCell className="text-center">
                                                     <span
                                                         className={
-                                                            req.status.includes("Confirmed") &&
-                                                            !req.status.includes("cancel")
+                                                            urnikNetReq.status.includes("Confirmed") &&
+                                                            !urnikNetReq.status.includes("cancel")
                                                                 ? "text-green-600"
-                                                                : req.status.includes("Rejected") ||
-                                                                    req.status.includes("cancel")
+                                                                : urnikNetReq.status.includes(
+                                                                        "Rejected"
+                                                                    ) ||
+                                                                    urnikNetReq.status.includes("cancel")
                                                                   ? "text-red-600"
                                                                   : "text-muted-foreground"
                                                         }
                                                     >
-                                                        {req.status}
+                                                        {urnikNetReq.status}
                                                     </span>
                                                 </TableCell>
-                                                <TableCell>{req.confirmedBy}</TableCell>
-                                                <TableCell>{req.notes}</TableCell>
+                                                <TableCell>{urnikNetReq.confirmedBy}</TableCell>
+                                                <TableCell>{urnikNetReq.notes}</TableCell>
                                                 <TableCell>-</TableCell>
                                             </TableRow>
                                         )

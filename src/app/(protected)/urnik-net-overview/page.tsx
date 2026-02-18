@@ -67,6 +67,21 @@ export default async function ClockPage() {
         atLocation: wfhStatus.location
             ? t("arrivalDialog.atLocation", { location: wfhStatus.location })
             : "",
+        todayWorkTimeTitle: t("todayWorkTime.title"),
+        lunchBreak: t("todayWorkTime.lunchBreak"),
+        totalHours: t("todayWorkTime.totalHours"),
+        overtimeWork: t("todayWorkTime.overtimeWork"),
+        shiftEndsAt: t("todayWorkTime.shiftEndsAt"),
+        planned: t("todayWorkTime.planned"),
+        balanceTitle: t("balance.title"),
+        balanceToday: t("balance.balanceToday"),
+        totalBalanceNow: t("balance.totalBalanceNow"),
+        totalAnnualBalanceYesterday: t("balance.totalAnnualBalanceYesterday"),
+        vacationTitle: t("vacation.title"),
+        lastYearVacation: t("vacation.lastYearVacation"),
+        thisYearLeave: t("vacation.thisYearLeave"),
+        totalVacationDays: t("vacation.totalVacationDays"),
+        setWorkTime: t("vacation.setWorkTime"),
     }
 
     return (
@@ -74,18 +89,15 @@ export default async function ClockPage() {
             {!status.success && (
                 <Alert variant="destructive">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Error Loading Day Info</AlertTitle>
+                    <AlertTitle>{t("messages.errorLoadingDayInfo")}</AlertTitle>
                     <AlertDescription>{status.error}</AlertDescription>
                 </Alert>
             )}
             {status.success && status.structureValid === false && (
                 <Alert variant="default">
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Warning: HTML Structure Changed</AlertTitle>
-                    <AlertDescription>
-                        The urnik.net page structure may have changed. Some data might not be
-                        displayed correctly. Please report this issue.
-                    </AlertDescription>
+                    <AlertTitle>{t("messages.structureChangedWarning")}</AlertTitle>
+                    <AlertDescription>{t("messages.structureChangedDescription")}</AlertDescription>
                 </Alert>
             )}
             <ClockView

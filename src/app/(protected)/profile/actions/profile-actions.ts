@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
 import { requireNotDemo } from "@/app/(protected)/hours/utils/auth-helpers"
-import { attemptUrnikLogin } from "@/app/(protected)/urnik-sync/actions/urnik-actions"
+import { attemptUrnikNetLogin } from "@/app/(protected)/urnik-net-overview/requests/actions/urnik-net-requests-actions"
 import {
     UpdateProfileSchema,
     type UpdateProfileInput,
@@ -219,7 +219,7 @@ export async function updateUrnikCredentials(input: UpdateUrnikCredentialsInput)
             })
 
             revalidatePath("/profile")
-            revalidatePath("/urnik-sync")
+            revalidatePath("/urnik-net-overview/requests")
             return { success: true }
         }
 
@@ -264,14 +264,14 @@ export async function testUrnikConnection() {
             return { error: "profile.urnikCredentials.validation.noCredentialsSaved" }
         }
 
-        const result = await attemptUrnikLogin()
+        const result = await attemptUrnikNetLogin()
 
         if (!result.success) {
             return { error: result.error || "profile.urnikCredentials.validation.connectionFailed" }
         }
 
         revalidatePath("/profile")
-        revalidatePath("/urnik-sync")
+        revalidatePath("/clock/requests")
         return { success: true }
     } catch (error) {
         console.error("Failed to test urnik connection:", error)

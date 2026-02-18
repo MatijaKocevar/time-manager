@@ -2,19 +2,19 @@ import { redirect } from "next/navigation"
 import { getTranslations } from "next-intl/server"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
-import { UrnikSyncView } from "./components/urnik-sync-view"
-import { getCurrentUser } from "../profile/actions/profile-actions"
+import { UrnikNetRequestsView } from "./components/urnik-net-requests-view"
+import { getCurrentUser } from "../../profile/actions/profile-actions"
 import {
-    attemptUrnikLogin,
-    fetchUrnikRequests,
-    calculatePendingRequests,
-    syncUrnikStatuses,
-    getSubmittedRequests,
-} from "./actions/urnik-actions"
+    attemptUrnikNetLogin,
+    fetchUrnikNetRequests,
+    calculatePendingUrnikNetRequests,
+    syncUrnikNetStatuses,
+    getSubmittedUrnikNetRequests,
+} from "./actions/urnik-net-requests-actions"
 
 export const dynamic = "force-dynamic"
 
-export default async function UrnikSyncPage({
+export default async function UrnikNetRequestsPage({
     searchParams,
 }: {
     searchParams: Promise<{ month?: string }>
@@ -59,27 +59,27 @@ export default async function UrnikSyncPage({
     }> = []
 
     if (user.urnikUsername && user.urnikPassword) {
-        loginResult = await attemptUrnikLogin()
+        loginResult = await attemptUrnikNetLogin()
         if (loginResult.success) {
-            requestsResult = await fetchUrnikRequests(currentMonth)
+            requestsResult = await fetchUrnikNetRequests(currentMonth)
         }
 
-        await syncUrnikStatuses()
+        await syncUrnikNetStatuses()
 
-        pendingRequestsResult = await calculatePendingRequests({
+        pendingRequestsResult = await calculatePendingUrnikNetRequests({
             startDate: startDate.toISOString().split("T")[0],
             endDate: endDate.toISOString().split("T")[0],
         })
 
-        const submittedResult = await getSubmittedRequests()
+        const submittedResult = await getSubmittedUrnikNetRequests()
         if (submittedResult.success && submittedResult.data) {
             submittedRequests = submittedResult.data
         }
     }
 
-    const t = await getTranslations("urnikSync")
+    const t = await getTranslations("clock.urnikNetRequests")
 
-    const urnikTranslations = {
+    const urnikNetTranslations = {
         pageTitle: t("pageTitle"),
         noCredentials: t("noCredentials"),
         goToProfile: t("goToProfile"),
@@ -98,9 +98,9 @@ export default async function UrnikSyncPage({
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <UrnikSyncView
+            <UrnikNetRequestsView
                 user={user}
-                translations={urnikTranslations}
+                translations={urnikNetTranslations}
                 requestsResult={requestsResult}
                 pendingRequestsResult={pendingRequestsResult}
                 submittedRequests={submittedRequests}

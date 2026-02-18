@@ -107,9 +107,9 @@ export const authConfig = {
                     })
                     .then(async (urnikUser) => {
                         if (urnikUser?.urnikUsername && urnikUser?.urnikPassword) {
-                            const { loginToUrnik } =
-                                await import("@/app/(protected)/urnik-sync/actions/urnik-actions")
-                            const result = await loginToUrnik(
+                            const { loginToUrnikNet } =
+                                await import("@/app/(protected)/urnik-net-overview/requests/actions/urnik-net-requests-actions")
+                            const result = await loginToUrnikNet(
                                 urnikUser.urnikUsername,
                                 urnikUser.urnikPassword
                             )

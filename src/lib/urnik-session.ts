@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authConfig } from "./auth"
 import { prisma } from "./prisma"
-import { loginToUrnik } from "@/app/(protected)/urnik-sync/actions/urnik-actions"
+import { loginToUrnikNet } from "@/app/(protected)/urnik-net-overview/requests/actions/urnik-net-requests-actions"
 
 export async function getUrnikCookie(): Promise<string | null> {
     try {
@@ -20,7 +20,7 @@ export async function getUrnikCookie(): Promise<string | null> {
             return null
         }
 
-        const result = await loginToUrnik(user.urnikUsername, user.urnikPassword)
+        const result = await loginToUrnikNet(user.urnikUsername, user.urnikPassword)
 
         if (result.success && result.cookie) {
             await prisma.user.update({

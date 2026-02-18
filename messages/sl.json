@@ -139,8 +139,8 @@
         "shifts": "Izmene",
         "yearlyCalendar": "Letni koledar",
         "requests": "Zahtevki",
-        "urnikSync": "Urnik.net sinhronizacija",
-        "clock": "Prihod/Odhod",
+        "urnikNetOverview": "Urnik.net pregled",
+        "urnikNetRequests": "Zahtevki",
         "admin": "Administracija",
         "profile": "Profil",
         "management": "Upravljanje",
@@ -817,14 +817,35 @@
     },
     "clock": {
         "page": {
-            "title": "Prihod/Odhod",
+            "title": "Urnik.net pregled",
             "noCredentialsTitle": "Ni urnik.net poverilnic",
             "noCredentialsDescription": "Prosimo, konfigurirajte svoje urnik.net poverilnice v profilu, da lahko uporabljate to funkcijo.",
             "profileLink": "nastavitve profila"
         },
         "view": {
-            "title": "Prihod in odhod",
-            "description": "Označite prihod, ko pridete, in odhod, ko odidete"
+            "title": "Prihod/Odhod",
+            "description": "Upravljajte s sledenjem vašega delovnega časa"
+        },
+        "todayWorkTime": {
+            "title": "Današnji delovni čas",
+            "lunchBreak": "Malica",
+            "totalHours": "Skupaj ur",
+            "overtimeWork": "Nadure",
+            "shiftEndsAt": "Konec izmene ob",
+            "planned": "Načrtovano"
+        },
+        "balance": {
+            "title": "Pregled bilance",
+            "balanceToday": "Bilanca danes",
+            "totalBalanceNow": "Skupna bilanca zdaj",
+            "totalAnnualBalanceYesterday": "Skupna letna bilanca včeraj"
+        },
+        "vacation": {
+            "title": "Dopust in odsotnost",
+            "lastYearVacation": "Lansko leto dopust",
+            "thisYearLeave": "Letošnji dopust",
+            "totalVacationDays": "Skupaj dni dopusta",
+            "setWorkTime": "Določen delovni čas"
         },
         "actions": {
             "clockIn": "Prihod",
@@ -833,7 +854,10 @@
         },
         "messages": {
             "clockInSuccess": "Prihod uspešno zabeležen",
-            "clockOutSuccess": "Odhod uspešno zabeležen"
+            "clockOutSuccess": "Odhod uspešno zabeležen",
+            "errorLoadingDayInfo": "Napaka pri nalaganju podatkov o dnevu",
+            "structureChangedWarning": "Opozorilo: HTML struktura se je spremenila",
+            "structureChangedDescription": "Struktura strani urnik.net se je morda spremenila. Nekateri podatki morda ne bodo prikazani pravilno. Prosimo, sporočite to težavo."
         },
         "arrivalDialog": {
             "title": "Zabeleži prihod?",
@@ -850,23 +874,23 @@
             "leave": "Odhod",
             "logged": "Zabeleženo ob",
             "notLogged": "Ni zabeleženo"
+        },
+        "urnikNetRequests": {
+            "pageTitle": "Zahtevki",
+            "noCredentials": "Poverilnice niso konfigurirane",
+            "goToProfile": "Pojdi na nastavitve profila",
+            "connectionStatus": "Stanje povezave",
+            "connected": "Povezan",
+            "notConnected": "Ni povezan",
+            "lastTested": "Nazadnje testirano",
+            "pendingRequest": "V ČAKANJU",
+            "submitButton": "Oddaj",
+            "calculatedFrom": "Izračunano",
+            "inOffice": "V pisarni",
+            "remote": "Delo od doma",
+            "previousMonth": "Prejšnji mesec",
+            "nextMonth": "Naslednji mesec"
         }
-    },
-    "urnikSync": {
-        "pageTitle": "urnik.net sinhronizacija",
-        "noCredentials": "Poverilnice niso konfigurirane",
-        "goToProfile": "Pojdi na nastavitve profila",
-        "connectionStatus": "Stanje povezave",
-        "connected": "Povezan",
-        "notConnected": "Ni povezan",
-        "lastTested": "Nazadnje testirano",
-        "pendingRequest": "V ČAKANJU",
-        "submitButton": "Oddaj",
-        "calculatedFrom": "Izračunano",
-        "inOffice": "V pisarni",
-        "remote": "Delo od doma",
-        "previousMonth": "Prejšnji mesec",
-        "nextMonth": "Naslednji mesec"
     },
     "auth": {
         "signIn": "Prijava",
