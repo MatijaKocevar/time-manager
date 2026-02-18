@@ -1,5 +1,5 @@
 export { AppSidebar } from "./app-sidebar"
-export { ConditionalSidebar } from "./ConditionalSidebar"
+export { ConditionalSidebar } from "./conditional-sidebar"
 export { AppHeader } from "./app-header"
 export { SettingsMenu } from "./settings-menu"
 export { DynamicListItems } from "./dynamic-list-items"
