@@ -49,6 +49,9 @@
             "somethingWentWrong": "Something went wrong. Please try again.",
             "demoRestriction": "This feature is disabled for the demo account"
         },
+        "error": {
+            "title": "Error"
+        },
         "fields": {
             "title": "Title",
             "description": "Description",

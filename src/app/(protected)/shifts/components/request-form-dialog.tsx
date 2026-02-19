@@ -83,199 +83,205 @@ export function RequestFormDialog({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent>
-                <DialogHeader>
+            <DialogContent className="max-h-[85vh] flex flex-col gap-0 p-0 sm:p-6 max-w-lg">
+                <DialogHeader className="flex-shrink-0 pb-4 px-6 pt-6 sm:px-0 sm:pt-0">
                     <DialogTitle>{translations.newRequest}</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={onSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="type">{translations.type}</Label>
-                        <Select
-                            value={formData.type}
-                            onValueChange={(value) =>
-                                onFormDataChange({ type: value as RequestType })
-                            }
-                        >
-                            <SelectTrigger id="type">
-                                <SelectValue placeholder={translations.selectType} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {REQUEST_TYPES.map((rt) => (
-                                    <SelectItem key={rt.value} value={rt.value}>
-                                        {requestTypesTranslations[
-                                            getRequestTypeTranslationKey(rt.value)
-                                        ] || rt.value}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={onSubmit} className="flex flex-col flex-1 min-h-0">
+                    <div className="space-y-6 overflow-y-auto px-6 sm:px-0">
                         <div className="space-y-2">
-                            <Label htmlFor="startDate">{translations.startDateLabel}</Label>
-                            <DatePicker
-                                date={
-                                    formData.startDate
-                                        ? parseDateStringAsLocal(formData.startDate)
-                                        : undefined
+                            <Label htmlFor="type">{translations.type}</Label>
+                            <Select
+                                value={formData.type}
+                                onValueChange={(value) =>
+                                    onFormDataChange({ type: value as RequestType })
                                 }
-                                onDateChange={(date) =>
-                                    onFormDataChange({
-                                        startDate: date ? format(date, "yyyy-MM-dd") : "",
-                                    })
-                                }
-                                placeholder={translations.selectStartDate}
-                            />
+                            >
+                                <SelectTrigger id="type">
+                                    <SelectValue placeholder={translations.selectType} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {REQUEST_TYPES.map((rt) => (
+                                        <SelectItem key={rt.value} value={rt.value}>
+                                            {requestTypesTranslations[
+                                                getRequestTypeTranslationKey(rt.value)
+                                            ] || rt.value}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="endDate">{translations.endDateLabel}</Label>
-                            <DatePicker
-                                date={
-                                    formData.endDate
-                                        ? parseDateStringAsLocal(formData.endDate)
-                                        : undefined
-                                }
-                                onDateChange={(date) =>
-                                    onFormDataChange({
-                                        endDate: date ? format(date, "yyyy-MM-dd") : "",
-                                    })
-                                }
-                                placeholder={translations.selectEndDate}
-                            />
-                        </div>
-                    </div>
 
-                    <div className="flex items-center space-x-2">
-                        <Checkbox
-                            id="full-day"
-                            checked={formData.isFullDay}
-                            onCheckedChange={(checked) =>
-                                onFormDataChange({ isFullDay: checked === true })
-                            }
-                        />
-                        <Label htmlFor="full-day" className="cursor-pointer font-normal">
-                            {translations.fullDay}
-                        </Label>
-                    </div>
-
-                    {!formData.isFullDay && (
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="startTime">{translations.startTime}</Label>
-                                <Select
-                                    value={formData.startTime}
-                                    onValueChange={(value) =>
-                                        onFormDataChange({ startTime: value })
+                                <Label htmlFor="startDate">{translations.startDateLabel}</Label>
+                                <DatePicker
+                                    date={
+                                        formData.startDate
+                                            ? parseDateStringAsLocal(formData.startDate)
+                                            : undefined
                                     }
-                                >
-                                    <SelectTrigger id="startTime">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from({ length: 24 }, (_, i) => {
-                                            const hour = i.toString().padStart(2, "0")
-                                            return ["00", "15", "30", "45"].map((min) => {
-                                                const time = `${hour}:${min}`
-                                                return (
-                                                    <SelectItem key={time} value={time}>
-                                                        {time}
-                                                    </SelectItem>
-                                                )
-                                            })
-                                        })}
-                                    </SelectContent>
-                                </Select>
+                                    onDateChange={(date) =>
+                                        onFormDataChange({
+                                            startDate: date ? format(date, "yyyy-MM-dd") : "",
+                                        })
+                                    }
+                                    placeholder={translations.selectStartDate}
+                                />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="endTime">{translations.endTime}</Label>
-                                <Select
-                                    value={formData.endTime}
-                                    onValueChange={(value) => onFormDataChange({ endTime: value })}
-                                >
-                                    <SelectTrigger id="endTime">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from({ length: 24 }, (_, i) => {
-                                            const hour = i.toString().padStart(2, "0")
-                                            return ["00", "15", "30", "45"].map((min) => {
-                                                const time = `${hour}:${min}`
-                                                return (
-                                                    <SelectItem key={time} value={time}>
-                                                        {time}
-                                                    </SelectItem>
-                                                )
-                                            })
-                                        })}
-                                    </SelectContent>
-                                </Select>
+                                <Label htmlFor="endDate">{translations.endDateLabel}</Label>
+                                <DatePicker
+                                    date={
+                                        formData.endDate
+                                            ? parseDateStringAsLocal(formData.endDate)
+                                            : undefined
+                                    }
+                                    onDateChange={(date) =>
+                                        onFormDataChange({
+                                            endDate: date ? format(date, "yyyy-MM-dd") : "",
+                                        })
+                                    }
+                                    placeholder={translations.selectEndDate}
+                                />
                             </div>
                         </div>
-                    )}
 
-                    {requestedHours !== null && !formData.isFullDay && (
-                        <div className="text-sm text-muted-foreground">
-                            {translations.requestedHours}: {requestedHours.toFixed(2)}{" "}
-                            {translations.hours}
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="full-day"
+                                checked={formData.isFullDay}
+                                onCheckedChange={(checked) =>
+                                    onFormDataChange({ isFullDay: checked === true })
+                                }
+                            />
+                            <Label htmlFor="full-day" className="cursor-pointer font-normal">
+                                {translations.fullDay}
+                            </Label>
                         </div>
-                    )}
 
-                    <div className="flex items-center space-x-2">
-                        <Checkbox
-                            id="skip-weekends"
-                            checked={formData.skipWeekends}
-                            onCheckedChange={(checked) =>
-                                onFormDataChange({ skipWeekends: checked === true })
-                            }
-                        />
-                        <Label htmlFor="skip-weekends" className="cursor-pointer font-normal">
-                            {translations.skipWeekends}
-                        </Label>
-                    </div>
+                        {!formData.isFullDay && (
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="startTime">{translations.startTime}</Label>
+                                    <Select
+                                        value={formData.startTime}
+                                        onValueChange={(value) =>
+                                            onFormDataChange({ startTime: value })
+                                        }
+                                    >
+                                        <SelectTrigger id="startTime">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Array.from({ length: 24 }, (_, i) => {
+                                                const hour = i.toString().padStart(2, "0")
+                                                return ["00", "15", "30", "45"].map((min) => {
+                                                    const time = `${hour}:${min}`
+                                                    return (
+                                                        <SelectItem key={time} value={time}>
+                                                            {time}
+                                                        </SelectItem>
+                                                    )
+                                                })
+                                            })}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="endTime">{translations.endTime}</Label>
+                                    <Select
+                                        value={formData.endTime}
+                                        onValueChange={(value) =>
+                                            onFormDataChange({ endTime: value })
+                                        }
+                                    >
+                                        <SelectTrigger id="endTime">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Array.from({ length: 24 }, (_, i) => {
+                                                const hour = i.toString().padStart(2, "0")
+                                                return ["00", "15", "30", "45"].map((min) => {
+                                                    const time = `${hour}:${min}`
+                                                    return (
+                                                        <SelectItem key={time} value={time}>
+                                                            {time}
+                                                        </SelectItem>
+                                                    )
+                                                })
+                                            })}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        )}
 
-                    <div className="flex items-center space-x-2">
-                        <Checkbox
-                            id="skip-holidays"
-                            checked={formData.skipHolidays}
-                            onCheckedChange={(checked) =>
-                                onFormDataChange({ skipHolidays: checked === true })
-                            }
-                        />
-                        <Label htmlFor="skip-holidays" className="cursor-pointer font-normal">
-                            {translations.skipHolidays}
-                        </Label>
-                    </div>
+                        {requestedHours !== null && !formData.isFullDay && (
+                            <div className="text-sm text-muted-foreground">
+                                {translations.requestedHours}: {requestedHours.toFixed(2)}{" "}
+                                {translations.hours}
+                            </div>
+                        )}
 
-                    {needsLocation && (
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="skip-weekends"
+                                checked={formData.skipWeekends}
+                                onCheckedChange={(checked) =>
+                                    onFormDataChange({ skipWeekends: checked === true })
+                                }
+                            />
+                            <Label htmlFor="skip-weekends" className="cursor-pointer font-normal">
+                                {translations.skipWeekends}
+                            </Label>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="skip-holidays"
+                                checked={formData.skipHolidays}
+                                onCheckedChange={(checked) =>
+                                    onFormDataChange({ skipHolidays: checked === true })
+                                }
+                            />
+                            <Label htmlFor="skip-holidays" className="cursor-pointer font-normal">
+                                {translations.skipHolidays}
+                            </Label>
+                        </div>
+
+                        {needsLocation && (
+                            <div className="space-y-2">
+                                <Label htmlFor="location">{translations.location}</Label>
+                                <Input
+                                    id="location"
+                                    type="text"
+                                    placeholder={translations.enterLocation}
+                                    value={formData.location}
+                                    onChange={(e) => onFormDataChange({ location: e.target.value })}
+                                />
+                            </div>
+                        )}
+
                         <div className="space-y-2">
-                            <Label htmlFor="location">{translations.location}</Label>
+                            <Label htmlFor="reason">{translations.reasonOptional}</Label>
                             <Input
-                                id="location"
+                                id="reason"
                                 type="text"
-                                placeholder={translations.enterLocation}
-                                value={formData.location}
-                                onChange={(e) => onFormDataChange({ location: e.target.value })}
+                                placeholder={translations.enterReason}
+                                value={formData.reason}
+                                onChange={(e) => onFormDataChange({ reason: e.target.value })}
                             />
                         </div>
-                    )}
 
-                    <div className="space-y-2">
-                        <Label htmlFor="reason">{translations.reasonOptional}</Label>
-                        <Input
-                            id="reason"
-                            type="text"
-                            placeholder={translations.enterReason}
-                            value={formData.reason}
-                            onChange={(e) => onFormDataChange({ reason: e.target.value })}
-                        />
+                        {error && <div className="text-sm text-red-600">{error}</div>}
                     </div>
 
-                    {error && <div className="text-sm text-red-600">{error}</div>}
-
-                    <Button type="submit" disabled={isPending}>
-                        {isPending ? translations.submitting : translations.submitRequest}
-                    </Button>
+                    <div className="flex-shrink-0 pt-4 border-t px-6 pb-6 sm:px-0 sm:pb-0">
+                        <Button type="submit" disabled={isPending}>
+                            {isPending ? translations.submitting : translations.submitRequest}
+                        </Button>
+                    </div>
                 </form>
             </DialogContent>
         </Dialog>

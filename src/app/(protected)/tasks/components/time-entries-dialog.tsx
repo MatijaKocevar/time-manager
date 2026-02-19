@@ -190,27 +190,24 @@ export function TimeEntriesDialog() {
 
     return (
         <Dialog open={timeEntriesDialog.isOpen} onOpenChange={closeTimeEntriesDialog}>
-            <DialogContent className="w-[95vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] flex flex-col p-4 sm:p-6">
-                <DialogHeader>
+            <DialogContent className="w-[95vw] sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[85vh] flex flex-col gap-0 p-0 sm:p-6">
+                <DialogHeader className="flex-shrink-0 pb-4 px-4 pt-4 sm:px-0 sm:pt-0">
                     <DialogTitle>{t("timeEntries")}</DialogTitle>
                 </DialogHeader>
 
-                <div className="flex flex-col gap-4">
-                    <div
-                        className="rounded-md border overflow-hidden relative"
-                        style={{ height: "300px", minHeight: "200px" }}
-                    >
+                <div className="flex flex-col flex-1 min-h-0 gap-4 px-4 sm:px-0">
+                    <div className="rounded-md border relative flex-1 min-h-0 overflow-y-auto">
                         {isLoading && (
                             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
                                 <LoadingSpinner />
                             </div>
                         )}
                         {entries.length === 0 && !childAggregation && !isLoading ? (
-                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                            <div className="flex items-center justify-center min-h-[200px] py-12 text-muted-foreground">
                                 {t("noTimeEntries")}
                             </div>
                         ) : (
-                            <div className="h-full overflow-y-auto">
+                            <div>
                                 {/* Desktop table view */}
                                 <table className="hidden sm:table w-full caption-bottom text-sm">
                                     <thead className="sticky top-0 bg-background z-10 [&_tr]:border-b">
@@ -503,7 +500,7 @@ export function TimeEntriesDialog() {
                             </div>
                         )}
                     </div>
-                    <div className="flex justify-between items-center pt-4">
+                    <div className="flex-shrink-0 flex justify-between items-center pt-4 pb-4 sm:pb-0">
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground">Total:</span>
                             <span className="text-lg font-semibold font-mono">

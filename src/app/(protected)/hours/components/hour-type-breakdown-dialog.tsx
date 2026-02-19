@@ -39,8 +39,8 @@ export function HourTypeBreakdownDialog() {
 
     return (
         <Dialog open={isOpen} onOpenChange={closeDialog}>
-            <DialogContent className="w-[95vw] sm:max-w-3xl md:max-w-4xl max-h-[90vh]">
-                <DialogHeader>
+            <DialogContent className="w-[95vw] sm:max-w-3xl md:max-w-4xl max-h-[85vh] flex flex-col gap-0 p-0 sm:p-6">
+                <DialogHeader className="flex-shrink-0 pb-4 px-6 pt-6 sm:px-0 sm:pt-0">
                     <DialogTitle className="flex items-center gap-2">
                         <span
                             className={`px-2 py-1 rounded text-sm font-medium ${HOUR_TYPE_COLORS[type]}`}
@@ -51,9 +51,9 @@ export function HourTypeBreakdownDialog() {
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="overflow-y-auto" style={{ maxHeight: "500px" }}>
+                <div className="flex-1 min-h-0 mx-6 sm:mx-0 overflow-y-auto">
                     {sortedEntries.length === 0 ? (
-                        <div className="text-center text-muted-foreground py-8">
+                        <div className="text-center text-muted-foreground py-12">
                             {t("noEntries")}
                         </div>
                     ) : (
@@ -120,7 +120,7 @@ export function HourTypeBreakdownDialog() {
                     )}
                 </div>
 
-                <div className="flex justify-between items-center pt-4 border-t">
+                <div className="flex-shrink-0 flex justify-between items-center pt-4 border-t mx-6 mb-6 sm:mx-0 sm:mb-0">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold">{t("totalHours")}:</span>
                         <span className="text-xl font-bold">{formatHoursMinutes(totalHours)}</span>

@@ -82,23 +82,23 @@ export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
 
     return (
         <Dialog open={dayEntriesDialog.isOpen} onOpenChange={closeDayEntriesDialog}>
-            <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col gap-0">
-                <DialogHeader className="flex-shrink-0 pb-4">
+            <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col gap-0 p-0 sm:p-6">
+                <DialogHeader className="flex-shrink-0 pb-4 px-6 pt-6 sm:px-0 sm:pt-0">
                     <DialogTitle>{translations.title}</DialogTitle>
                     <DialogDescription>{translations.description}</DialogDescription>
                 </DialogHeader>
-                <div className="min-h-[400px] max-h-[60vh] border rounded-md overflow-y-auto relative">
+                <div className="flex-1 min-h-0 border rounded-md relative mx-6 mb-6 sm:mx-0 sm:mb-0 overflow-y-auto">
                     {isLoading && (
                         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
                             <LoadingSpinner />
                         </div>
                     )}
                     {entries.length === 0 && !isLoading ? (
-                        <div className="flex items-center justify-center min-h-[400px] text-muted-foreground">
+                        <div className="flex items-center justify-center min-h-[200px] py-12 text-muted-foreground">
                             {translations.noEntries}
                         </div>
                     ) : (
-                        <div>
+                        <>
                             <table className="hidden sm:table w-full caption-bottom text-sm">
                                 <thead className="sticky top-0 bg-background z-10 border-b shadow-sm">
                                     <tr className="transition-colors">
@@ -244,7 +244,7 @@ export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </>
                     )}
                 </div>
             </DialogContent>

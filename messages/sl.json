@@ -49,6 +49,9 @@
             "somethingWentWrong": "Nekaj je šlo narobe. Poskusite znova.",
             "demoRestriction": "Ta funkcija je onemogočena za predstavitveni račun"
         },
+        "error": {
+            "title": "Napaka"
+        },
         "fields": {
             "title": "Naslov",
             "description": "Opis",
