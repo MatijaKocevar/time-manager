@@ -1007,6 +1007,25 @@
             "rejectedBody": "Your {requestType} request has been rejected"
         }
     },
+    "urnikNetOverview": {
+        "createRequest": {
+            "dialogTitle": "New Urnik.net Request",
+            "typeLabel": "New Request",
+            "typePlaceholder": "Select request type...",
+            "hoursLabel": "Hours",
+            "typeWork": "Work",
+            "typeWorkFromHome": "Work from home",
+            "dateLabel": "Date",
+            "startTimeLabel": "Start Time",
+            "endTimeLabel": "End Time",
+            "commentLabel": "Comment (Optional)",
+            "submitButton": "Submit to Urnik.net",
+            "buttonLabel": "Create Request",
+            "successMessage": "Request submitted successfully",
+            "errorPrefix": "Failed to submit:",
+            "retryButton": "Retry"
+        }
+    },
     "yearlyCalendar": {
         "title": "My Calendar",
         "year": "Year",

@@ -1007,6 +1007,25 @@
             "rejectedBody": "Vaša zahteva za {requestType} je bila zavrnjena"
         }
     },
+    "urnikNetOverview": {
+        "createRequest": {
+            "dialogTitle": "Nova zahteva za Urnik.net",
+            "typeLabel": "Nova zahteva",
+            "typePlaceholder": "Izberite vrsto zahteve...",
+            "hoursLabel": "Ure",
+            "typeWork": "Delo",
+            "typeWorkFromHome": "Delo od doma",
+            "dateLabel": "Datum",
+            "startTimeLabel": "Začetni čas",
+            "endTimeLabel": "Končni čas",
+            "commentLabel": "Komentar (Neobvezno)",
+            "submitButton": "Pošlji na Urnik.net",
+            "buttonLabel": "Ustvari zahtevo",
+            "successMessage": "Zahteva uspešno poslana",
+            "errorPrefix": "Pošiljanje ni uspelo:",
+            "retryButton": "Poskusi znova"
+        }
+    },
     "yearlyCalendar": {
         "title": "Moj koledar",
         "year": "Leto",

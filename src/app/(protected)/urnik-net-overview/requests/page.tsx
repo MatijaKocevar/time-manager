@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { UrnikNetRequestsView } from "./components/urnik-net-requests-view"
+import { CreateRequestDialog } from "../components/create-request-dialog"
 import { getCurrentUser } from "../../profile/actions/profile-actions"
 import {
     attemptUrnikNetLogin,
@@ -78,6 +79,7 @@ export default async function UrnikNetRequestsPage({
     }
 
     const t = await getTranslations("clock.urnikNetRequests")
+    const tCreateRequest = await getTranslations("urnikNetOverview.createRequest")
 
     const urnikNetTranslations = {
         pageTitle: t("pageTitle"),
@@ -94,6 +96,10 @@ export default async function UrnikNetRequestsPage({
         remote: t("remote"),
         previousMonth: t("previousMonth"),
         nextMonth: t("nextMonth"),
+        createRequestButton: tCreateRequest("buttonLabel"),
+        hoursLabel: tCreateRequest("hoursLabel"),
+        typeWork: tCreateRequest("typeWork"),
+        typeWorkFromHome: tCreateRequest("typeWorkFromHome"),
     }
 
     return (
@@ -106,6 +112,7 @@ export default async function UrnikNetRequestsPage({
                 submittedRequests={submittedRequests}
                 currentMonth={currentMonth}
             />
+            <CreateRequestDialog />
         </div>
     )
 }

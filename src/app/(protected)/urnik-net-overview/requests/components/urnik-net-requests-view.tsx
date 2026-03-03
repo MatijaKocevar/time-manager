@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle, Send, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
 import { toast } from "sonner"
+import { CreateRequestButton } from "../../components/create-request-button"
 import {
     Table,
     TableBody,
@@ -83,6 +84,10 @@ interface UrnikNetRequestsViewProps {
         remote: string
         previousMonth: string
         nextMonth: string
+        createRequestButton: string
+        hoursLabel: string
+        typeWork: string
+        typeWorkFromHome: string
     }
     requestsResult: {
         success: boolean
@@ -254,7 +259,9 @@ export function UrnikNetRequestsView({
             if (item.type === "pending") {
                 return (item.data as PendingUrnikNetRequest).date
             } else {
-                const match = (item.data as UrnikNetRequest).period.match(/(\d{2})\.(\d{2})\.(\d{4})/)
+                const match = (item.data as UrnikNetRequest).period.match(
+                    /(\d{2})\.(\d{2})\.(\d{4})/
+                )
                 if (match) {
                     const [, day, month, year] = match
                     return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
@@ -314,21 +321,29 @@ export function UrnikNetRequestsView({
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2">
-                    <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">
-                        {t.connectionStatus}:
-                    </span>
-                    <Badge
-                        variant={isConnected ? "default" : "destructive"}
-                        className="text-xs py-0 h-5"
-                    >
-                        {isConnected ? t.connected : t.notConnected}
-                    </Badge>
-                    {lastTestedText && (
-                        <span className="text-xs text-muted-foreground hidden lg:inline">
-                            ({t.lastTested}: {lastTestedText})
+                <div className="flex items-center gap-2">
+                    <CreateRequestButton
+                        label={t.createRequestButton}
+                        hoursLabel={t.hoursLabel}
+                        typeWork={t.typeWork}
+                        typeWorkFromHome={t.typeWorkFromHome}
+                    />
+                    <div className="flex items-center gap-1 sm:gap-2">
+                        <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">
+                            {t.connectionStatus}:
                         </span>
-                    )}
+                        <Badge
+                            variant={isConnected ? "default" : "destructive"}
+                            className="text-xs py-0 h-5"
+                        >
+                            {isConnected ? t.connected : t.notConnected}
+                        </Badge>
+                        {lastTestedText && (
+                            <span className="text-xs text-muted-foreground hidden lg:inline">
+                                ({t.lastTested}: {lastTestedText})
+                            </span>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -370,7 +385,8 @@ export function UrnikNetRequestsView({
                             <TableBody>
                                 {allRows.map((row, idx) => {
                                     if (row.type === "pending") {
-                                        const pendingUrnikNetReq = row.data as PendingUrnikNetRequest
+                                        const pendingUrnikNetReq =
+                                            row.data as PendingUrnikNetRequest
                                         const requestKey = pendingUrnikNetReq.date.toISOString()
                                         const isSubmitting = submittingIds.has(requestKey)
 
@@ -385,7 +401,9 @@ export function UrnikNetRequestsView({
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {pendingUrnikNetReq.date.toLocaleDateString("en-GB")}
+                                                    {pendingUrnikNetReq.date.toLocaleDateString(
+                                                        "en-GB"
+                                                    )}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Badge
@@ -401,10 +419,9 @@ export function UrnikNetRequestsView({
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {String(pendingUrnikNetReq.date.getDate()).padStart(
-                                                        2,
-                                                        "0"
-                                                    )}
+                                                    {String(
+                                                        pendingUrnikNetReq.date.getDate()
+                                                    ).padStart(2, "0")}
                                                     .
                                                     {String(
                                                         pendingUrnikNetReq.date.getMonth() + 1
@@ -415,7 +432,9 @@ export function UrnikNetRequestsView({
                                                 <TableCell className="text-right">
                                                     {pendingUrnikNetReq.hours.toFixed(2)}
                                                 </TableCell>
-                                                <TableCell>{pendingUrnikNetReq.startTime}</TableCell>
+                                                <TableCell>
+                                                    {pendingUrnikNetReq.startTime}
+                                                </TableCell>
                                                 <TableCell>{pendingUrnikNetReq.endTime}</TableCell>
                                                 <TableCell className="text-center">
                                                     <span className="text-muted-foreground italic text-xs">
@@ -430,7 +449,9 @@ export function UrnikNetRequestsView({
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
-                                                        onClick={() => handleSubmit(pendingUrnikNetReq)}
+                                                        onClick={() =>
+                                                            handleSubmit(pendingUrnikNetReq)
+                                                        }
                                                         disabled={isSubmitting}
                                                     >
                                                         {isSubmitting ? (
@@ -458,17 +479,23 @@ export function UrnikNetRequestsView({
                                                     {urnikNetReq.hours}
                                                 </TableCell>
                                                 <TableCell>{urnikNetReq.arrivalRequests}</TableCell>
-                                                <TableCell>{urnikNetReq.departureRequests}</TableCell>
+                                                <TableCell>
+                                                    {urnikNetReq.departureRequests}
+                                                </TableCell>
                                                 <TableCell className="text-center">
                                                     <span
                                                         className={
-                                                            urnikNetReq.status.includes("Confirmed") &&
+                                                            urnikNetReq.status.includes(
+                                                                "Confirmed"
+                                                            ) &&
                                                             !urnikNetReq.status.includes("cancel")
                                                                 ? "text-green-600"
                                                                 : urnikNetReq.status.includes(
                                                                         "Rejected"
                                                                     ) ||
-                                                                    urnikNetReq.status.includes("cancel")
+                                                                    urnikNetReq.status.includes(
+                                                                        "cancel"
+                                                                    )
                                                                   ? "text-red-600"
                                                                   : "text-muted-foreground"
                                                         }
