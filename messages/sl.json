@@ -132,6 +132,11 @@
                 "notifications": "Obvestila",
                 "pendingRequests": "Čakajoči zahtevki"
             }
+        },
+        "timerStatus": {
+            "startTracking": "Začni",
+            "selectTask": "Izberi nalogo za sledenje",
+            "noTasksInProgress": "Ni nalog v teku"
         }
     },
     "navigation": {
