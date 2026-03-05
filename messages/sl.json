@@ -873,6 +873,7 @@
             "yesButton": "Da, zabeleži prihod",
             "noButton": "Ne, še ne",
             "successMessage": "Prihod uspešno zabeležen",
+            "errorTitle": "Napaka",
             "workFromHomeCheckbox": "Zabeleži kot delo od doma",
             "workFromHomeApproved": "Imate odobreno delo od doma za danes",
             "atLocation": "lokacija: {location}"
