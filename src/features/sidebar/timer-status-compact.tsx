@@ -117,7 +117,7 @@ export function TimerStatusCompact({
 
     return (
         <>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 border rounded-md px-2">
                 <Button
                     variant="ghost"
                     size="sm"
@@ -125,7 +125,7 @@ export function TimerStatusCompact({
                     disabled={isLoading}
                     aria-label="Stop tracking time"
                 >
-                    <Square className="h-4 w-4 fill-current" />
+                    <Square className="h-4 w-4 fill-current text-red-500" />
                 </Button>
                 {!isMobile && (
                     <span className="text-sm font-medium tabular-nums hidden md:inline">
