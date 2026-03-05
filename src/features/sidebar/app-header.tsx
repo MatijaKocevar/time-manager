@@ -4,6 +4,10 @@ import { Breadcrumbs } from "@/features/breadcrumbs"
 import { SettingsMenu } from "./settings-menu"
 import { NotificationsDropdownClient } from "@/features/notifications/components/notifications-dropdown-client"
 import { getNotifications } from "@/features/notifications/actions/notification-actions"
+import { getActiveTimer } from "@/app/(protected)/shared/actions/timer-actions"
+import { getTasks } from "@/app/(protected)/tasks/actions/task-actions"
+import { TASK_STATUS } from "@/app/(protected)/tasks/constants/task-statuses"
+import { TimerStatusCompact } from "./timer-status-compact"
 
 interface AppHeaderProps {
     breadcrumbTranslations: Record<string, string>
@@ -14,8 +18,13 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
     const tRequests = await getTranslations("requests.types")
     const tNav = await getTranslations("navigation")
     const tCommon = await getTranslations("common.actions")
+    const tClock = await getTranslations("clock.arrivalDialog")
 
-    const notifications = await getNotifications()
+    const [notifications, activeTimer, inProgressTasks] = await Promise.all([
+        getNotifications(),
+        getActiveTimer(),
+        getTasks({ status: TASK_STATUS.IN_PROGRESS }),
+    ])
 
     const menuTranslations = {
         settings: t("menu.settings"),
@@ -42,6 +51,22 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
         reject: tCommon("reject"),
     }
 
+    const timerStatusTranslations = {
+        startTracking: t("timerStatus.startTracking"),
+        selectTask: t("timerStatus.selectTask"),
+        noTasksInProgress: t("timerStatus.noTasksInProgress"),
+        arrivalDialog: {
+            title: tClock("title"),
+            message: tClock("message"),
+            yesButton: tClock("yesButton"),
+            noButton: tClock("noButton"),
+            successMessage: tClock("successMessage"),
+            errorTitle: tClock("errorTitle"),
+            workFromHomeCheckbox: tClock("workFromHomeCheckbox"),
+            workFromHomeApproved: tClock("workFromHomeApproved"),
+        },
+    }
+
     return (
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 sticky top-0 z-10 bg-background">
             <SidebarTrigger className="-ml-1" />
@@ -49,6 +74,11 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
                 <Breadcrumbs overrides={breadcrumbTranslations} />
             </div>
             <div className="flex items-center gap-2">
+                <TimerStatusCompact
+                    initialActiveTimer={activeTimer}
+                    inProgressTasks={inProgressTasks}
+                    translations={timerStatusTranslations}
+                />
                 <NotificationsDropdownClient
                     initialNotifications={notifications}
                     translations={notificationsTranslations}

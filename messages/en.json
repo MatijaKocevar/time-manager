@@ -132,6 +132,11 @@
                 "notifications": "Notifications",
                 "pendingRequests": "Pending Requests"
             }
+        },
+        "timerStatus": {
+            "startTracking": "Start",
+            "selectTask": "Select task to track",
+            "noTasksInProgress": "No tasks in progress"
         }
     },
     "navigation": {
@@ -868,6 +873,7 @@
             "yesButton": "Yes, Log Arrival",
             "noButton": "No, Not Yet",
             "successMessage": "Arrival logged successfully",
+            "errorTitle": "Error",
             "workFromHomeCheckbox": "Log as Work from Home",
             "workFromHomeApproved": "You have Work from Home approved for today",
             "atLocation": "at {location}"
