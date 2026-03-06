@@ -149,6 +149,7 @@
         "requests": "Zahtevki",
         "urnikNetOverview": "Urnik.net pregled",
         "urnikNetRequests": "Zahtevki",
+        "urnikNetHours": "Ure",
         "admin": "Administracija",
         "profile": "Profil",
         "management": "Upravljanje",
@@ -203,7 +204,8 @@
             "total": "SKUPAJ",
             "tracked": "SLEDENO",
             "manual": "ROČNO",
-            "grandTotal": "SKUPAJ VSE"
+            "grandTotal": "SKUPAJ VSE",
+            "characters": "znakov"
         },
         "table": {
             "columnType": "Tip",
@@ -899,6 +901,44 @@
             "remote": "Delo od doma",
             "previousMonth": "Prejšnji mesec",
             "nextMonth": "Naslednji mesec"
+        }
+    },
+    "urnikNetHours": {
+        "page": {
+            "title": "Urnik.net Ure",
+            "noCredentialsTitle": "Ni urnik.net poverilnic",
+            "noCredentialsDescription": "Prosimo konfigurirajte urnik.net poverilnice v vašem profilu za uporabo te funkcije.",
+            "profileLink": "profil"
+        },
+        "dataReceived": "Podatki uspešno prejeti",
+        "previousMonth": "Prejšnji mesec",
+        "nextMonth": "Naslednji mesec",
+        "summary": {
+            "billingHours": "Obračunske ure",
+            "plannedHours": "Planirane ure",
+            "workDays": "Delovni dnevi",
+            "holidays": "Prazniki",
+            "lunches": "Malice",
+            "vacationBalance": "Stanje dopusta",
+            "sickLeave": "Bolniška",
+            "leaveDays": "Dopust",
+            "balance": "Saldo",
+            "workFromHome": "Delo od doma",
+            "userType": "Tip uporabnika",
+            "hoursInDay": "Ur na dan"
+        },
+        "table": {
+            "no": "Št.",
+            "date": "Datum",
+            "day": "Dan",
+            "status": "Status",
+            "clockIn": "Prihod",
+            "clockOut": "Odhod",
+            "attendance": "Prisotnost",
+            "accounted": "Obračunano",
+            "dayBalance": "Dnevni saldo",
+            "balanceMonth": "Saldo meseca",
+            "balanceYear": "Saldo leta"
         }
     },
     "auth": {

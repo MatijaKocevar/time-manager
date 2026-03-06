@@ -81,6 +81,12 @@ export const navigationItems: NavigationItem[] = [
                 icon: RefreshCw,
                 roles: ["USER", "ADMIN"],
             },
+            {
+                title: "navigation.urnikNetHours",
+                url: "/urnik-net-overview/hours",
+                icon: FileSpreadsheet,
+                roles: ["USER", "ADMIN"],
+            },
         ],
     },
     {
