@@ -149,6 +149,7 @@
         "requests": "Zahtevki",
         "urnikNetOverview": "Urnik.net pregled",
         "urnikNetRequests": "Zahtevki",
+        "urnikNetHours": "Ure",
         "admin": "Administracija",
         "profile": "Profil",
         "management": "Upravljanje",
@@ -203,7 +204,8 @@
             "total": "SKUPAJ",
             "tracked": "SLEDENO",
             "manual": "ROČNO",
-            "grandTotal": "SKUPAJ VSE"
+            "grandTotal": "SKUPAJ VSE",
+            "characters": "znakov"
         },
         "table": {
             "columnType": "Tip",
@@ -898,7 +900,64 @@
             "inOffice": "V pisarni",
             "remote": "Delo od doma",
             "previousMonth": "Prejšnji mesec",
-            "nextMonth": "Naslednji mesec"
+            "nextMonth": "Naslednji mesec",
+            "table": {
+                "no": "Št.",
+                "requestDate": "Datum zahtevka",
+                "requestType": "Tip zahtevka",
+                "period": "Obdobje",
+                "days": "Dnevi",
+                "hours": "Ure",
+                "arrival": "Prihod",
+                "departure": "Odhod",
+                "status": "Status",
+                "confirmedBy": "Potrdil",
+                "notes": "Opombe",
+                "action": "Dejanje",
+                "autoCalculated": "Samodejno izračunano iz sledilnika"
+            },
+            "structureChanged": "HTML struktura se je spremenila",
+            "structureChangedDescription": "Struktura strani urnik.net se je spremenila. Analizator mora biti posodobljen glede na novo obliko. Prosimo, stopite v stik z razvijalcem."
+        }
+    },
+    "urnikNetHours": {
+        "page": {
+            "title": "Urnik.net Ure",
+            "noCredentialsTitle": "Ni urnik.net poverilnic",
+            "noCredentialsDescription": "Prosimo konfigurirajte urnik.net poverilnice v vašem profilu za uporabo te funkcije.",
+            "profileLink": "profil"
+        },
+        "dataReceived": "Podatki uspešno prejeti",
+        "previousMonth": "Prejšnji mesec",
+        "nextMonth": "Naslednji mesec",
+        "detailsButton": "Podrobnosti",
+        "summary": {
+            "billingHours": "Obračunske ure",
+            "plannedHours": "Planirane ure",
+            "workDays": "Delovni dnevi",
+            "holidays": "Prazniki",
+            "lunches": "Malice",
+            "vacationBalance": "Stanje dopusta",
+            "vacationBalanceShort": "Dopust",
+            "sickLeave": "Bolniška",
+            "leaveDays": "Dopust",
+            "balance": "Saldo",
+            "workFromHome": "Delo od doma",
+            "userType": "Tip uporabnika",
+            "hoursInDay": "Ur na dan"
+        },
+        "table": {
+            "no": "Št.",
+            "date": "Datum",
+            "day": "Dan",
+            "status": "Status",
+            "clockIn": "Prihod",
+            "clockOut": "Odhod",
+            "attendance": "Prisotnost",
+            "accounted": "Obračunano",
+            "dayBalance": "Dnevni saldo",
+            "balanceMonth": "Saldo meseca",
+            "balanceYear": "Saldo leta"
         }
     },
     "auth": {

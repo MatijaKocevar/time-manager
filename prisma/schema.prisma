@@ -64,6 +64,7 @@ model User {
   trackerSelectedTaskId  String?
   urnikUsername          String?
   urnikPassword          String?
+  urnikUserId            String?
   lastUrnikTestAt        DateTime?
   accounts               Account[]
   hourEntries            HourEntry[]

@@ -149,6 +149,7 @@
         "requests": "Requests",
         "urnikNetOverview": "Urnik.net Overview",
         "urnikNetRequests": "Requests",
+        "urnikNetHours": "Hours",
         "admin": "Admin",
         "profile": "Profile",
         "management": "Management",
@@ -203,7 +204,8 @@
             "total": "TOTAL",
             "tracked": "TRACKED",
             "manual": "MANUAL",
-            "grandTotal": "GRAND TOTAL"
+            "grandTotal": "GRAND TOTAL",
+            "characters": "characters"
         },
         "table": {
             "columnType": "Type",
@@ -898,7 +900,64 @@
             "inOffice": "In Office",
             "remote": "Work from Home",
             "previousMonth": "Previous Month",
-            "nextMonth": "Next Month"
+            "nextMonth": "Next Month",
+            "table": {
+                "no": "No.",
+                "requestDate": "Request date",
+                "requestType": "Request type",
+                "period": "Period",
+                "days": "Days",
+                "hours": "Hours",
+                "arrival": "Arrival",
+                "departure": "Departure",
+                "status": "Status",
+                "confirmedBy": "Confirmed by",
+                "notes": "Notes",
+                "action": "Action",
+                "autoCalculated": "Auto-calculated from tracker"
+            },
+            "structureChanged": "HTML Structure Changed",
+            "structureChangedDescription": "The urnik.net page structure has changed. The parser needs to be updated to match the new format. Please contact the developer."
+        }
+    },
+    "urnikNetHours": {
+        "page": {
+            "title": "Urnik.net Hours",
+            "noCredentialsTitle": "No urnik.net Credentials",
+            "noCredentialsDescription": "Please configure your urnik.net credentials in your profile to use this feature.",
+            "profileLink": "profile page"
+        },
+        "dataReceived": "Data received successfully",
+        "previousMonth": "Previous Month",
+        "nextMonth": "Next Month",
+        "detailsButton": "Details",
+        "summary": {
+            "billingHours": "Billing Hours",
+            "plannedHours": "Planned Hours",
+            "workDays": "Work Days",
+            "holidays": "Holidays",
+            "lunches": "Lunches",
+            "vacationBalance": "Vacation Balance",
+            "vacationBalanceShort": "Vacation",
+            "sickLeave": "Sick Leave",
+            "leaveDays": "Leave",
+            "balance": "Balance",
+            "workFromHome": "Work from Home",
+            "userType": "User Type",
+            "hoursInDay": "Hours in Day"
+        },
+        "table": {
+            "no": "No.",
+            "date": "Date",
+            "day": "Day",
+            "status": "Status",
+            "clockIn": "Clock In",
+            "clockOut": "Clock Out",
+            "attendance": "Attendance",
+            "accounted": "Accounted",
+            "dayBalance": "Day Balance",
+            "balanceMonth": "Month Balance",
+            "balanceYear": "Year Balance"
         }
     },
     "auth": {

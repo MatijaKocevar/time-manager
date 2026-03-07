@@ -100,6 +100,23 @@ export default async function UrnikNetRequestsPage({
         hoursLabel: tCreateRequest("hoursLabel"),
         typeWork: tCreateRequest("typeWork"),
         typeWorkFromHome: tCreateRequest("typeWorkFromHome"),
+        table: {
+            no: t("table.no"),
+            requestDate: t("table.requestDate"),
+            requestType: t("table.requestType"),
+            period: t("table.period"),
+            days: t("table.days"),
+            hours: t("table.hours"),
+            arrival: t("table.arrival"),
+            departure: t("table.departure"),
+            status: t("table.status"),
+            confirmedBy: t("table.confirmedBy"),
+            notes: t("table.notes"),
+            action: t("table.action"),
+            autoCalculated: t("table.autoCalculated"),
+        },
+        structureChanged: t("structureChanged"),
+        structureChangedDescription: t("structureChangedDescription"),
     }
 
     return (
