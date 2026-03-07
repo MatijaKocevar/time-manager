@@ -900,7 +900,24 @@
             "inOffice": "In Office",
             "remote": "Work from Home",
             "previousMonth": "Previous Month",
-            "nextMonth": "Next Month"
+            "nextMonth": "Next Month",
+            "table": {
+                "no": "No.",
+                "requestDate": "Request date",
+                "requestType": "Request type",
+                "period": "Period",
+                "days": "Days",
+                "hours": "Hours",
+                "arrival": "Arrival",
+                "departure": "Departure",
+                "status": "Status",
+                "confirmedBy": "Confirmed by",
+                "notes": "Notes",
+                "action": "Action",
+                "autoCalculated": "Auto-calculated from tracker"
+            },
+            "structureChanged": "HTML Structure Changed",
+            "structureChangedDescription": "The urnik.net page structure has changed. The parser needs to be updated to match the new format. Please contact the developer."
         }
     },
     "urnikNetHours": {
@@ -913,6 +930,7 @@
         "dataReceived": "Data received successfully",
         "previousMonth": "Previous Month",
         "nextMonth": "Next Month",
+        "detailsButton": "Details",
         "summary": {
             "billingHours": "Billing Hours",
             "plannedHours": "Planned Hours",
@@ -920,6 +938,7 @@
             "holidays": "Holidays",
             "lunches": "Lunches",
             "vacationBalance": "Vacation Balance",
+            "vacationBalanceShort": "Vacation",
             "sickLeave": "Sick Leave",
             "leaveDays": "Leave",
             "balance": "Balance",

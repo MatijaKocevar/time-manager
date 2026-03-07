@@ -5,7 +5,6 @@ import { getTranslations } from "next-intl/server"
 import { prisma } from "@/lib/prisma"
 import { fetchMonthlyHours } from "./actions/hours-actions"
 import { NoCredentialsAlert } from "./components/no-credentials-alert"
-import { MonthNavigation } from "./components/month-navigation"
 import { HoursView } from "./components/hours-view"
 
 export const dynamic = "force-dynamic"
@@ -55,24 +54,16 @@ export default async function UrnikNetHoursPage({
     const result = await fetchMonthlyHours(currentYear, currentMonth)
 
     return (
-        <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">{t("page.title")}</h1>
-            </div>
-
-            <MonthNavigation
+        <div className="flex flex-col gap-4 h-full">
+            <HoursView
+                result={result}
                 currentYear={currentYear}
                 currentMonth={currentMonth}
                 monthName={monthName}
                 translations={{
                     previousMonth: t("previousMonth"),
                     nextMonth: t("nextMonth"),
-                }}
-            />
-
-            <HoursView
-                result={result}
-                translations={{
+                    detailsButton: t("detailsButton"),
                     summary: {
                         billingHours: t("summary.billingHours"),
                         plannedHours: t("summary.plannedHours"),
@@ -80,6 +71,7 @@ export default async function UrnikNetHoursPage({
                         holidays: t("summary.holidays"),
                         lunches: t("summary.lunches"),
                         vacationBalance: t("summary.vacationBalance"),
+                        vacationBalanceShort: t("summary.vacationBalanceShort"),
                         sickLeave: t("summary.sickLeave"),
                         leaveDays: t("summary.leaveDays"),
                         balance: t("summary.balance"),

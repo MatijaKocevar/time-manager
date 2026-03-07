@@ -88,6 +88,23 @@ interface UrnikNetRequestsViewProps {
         hoursLabel: string
         typeWork: string
         typeWorkFromHome: string
+        table: {
+            no: string
+            requestDate: string
+            requestType: string
+            period: string
+            days: string
+            hours: string
+            arrival: string
+            departure: string
+            status: string
+            confirmedBy: string
+            notes: string
+            action: string
+            autoCalculated: string
+        }
+        structureChanged: string
+        structureChangedDescription: string
     }
     requestsResult: {
         success: boolean
@@ -350,11 +367,8 @@ export function UrnikNetRequestsView({
             {structureChanged && (
                 <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>HTML Structure Changed</AlertTitle>
-                    <AlertDescription>
-                        The urnik.net page structure has changed. The parser needs to be updated to
-                        match the new format. Please contact the developer.
-                    </AlertDescription>
+                    <AlertTitle>{t.structureChanged}</AlertTitle>
+                    <AlertDescription>{t.structureChangedDescription}</AlertDescription>
                 </Alert>
             )}
 
@@ -366,20 +380,38 @@ export function UrnikNetRequestsView({
                         <Table>
                             <TableHeader className="sticky top-0 z-30 bg-background">
                                 <TableRow>
-                                    <TableHead className="min-w-[60px]">No.</TableHead>
-                                    <TableHead className="min-w-[120px]">Request date</TableHead>
-                                    <TableHead className="min-w-[180px]">Request type</TableHead>
-                                    <TableHead className="min-w-[120px]">Period</TableHead>
-                                    <TableHead className="text-right min-w-[80px]">Days</TableHead>
-                                    <TableHead className="text-right min-w-[80px]">Hours</TableHead>
-                                    <TableHead className="min-w-[100px]">Arrival</TableHead>
-                                    <TableHead className="min-w-[100px]">Departure</TableHead>
-                                    <TableHead className="text-center min-w-[120px]">
-                                        Status
+                                    <TableHead className="min-w-[60px]">{t.table.no}</TableHead>
+                                    <TableHead className="min-w-[120px]">
+                                        {t.table.requestDate}
                                     </TableHead>
-                                    <TableHead className="min-w-[150px]">Confirmed by</TableHead>
-                                    <TableHead className="min-w-[200px]">Notes</TableHead>
-                                    <TableHead className="min-w-[100px]">Action</TableHead>
+                                    <TableHead className="min-w-[180px]">
+                                        {t.table.requestType}
+                                    </TableHead>
+                                    <TableHead className="min-w-[120px]">
+                                        {t.table.period}
+                                    </TableHead>
+                                    <TableHead className="text-right min-w-[80px]">
+                                        {t.table.days}
+                                    </TableHead>
+                                    <TableHead className="text-right min-w-[80px]">
+                                        {t.table.hours}
+                                    </TableHead>
+                                    <TableHead className="min-w-[100px]">
+                                        {t.table.arrival}
+                                    </TableHead>
+                                    <TableHead className="min-w-[100px]">
+                                        {t.table.departure}
+                                    </TableHead>
+                                    <TableHead className="text-center min-w-[120px]">
+                                        {t.table.status}
+                                    </TableHead>
+                                    <TableHead className="min-w-[150px]">
+                                        {t.table.confirmedBy}
+                                    </TableHead>
+                                    <TableHead className="min-w-[200px]">{t.table.notes}</TableHead>
+                                    <TableHead className="min-w-[100px]">
+                                        {t.table.action}
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -443,7 +475,7 @@ export function UrnikNetRequestsView({
                                                 </TableCell>
                                                 <TableCell>-</TableCell>
                                                 <TableCell className="text-xs text-muted-foreground">
-                                                    Auto-calculated from tracker
+                                                    {t.table.autoCalculated}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Button
