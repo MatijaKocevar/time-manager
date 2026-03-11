@@ -20,6 +20,7 @@ interface ConditionalSidebarProps {
     lists?: ListDisplay[]
     header?: React.ReactNode
     pendingRequestsCount?: number
+    hasUrnikCredentials?: boolean
 }
 
 function SidebarStateSync() {
@@ -43,6 +44,7 @@ export function ConditionalSidebar({
     lists = [],
     header,
     pendingRequestsCount = 0,
+    hasUrnikCredentials = false,
 }: ConditionalSidebarProps) {
     if (hasSession) {
         return (
@@ -56,6 +58,7 @@ export function ConditionalSidebar({
                         lists={lists}
                         initialExpandedItems={sidebarExpandedItems}
                         pendingRequestsCount={pendingRequestsCount}
+                        hasUrnikCredentials={hasUrnikCredentials}
                     />
                     <main className="flex flex-1 flex-col min-w-0 w-full h-full overflow-hidden">
                         {header}

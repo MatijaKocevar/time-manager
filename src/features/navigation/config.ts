@@ -24,6 +24,7 @@ export interface NavigationItem {
     icon: LucideIcon
     roles: UserRole[]
     children?: NavigationItem[]
+    requiresUrnikCredentials?: boolean
 }
 
 export const navigationItems: NavigationItem[] = [
@@ -74,6 +75,7 @@ export const navigationItems: NavigationItem[] = [
         url: "/urnik-net-overview",
         icon: LogIn,
         roles: ["USER", "ADMIN"],
+        requiresUrnikCredentials: true,
         children: [
             {
                 title: "navigation.urnikNetRequests",
