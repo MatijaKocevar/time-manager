@@ -1,12 +1,10 @@
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
 import { getTranslations } from "next-intl/server"
 import { ClockView } from "./components/clock-view"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
-import Link from "next/link"
 import { getArrivalLeaveStatus, getTodayWorkFromHomeStatus } from "@/lib/clock-status"
 
 export default async function ClockPage() {
@@ -16,36 +14,8 @@ export default async function ClockPage() {
         redirect("/login")
     }
 
-    const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: {
-            urnikUsername: true,
-            urnikPassword: true,
-        },
-    })
-
     const t = await getTranslations("clock")
     const tCommon = await getTranslations("common")
-
-    if (!user?.urnikUsername || !user?.urnikPassword) {
-        return (
-            <div className="space-y-6">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">{t("page.title")}</h1>
-                </div>
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>{t("page.noCredentialsTitle")}</AlertTitle>
-                    <AlertDescription>
-                        {t("page.noCredentialsDescription")}{" "}
-                        <Link href="/profile" className="underline">
-                            {t("page.profileLink")}
-                        </Link>
-                    </AlertDescription>
-                </Alert>
-            </div>
-        )
-    }
 
     const status = await getArrivalLeaveStatus()
     const wfhStatus = await getTodayWorkFromHomeStatus()

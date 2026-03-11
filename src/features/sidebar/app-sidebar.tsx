@@ -12,7 +12,6 @@ import {
     SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
-    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -45,6 +44,7 @@ interface AppSidebarProps {
     lists?: ListDisplay[]
     initialExpandedItems?: string[]
     pendingRequestsCount?: number
+    hasUrnikCredentials?: boolean
 }
 
 export function AppSidebar({
@@ -54,6 +54,7 @@ export function AppSidebar({
     lists = [],
     initialExpandedItems = [],
     pendingRequestsCount = 0,
+    hasUrnikCredentials = false,
 }: AppSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
@@ -65,7 +66,6 @@ export function AppSidebar({
     const [expandedItemsSet, setExpandedItemsSet] = useState(() => new Set(initialExpandedItems))
     const hasInitializedRef = useRef(false)
     const t = useTranslations()
-    const tNav = useTranslations("navigation")
     const tCommon = useTranslations("common")
     const tTasks = useTranslations("tasks")
 
@@ -98,9 +98,15 @@ export function AppSidebar({
 
     const isExpanded = (itemUrl: string) => expandedItemsSet.has(itemUrl)
 
-    const filteredItems = navigationItems.filter((item) =>
-        userRole ? item.roles.includes(userRole) : false
-    )
+    const filteredItems = navigationItems.filter((item) => {
+        if (!userRole || !item.roles.includes(userRole)) {
+            return false
+        }
+        if (item.requiresUrnikCredentials && !hasUrnikCredentials) {
+            return false
+        }
+        return true
+    })
 
     const handleEditList = (listId: string) => {
         openListDialog(listId)
