@@ -220,8 +220,8 @@ export async function retryFailedUrnikNetRequest(
         const result = await createUrnikNetRequest({
             type: urnikRequest.type as "WORK" | "WORK_FROM_HOME",
             date: urnikRequest.date,
-            startTime: urnikRequest.startTime,
-            endTime: urnikRequest.endTime,
+            startTime: urnikRequest.startTime ?? "",
+            endTime: urnikRequest.endTime ?? "",
             comment: undefined,
         })
 

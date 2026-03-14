@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { UrnikNetRequestsView } from "./components/urnik-net-requests-view"
-import { CreateRequestDialog } from "../components/create-request-dialog"
+import { CreateRequestDialog } from "./components/create-request-dialog"
 import { getCurrentUser } from "../../profile/actions/profile-actions"
 import {
     attemptUrnikNetLogin,
@@ -47,11 +47,11 @@ export default async function UrnikNetRequestsPage({
     let submittedRequests: Array<{
         id: string
         date: Date
-        startTime: string
-        endTime: string
-        hours: number
+        startTime: string | null
+        endTime: string | null
+        hours: number | null
         type: string
-        urnikType: number
+        urnikType: number | null
         status: string
         submittedAt: Date
         confirmedAt: Date | null
@@ -98,8 +98,12 @@ export default async function UrnikNetRequestsPage({
         nextMonth: t("nextMonth"),
         createRequestButton: tCreateRequest("buttonLabel"),
         hoursLabel: tCreateRequest("hoursLabel"),
+        daysLabel: tCreateRequest("daysLabel"),
         typeWork: tCreateRequest("typeWork"),
         typeWorkFromHome: tCreateRequest("typeWorkFromHome"),
+        typeVacation: tCreateRequest("typeVacation"),
+        typeSickLeave: tCreateRequest("typeSickLeave"),
+        typeDayWorkFromHome: tCreateRequest("typeDayWorkFromHome"),
         table: {
             no: t("table.no"),
             requestDate: t("table.requestDate"),

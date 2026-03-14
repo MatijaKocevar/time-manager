@@ -65,7 +65,7 @@ export function CreateRequestForm({
         setError(null)
 
         const result = await createUrnikNetRequest({
-            type: selectedType,
+            type: selectedType as "WORK" | "WORK_FROM_HOME",
             date,
             startTime,
             endTime,
