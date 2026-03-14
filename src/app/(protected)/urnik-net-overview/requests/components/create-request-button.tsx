@@ -13,12 +13,17 @@ import {
 import { ChevronDown } from "lucide-react"
 import { useCreateRequestStore } from "../stores/create-request-store"
 import type { UrnikNetRequestType } from "../schemas/create-urnik-net-request-schema"
+import type { UrnikDayRequestType } from "../schemas/create-urnik-net-day-request-schema"
 
 interface CreateRequestButtonProps {
     label: string
     typeWork: string
     typeWorkFromHome: string
     hoursLabel: string
+    daysLabel: string
+    typeVacation: string
+    typeSickLeave: string
+    typeDayWorkFromHome: string
 }
 
 export function CreateRequestButton({
@@ -26,11 +31,23 @@ export function CreateRequestButton({
     typeWork,
     typeWorkFromHome,
     hoursLabel,
+    daysLabel,
+    typeVacation,
+    typeSickLeave,
+    typeDayWorkFromHome,
 }: CreateRequestButtonProps) {
     const openDialog = useCreateRequestStore((state) => state.openDialog)
     const setSelectedType = useCreateRequestStore((state) => state.setSelectedType)
+    const setRequestCategory = useCreateRequestStore((state) => state.setRequestCategory)
 
-    const handleSelectType = (type: UrnikNetRequestType) => {
+    const handleSelectHourType = (type: UrnikNetRequestType) => {
+        setRequestCategory("HOUR")
+        setSelectedType(type)
+        openDialog()
+    }
+
+    const handleSelectDayType = (type: UrnikDayRequestType) => {
+        setRequestCategory("DAY")
         setSelectedType(type)
         openDialog()
     }
@@ -47,11 +64,25 @@ export function CreateRequestButton({
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger>{hoursLabel}</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
-                        <DropdownMenuItem onClick={() => handleSelectType("WORK")}>
+                        <DropdownMenuItem onClick={() => handleSelectHourType("WORK")}>
                             {typeWork}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleSelectType("WORK_FROM_HOME")}>
+                        <DropdownMenuItem onClick={() => handleSelectHourType("WORK_FROM_HOME")}>
                             {typeWorkFromHome}
+                        </DropdownMenuItem>
+                    </DropdownMenuSubContent>
+                </DropdownMenuSub>
+                <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>{daysLabel}</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                        <DropdownMenuItem onClick={() => handleSelectDayType("VACATION")}>
+                            {typeVacation}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleSelectDayType("SICK_LEAVE")}>
+                            {typeSickLeave}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleSelectDayType("WORK_FROM_HOME")}>
+                            {typeDayWorkFromHome}
                         </DropdownMenuItem>
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
