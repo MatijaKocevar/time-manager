@@ -20,6 +20,17 @@ async function requireAuth() {
     return session
 }
 
+function calculateWorkDays(startDate: Date, endDate: Date): number {
+    let count = 0
+    const current = new Date(startDate)
+    while (current <= endDate) {
+        const day = current.getDay()
+        if (day !== 0 && day !== 6) count++
+        current.setDate(current.getDate() + 1)
+    }
+    return count
+}
+
 function formatDateDDMMYYYY(date: Date): string {
     const day = String(date.getDate()).padStart(2, "0")
     const month = String(date.getMonth() + 1).padStart(2, "0")
@@ -104,7 +115,7 @@ async function submitSickLeaveRequest(
     formData.append("SickdayType", "4")
     formData.append("startDate", formatDateDDMMYYYY(startDate))
     formData.append("endDate", formatDateDDMMYYYY(endDate))
-    formData.append("Duration", "1")
+    formData.append("Duration", String(calculateWorkDays(startDate, endDate)))
     formData.append("__Invariant", "Duration")
     formData.append("Description", comment)
     formData.append("TenantID", URNIK_TENANT_ID)
@@ -143,7 +154,7 @@ async function submitWorkFromHomeRequest(
     const formData = new FormData()
     formData.append("startDate", formatDateDDMMYYYY(startDate))
     formData.append("endDate", formatDateDDMMYYYY(endDate))
-    formData.append("Duration", "1")
+    formData.append("Duration", String(calculateWorkDays(startDate, endDate)))
     formData.append("__Invariant", "Duration")
     formData.append("Description", comment)
     formData.append("TenantID", URNIK_TENANT_ID)

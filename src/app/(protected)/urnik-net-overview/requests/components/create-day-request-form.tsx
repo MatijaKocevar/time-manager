@@ -15,6 +15,7 @@ import type { WorkType } from "@/lib/work-type-styles"
 interface CreateDayRequestFormProps {
     startDateLabel: string
     endDateLabel: string
+    workDaysLabel: string
     commentLabel: string
     submitButton: string
     successMessage: string
@@ -28,6 +29,7 @@ interface CreateDayRequestFormProps {
 export function CreateDayRequestForm({
     startDateLabel,
     endDateLabel,
+    workDaysLabel,
     commentLabel,
     submitButton,
     successMessage,
@@ -49,6 +51,20 @@ export function CreateDayRequestForm({
     const [startDate, setStartDate] = useState<Date>()
     const [endDate, setEndDate] = useState<Date>()
     const [comment, setComment] = useState("")
+
+    const workDays =
+        startDate && endDate && endDate >= startDate
+            ? (() => {
+                  let count = 0
+                  const current = new Date(startDate)
+                  while (current <= endDate) {
+                      const day = current.getDay()
+                      if (day !== 0 && day !== 6) count++
+                      current.setDate(current.getDate() + 1)
+                  }
+                  return count
+              })()
+            : null
 
     const typeLabels: Record<UrnikDayRequestType, string> = {
         VACATION: typeVacation,
@@ -133,6 +149,11 @@ export function CreateDayRequestForm({
                         placeholder={endDateLabel}
                     />
                 </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">{workDaysLabel}:</span>
+                <span className="font-medium">{workDays ?? "-"}</span>
             </div>
 
             <div className="space-y-2">

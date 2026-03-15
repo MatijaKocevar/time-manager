@@ -22,6 +22,7 @@ interface CreateRequestDialogClientProps {
     retryButton: string
     startDateLabel: string
     endDateLabel: string
+    workDaysLabel: string
     typeVacation: string
     typeSickLeave: string
     typeDayWorkFromHome: string
@@ -43,6 +44,7 @@ export function CreateRequestDialogClient({
     retryButton,
     startDateLabel,
     endDateLabel,
+    workDaysLabel,
     typeVacation,
     typeSickLeave,
     typeDayWorkFromHome,
@@ -82,6 +84,7 @@ export function CreateRequestDialogClient({
                         <CreateDayRequestForm
                             startDateLabel={startDateLabel}
                             endDateLabel={endDateLabel}
+                            workDaysLabel={workDaysLabel}
                             commentLabel={commentLabel}
                             submitButton={submitButton}
                             successMessage={successMessage}

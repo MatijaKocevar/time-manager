@@ -1089,6 +1089,7 @@
             "endTimeLabel": "Končni čas",
             "startDateLabel": "Začetni datum",
             "endDateLabel": "Končni datum",
+            "workDaysLabel": "Delovni dnevi",
             "commentLabel": "Komentar (Neobvezno)",
             "submitButton": "Pošlji na Urnik.net",
             "buttonLabel": "Ustvari zahtevo",
