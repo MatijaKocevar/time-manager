@@ -14,7 +14,9 @@ import { getErrorMessage } from "../../utils/helpers"
 
 const URNIK_TENANT_ID = process.env.URNIK_TENANT_ID ?? ""
 
-async function extractCsrfToken(cookie: string): Promise<string | null> {
+async function extractCsrfToken(
+    cookie: string
+): Promise<{ token: string; antiforgery: string } | null> {
     try {
         const response = await fetch("https://urnik.net/App/Main", {
             method: "GET",
@@ -34,8 +36,21 @@ async function extractCsrfToken(cookie: string): Promise<string | null> {
         const tokenMatch = html.match(
             /<input[^>]*name="__RequestVerificationToken"[^>]*value="([^"]+)"/
         )
+        if (!tokenMatch) {
+            return null
+        }
 
-        return tokenMatch ? tokenMatch[1] : null
+        const setCookie = response.headers.get("set-cookie") ?? ""
+        const antiforgeryCookie = setCookie
+            .split(",")
+            .map((c) => c.trim().split(";")[0])
+            .find((c) => c.includes(".AspNetCore.Antiforgery"))
+
+        if (!antiforgeryCookie) {
+            return null
+        }
+
+        return { token: tokenMatch[1], antiforgery: antiforgeryCookie }
     } catch {
         return null
     }
@@ -80,6 +95,7 @@ async function submitVacationRequest(
 async function submitSickLeaveRequest(
     cookie: string,
     csrfToken: string,
+    antiforgeryCookie: string,
     urnikUserId: string,
     startDate: Date,
     endDate: Date,
@@ -90,7 +106,7 @@ async function submitSickLeaveRequest(
     formData.append("startDate", formatDateDDMMYYYY(startDate))
     formData.append("endDate", formatDateDDMMYYYY(endDate))
     formData.append("Duration", String(calculateWorkDays(startDate, endDate)))
-    formData.append("__Invariant", "Duration")
+
     formData.append("Description", comment)
     formData.append("TenantID", URNIK_TENANT_ID)
     formData.append("UserID", urnikUserId)
@@ -100,7 +116,7 @@ async function submitSickLeaveRequest(
         method: "POST",
         headers: {
             "User-Agent": URNIK_USER_AGENT,
-            Cookie: cookie,
+            Cookie: `${cookie}; ${antiforgeryCookie}`,
             Accept: "*/*",
             "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
             "X-Requested-With": "XMLHttpRequest",
@@ -119,6 +135,7 @@ async function submitSickLeaveRequest(
 async function submitWorkFromHomeRequest(
     cookie: string,
     csrfToken: string,
+    antiforgeryCookie: string,
     urnikUserId: string,
     startDate: Date,
     endDate: Date,
@@ -134,11 +151,21 @@ async function submitWorkFromHomeRequest(
     formData.append("UserID", urnikUserId)
     formData.append("__RequestVerificationToken", csrfToken)
 
+    console.log("[WFH] Submitting to SaveWHRequest", {
+        startDate: formatDateDDMMYYYY(startDate),
+        endDate: formatDateDDMMYYYY(endDate),
+        duration: String(calculateWorkDays(startDate, endDate)),
+        tenantId: URNIK_TENANT_ID,
+        userId: urnikUserId,
+        hasCsrfToken: !!csrfToken,
+        hasAntiforgeryCookie: !!antiforgeryCookie,
+    })
+
     const response = await fetch("https://urnik.net/App/Main?handler=SaveWHRequest", {
         method: "POST",
         headers: {
             "User-Agent": URNIK_USER_AGENT,
-            Cookie: cookie,
+            Cookie: `${cookie}; ${antiforgeryCookie}`,
             Accept: "*/*",
             "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
             "X-Requested-With": "XMLHttpRequest",
@@ -147,8 +174,11 @@ async function submitWorkFromHomeRequest(
         body: formData,
     })
 
+    const responseText = await response.text()
+    console.log("[WFH] SaveWHRequest response", { status: response.status, body: responseText })
+
     if (!response.ok) {
-        return { success: false, error: `Urnik.net returned ${response.status}` }
+        return { success: false, error: `Urnik.net returned ${response.status}: ${responseText}` }
     }
 
     return { success: true }
@@ -184,6 +214,7 @@ export async function createUrnikNetDayRequest(
         }
 
         const cookie = await getUrnikCookie()
+        console.log("[WFH] Cookie obtained:", !!cookie)
         if (!cookie) {
             return { success: false, error: "Authentication failed" }
         }
@@ -223,8 +254,9 @@ export async function createUrnikNetDayRequest(
                 comment || record.id
             )
         } else {
-            const csrfToken = await extractCsrfToken(cookie)
-            if (!csrfToken) {
+            const csrf = await extractCsrfToken(cookie)
+            console.log("[WFH] CSRF token obtained:", !!csrf)
+            if (!csrf) {
                 await prisma.urnikRequest.update({
                     where: { id: record.id },
                     data: { status: "FAILED", errorMessage: "Could not extract CSRF token" },
@@ -235,7 +267,8 @@ export async function createUrnikNetDayRequest(
             if (type === "SICK_LEAVE") {
                 result = await submitSickLeaveRequest(
                     cookie,
-                    csrfToken,
+                    csrf.token,
+                    csrf.antiforgery,
                     urnikUserId,
                     startDate,
                     endDate,
@@ -244,7 +277,8 @@ export async function createUrnikNetDayRequest(
             } else {
                 result = await submitWorkFromHomeRequest(
                     cookie,
-                    csrfToken,
+                    csrf.token,
+                    csrf.antiforgery,
                     urnikUserId,
                     startDate,
                     endDate,
@@ -253,6 +287,7 @@ export async function createUrnikNetDayRequest(
             }
         }
 
+        console.log("[WFH] Submit result:", result)
         if (!result.success) {
             await prisma.urnikRequest.update({
                 where: { id: record.id },
