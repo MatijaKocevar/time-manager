@@ -1,6 +1,5 @@
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { requireAuth } from "@/lib/auth-helpers"
 import { getTranslations } from "next-intl/server"
 import { ClockView } from "./components/clock-view"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -8,11 +7,7 @@ import { AlertCircle } from "lucide-react"
 import { getArrivalLeaveStatus, getTodayWorkFromHomeStatus } from "@/lib/clock-status"
 
 export default async function ClockPage() {
-    const session = await getServerSession(authConfig)
-
-    if (!session?.user) {
-        redirect("/login")
-    }
+    await requireAuth().catch(() => redirect("/login"))
 
     const t = await getTranslations("clock")
     const tCommon = await getTranslations("common")

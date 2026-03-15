@@ -1,9 +1,8 @@
 "use server"
 
-import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import { authConfig } from "@/lib/auth"
+import { requireAuth, requireAdmin } from "@/lib/auth-helpers"
 import type { HourType, RequestType } from "@/../../prisma/generated/client"
 import {
     mapRequestTypeToShiftLocation,
@@ -32,22 +31,6 @@ import {
     type RequestDisplay,
 } from "../schemas/request-schemas"
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
-
-async function requireAdmin() {
-    const session = await requireAuth()
-    if (session.user.role !== "ADMIN") {
-        throw new Error("Admin access required")
-    }
-    return session
-}
 
 export async function createRequest(input: CreateRequestInput) {
     try {

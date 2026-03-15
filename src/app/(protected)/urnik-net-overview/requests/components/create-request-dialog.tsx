@@ -21,6 +21,7 @@ export async function CreateRequestDialog() {
             retryButton={t("retryButton")}
             startDateLabel={t("startDateLabel")}
             endDateLabel={t("endDateLabel")}
+            workDaysLabel={t("workDaysLabel")}
             typeVacation={t("typeVacation")}
             typeSickLeave={t("typeSickLeave")}
             typeDayWorkFromHome={t("typeDayWorkFromHome")}

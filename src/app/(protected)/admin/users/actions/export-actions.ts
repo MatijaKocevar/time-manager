@@ -1,7 +1,6 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
+import { requireAdmin } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
 import ExcelJS from "exceljs"
 import {
@@ -15,14 +14,6 @@ import {
 } from "@/features/export"
 import { ExportOptionsSchema, type ExportOptions, type ExportFormat } from "@/features/export"
 import { fetchMonthlyHourData } from "@/app/(protected)/hours/actions/export-actions"
-
-async function requireAdmin() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user || session.user.role !== "ADMIN") {
-        throw new Error("Unauthorized - Admin access required")
-    }
-    return session
-}
 
 export async function exportUsersData(input: { format: ExportFormat }) {
     try {

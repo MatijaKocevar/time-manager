@@ -1,9 +1,8 @@
 "use server"
 
-import { getServerSession } from "next-auth"
+import { requireAuth } from "@/lib/auth-helpers"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import { authConfig } from "@/lib/auth"
 import {
     CreateTaskSchema,
     UpdateTaskSchema,
@@ -16,14 +15,6 @@ import {
 } from "../schemas/task-action-schemas"
 import type { TaskDisplay, TasksFilter } from "../schemas/task-schemas"
 import { TASK_STATUS } from "../constants/task-statuses"
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
 
 export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
     try {

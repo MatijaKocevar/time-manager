@@ -1,9 +1,8 @@
 "use server"
 
-import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import { authConfig } from "@/lib/auth"
+import { requireAdmin, requireAuth } from "@/lib/auth-helpers"
 import {
     CreateHolidaySchema,
     UpdateHolidaySchema,
@@ -12,14 +11,6 @@ import {
     type UpdateHolidayInput,
     type DeleteHolidayInput,
 } from "../schemas"
-
-async function requireAdmin() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user || session.user.role !== "ADMIN") {
-        throw new Error("Unauthorized - Admin access required")
-    }
-    return session
-}
 
 export async function getHolidays(startDate?: Date, endDate?: Date) {
     try {
@@ -225,10 +216,7 @@ export async function deleteHoliday(input: DeleteHolidayInput) {
 
 export async function getHolidaysInRange(startDate: string, endDate: string) {
     try {
-        const session = await getServerSession(authConfig)
-        if (!session?.user) {
-            throw new Error("Unauthorized")
-        }
+        await requireAuth()
 
         const start = new Date(startDate)
         start.setDate(start.getDate() - 1)

@@ -1,19 +1,16 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
 import { getUrnikCookie } from "@/lib/urnik-session"
+import { requireAuth } from "@/lib/auth-helpers"
+import { URNIK_USER_AGENT } from "../../lib/constants"
+import { getErrorMessage } from "../../utils/helpers"
 import { prisma } from "@/lib/prisma"
 import type { ParsedHoursResult } from "../schemas/hours-schema"
 import { parseHoursHtml } from "../utils/parse-hours"
 
 export async function fetchMonthlyHours(year: number, month: number): Promise<ParsedHoursResult> {
     try {
-        const session = await getServerSession(authConfig)
-
-        if (!session?.user) {
-            return { success: false, error: "Unauthorized" }
-        }
+        const session = await requireAuth()
 
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
@@ -81,8 +78,7 @@ export async function fetchMonthlyHours(year: number, month: number): Promise<Pa
         const response = await fetch(url, {
             method: "GET",
             headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                "User-Agent": URNIK_USER_AGENT,
                 Cookie: cookie,
                 "X-Requested-With": "XMLHttpRequest",
                 Accept: "*/*",
@@ -114,7 +110,7 @@ export async function fetchMonthlyHours(year: number, month: number): Promise<Pa
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to fetch hours data",
+            error: getErrorMessage(error, "Failed to fetch hours data"),
         }
     }
 }

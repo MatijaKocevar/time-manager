@@ -11,10 +11,12 @@ import { useCreateRequestStore } from "../stores/create-request-store"
 import { createUrnikNetDayRequest } from "../actions/create-urnik-net-day-request-action"
 import type { UrnikDayRequestType } from "../schemas/create-urnik-net-day-request-schema"
 import type { WorkType } from "@/lib/work-type-styles"
+import { calculateWorkDays } from "../../utils/date-helpers"
 
 interface CreateDayRequestFormProps {
     startDateLabel: string
     endDateLabel: string
+    workDaysLabel: string
     commentLabel: string
     submitButton: string
     successMessage: string
@@ -28,6 +30,7 @@ interface CreateDayRequestFormProps {
 export function CreateDayRequestForm({
     startDateLabel,
     endDateLabel,
+    workDaysLabel,
     commentLabel,
     submitButton,
     successMessage,
@@ -49,6 +52,9 @@ export function CreateDayRequestForm({
     const [startDate, setStartDate] = useState<Date>()
     const [endDate, setEndDate] = useState<Date>()
     const [comment, setComment] = useState("")
+
+    const workDays =
+        startDate && endDate && endDate >= startDate ? calculateWorkDays(startDate, endDate) : null
 
     const typeLabels: Record<UrnikDayRequestType, string> = {
         VACATION: typeVacation,
@@ -133,6 +139,11 @@ export function CreateDayRequestForm({
                         placeholder={endDateLabel}
                     />
                 </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">{workDaysLabel}:</span>
+                <span className="font-medium">{workDays ?? "-"}</span>
             </div>
 
             <div className="space-y-2">
