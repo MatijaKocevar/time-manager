@@ -13,6 +13,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import type { ParsedHoursResult } from "../schemas/hours-schema"
+import type { HoursViewTranslations } from "../types"
 import { getPreviousMonthInt, getNextMonthInt } from "../../utils/date-helpers"
 import {
     Table,
@@ -28,39 +29,7 @@ interface HoursViewProps {
     currentYear: number
     currentMonth: number
     monthName: string
-    translations: {
-        previousMonth: string
-        nextMonth: string
-        detailsButton: string
-        summary: {
-            billingHours: string
-            plannedHours: string
-            workDays: string
-            holidays: string
-            lunches: string
-            vacationBalance: string
-            vacationBalanceShort: string
-            sickLeave: string
-            leaveDays: string
-            balance: string
-            workFromHome: string
-            userType: string
-            hoursInDay: string
-        }
-        table: {
-            no: string
-            date: string
-            day: string
-            status: string
-            clockIn: string
-            clockOut: string
-            attendance: string
-            accounted: string
-            dayBalance: string
-            balanceMonth: string
-            balanceYear: string
-        }
-    }
+    translations: HoursViewTranslations
 }
 
 export function HoursView({
