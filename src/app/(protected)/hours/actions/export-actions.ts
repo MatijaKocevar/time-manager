@@ -13,7 +13,7 @@ import {
     type ExportMetadata,
 } from "@/features/export"
 import { ExportOptionsSchema, type ExportOptions } from "@/features/export"
-import { requireAuth, requireAdmin } from "../utils/auth-helpers"
+import { requireAuth, requireAdmin } from "@/lib/auth-helpers"
 import { formatDateKey } from "../utils/date-helpers"
 import { calculateWorkingDaysSync, calculateOvertime } from "../utils/calculation-helpers"
 import { HOUR_TYPES } from "../constants/hour-types"

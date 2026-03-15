@@ -1,8 +1,7 @@
 "use server"
 
-import { getServerSession } from "next-auth"
+import { requireAuth } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
-import { authConfig } from "@/lib/auth"
 import {
     broadcastTimerEvent,
     stopActiveTimer,
@@ -22,14 +21,6 @@ import {
     type TimerDisplay,
 } from "../schemas/timer-schemas"
 import { hasLoggedArrivalToday, getTodayWorkFromHomeStatus } from "@/lib/clock-status"
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
 
 export async function getActiveTimer(): Promise<TimerDisplay | null> {
     try {

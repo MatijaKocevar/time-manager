@@ -13,6 +13,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import type { ParsedHoursResult } from "../schemas/hours-schema"
+import { getPreviousMonthInt, getNextMonthInt } from "../../utils/date-helpers"
 import {
     Table,
     TableBody,
@@ -72,10 +73,8 @@ export function HoursView({
     const router = useRouter()
     const [isPending, startTransition] = useTransition()
 
-    const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1
-    const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear
-    const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1
-    const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear
+    const { year: prevYear, month: prevMonth } = getPreviousMonthInt(currentYear, currentMonth)
+    const { year: nextYear, month: nextMonth } = getNextMonthInt(currentYear, currentMonth)
 
     const handleMonthChange = (year: number, month: number) => {
         startTransition(() => {

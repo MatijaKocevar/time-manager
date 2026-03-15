@@ -4,6 +4,7 @@ import type {
     MonthSummary,
     ValidationWarning,
 } from "../schemas/hours-schema"
+import { getErrorMessage } from "../../utils/helpers"
 
 function cleanText(text: string): string {
     return text
@@ -223,7 +224,7 @@ export function parseHoursHtml(html: string): ParsedHoursResult {
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to parse HTML",
+            error: getErrorMessage(error, "Failed to parse HTML"),
         }
     }
 }

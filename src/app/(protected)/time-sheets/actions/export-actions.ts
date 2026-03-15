@@ -1,21 +1,12 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
+import { requireAuth } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
 import { type ExportMetadata, DateRangeInputSchema } from "@/features/export"
 import type { ExportFormat } from "@/features/export"
 import * as Papa from "papaparse"
 import ExcelJS from "exceljs"
 import { aggregateTimeEntriesByTaskAndDate } from "../utils/aggregation-helpers"
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
 
 function formatDateKey(date: Date): string {
     const year = date.getFullYear()

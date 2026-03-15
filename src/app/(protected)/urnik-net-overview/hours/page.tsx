@@ -1,6 +1,5 @@
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { requireAuth } from "@/lib/auth-helpers"
 import { getTranslations } from "next-intl/server"
 import { fetchMonthlyHours } from "./actions/hours-actions"
 import { HoursView } from "./components/hours-view"
@@ -12,11 +11,7 @@ export default async function UrnikNetHoursPage({
 }: {
     searchParams: Promise<{ year?: string; month?: string }>
 }) {
-    const session = await getServerSession(authConfig)
-
-    if (!session?.user) {
-        redirect("/login")
-    }
+    await requireAuth().catch(() => redirect("/login"))
 
     const t = await getTranslations("urnikNetHours")
     const tYearlyCalendar = await getTranslations("yearlyCalendar")

@@ -1,6 +1,6 @@
 "use server"
 
-import { getServerSession } from "next-auth"
+import { requireAdmin } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
 import { sendEmail } from "@/features/notifications/lib/email"
 import { newRequestForAdminsEmail } from "@/features/notifications/lib/email-templates"
@@ -8,21 +8,6 @@ import {
     sendPushNotification,
     sendPushToAdmins,
 } from "@/features/notifications/actions/notification-actions"
-import { authConfig } from "@/lib/auth"
-
-async function requireAdmin() {
-    const session = await getServerSession(authConfig)
-
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-
-    if (session.user.role !== "ADMIN") {
-        throw new Error("Admin access required")
-    }
-
-    return session
-}
 
 export async function testEmailAction(email: string) {
     await requireAdmin()

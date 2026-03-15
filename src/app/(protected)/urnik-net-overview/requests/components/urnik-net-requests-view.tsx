@@ -11,7 +11,11 @@ import { Table, TableBody } from "@/components/ui/table"
 import type { PendingUrnikNetRequest } from "../schemas/urnik-net-requests-schemas"
 import { submitPendingUrnikNetRequestToUrnik } from "../actions/urnik-net-requests-actions"
 import { buildExistingRequestDates, mergeAndSortRows } from "../utils/request-row-helpers"
-import { formatMonthLabel, getPreviousMonth, getNextMonth } from "../utils/month-navigation-helpers"
+import {
+    formatMonthLabel,
+    getPreviousMonth,
+    getNextMonth,
+} from "../../utils/month-navigation-helpers"
 import { CreateRequestButton } from "./create-request-button"
 import { RequestsTableHeader } from "./requests-table-header"
 import { PendingRequestRow } from "./pending-request-row"

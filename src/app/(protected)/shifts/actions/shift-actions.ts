@@ -1,17 +1,8 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
+import { requireAuth } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
 import { GetShiftsForPeriodSchema, type GetShiftsForPeriodInput } from "../schemas/shift-schemas"
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
 
 export async function getShiftsForPeriod(input: GetShiftsForPeriodInput) {
     await requireAuth()

@@ -10,6 +10,10 @@ import {
     type GetPendingUrnikNetRequestsInput,
     type PendingUrnikNetRequest,
 } from "../schemas/urnik-net-requests-schemas"
+import { requireAuth } from "@/lib/auth-helpers"
+import { URNIK_USER_AGENT } from "../../lib/constants"
+import { getErrorMessage } from "../../utils/helpers"
+import { formatDateYYYYSlashMMDD } from "../../utils/date-helpers"
 
 interface UrnikNetRequest {
     no: string
@@ -163,7 +167,7 @@ function parseUrnikNetRequestsHtml(html: string): {
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to parse HTML",
+            error: getErrorMessage(error, "Failed to parse HTML"),
             structureValid: false,
         }
     }
@@ -174,8 +178,7 @@ export async function loginToUrnikNet(username: string, password: string) {
         const loginPageResponse = await fetch("https://urnik.net/Account/Login", {
             method: "GET",
             headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                "User-Agent": URNIK_USER_AGENT,
             },
         })
 
@@ -229,8 +232,7 @@ export async function loginToUrnikNet(username: string, password: string) {
             method: "POST",
             headers: {
                 "Content-Type": `multipart/form-data; boundary=${boundary}`,
-                "User-Agent":
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                "User-Agent": URNIK_USER_AGENT,
                 Cookie: cookies,
                 requestverificationtoken: verificationToken,
                 "X-Requested-With": "XMLHttpRequest",
@@ -281,8 +283,7 @@ export async function loginToUrnikNet(username: string, password: string) {
             {
                 method: "GET",
                 headers: {
-                    "User-Agent":
-                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                    "User-Agent": URNIK_USER_AGENT,
                     Cookie: sessionCookie,
                     "X-Requested-With": "XMLHttpRequest",
                 },
@@ -306,7 +307,7 @@ export async function loginToUrnikNet(username: string, password: string) {
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Unknown error occurred",
+            error: getErrorMessage(error, "Unknown error occurred"),
         }
     }
 }
@@ -373,8 +374,7 @@ export async function fetchUrnikNetRequests(month?: string) {
             {
                 method: "GET",
                 headers: {
-                    "User-Agent":
-                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                    "User-Agent": URNIK_USER_AGENT,
                     Cookie: loginResult.cookie,
                 },
             }
@@ -417,17 +417,9 @@ export async function fetchUrnikNetRequests(month?: string) {
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Unknown error occurred",
+            error: getErrorMessage(error, "Unknown error occurred"),
         }
     }
-}
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
 }
 
 export async function calculatePendingUrnikNetRequests(
@@ -533,7 +525,7 @@ export async function calculatePendingUrnikNetRequests(
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to calculate pending requests",
+            error: getErrorMessage(error, "Failed to calculate pending requests"),
         }
     }
 }
@@ -571,10 +563,7 @@ export async function submitPendingUrnikNetRequestToUrnik(
             },
         })
 
-        const year = pendingUrnikNetRequest.date.getFullYear()
-        const month = String(pendingUrnikNetRequest.date.getMonth() + 1).padStart(2, "0")
-        const day = String(pendingUrnikNetRequest.date.getDate()).padStart(2, "0")
-        const dateTime = `${year}/${month}/${day}`
+        const dateTime = formatDateYYYYSlashMMDD(pendingUrnikNetRequest.date)
 
         const url = new URL("https://urnik.net/App/Main")
         url.searchParams.append("handler", "SaveRequestHours")
@@ -587,8 +576,7 @@ export async function submitPendingUrnikNetRequestToUrnik(
         const response = await fetch(url.toString(), {
             method: "GET",
             headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                "User-Agent": URNIK_USER_AGENT,
                 Cookie: loginResult.cookie,
                 Accept: "*/*",
                 "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
@@ -615,7 +603,7 @@ export async function submitPendingUrnikNetRequestToUrnik(
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to submit request",
+            error: getErrorMessage(error, "Failed to submit request"),
         }
     } finally {
         revalidatePath("/urnik-net-overview/requests")
@@ -690,7 +678,7 @@ export async function syncUrnikNetStatuses(): Promise<{
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to sync statuses",
+            error: getErrorMessage(error, "Failed to sync statuses"),
         }
     }
 }
@@ -722,7 +710,7 @@ export async function getSubmittedUrnikNetRequests() {
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to fetch submitted requests",
+            error: getErrorMessage(error, "Failed to fetch submitted requests"),
         }
     }
 }

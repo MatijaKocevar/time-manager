@@ -1,9 +1,8 @@
 "use server"
 
-import { getServerSession } from "next-auth"
+import { requireAuth } from "@/lib/auth-helpers"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import { authConfig } from "@/lib/auth"
 import type { HourType } from "@/../../prisma/generated/client"
 import {
     UpdateTaskTimeEntrySchema,
@@ -12,14 +11,6 @@ import {
     type DeleteTaskTimeEntryInput,
 } from "../schemas/task-time-entry-schemas"
 import { broadcastTimerEvent, refreshTimerData, type TimerBroadcastData } from "@/lib/timer-utils"
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
 
 export async function getTaskTimeEntries(taskId: string) {
     try {

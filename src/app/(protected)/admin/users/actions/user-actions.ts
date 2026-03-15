@@ -1,11 +1,9 @@
 "use server"
 
-import { getServerSession } from "next-auth"
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
-import { authConfig } from "@/lib/auth"
-import { requireNotDemo } from "@/app/(protected)/hours/utils/auth-helpers"
+import { requireAdmin, requireNotDemo } from "@/lib/auth-helpers"
 import {
     CreateUserSchema,
     UpdateUserSchema,
@@ -22,20 +20,6 @@ import {
     type ReactivateUserInput,
     type AnonymizeUserInput,
 } from "../schemas/user-action-schemas"
-
-async function requireAdmin() {
-    const session = await getServerSession(authConfig)
-
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-
-    if (session.user.role !== "ADMIN") {
-        throw new Error("Admin access required")
-    }
-
-    return session
-}
 
 export async function getUsers(includeDeactivated = false) {
     await requireAdmin()

@@ -1,7 +1,5 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { getUrnikCookie } from "@/lib/urnik-session"
@@ -9,42 +7,19 @@ import {
     CreateUrnikNetDayRequestSchema,
     type CreateUrnikNetDayRequestInput,
 } from "../schemas/create-urnik-net-day-request-schema"
+import { requireAuth } from "@/lib/auth-helpers"
+import { URNIK_USER_AGENT } from "../../lib/constants"
+import { calculateWorkDays, formatDateDDMMYYYY } from "../../utils/date-helpers"
+import { getErrorMessage } from "../../utils/helpers"
 
 const URNIK_TENANT_ID = process.env.URNIK_TENANT_ID ?? ""
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
-
-function calculateWorkDays(startDate: Date, endDate: Date): number {
-    let count = 0
-    const current = new Date(startDate)
-    while (current <= endDate) {
-        const day = current.getDay()
-        if (day !== 0 && day !== 6) count++
-        current.setDate(current.getDate() + 1)
-    }
-    return count
-}
-
-function formatDateDDMMYYYY(date: Date): string {
-    const day = String(date.getDate()).padStart(2, "0")
-    const month = String(date.getMonth() + 1).padStart(2, "0")
-    const year = date.getFullYear()
-    return `${day}-${month}-${year}`
-}
 
 async function extractCsrfToken(cookie: string): Promise<string | null> {
     try {
         const response = await fetch("https://urnik.net/App/Main", {
             method: "GET",
             headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                "User-Agent": URNIK_USER_AGENT,
                 Cookie: cookie,
                 Accept: "text/html",
                 "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
@@ -86,8 +61,7 @@ async function submitVacationRequest(
     const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
-            "User-Agent":
-                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+            "User-Agent": URNIK_USER_AGENT,
             Cookie: cookie,
             Accept: "*/*",
             "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
@@ -125,8 +99,7 @@ async function submitSickLeaveRequest(
     const response = await fetch("https://urnik.net/App/Main?handler=SaveSickdayRequest", {
         method: "POST",
         headers: {
-            "User-Agent":
-                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+            "User-Agent": URNIK_USER_AGENT,
             Cookie: cookie,
             Accept: "*/*",
             "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
@@ -164,8 +137,7 @@ async function submitWorkFromHomeRequest(
     const response = await fetch("https://urnik.net/App/Main?handler=SaveWHRequest", {
         method: "POST",
         headers: {
-            "User-Agent":
-                "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+            "User-Agent": URNIK_USER_AGENT,
             Cookie: cookie,
             Accept: "*/*",
             "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
@@ -294,7 +266,7 @@ export async function createUrnikNetDayRequest(
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Unknown error",
+            error: getErrorMessage(error),
         }
     }
 }

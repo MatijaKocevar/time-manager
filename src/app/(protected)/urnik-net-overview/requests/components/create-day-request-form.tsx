@@ -11,6 +11,7 @@ import { useCreateRequestStore } from "../stores/create-request-store"
 import { createUrnikNetDayRequest } from "../actions/create-urnik-net-day-request-action"
 import type { UrnikDayRequestType } from "../schemas/create-urnik-net-day-request-schema"
 import type { WorkType } from "@/lib/work-type-styles"
+import { calculateWorkDays } from "../../utils/date-helpers"
 
 interface CreateDayRequestFormProps {
     startDateLabel: string
@@ -53,18 +54,7 @@ export function CreateDayRequestForm({
     const [comment, setComment] = useState("")
 
     const workDays =
-        startDate && endDate && endDate >= startDate
-            ? (() => {
-                  let count = 0
-                  const current = new Date(startDate)
-                  while (current <= endDate) {
-                      const day = current.getDay()
-                      if (day !== 0 && day !== 6) count++
-                      current.setDate(current.getDate() + 1)
-                  }
-                  return count
-              })()
-            : null
+        startDate && endDate && endDate >= startDate ? calculateWorkDays(startDate, endDate) : null
 
     const typeLabels: Record<UrnikDayRequestType, string> = {
         VACATION: typeVacation,

@@ -1,8 +1,7 @@
 "use server"
 
 import * as webpush from "web-push"
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
+import { requireAuth } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import { UpdateNotificationPreferencesSchema } from "../schemas/notification-schemas"
@@ -39,14 +38,6 @@ const PushSubscriptionSchema = z.object({
 })
 
 type PushSubscriptionInput = z.infer<typeof PushSubscriptionSchema>
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
 
 export interface PendingRequestNotification {
     id: string

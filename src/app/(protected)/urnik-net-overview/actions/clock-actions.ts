@@ -1,12 +1,13 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
 import { getUrnikCookie } from "@/lib/urnik-session"
+import { requireAuth } from "@/lib/auth-helpers"
+import { getErrorMessage } from "../utils/helpers"
 import { revalidatePath } from "next/cache"
 import { stopTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import { prisma } from "@/lib/prisma"
 import { DayInfoSchema, type DayInfo, type DayInfoResult } from "../schemas/day-info-schema"
+import { URNIK_USER_AGENT } from "../lib/constants"
 
 function parseDayInfo(html: string): DayInfoResult {
     try {
@@ -113,7 +114,7 @@ function parseDayInfo(html: string): DayInfoResult {
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Failed to parse HTML",
+            error: getErrorMessage(error, "Failed to parse HTML"),
             structureValid: false,
         }
     }
@@ -121,11 +122,7 @@ function parseDayInfo(html: string): DayInfoResult {
 
 export async function getTodayDayInfo(): Promise<DayInfoResult> {
     try {
-        const session = await getServerSession(authConfig)
-
-        if (!session?.user) {
-            return { success: false, error: "Unauthorized" }
-        }
+        await requireAuth()
 
         const cookie = await getUrnikCookie()
 
@@ -136,8 +133,7 @@ export async function getTodayDayInfo(): Promise<DayInfoResult> {
         const response = await fetch("https://urnik.net/App/Main?handler=LoadMonthDayInfo", {
             method: "GET",
             headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                "User-Agent": URNIK_USER_AGENT,
                 Cookie: cookie,
                 "X-Requested-With": "XMLHttpRequest",
                 Accept: "*/*",
@@ -155,7 +151,7 @@ export async function getTodayDayInfo(): Promise<DayInfoResult> {
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Unknown error",
+            error: getErrorMessage(error),
             structureValid: false,
         }
     }
@@ -163,11 +159,7 @@ export async function getTodayDayInfo(): Promise<DayInfoResult> {
 
 export async function clockInToUrnik(isWorkFromHome: boolean = false) {
     try {
-        const session = await getServerSession(authConfig)
-
-        if (!session?.user) {
-            return { success: false, error: "Unauthorized" }
-        }
+        await requireAuth()
 
         const cookie = await getUrnikCookie()
 
@@ -181,8 +173,7 @@ export async function clockInToUrnik(isWorkFromHome: boolean = false) {
             {
                 method: "GET",
                 headers: {
-                    "User-Agent":
-                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                    "User-Agent": URNIK_USER_AGENT,
                     Cookie: cookie,
                     "X-Requested-With": "XMLHttpRequest",
                     Accept: "application/json, text/javascript, */*; q=0.01",
@@ -215,18 +206,14 @@ export async function clockInToUrnik(isWorkFromHome: boolean = false) {
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Unknown error occurred",
+            error: getErrorMessage(error, "Unknown error occurred"),
         }
     }
 }
 
 export async function clockOutFromUrnik() {
     try {
-        const session = await getServerSession(authConfig)
-
-        if (!session?.user) {
-            return { success: false, error: "Unauthorized" }
-        }
+        await requireAuth()
 
         const cookie = await getUrnikCookie()
 
@@ -237,8 +224,7 @@ export async function clockOutFromUrnik() {
         const response = await fetch("https://urnik.net/App/Main?handler=SetTimeOutPicker&type=0", {
             method: "GET",
             headers: {
-                "User-Agent":
-                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36",
+                "User-Agent": URNIK_USER_AGENT,
                 Cookie: cookie,
                 "X-Requested-With": "XMLHttpRequest",
                 Accept: "application/json, text/javascript, */*; q=0.01",
@@ -270,18 +256,14 @@ export async function clockOutFromUrnik() {
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Unknown error occurred",
+            error: getErrorMessage(error, "Unknown error occurred"),
         }
     }
 }
 
 export async function clockOutAndStopTimer() {
     try {
-        const session = await getServerSession(authConfig)
-
-        if (!session?.user) {
-            return { success: false, error: "Unauthorized" }
-        }
+        const session = await requireAuth()
 
         const activeTimer = await prisma.taskTimeEntry.findFirst({
             where: {
@@ -303,7 +285,7 @@ export async function clockOutAndStopTimer() {
     } catch (error) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : "Unknown error occurred",
+            error: getErrorMessage(error, "Unknown error occurred"),
         }
     }
 }
