@@ -13,6 +13,8 @@ export function mapRequestTypeToShiftLocation(type: RequestType): ShiftLocation 
             return SHIFT_LOCATION.SICK_LEAVE
         case REQUEST_TYPE.WORK_FROM_HOME:
             return SHIFT_LOCATION.HOME
+        case REQUEST_TYPE.WORK:
+            return SHIFT_LOCATION.OFFICE
     }
 }
 
@@ -37,6 +39,8 @@ export function mapRequestTypeToHourType(type: RequestType): HourType {
             return "SICK_LEAVE"
         case REQUEST_TYPE.WORK_FROM_HOME:
             return "WORK_FROM_HOME"
+        case REQUEST_TYPE.WORK:
+            return "WORK"
     }
 }
 

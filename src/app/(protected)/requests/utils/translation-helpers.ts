@@ -1,12 +1,13 @@
 import type { RequestType, RequestStatus } from "../schemas/request-schemas"
 
-export type RequestTypeTranslationKey = "vacation" | "sickLeave" | "workFromHome"
+export type RequestTypeTranslationKey = "vacation" | "sickLeave" | "workFromHome" | "work"
 export type RequestStatusTranslationKey = "pending" | "approved" | "rejected" | "cancelled"
 
 const REQUEST_TYPE_TO_TRANSLATION_KEY: Record<RequestType, RequestTypeTranslationKey> = {
     VACATION: "vacation",
     SICK_LEAVE: "sickLeave",
     WORK_FROM_HOME: "workFromHome",
+    WORK: "work",
 }
 
 const REQUEST_STATUS_TO_TRANSLATION_KEY: Record<RequestStatus, RequestStatusTranslationKey> = {

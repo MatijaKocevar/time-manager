@@ -366,7 +366,8 @@
             "vacation": "Vacation",
             "sickLeave": "Sick Leave",
             "workFromHome": "Work From Home",
-            "businessTrip": "Business Trip"
+            "businessTrip": "Business Trip",
+            "work": "Work"
         },
         "statuses": {
             "pending": "Pending",

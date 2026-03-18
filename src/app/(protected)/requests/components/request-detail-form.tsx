@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/datetime-picker"
 import { useEffect } from "react"
 import { format } from "date-fns"
 import {
@@ -219,7 +220,7 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                 <div className="space-y-2">
                     <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
                     {isEditable ? (
-                        <>
+                        formData.isFullDay ? (
                             <DatePicker
                                 date={formData.startDate ? new Date(formData.startDate) : undefined}
                                 onDateChange={(date) =>
@@ -229,7 +230,28 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                                 }
                                 placeholder={t("selectStartDate")}
                             />
-                        </>
+                        ) : (
+                            <DateTimePicker
+                                value={
+                                    formData.startDate
+                                        ? new Date(
+                                              `${formData.startDate}T${formData.startTime || "00:00"}:00`
+                                          )
+                                        : undefined
+                                }
+                                onChange={(date) => {
+                                    if (date) {
+                                        setFormData({
+                                            startDate: format(date, "yyyy-MM-dd"),
+                                            startTime: format(date, "HH:mm"),
+                                        })
+                                    }
+                                }}
+                                modal={true}
+                                hideTime={false}
+                                timePicker={{ hour: true, minute: true, second: false }}
+                            />
+                        )
                     ) : (
                         request && (
                             <div className="text-lg">
@@ -246,7 +268,7 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                 <div className="space-y-2">
                     <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
                     {isEditable ? (
-                        <>
+                        formData.isFullDay ? (
                             <DatePicker
                                 date={formData.endDate ? new Date(formData.endDate) : undefined}
                                 onDateChange={(date) =>
@@ -256,7 +278,28 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                                 }
                                 placeholder={t("selectEndDate")}
                             />
-                        </>
+                        ) : (
+                            <DateTimePicker
+                                value={
+                                    formData.endDate
+                                        ? new Date(
+                                              `${formData.endDate}T${formData.endTime || "00:00"}:00`
+                                          )
+                                        : undefined
+                                }
+                                onChange={(date) => {
+                                    if (date) {
+                                        setFormData({
+                                            endDate: format(date, "yyyy-MM-dd"),
+                                            endTime: format(date, "HH:mm"),
+                                        })
+                                    }
+                                }}
+                                modal={true}
+                                hideTime={false}
+                                timePicker={{ hour: true, minute: true, second: false }}
+                            />
+                        )
                     ) : (
                         request && (
                             <div className="text-lg">
@@ -286,59 +329,6 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                             {t("fullDay")}
                         </Label>
                     </div>
-
-                    {!formData.isFullDay && (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="startTime">{t("startTime")}</Label>
-                                <Select
-                                    value={formData.startTime}
-                                    onValueChange={(value) => setFormData({ startTime: value })}
-                                >
-                                    <SelectTrigger id="startTime">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from({ length: 24 }, (_, i) => {
-                                            const hour = i.toString().padStart(2, "0")
-                                            return ["00", "15", "30", "45"].map((min) => {
-                                                const time = `${hour}:${min}`
-                                                return (
-                                                    <SelectItem key={time} value={time}>
-                                                        {time}
-                                                    </SelectItem>
-                                                )
-                                            })
-                                        })}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="endTime">{t("endTime")}</Label>
-                                <Select
-                                    value={formData.endTime}
-                                    onValueChange={(value) => setFormData({ endTime: value })}
-                                >
-                                    <SelectTrigger id="endTime">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from({ length: 24 }, (_, i) => {
-                                            const hour = i.toString().padStart(2, "0")
-                                            return ["00", "15", "30", "45"].map((min) => {
-                                                const time = `${hour}:${min}`
-                                                return (
-                                                    <SelectItem key={time} value={time}>
-                                                        {time}
-                                                    </SelectItem>
-                                                )
-                                            })
-                                        })}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    )}
 
                     {requestedHours !== null && !formData.isFullDay && (
                         <div className="text-sm text-muted-foreground">

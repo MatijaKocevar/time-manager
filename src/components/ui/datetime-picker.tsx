@@ -314,6 +314,7 @@ export function DateTimePicker({
                         mode="single"
                         selected={date}
                         onSelect={(d) => d && onDayChanged(d)}
+                        weekStartsOn={1}
                         month={month}
                         endMonth={endMonth}
                         disabled={
