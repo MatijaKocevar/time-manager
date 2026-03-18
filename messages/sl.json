@@ -366,7 +366,8 @@
             "vacation": "Dopust",
             "sickLeave": "Bolniška",
             "workFromHome": "Delo od doma",
-            "businessTrip": "Službeno potovanje"
+            "businessTrip": "Službeno potovanje",
+            "work": "Delo"
         },
         "statuses": {
             "pending": "V čakanju",

@@ -2,7 +2,7 @@ import { z } from "zod"
 
 const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
 
-export const RequestTypeSchema = z.enum(["VACATION", "SICK_LEAVE", "WORK_FROM_HOME"])
+export const RequestTypeSchema = z.enum(["VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "WORK"])
 
 export const RequestStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED", "CANCELLED"])
 

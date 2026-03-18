@@ -360,6 +360,7 @@ enum TaskStatus {
 }
 
 enum RequestType {
+  WORK
   VACATION
   SICK_LEAVE
   WORK_FROM_HOME
