@@ -1,6 +1,6 @@
 "use client"
 
-import { Fragment, useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useSearchParams, useRouter } from "next/navigation"
 import {
@@ -28,6 +28,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { approveRequest, rejectRequest } from "../../../requests/actions/request-actions"
 import { requestKeys } from "../../../requests/query-keys"
 import { hourKeys } from "../../../hours/query-keys"
+import { toast } from "sonner"
 import { ColumnFilter } from "./column-filter"
 import { RejectDialog } from "./reject-dialog"
 import { createColumns } from "../utils/columns"
@@ -85,17 +86,15 @@ export function PendingRequestsTable({
             return { previousRequests }
         },
         onSuccess: (data) => {
-            if (data.error) {
-                console.error("Approval error:", data.error)
-                alert(`Error: ${data.error}`)
+            if ("error" in data) {
+                toast.error(data.error)
                 queryClient.invalidateQueries({ queryKey: requestKeys.all })
             } else {
                 queryClient.invalidateQueries({ queryKey: hourKeys.all })
             }
         },
         onError: (error, _variables, context) => {
-            console.error("Approval mutation error:", error)
-            alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`)
+            toast.error(error instanceof Error ? error.message : "Unknown error")
             if (context?.previousRequests) {
                 queryClient.setQueryData(requestKeys.all, context.previousRequests)
             }
@@ -192,35 +191,33 @@ export function PendingRequestsTable({
                     <Table>
                         <TableHeader className="sticky top-0 z-30 bg-background">
                             {table.getHeaderGroups().map((headerGroup) => (
-                                <Fragment key={headerGroup.id}>
-                                    <TableRow>
-                                        {headerGroup.headers.map((header, index) => (
-                                            <TableHead
-                                                key={header.id}
-                                                className={`font-semibold ${
-                                                    index === 0
-                                                        ? "sticky top-0 left-0 z-40 bg-background min-w-[150px] max-w-[200px] border-r"
-                                                        : ""
-                                                }`}
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    {header.isPlaceholder
-                                                        ? null
-                                                        : flexRender(
-                                                              header.column.columnDef.header,
-                                                              header.getContext()
-                                                          )}
-                                                    {header.column.getCanFilter() && (
-                                                        <ColumnFilter
-                                                            column={header.column}
-                                                            translations={translations}
-                                                        />
-                                                    )}
-                                                </div>
-                                            </TableHead>
-                                        ))}
-                                    </TableRow>
-                                </Fragment>
+                                <TableRow key={headerGroup.id}>
+                                    {headerGroup.headers.map((header, index) => (
+                                        <TableHead
+                                            key={header.id}
+                                            className={`font-semibold ${
+                                                index === 0
+                                                    ? "sticky top-0 left-0 z-40 bg-background min-w-[150px] max-w-[200px] border-r"
+                                                    : ""
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                          header.column.columnDef.header,
+                                                          header.getContext()
+                                                      )}
+                                                {header.column.getCanFilter() && (
+                                                    <ColumnFilter
+                                                        column={header.column}
+                                                        translations={translations}
+                                                    />
+                                                )}
+                                            </div>
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
                             ))}
                         </TableHeader>
                         <TableBody>

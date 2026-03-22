@@ -18,6 +18,7 @@ const CreateRequestInputSchema = z
         location: z.string().optional(),
         skipWeekends: z.boolean().default(true),
         skipHolidays: z.boolean().default(true),
+        sendToUrnikNet: z.boolean().default(false),
     })
     .refine(
         (data) => {
@@ -82,6 +83,7 @@ export const CreateRequestSchema = CreateRequestInputSchema.transform((data) => 
         affectsHourType: true,
         skipWeekends: data.skipWeekends,
         skipHolidays: data.skipHolidays,
+        sendToUrnikNet: data.sendToUrnikNet,
     }
 })
 
@@ -186,6 +188,11 @@ export const RequestDisplaySchema = z.object({
     supersededBy: z.string().nullable(),
     trimmedBy: z.string().nullable(),
     splitFrom: z.string().nullable(),
+    urnikNetSynced: z.boolean(),
+    urnikNetStatus: z.enum(["PENDING", "CONFIRMED", "REJECTED", "FAILED"]).nullable(),
+    urnikNetSyncedAt: z.date().nullable(),
+    urnikNetRequestNo: z.string().nullable(),
+    urnikNetError: z.string().nullable(),
     createdAt: z.date(),
     updatedAt: z.date(),
     user: z

@@ -9,9 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 interface RequestsTableWithDialogProps {
     requests: RequestDisplay[]
     showUser: boolean
+    hasUrnikCredentials?: boolean
 }
 
-export function RequestsTableWithDialog({ requests, showUser }: RequestsTableWithDialogProps) {
+export function RequestsTableWithDialog({
+    requests,
+    showUser,
+    hasUrnikCredentials = false,
+}: RequestsTableWithDialogProps) {
     const [selectedRequest, setSelectedRequest] = useState<RequestDisplay | null>(null)
     const [isNewRequestOpen, setIsNewRequestOpen] = useState(false)
 
@@ -29,7 +34,10 @@ export function RequestsTableWithDialog({ requests, showUser }: RequestsTableWit
                     <DialogHeader>
                         <DialogTitle>New Request</DialogTitle>
                     </DialogHeader>
-                    <RequestDetailForm onSuccess={() => setIsNewRequestOpen(false)} />
+                    <RequestDetailForm
+                        onSuccess={() => setIsNewRequestOpen(false)}
+                        hasUrnikCredentials={hasUrnikCredentials}
+                    />
                 </DialogContent>
             </Dialog>
 
@@ -42,6 +50,7 @@ export function RequestsTableWithDialog({ requests, showUser }: RequestsTableWit
                         <RequestDetailForm
                             request={selectedRequest}
                             onSuccess={() => setSelectedRequest(null)}
+                            hasUrnikCredentials={hasUrnikCredentials}
                         />
                     )}
                 </DialogContent>

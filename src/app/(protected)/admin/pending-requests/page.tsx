@@ -38,6 +38,7 @@ export default async function PendingRequestsPage() {
             rejecting: tTable("rejecting"),
             noPending: tTable("noPending"),
             searchPlaceholder: tTable("searchPlaceholder"),
+            awaitingUrnikNet: tTable("awaitingUrnikNet"),
         },
         reject: {
             title: tReject("title"),

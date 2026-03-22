@@ -31,9 +31,14 @@ import {
 interface RequestDetailFormProps {
     request?: RequestDisplay
     onSuccess?: () => void
+    hasUrnikCredentials?: boolean
 }
 
-export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps) {
+export function RequestDetailForm({
+    request,
+    onSuccess,
+    hasUrnikCredentials = false,
+}: RequestDetailFormProps) {
     const t = useTranslations("requests.form")
     const tCommon = useTranslations("common")
     const tTypes = useTranslations("requests.types")
@@ -121,6 +126,7 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                     formData.type === REQUEST_TYPE.WORK_FROM_HOME ? formData.location : undefined,
                 skipWeekends: formData.skipWeekends,
                 skipHolidays: formData.skipHolidays,
+                sendToUrnikNet: formData.sendToUrnikNet,
             })
         }
     }
@@ -155,7 +161,8 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
         return new Date(date).toLocaleDateString()
     }
 
-    const isEditable = !request || request.status === REQUEST_STATUS.PENDING
+    const isUrnikSynced = !!request?.urnikNetSynced
+    const isEditable = !isUrnikSynced && (!request || request.status === REQUEST_STATUS.PENDING)
     const canCancel = request && request.status === REQUEST_STATUS.PENDING
     const needsLocation = formData.type === REQUEST_TYPE.WORK_FROM_HOME
     const isPending = updateMutation.isPending || createMutation.isPending
@@ -182,6 +189,12 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                             </Button>
                         )}
                     </div>
+                </div>
+            )}
+
+            {isUrnikSynced && (
+                <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
+                    {t("urnikSyncedNote")}
                 </div>
             )}
 
@@ -412,6 +425,30 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                     )}
                 </>
             )}
+
+            {isEditable &&
+                !request &&
+                hasUrnikCredentials &&
+                formData.type &&
+                formData.type !== "WORK" && (
+                    <div className="space-y-2 rounded-md border border-border p-4">
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="send-to-urnik"
+                                checked={formData.sendToUrnikNet}
+                                onCheckedChange={(checked) =>
+                                    setFormData({ sendToUrnikNet: checked === true })
+                                }
+                            />
+                            <Label htmlFor="send-to-urnik" className="cursor-pointer font-normal">
+                                {t("sendToUrnikNet")}
+                            </Label>
+                        </div>
+                        {formData.sendToUrnikNet && (
+                            <p className="text-sm text-muted-foreground">{t("urnikNetNote")}</p>
+                        )}
+                    </div>
+                )}
 
             {isEditable && (
                 <div className="flex justify-end">

@@ -8,181 +8,13 @@ import {
     type CreateUrnikNetDayRequestInput,
 } from "../schemas/create-urnik-net-day-request-schema"
 import { requireAuth } from "@/lib/auth-helpers"
-import { URNIK_USER_AGENT } from "../../lib/constants"
-import { calculateWorkDays, formatDateDDMMYYYY } from "../../utils/date-helpers"
 import { getErrorMessage } from "../../utils/helpers"
-
-const URNIK_TENANT_ID = process.env.URNIK_TENANT_ID ?? ""
-
-async function extractCsrfToken(
-    cookie: string
-): Promise<{ token: string; antiforgery: string } | null> {
-    try {
-        const response = await fetch("https://urnik.net/App/Main", {
-            method: "GET",
-            headers: {
-                "User-Agent": URNIK_USER_AGENT,
-                Cookie: cookie,
-                Accept: "text/html",
-                "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
-            },
-        })
-
-        if (!response.ok) {
-            return null
-        }
-
-        const html = await response.text()
-        const tokenMatch = html.match(
-            /<input[^>]*name="__RequestVerificationToken"[^>]*value="([^"]+)"/
-        )
-        if (!tokenMatch) {
-            return null
-        }
-
-        const setCookie = response.headers.get("set-cookie") ?? ""
-        const antiforgeryCookie = setCookie
-            .split(",")
-            .map((c) => c.trim().split(";")[0])
-            .find((c) => c.includes(".AspNetCore.Antiforgery"))
-
-        if (!antiforgeryCookie) {
-            return null
-        }
-
-        return { token: tokenMatch[1], antiforgery: antiforgeryCookie }
-    } catch {
-        return null
-    }
-}
-
-async function submitVacationRequest(
-    cookie: string,
-    urnikUserId: string,
-    startDate: Date,
-    endDate: Date,
-    comment: string
-): Promise<{ success: boolean; error?: string }> {
-    const startUnix = Math.floor(startDate.getTime() / 1000)
-    const endUnix = Math.floor(endDate.getTime() / 1000)
-
-    const url = new URL("https://urnik.net/App/Vacation/Vacation")
-    url.searchParams.append("handler", "SaveSimpleVac")
-    url.searchParams.append("UserID", urnikUserId)
-    url.searchParams.append("start", String(startUnix))
-    url.searchParams.append("end", String(endUnix))
-    url.searchParams.append("comment", comment)
-
-    const response = await fetch(url.toString(), {
-        method: "GET",
-        headers: {
-            "User-Agent": URNIK_USER_AGENT,
-            Cookie: cookie,
-            Accept: "*/*",
-            "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
-            "X-Requested-With": "XMLHttpRequest",
-            Referer: "https://urnik.net/App/Vacation/Vacation",
-        },
-    })
-
-    if (!response.ok) {
-        return { success: false, error: `Urnik.net returned ${response.status}` }
-    }
-
-    return { success: true }
-}
-
-async function submitSickLeaveRequest(
-    cookie: string,
-    csrfToken: string,
-    antiforgeryCookie: string,
-    urnikUserId: string,
-    startDate: Date,
-    endDate: Date,
-    comment: string
-): Promise<{ success: boolean; error?: string }> {
-    const formData = new FormData()
-    formData.append("SickdayType", "4")
-    formData.append("startDate", formatDateDDMMYYYY(startDate))
-    formData.append("endDate", formatDateDDMMYYYY(endDate))
-    formData.append("Duration", String(calculateWorkDays(startDate, endDate)))
-
-    formData.append("Description", comment)
-    formData.append("TenantID", URNIK_TENANT_ID)
-    formData.append("UserID", urnikUserId)
-    formData.append("__RequestVerificationToken", csrfToken)
-
-    const response = await fetch("https://urnik.net/App/Main?handler=SaveSickdayRequest", {
-        method: "POST",
-        headers: {
-            "User-Agent": URNIK_USER_AGENT,
-            Cookie: `${cookie}; ${antiforgeryCookie}`,
-            Accept: "*/*",
-            "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
-            "X-Requested-With": "XMLHttpRequest",
-            Referer: "https://urnik.net/App/Main",
-        },
-        body: formData,
-    })
-
-    if (!response.ok) {
-        return { success: false, error: `Urnik.net returned ${response.status}` }
-    }
-
-    return { success: true }
-}
-
-async function submitWorkFromHomeRequest(
-    cookie: string,
-    csrfToken: string,
-    antiforgeryCookie: string,
-    urnikUserId: string,
-    startDate: Date,
-    endDate: Date,
-    comment: string
-): Promise<{ success: boolean; error?: string }> {
-    const formData = new FormData()
-    formData.append("startDate", formatDateDDMMYYYY(startDate))
-    formData.append("endDate", formatDateDDMMYYYY(endDate))
-    formData.append("Duration", String(calculateWorkDays(startDate, endDate)))
-    formData.append("__Invariant", "Duration")
-    formData.append("Description", comment)
-    formData.append("TenantID", URNIK_TENANT_ID)
-    formData.append("UserID", urnikUserId)
-    formData.append("__RequestVerificationToken", csrfToken)
-
-    console.log("[WFH] Submitting to SaveWHRequest", {
-        startDate: formatDateDDMMYYYY(startDate),
-        endDate: formatDateDDMMYYYY(endDate),
-        duration: String(calculateWorkDays(startDate, endDate)),
-        tenantId: URNIK_TENANT_ID,
-        userId: urnikUserId,
-        hasCsrfToken: !!csrfToken,
-        hasAntiforgeryCookie: !!antiforgeryCookie,
-    })
-
-    const response = await fetch("https://urnik.net/App/Main?handler=SaveWHRequest", {
-        method: "POST",
-        headers: {
-            "User-Agent": URNIK_USER_AGENT,
-            Cookie: `${cookie}; ${antiforgeryCookie}`,
-            Accept: "*/*",
-            "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
-            "X-Requested-With": "XMLHttpRequest",
-            Referer: "https://urnik.net/App/Main",
-        },
-        body: formData,
-    })
-
-    const responseText = await response.text()
-    console.log("[WFH] SaveWHRequest response", { status: response.status, body: responseText })
-
-    if (!response.ok) {
-        return { success: false, error: `Urnik.net returned ${response.status}: ${responseText}` }
-    }
-
-    return { success: true }
-}
+import {
+    extractCsrfToken,
+    submitVacationToUrnikNet,
+    submitSickLeaveToUrnikNet,
+    submitWorkFromHomeToUrnikNet,
+} from "./urnik-net-day-submission"
 
 export async function createUrnikNetDayRequest(
     input: CreateUrnikNetDayRequestInput
@@ -246,7 +78,7 @@ export async function createUrnikNetDayRequest(
         let result: { success: boolean; error?: string }
 
         if (type === "VACATION") {
-            result = await submitVacationRequest(
+            result = await submitVacationToUrnikNet(
                 cookie,
                 urnikUserId,
                 startDate,
@@ -265,7 +97,7 @@ export async function createUrnikNetDayRequest(
             }
 
             if (type === "SICK_LEAVE") {
-                result = await submitSickLeaveRequest(
+                result = await submitSickLeaveToUrnikNet(
                     cookie,
                     csrf.token,
                     csrf.antiforgery,
@@ -275,7 +107,7 @@ export async function createUrnikNetDayRequest(
                     comment || record.id
                 )
             } else {
-                result = await submitWorkFromHomeRequest(
+                result = await submitWorkFromHomeToUrnikNet(
                     cookie,
                     csrf.token,
                     csrf.antiforgery,

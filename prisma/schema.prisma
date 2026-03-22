@@ -201,6 +201,11 @@ model Request {
   startTime           String?
   supersededBy        String?
   trimmedBy           String?
+  urnikNetSynced      Boolean       @default(false)
+  urnikNetStatus      UrnikRequestStatus?
+  urnikNetSyncedAt    DateTime?
+  urnikNetRequestNo   String?
+  urnikNetError       String?
   approver            User?         @relation("ApprovedRequests", fields: [approvedBy], references: [id])
   canceller           User?         @relation("CancelledRequests", fields: [cancelledBy], references: [id])
   rejector            User?         @relation("RejectedRequests", fields: [rejectedBy], references: [id])

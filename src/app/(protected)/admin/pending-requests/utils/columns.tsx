@@ -68,13 +68,20 @@ export function createColumns({
             accessorFn: (row) => getTypeTranslation(row.type as RequestType),
             header: translations.table.type,
             cell: ({ row }) => (
-                <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
-                        TYPE_COLORS[row.original.type]
-                    }`}
-                >
-                    {getTypeTranslation(row.original.type as RequestType)}
-                </span>
+                <div className="flex flex-wrap gap-1 items-center">
+                    <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
+                            TYPE_COLORS[row.original.type]
+                        }`}
+                    >
+                        {getTypeTranslation(row.original.type as RequestType)}
+                    </span>
+                    {row.original.urnikNetSynced && (
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 whitespace-nowrap">
+                            Urnik.net
+                        </span>
+                    )}
+                </div>
             ),
             enableColumnFilter: true,
             filterFn: "includesString",
@@ -129,18 +136,22 @@ export function createColumns({
             cell: ({ row }) => {
                 const isThisRowApproving = approvingId === row.original.id
                 const hasEarlier = hasEarlierPendingRequest(row.original)
+                const isUrnikSynced = row.original.urnikNetSynced
+                const disableActions = isUrnikSynced || hasEarlier
+                let title: string | undefined
+                if (isUrnikSynced) {
+                    title = translations.table.awaitingUrnikNet
+                } else if (hasEarlier) {
+                    title = "Earlier pending requests must be processed first"
+                }
                 return (
                     <div className="flex gap-2 justify-end w-[170px]">
                         <Button
                             size="sm"
                             onClick={() => onApprove(row.original.id)}
-                            disabled={isApproving || isThisRowApproving || hasEarlier}
+                            disabled={isApproving || isThisRowApproving || disableActions}
                             className="w-[84px]"
-                            title={
-                                hasEarlier
-                                    ? "Earlier pending requests must be processed first"
-                                    : undefined
-                            }
+                            title={title}
                         >
                             {isThisRowApproving ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -152,13 +163,9 @@ export function createColumns({
                             size="sm"
                             variant="destructive"
                             onClick={() => onReject(row.original.id)}
-                            disabled={isRejecting || isApproving || hasEarlier}
+                            disabled={isRejecting || isApproving || disableActions}
                             className="w-[76px]"
-                            title={
-                                hasEarlier
-                                    ? "Earlier pending requests must be processed first"
-                                    : undefined
-                            }
+                            title={title}
                         >
                             {translations.table.reject}
                         </Button>

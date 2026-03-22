@@ -67,13 +67,20 @@ export function createColumns({
             accessorFn: (row) => getTypeTranslation(row.type as RequestType),
             header: translations.table.type,
             cell: ({ row }) => (
-                <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
-                        TYPE_COLORS[row.original.type]
-                    }`}
-                >
-                    {getTypeTranslation(row.original.type as RequestType)}
-                </span>
+                <div className="flex flex-wrap gap-1 items-center">
+                    <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
+                            TYPE_COLORS[row.original.type]
+                        }`}
+                    >
+                        {getTypeTranslation(row.original.type as RequestType)}
+                    </span>
+                    {row.original.urnikNetSynced && (
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 whitespace-nowrap">
+                            Urnik.net
+                        </span>
+                    )}
+                </div>
             ),
             enableColumnFilter: true,
             filterFn: "includesString",

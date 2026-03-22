@@ -130,7 +130,7 @@ export function NotificationsDropdown({
             setProcessingId(variables.id)
         },
         onSuccess: (data) => {
-            if (data.error) {
+            if ("error" in data) {
                 alert(`Error: ${data.error}`)
                 queryClient.invalidateQueries({ queryKey: requestKeys.all })
             } else {
@@ -152,7 +152,7 @@ export function NotificationsDropdown({
             setProcessingId(variables.id)
         },
         onSuccess: (data) => {
-            if (data.error) {
+            if ("error" in data) {
                 alert(`Error: ${data.error}`)
                 queryClient.invalidateQueries({ queryKey: requestKeys.all })
             } else {
