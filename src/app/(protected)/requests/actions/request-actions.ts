@@ -31,6 +31,13 @@ import {
     type RequestDisplay,
 } from "../schemas/request-schemas"
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
+import { getUrnikCookie } from "@/lib/urnik-session"
+import {
+    extractCsrfToken,
+    submitVacationToUrnikNet,
+    submitSickLeaveToUrnikNet,
+    submitWorkFromHomeToUrnikNet,
+} from "../../urnik-net-overview/requests/actions/urnik-net-day-submission"
 
 export async function createRequest(input: CreateRequestInput) {
     try {
@@ -51,6 +58,7 @@ export async function createRequest(input: CreateRequestInput) {
             type,
             reason,
             location,
+            sendToUrnikNet,
         } = validation.data
 
         if (startDate > endDate) {
@@ -72,6 +80,88 @@ export async function createRequest(input: CreateRequestInput) {
                 affectsHourType: true,
             },
         })
+
+        if (sendToUrnikNet && type !== "WORK") {
+            const user = await prisma.user.findUnique({
+                where: { id: session.user.id },
+                select: { urnikUsername: true, urnikUserId: true },
+            })
+
+            if (user?.urnikUsername && user?.urnikUserId) {
+                try {
+                    const cookie = await getUrnikCookie()
+                    let submitResult: { success: boolean; error?: string } = {
+                        success: false,
+                        error: "Authentication failed",
+                    }
+
+                    if (cookie) {
+                        if (type === "VACATION") {
+                            submitResult = await submitVacationToUrnikNet(
+                                cookie,
+                                user.urnikUserId,
+                                startDate,
+                                endDate,
+                                createdRequest.id
+                            )
+                        } else {
+                            const csrf = await extractCsrfToken(cookie)
+                            if (csrf) {
+                                if (type === "SICK_LEAVE") {
+                                    submitResult = await submitSickLeaveToUrnikNet(
+                                        cookie,
+                                        csrf.token,
+                                        csrf.antiforgery,
+                                        user.urnikUserId,
+                                        startDate,
+                                        endDate,
+                                        createdRequest.id
+                                    )
+                                } else if (type === "WORK_FROM_HOME") {
+                                    submitResult = await submitWorkFromHomeToUrnikNet(
+                                        cookie,
+                                        csrf.token,
+                                        csrf.antiforgery,
+                                        user.urnikUserId,
+                                        startDate,
+                                        endDate,
+                                        createdRequest.id
+                                    )
+                                }
+                            } else {
+                                submitResult = {
+                                    success: false,
+                                    error: "Could not extract CSRF token",
+                                }
+                            }
+                        }
+                    }
+
+                    await prisma.request.update({
+                        where: { id: createdRequest.id },
+                        data: {
+                            urnikNetSynced: true,
+                            urnikNetStatus: submitResult.success ? "PENDING" : "FAILED",
+                            urnikNetSyncedAt: new Date(),
+                            urnikNetError: submitResult.success
+                                ? null
+                                : (submitResult.error ?? null),
+                        },
+                    })
+                } catch (urnikError) {
+                    await prisma.request.update({
+                        where: { id: createdRequest.id },
+                        data: {
+                            urnikNetSynced: true,
+                            urnikNetStatus: "FAILED",
+                            urnikNetSyncedAt: new Date(),
+                            urnikNetError:
+                                urnikError instanceof Error ? urnikError.message : "Unknown error",
+                        },
+                    })
+                }
+            }
+        }
 
         notifyAdminsNewRequest({
             requestId: createdRequest.id,
@@ -115,6 +205,10 @@ export async function updateRequest(input: UpdateRequestInput) {
 
         if (existing.status !== "PENDING") {
             return { error: "Can only update pending requests" }
+        }
+
+        if (existing.urnikNetSynced) {
+            return { error: "Cannot edit a request that was submitted to Urnik.net" }
         }
 
         if (
@@ -678,6 +772,421 @@ async function trimOverlappingRequest(
     }
 }
 
+type ApproveableRequest = Awaited<ReturnType<typeof prisma.request.findUnique>> & object
+
+async function executeApproval(request: ApproveableRequest, approvedById?: string) {
+    const { startDateTime, endDateTime } = getRequestDateTimeRange(request)
+
+    await prisma.$transaction(async (tx) => {
+        const overlappingRequests = await findOverlappingRequests(
+            tx,
+            request.userId,
+            startDateTime,
+            endDateTime,
+            request.id
+        )
+
+        for (const oldRequest of overlappingRequests) {
+            await trimOverlappingRequest(tx, oldRequest, startDateTime, endDateTime, request.id)
+        }
+
+        await tx.request.update({
+            where: { id: request.id },
+            data: {
+                status: "APPROVED",
+                approvedBy: approvedById ?? null,
+                urnikNetStatus: approvedById ? undefined : "CONFIRMED",
+                approvedAt: new Date(),
+            },
+        })
+
+        const holidays = request.skipHolidays
+            ? await tx.holiday.findMany({
+                  where: {
+                      date: {
+                          gte: request.startDate,
+                          lte: request.endDate,
+                      },
+                  },
+              })
+            : []
+
+        const shiftLocation = mapRequestTypeToShiftLocation(request.type)
+
+        const startDay = new Date(request.startDate)
+        startDay.setUTCHours(0, 0, 0, 0)
+        const endDay = new Date(request.endDate)
+        endDay.setUTCHours(0, 0, 0, 0)
+
+        const daysDiff = Math.round((endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24))
+
+        for (let i = 0; i <= daysDiff; i++) {
+            const currentDay = new Date(startDay)
+            currentDay.setUTCDate(startDay.getUTCDate() + i)
+
+            const dayOfWeek = currentDay.getDay()
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+
+            const isHol =
+                request.skipHolidays &&
+                holidays.some((h) => {
+                    const holidayDate = new Date(h.date)
+                    holidayDate.setHours(0, 0, 0, 0)
+                    return holidayDate.getTime() === currentDay.getTime()
+                })
+
+            if ((!request.skipWeekends || !isWeekend) && !isHol) {
+                let shiftStartDateTime: Date
+                let shiftEndDateTime: Date
+
+                if (request.isFullDay || !request.startTime || !request.endTime) {
+                    shiftStartDateTime = new Date(currentDay)
+                    shiftStartDateTime.setHours(0, 0, 0, 0)
+                    shiftEndDateTime = new Date(currentDay)
+                    shiftEndDateTime.setHours(23, 59, 59, 999)
+                } else {
+                    const isFirstDay = i === 0
+                    const isLastDay = i === daysDiff
+
+                    if (isFirstDay) {
+                        const [startHour, startMin] = request.startTime.split(":").map(Number)
+                        shiftStartDateTime = new Date(currentDay)
+                        shiftStartDateTime.setHours(startHour, startMin, 0, 0)
+                    } else {
+                        shiftStartDateTime = new Date(currentDay)
+                        shiftStartDateTime.setHours(0, 0, 0, 0)
+                    }
+
+                    if (isLastDay) {
+                        const [endHour, endMin] = request.endTime.split(":").map(Number)
+                        shiftEndDateTime = new Date(currentDay)
+                        shiftEndDateTime.setHours(endHour, endMin, 0, 0)
+                    } else {
+                        shiftEndDateTime = new Date(currentDay)
+                        shiftEndDateTime.setHours(23, 59, 59, 999)
+                    }
+                }
+
+                await tx.shift.create({
+                    data: {
+                        userId: request.userId,
+                        date: currentDay,
+                        startDateTime: shiftStartDateTime,
+                        endDateTime: shiftEndDateTime,
+                        location: shiftLocation,
+                        notes: `Auto-generated from ${request.type.toLowerCase()} request`,
+                    },
+                })
+            }
+        }
+
+        if (request.affectsHourType) {
+            const targetHourType = mapRequestTypeToHourType(request.type)
+
+            if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
+                const vacationSickLeaveTasks = await tx.task.findMany({
+                    where: {
+                        userId: request.userId,
+                        title: {
+                            in: ["System: VACATION", "System: SICK_LEAVE"],
+                        },
+                    },
+                    select: { id: true },
+                })
+
+                if (vacationSickLeaveTasks.length > 0) {
+                    const taskIds = vacationSickLeaveTasks.map((t) => t.id)
+
+                    const deleteStartDate = new Date(request.startDate)
+                    deleteStartDate.setUTCHours(0, 0, 0, 0)
+                    const deleteEndDate = new Date(request.endDate)
+                    deleteEndDate.setUTCHours(23, 59, 59, 999)
+
+                    await tx.taskTimeEntry.deleteMany({
+                        where: {
+                            userId: request.userId,
+                            taskId: { in: taskIds },
+                            startTime: {
+                                gte: deleteStartDate,
+                                lte: deleteEndDate,
+                            },
+                            type: {
+                                in: ["VACATION", "SICK_LEAVE"],
+                            },
+                        },
+                    })
+                }
+
+                const requestUser = await tx.user.findUnique({
+                    where: { id: request.userId },
+                    select: {
+                        workStartTime: true,
+                        workEndTime: true,
+                        workHoursPerDay: true,
+                    },
+                })
+
+                const userWorkHours = requestUser?.workHoursPerDay || 8
+                const userStartTime = requestUser?.workStartTime || "08:00"
+                const userEndTime = requestUser?.workEndTime || "16:00"
+
+                const taskStartDay = new Date(request.startDate)
+                taskStartDay.setUTCHours(0, 0, 0, 0)
+                const taskEndDay = new Date(request.endDate)
+                taskEndDay.setUTCHours(0, 0, 0, 0)
+
+                const taskDaysDiff = Math.round(
+                    (taskEndDay.getTime() - taskStartDay.getTime()) / (1000 * 60 * 60 * 24)
+                )
+
+                const systemTaskTitle = `System: ${request.type}`
+                let systemTask = await tx.task.findFirst({
+                    where: {
+                        userId: request.userId,
+                        title: systemTaskTitle,
+                    },
+                })
+
+                if (!systemTask) {
+                    systemTask = await tx.task.create({
+                        data: {
+                            userId: request.userId,
+                            title: systemTaskTitle,
+                            description: "Automatically created for request tracking",
+                            status: "DONE",
+                        },
+                    })
+                }
+
+                for (let i = 0; i <= taskDaysDiff; i++) {
+                    const currentDay = new Date(taskStartDay)
+                    currentDay.setUTCDate(taskStartDay.getUTCDate() + i)
+
+                    const dayOfWeek = currentDay.getUTCDay()
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+
+                    const isHoliday = holidays.some((h) => {
+                        const holidayDate = new Date(h.date)
+                        holidayDate.setUTCHours(0, 0, 0, 0)
+                        return holidayDate.getTime() === currentDay.getTime()
+                    })
+
+                    const shouldSkip =
+                        (request.skipWeekends && isWeekend) || (request.skipHolidays && isHoliday)
+
+                    if (!shouldSkip) {
+                        let entryStart: Date
+                        let entryEnd: Date
+                        let hours: number
+
+                        if (request.isFullDay || !request.startTime || !request.endTime) {
+                            hours = userWorkHours
+                            const [startHour, startMin] = userStartTime.split(":").map(Number)
+                            const [endHour, endMin] = userEndTime.split(":").map(Number)
+                            entryStart = new Date(currentDay)
+                            entryStart.setUTCHours(startHour, startMin, 0, 0)
+                            entryEnd = new Date(currentDay)
+                            entryEnd.setUTCHours(endHour, endMin, 0, 0)
+                        } else {
+                            const isFirstDay = i === 0
+                            const isLastDay = i === taskDaysDiff
+
+                            if (isFirstDay && isLastDay) {
+                                hours = request.requestedHours
+                                    ? Number(request.requestedHours)
+                                    : userWorkHours
+                                const [startHour, startMin] = request.startTime
+                                    .split(":")
+                                    .map(Number)
+                                const [endHour, endMin] = request.endTime.split(":").map(Number)
+                                entryStart = new Date(currentDay)
+                                entryStart.setUTCHours(startHour, startMin, 0, 0)
+                                entryEnd = new Date(currentDay)
+                                entryEnd.setUTCHours(endHour, endMin, 0, 0)
+                            } else if (isFirstDay) {
+                                const [startHour, startMin] = request.startTime
+                                    .split(":")
+                                    .map(Number)
+                                const [userEndHour, userEndMin] = userEndTime.split(":").map(Number)
+                                entryStart = new Date(currentDay)
+                                entryStart.setUTCHours(startHour, startMin, 0, 0)
+                                entryEnd = new Date(currentDay)
+                                entryEnd.setUTCHours(userEndHour, userEndMin, 0, 0)
+                                hours =
+                                    (userEndHour * 60 + userEndMin - startHour * 60 - startMin) / 60
+                            } else if (isLastDay) {
+                                const [endHour, endMin] = request.endTime.split(":").map(Number)
+                                const [userStartHour, userStartMin] = userStartTime
+                                    .split(":")
+                                    .map(Number)
+                                entryStart = new Date(currentDay)
+                                entryStart.setUTCHours(userStartHour, userStartMin, 0, 0)
+                                entryEnd = new Date(currentDay)
+                                entryEnd.setUTCHours(endHour, endMin, 0, 0)
+                                hours =
+                                    (endHour * 60 + endMin - userStartHour * 60 - userStartMin) / 60
+                            } else {
+                                hours = userWorkHours
+                                const [startHour, startMin] = userStartTime.split(":").map(Number)
+                                const [endHour, endMin] = userEndTime.split(":").map(Number)
+                                entryStart = new Date(currentDay)
+                                entryStart.setUTCHours(startHour, startMin, 0, 0)
+                                entryEnd = new Date(currentDay)
+                                entryEnd.setUTCHours(endHour, endMin, 0, 0)
+                            }
+                        }
+
+                        await tx.taskTimeEntry.create({
+                            data: {
+                                taskId: systemTask.id,
+                                userId: request.userId,
+                                startTime: entryStart,
+                                endTime: entryEnd,
+                                duration: Math.round(hours * 3600),
+                                type: targetHourType,
+                            },
+                        })
+                    }
+                }
+            } else {
+                const { startDateTime: reqStartDateTime, endDateTime: reqEndDateTime } =
+                    getRequestDateTimeRange(request)
+
+                const typesToRemap = ["WORK", "WORK_FROM_HOME"]
+
+                const systemTasks = await tx.task.findMany({
+                    where: {
+                        userId: request.userId,
+                        title: {
+                            in: ["System: VACATION", "System: SICK_LEAVE"],
+                        },
+                    },
+                    select: { id: true },
+                })
+                const systemTaskIds = systemTasks.map((t) => t.id)
+
+                for (const oldType of typesToRemap) {
+                    if (oldType !== targetHourType) {
+                        await tx.hourEntry.updateMany({
+                            where: {
+                                userId: request.userId,
+                                date: {
+                                    gte: reqStartDateTime,
+                                    lte: reqEndDateTime,
+                                },
+                                type: oldType as HourType,
+                                taskId: null,
+                            },
+                            data: { type: targetHourType },
+                        })
+
+                        await tx.taskTimeEntry.updateMany({
+                            where: {
+                                userId: request.userId,
+                                startTime: { lt: reqEndDateTime },
+                                endTime: { gt: reqStartDateTime },
+                                type: oldType as HourType,
+                                NOT: { taskId: { in: systemTaskIds } },
+                            },
+                            data: { type: targetHourType },
+                        })
+
+                        await tx.taskTimeEntry.updateMany({
+                            where: {
+                                userId: request.userId,
+                                startTime: {
+                                    gte: reqStartDateTime,
+                                    lt: reqEndDateTime,
+                                },
+                                endTime: null,
+                                type: oldType as HourType,
+                                NOT: { taskId: { in: systemTaskIds } },
+                            },
+                            data: { type: targetHourType },
+                        })
+                    }
+                }
+            }
+        }
+    })
+
+    await refreshDailyHourSummary()
+
+    const requestUser = await prisma.user.findUnique({
+        where: { id: request.userId },
+        select: { name: true, email: true },
+    })
+
+    notifyUserApproval({
+        userId: request.userId,
+        userName: requestUser?.name || requestUser?.email || "User",
+        requestType: request.type,
+        startDate: request.startDate,
+        endDate: request.endDate,
+        reason: request.reason || undefined,
+        approvedByName: approvedById ? "Admin" : "Urnik.net",
+    }).catch((error) => {
+        console.error("Failed to notify user of approval:", error)
+    })
+
+    revalidatePath("/requests")
+    revalidatePath("/hours")
+    revalidatePath("/shifts")
+    return { success: true }
+}
+
+async function executeRejection(
+    request: ApproveableRequest,
+    rejectionReason: string | undefined,
+    rejectedById?: string
+) {
+    await prisma.$transaction(async (tx) => {
+        await tx.request.update({
+            where: { id: request.id },
+            data: {
+                status: "REJECTED",
+                rejectedBy: rejectedById ?? null,
+                urnikNetStatus: rejectedById ? undefined : "REJECTED",
+                rejectedAt: new Date(),
+                rejectionReason,
+            },
+        })
+
+        await tx.shift.deleteMany({
+            where: {
+                userId: request.userId,
+                date: {
+                    gte: request.startDate,
+                    lte: request.endDate,
+                },
+                notes: { contains: "Auto-generated from" },
+            },
+        })
+    })
+
+    const requestUser = await prisma.user.findUnique({
+        where: { id: request.userId },
+        select: { name: true, email: true },
+    })
+
+    notifyUserRejection({
+        userId: request.userId,
+        userName: requestUser?.name || requestUser?.email || "User",
+        requestType: request.type,
+        startDate: request.startDate,
+        endDate: request.endDate,
+        reason: request.reason || undefined,
+        rejectedByName: rejectedById ? "Admin" : "Urnik.net",
+        rejectionReason: rejectionReason || "No reason provided",
+    }).catch((error) => {
+        console.error("Failed to notify user of rejection:", error)
+    })
+
+    revalidatePath("/requests")
+    revalidatePath("/shifts")
+    return { success: true }
+}
+
 export async function approveRequest(input: ApproveRequestInput) {
     try {
         const session = await requireAdmin()
@@ -715,399 +1224,7 @@ export async function approveRequest(input: ApproveRequestInput) {
             }
         }
 
-        const { startDateTime, endDateTime } = getRequestDateTimeRange(request)
-
-        await prisma.$transaction(async (tx) => {
-            const overlappingRequests = await findOverlappingRequests(
-                tx,
-                request.userId,
-                startDateTime,
-                endDateTime,
-                request.id
-            )
-
-            for (const oldRequest of overlappingRequests) {
-                await trimOverlappingRequest(tx, oldRequest, startDateTime, endDateTime, request.id)
-            }
-
-            await tx.request.update({
-                where: { id },
-                data: {
-                    status: "APPROVED",
-                    approvedBy: session.user.id,
-                    approvedAt: new Date(),
-                },
-            })
-
-            const holidays = request.skipHolidays
-                ? await tx.holiday.findMany({
-                      where: {
-                          date: {
-                              gte: request.startDate,
-                              lte: request.endDate,
-                          },
-                      },
-                  })
-                : []
-
-            if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
-            }
-
-            const shiftLocation = mapRequestTypeToShiftLocation(request.type)
-
-            const startDay = new Date(request.startDate)
-            startDay.setUTCHours(0, 0, 0, 0)
-            const endDay = new Date(request.endDate)
-            endDay.setUTCHours(0, 0, 0, 0)
-
-            const daysDiff = Math.round(
-                (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
-            )
-
-            for (let i = 0; i <= daysDiff; i++) {
-                const currentDay = new Date(startDay)
-                currentDay.setUTCDate(startDay.getUTCDate() + i)
-
-                const dayOfWeek = currentDay.getDay()
-                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-
-                const isHol =
-                    request.skipHolidays &&
-                    holidays.some((h) => {
-                        const holidayDate = new Date(h.date)
-                        holidayDate.setHours(0, 0, 0, 0)
-                        return holidayDate.getTime() === currentDay.getTime()
-                    })
-
-                if ((!request.skipWeekends || !isWeekend) && !isHol) {
-                    let shiftStartDateTime: Date
-                    let shiftEndDateTime: Date
-
-                    if (request.isFullDay || !request.startTime || !request.endTime) {
-                        shiftStartDateTime = new Date(currentDay)
-                        shiftStartDateTime.setHours(0, 0, 0, 0)
-                        shiftEndDateTime = new Date(currentDay)
-                        shiftEndDateTime.setHours(23, 59, 59, 999)
-                    } else {
-                        const isFirstDay = i === 0
-                        const isLastDay = i === daysDiff
-
-                        if (isFirstDay) {
-                            const [startHour, startMin] = request.startTime.split(":").map(Number)
-                            shiftStartDateTime = new Date(currentDay)
-                            shiftStartDateTime.setHours(startHour, startMin, 0, 0)
-                        } else {
-                            shiftStartDateTime = new Date(currentDay)
-                            shiftStartDateTime.setHours(0, 0, 0, 0)
-                        }
-
-                        if (isLastDay) {
-                            const [endHour, endMin] = request.endTime.split(":").map(Number)
-                            shiftEndDateTime = new Date(currentDay)
-                            shiftEndDateTime.setHours(endHour, endMin, 0, 0)
-                        } else {
-                            shiftEndDateTime = new Date(currentDay)
-                            shiftEndDateTime.setHours(23, 59, 59, 999)
-                        }
-                    }
-
-                    await tx.shift.create({
-                        data: {
-                            userId: request.userId,
-                            date: currentDay,
-                            startDateTime: shiftStartDateTime,
-                            endDateTime: shiftEndDateTime,
-                            location: shiftLocation,
-                            notes: `Auto-generated from ${request.type.toLowerCase()} request`,
-                        },
-                    })
-                }
-            }
-
-            if (request.affectsHourType) {
-                const targetHourType = mapRequestTypeToHourType(request.type)
-
-                if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
-                    const vacationSickLeaveTasks = await tx.task.findMany({
-                        where: {
-                            userId: request.userId,
-                            title: {
-                                in: ["System: VACATION", "System: SICK_LEAVE"],
-                            },
-                        },
-                        select: { id: true },
-                    })
-
-                    if (vacationSickLeaveTasks.length > 0) {
-                        const taskIds = vacationSickLeaveTasks.map((t) => t.id)
-
-                        const deleteStartDate = new Date(request.startDate)
-                        deleteStartDate.setUTCHours(0, 0, 0, 0)
-                        const deleteEndDate = new Date(request.endDate)
-                        deleteEndDate.setUTCHours(23, 59, 59, 999)
-
-                        await tx.taskTimeEntry.deleteMany({
-                            where: {
-                                userId: request.userId,
-                                taskId: { in: taskIds },
-                                startTime: {
-                                    gte: deleteStartDate,
-                                    lte: deleteEndDate,
-                                },
-                                type: {
-                                    in: ["VACATION", "SICK_LEAVE"],
-                                },
-                            },
-                        })
-                    }
-
-                    const requestUser = await tx.user.findUnique({
-                        where: { id: request.userId },
-                        select: {
-                            workStartTime: true,
-                            workEndTime: true,
-                            workHoursPerDay: true,
-                        },
-                    })
-
-                    const userWorkHours = requestUser?.workHoursPerDay || 8
-                    const userStartTime = requestUser?.workStartTime || "08:00"
-                    const userEndTime = requestUser?.workEndTime || "16:00"
-
-                    const startDay = new Date(request.startDate)
-                    startDay.setUTCHours(0, 0, 0, 0)
-                    const endDay = new Date(request.endDate)
-                    endDay.setUTCHours(0, 0, 0, 0)
-
-                    const daysDiff = Math.round(
-                        (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
-                    )
-
-                    const systemTaskTitle = `System: ${request.type}`
-                    let systemTask = await tx.task.findFirst({
-                        where: {
-                            userId: request.userId,
-                            title: systemTaskTitle,
-                        },
-                    })
-
-                    if (!systemTask) {
-                        systemTask = await tx.task.create({
-                            data: {
-                                userId: request.userId,
-                                title: systemTaskTitle,
-                                description: "Automatically created for request tracking",
-                                status: "DONE",
-                            },
-                        })
-                    }
-
-                    for (let i = 0; i <= daysDiff; i++) {
-                        const currentDay = new Date(startDay)
-                        currentDay.setUTCDate(startDay.getUTCDate() + i)
-
-                        const dayOfWeek = currentDay.getUTCDay()
-                        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
-
-                        const isHoliday = holidays.some((h) => {
-                            const holidayDate = new Date(h.date)
-                            holidayDate.setUTCHours(0, 0, 0, 0)
-                            return holidayDate.getTime() === currentDay.getTime()
-                        })
-
-                        const shouldSkip =
-                            (request.skipWeekends && isWeekend) ||
-                            (request.skipHolidays && isHoliday)
-
-                        if (!shouldSkip) {
-                            let entryStart: Date
-                            let entryEnd: Date
-                            let hours: number
-
-                            if (request.isFullDay || !request.startTime || !request.endTime) {
-                                hours = userWorkHours
-                                const [startHour, startMin] = userStartTime.split(":").map(Number)
-                                const [endHour, endMin] = userEndTime.split(":").map(Number)
-                                entryStart = new Date(currentDay)
-                                entryStart.setUTCHours(startHour, startMin, 0, 0)
-                                entryEnd = new Date(currentDay)
-                                entryEnd.setUTCHours(endHour, endMin, 0, 0)
-                            } else {
-                                const isFirstDay = i === 0
-                                const isLastDay = i === daysDiff
-
-                                if (isFirstDay && isLastDay) {
-                                    hours = request.requestedHours
-                                        ? Number(request.requestedHours)
-                                        : userWorkHours
-                                    const [startHour, startMin] = request.startTime
-                                        .split(":")
-                                        .map(Number)
-                                    const [endHour, endMin] = request.endTime.split(":").map(Number)
-                                    entryStart = new Date(currentDay)
-                                    entryStart.setUTCHours(startHour, startMin, 0, 0)
-                                    entryEnd = new Date(currentDay)
-                                    entryEnd.setUTCHours(endHour, endMin, 0, 0)
-                                } else if (isFirstDay) {
-                                    const [startHour, startMin] = request.startTime
-                                        .split(":")
-                                        .map(Number)
-                                    const [userEndHour, userEndMin] = userEndTime
-                                        .split(":")
-                                        .map(Number)
-                                    entryStart = new Date(currentDay)
-                                    entryStart.setUTCHours(startHour, startMin, 0, 0)
-                                    entryEnd = new Date(currentDay)
-                                    entryEnd.setUTCHours(userEndHour, userEndMin, 0, 0)
-                                    hours =
-                                        (userEndHour * 60 +
-                                            userEndMin -
-                                            startHour * 60 -
-                                            startMin) /
-                                        60
-                                } else if (isLastDay) {
-                                    const [endHour, endMin] = request.endTime.split(":").map(Number)
-                                    const [userStartHour, userStartMin] = userStartTime
-                                        .split(":")
-                                        .map(Number)
-                                    entryStart = new Date(currentDay)
-                                    entryStart.setUTCHours(userStartHour, userStartMin, 0, 0)
-                                    entryEnd = new Date(currentDay)
-                                    entryEnd.setUTCHours(endHour, endMin, 0, 0)
-                                    hours =
-                                        (endHour * 60 +
-                                            endMin -
-                                            userStartHour * 60 -
-                                            userStartMin) /
-                                        60
-                                } else {
-                                    hours = userWorkHours
-                                    const [startHour, startMin] = userStartTime
-                                        .split(":")
-                                        .map(Number)
-                                    const [endHour, endMin] = userEndTime.split(":").map(Number)
-                                    entryStart = new Date(currentDay)
-                                    entryStart.setUTCHours(startHour, startMin, 0, 0)
-                                    entryEnd = new Date(currentDay)
-                                    entryEnd.setUTCHours(endHour, endMin, 0, 0)
-                                }
-                            }
-
-                            await tx.taskTimeEntry.create({
-                                data: {
-                                    taskId: systemTask.id,
-                                    userId: request.userId,
-                                    startTime: entryStart,
-                                    endTime: entryEnd,
-                                    duration: Math.round(hours * 3600),
-                                    type: targetHourType,
-                                },
-                            })
-                        }
-                    }
-                } else {
-                    const { startDateTime: reqStartDateTime, endDateTime: reqEndDateTime } =
-                        getRequestDateTimeRange(request)
-
-                    const typesToRemap = ["WORK", "WORK_FROM_HOME"]
-
-                    const systemTasks = await tx.task.findMany({
-                        where: {
-                            userId: request.userId,
-                            title: {
-                                in: ["System: VACATION", "System: SICK_LEAVE"],
-                            },
-                        },
-                        select: { id: true },
-                    })
-                    const systemTaskIds = systemTasks.map((t) => t.id)
-
-                    for (const oldType of typesToRemap) {
-                        if (oldType !== targetHourType) {
-                            await tx.hourEntry.updateMany({
-                                where: {
-                                    userId: request.userId,
-                                    date: {
-                                        gte: reqStartDateTime,
-                                        lte: reqEndDateTime,
-                                    },
-                                    type: oldType as HourType,
-                                    taskId: null,
-                                },
-                                data: {
-                                    type: targetHourType,
-                                },
-                            })
-
-                            await tx.taskTimeEntry.updateMany({
-                                where: {
-                                    userId: request.userId,
-                                    startTime: {
-                                        lt: reqEndDateTime,
-                                    },
-                                    endTime: {
-                                        gt: reqStartDateTime,
-                                    },
-                                    type: oldType as HourType,
-                                    NOT: {
-                                        taskId: {
-                                            in: systemTaskIds,
-                                        },
-                                    },
-                                },
-                                data: {
-                                    type: targetHourType,
-                                },
-                            })
-
-                            await tx.taskTimeEntry.updateMany({
-                                where: {
-                                    userId: request.userId,
-                                    startTime: {
-                                        gte: reqStartDateTime,
-                                        lt: reqEndDateTime,
-                                    },
-                                    endTime: null,
-                                    type: oldType as HourType,
-                                    NOT: {
-                                        taskId: {
-                                            in: systemTaskIds,
-                                        },
-                                    },
-                                },
-                                data: {
-                                    type: targetHourType,
-                                },
-                            })
-                        }
-                    }
-                }
-            }
-        })
-
-        await refreshDailyHourSummary()
-
-        const requestUser = await prisma.user.findUnique({
-            where: { id: request.userId },
-            select: { name: true, email: true },
-        })
-
-        notifyUserApproval({
-            userId: request.userId,
-            userName: requestUser?.name || requestUser?.email || "User",
-            requestType: request.type,
-            startDate: request.startDate,
-            endDate: request.endDate,
-            reason: request.reason || undefined,
-            approvedByName: session.user.name || session.user.email || "Admin",
-        }).catch((error) => {
-            console.error("Failed to notify user of approval:", error)
-        })
-
-        revalidatePath("/requests")
-        revalidatePath("/hours")
-        revalidatePath("/shifts")
-        return { success: true }
+        return executeApproval(request, session.user.id)
     } catch (error) {
         if (error instanceof Error) {
             return { error: error.message }
@@ -1153,52 +1270,7 @@ export async function rejectRequest(input: RejectRequestInput) {
             }
         }
 
-        await prisma.$transaction(async (tx) => {
-            await tx.request.update({
-                where: { id },
-                data: {
-                    status: "REJECTED",
-                    rejectedBy: session.user.id,
-                    rejectedAt: new Date(),
-                    rejectionReason,
-                },
-            })
-
-            await tx.shift.deleteMany({
-                where: {
-                    userId: request.userId,
-                    date: {
-                        gte: request.startDate,
-                        lte: request.endDate,
-                    },
-                    notes: {
-                        contains: "Auto-generated from",
-                    },
-                },
-            })
-        })
-
-        const requestUser = await prisma.user.findUnique({
-            where: { id: request.userId },
-            select: { name: true, email: true },
-        })
-
-        notifyUserRejection({
-            userId: request.userId,
-            userName: requestUser?.name || requestUser?.email || "User",
-            requestType: request.type,
-            startDate: request.startDate,
-            endDate: request.endDate,
-            reason: request.reason || undefined,
-            rejectedByName: session.user.name || session.user.email || "Admin",
-            rejectionReason: rejectionReason || "No reason provided",
-        }).catch((error) => {
-            console.error("Failed to notify user of rejection:", error)
-        })
-
-        revalidatePath("/requests")
-        revalidatePath("/shifts")
-        return { success: true }
+        return executeRejection(request, rejectionReason, session.user.id)
     } catch (error) {
         if (error instanceof Error) {
             return { error: error.message }
@@ -1375,5 +1447,51 @@ export async function getAllRequests(statusFilter?: string[]): Promise<RequestDi
     } catch (error) {
         console.error("Error fetching all requests:", error)
         throw new Error("Failed to fetch requests")
+    }
+}
+
+export async function systemApproveRequest(requestId: string) {
+    try {
+        const request = await prisma.request.findUnique({
+            where: { id: requestId },
+        })
+
+        if (!request) {
+            return { error: "Request not found" }
+        }
+
+        if (request.status !== "PENDING") {
+            return { error: "Can only approve pending requests" }
+        }
+
+        return executeApproval(request)
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error.message }
+        }
+        return { error: "Failed to system-approve request" }
+    }
+}
+
+export async function systemRejectRequest(requestId: string, rejectionReason: string) {
+    try {
+        const request = await prisma.request.findUnique({
+            where: { id: requestId },
+        })
+
+        if (!request) {
+            return { error: "Request not found" }
+        }
+
+        if (request.status !== "PENDING") {
+            return { error: "Can only reject pending requests" }
+        }
+
+        return executeRejection(request, rejectionReason)
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error.message }
+        }
+        return { error: "Failed to system-reject request" }
     }
 }

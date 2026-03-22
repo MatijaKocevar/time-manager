@@ -397,7 +397,10 @@
             "startTime": "Start Time",
             "endTime": "End Time",
             "requestedHours": "Requested Hours",
-            "hours": "hours"
+            "hours": "hours",
+            "sendToUrnikNet": "Also submit to Urnik.net",
+            "urnikNetNote": "Approval will come from Urnik.net. This request cannot be edited after submission.",
+            "urnikSyncedNote": "This request was submitted to Urnik.net and cannot be edited. Cancel it and create a new one if changes are needed."
         },
         "table": {
             "approvedBy": "Approved/Rejected By",
@@ -655,7 +658,8 @@
                 "noRequests": "No pending requests found.",
                 "noPending": "No pending requests found.",
                 "searchPlaceholder": "Search...",
-                "cancel": "Cancel"
+                "cancel": "Cancel",
+                "awaitingUrnikNet": "Awaiting Urnik.net decision"
             },
             "filter": {
                 "title": "Filter Column",

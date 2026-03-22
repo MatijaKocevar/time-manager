@@ -10,6 +10,8 @@ export interface RequestDisplay {
     reason: string | null
     location: string | null
     status: string
+    urnikNetSynced: boolean
+    urnikNetStatus: string | null
     user: {
         name: string | null
         email: string

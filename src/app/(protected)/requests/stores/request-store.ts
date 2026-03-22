@@ -13,6 +13,7 @@ interface RequestFormState {
     location: string
     skipWeekends: boolean
     skipHolidays: boolean
+    sendToUrnikNet: boolean
 }
 
 interface RequestStoreState {
@@ -41,6 +42,7 @@ export const useRequestStore = create<RequestStoreState & RequestStoreActions>((
         location: "",
         skipWeekends: true,
         skipHolidays: true,
+        sendToUrnikNet: false,
     },
     isLoading: false,
     error: null,
@@ -62,6 +64,7 @@ export const useRequestStore = create<RequestStoreState & RequestStoreActions>((
                 location: "",
                 skipWeekends: true,
                 skipHolidays: true,
+                sendToUrnikNet: false,
             },
             error: null,
         }),

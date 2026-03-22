@@ -11,6 +11,8 @@ export interface RequestDisplay {
     location: string | null
     status: string
     createdAt: Date
+    urnikNetSynced: boolean
+    urnikNetStatus: string | null
     user: {
         name: string | null
         email: string
@@ -33,6 +35,7 @@ export interface PendingRequestTranslations {
         rejecting: string
         noPending: string
         searchPlaceholder: string
+        awaitingUrnikNet: string
     }
     reject: {
         title: string
