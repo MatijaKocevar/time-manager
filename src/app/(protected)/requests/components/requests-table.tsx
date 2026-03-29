@@ -173,15 +173,39 @@ export function RequestsTable({
                                             : "-"}
                                     </TableCell>
                                     <TableCell>
-                                        <span
-                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
-                                                REQUEST_STATUS_COLORS[request.status]
-                                            }`}
-                                        >
-                                            {tStatuses(
-                                                getRequestStatusTranslationKey(request.status)
-                                            )}
-                                        </span>
+                                        {request.urnikNetSynced &&
+                                        request.urnikNetStatus === "PENDING" ? (
+                                            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                                                Urnik.net pending
+                                            </span>
+                                        ) : request.urnikNetStatus === "FAILED" ? (
+                                            <div className="flex flex-col gap-1">
+                                                <span
+                                                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
+                                                        REQUEST_STATUS_COLORS[request.status]
+                                                    }`}
+                                                >
+                                                    {tStatuses(
+                                                        getRequestStatusTranslationKey(
+                                                            request.status
+                                                        )
+                                                    )}
+                                                </span>
+                                                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                                                    Urnik.net sync failed
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${
+                                                    REQUEST_STATUS_COLORS[request.status]
+                                                }`}
+                                            >
+                                                {tStatuses(
+                                                    getRequestStatusTranslationKey(request.status)
+                                                )}
+                                            </span>
+                                        )}
                                     </TableCell>
                                     <TableCell>
                                         {request.status === REQUEST_STATUS.APPROVED &&

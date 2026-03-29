@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
-import { requireNotDemo } from "@/app/(protected)/hours/utils/auth-helpers"
+import { requireNotDemo } from "@/lib/auth-helpers"
 import { attemptUrnikNetLogin } from "@/app/(protected)/urnik-net-overview/requests/actions/urnik-net-requests-actions"
 import {
     UpdateProfileSchema,

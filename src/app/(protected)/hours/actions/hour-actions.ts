@@ -20,7 +20,7 @@ import {
     type BulkCreateHourEntriesInput,
     type BatchUpdateHourEntriesInput,
 } from "../schemas/hour-action-schemas"
-import { requireAuth, requireAdmin } from "../utils/auth-helpers"
+import { requireAuth, requireAdmin } from "@/lib/auth-helpers"
 import { formatDateKey, parseDate, parseEndDate } from "../utils/date-helpers"
 import { buildManualEntriesMap, buildGrandTotalEntries } from "../utils/entry-helpers"
 

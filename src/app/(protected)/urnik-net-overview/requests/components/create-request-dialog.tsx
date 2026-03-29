@@ -1,7 +1,4 @@
 import { getTranslations } from "next-intl/server"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { RequestTypeSelector } from "./request-type-selector"
-import { CreateRequestForm } from "./create-request-form"
 import { CreateRequestDialogClient } from "./create-request-dialog-client"
 
 export async function CreateRequestDialog() {
@@ -22,6 +19,12 @@ export async function CreateRequestDialog() {
             successMessage={t("successMessage")}
             errorPrefix={t("errorPrefix")}
             retryButton={t("retryButton")}
+            startDateLabel={t("startDateLabel")}
+            endDateLabel={t("endDateLabel")}
+            workDaysLabel={t("workDaysLabel")}
+            typeVacation={t("typeVacation")}
+            typeSickLeave={t("typeSickLeave")}
+            typeDayWorkFromHome={t("typeDayWorkFromHome")}
         />
     )
 }

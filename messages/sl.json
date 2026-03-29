@@ -366,7 +366,8 @@
             "vacation": "Dopust",
             "sickLeave": "Bolniška",
             "workFromHome": "Delo od doma",
-            "businessTrip": "Službeno potovanje"
+            "businessTrip": "Službeno potovanje",
+            "work": "Delo"
         },
         "statuses": {
             "pending": "V čakanju",
@@ -396,7 +397,15 @@
             "startTime": "Začetni čas",
             "endTime": "Končni čas",
             "requestedHours": "Zahtevane ure",
-            "hours": "ur"
+            "hours": "ur",
+            "sendToUrnikNet": "Pošlji tudi na Urnik.net",
+            "urnikNetNote": "Odobritev bo prišla z Urnik.net. Tega zahtevka po oddaji ni mogoče urejati.",
+            "urnikSyncedNote": "Ta zahtevek je bil poslan na Urnik.net in ga ni mogoče urejati. Prekličite ga in ustvarite novega, če so potrebne spremembe.",
+            "urnikNetSyncError": "Napaka pri sinhronizaciji z Urnik.net",
+            "urnikNetSyncFailed": "Sinhronizacija tega zahtevka z Urnik.net ni uspela. Zahtevek je bil ustvarjen lokalno, vendar ni bil poslan na Urnik.net.",
+            "urnikNetSyncPending": "Čakanje na odobritev z Urnik.net",
+            "urnikNetSyncConfirmed": "Odobreno prek Urnik.net",
+            "urnikNetSyncRejected": "Zavrnjeno prek Urnik.net"
         },
         "table": {
             "approvedBy": "Odobril/Zavrnil",
@@ -654,7 +663,8 @@
                 "noPending": "Ni čakajočih zahtevkov.",
                 "searchPlaceholder": "Iskanje...",
                 "cancel": "Prekliči",
-                "days": "d"
+                "days": "d",
+                "awaitingUrnikNet": "Čakam na odločitev Urnik.net"
             },
             "filter": {
                 "title": "Filtriraj stolpec",
@@ -1078,11 +1088,18 @@
             "typeLabel": "Nova zahteva",
             "typePlaceholder": "Izberite vrsto zahteve...",
             "hoursLabel": "Ure",
+            "daysLabel": "Dnevi",
             "typeWork": "Delo",
             "typeWorkFromHome": "Delo od doma",
+            "typeVacation": "Dopust",
+            "typeSickLeave": "Bolniška",
+            "typeDayWorkFromHome": "Delo od doma",
             "dateLabel": "Datum",
             "startTimeLabel": "Začetni čas",
             "endTimeLabel": "Končni čas",
+            "startDateLabel": "Začetni datum",
+            "endDateLabel": "Končni datum",
+            "workDaysLabel": "Delovni dnevi",
             "commentLabel": "Komentar (Neobvezno)",
             "submitButton": "Pošlji na Urnik.net",
             "buttonLabel": "Ustvari zahtevo",

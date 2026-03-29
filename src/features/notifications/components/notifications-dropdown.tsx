@@ -130,7 +130,7 @@ export function NotificationsDropdown({
             setProcessingId(variables.id)
         },
         onSuccess: (data) => {
-            if (data.error) {
+            if ("error" in data) {
                 alert(`Error: ${data.error}`)
                 queryClient.invalidateQueries({ queryKey: requestKeys.all })
             } else {
@@ -152,7 +152,7 @@ export function NotificationsDropdown({
             setProcessingId(variables.id)
         },
         onSuccess: (data) => {
-            if (data.error) {
+            if ("error" in data) {
                 alert(`Error: ${data.error}`)
                 queryClient.invalidateQueries({ queryKey: requestKeys.all })
             } else {
@@ -341,53 +341,88 @@ export function NotificationsDropdown({
                                                                 {formatDate(request.endDate)}
                                                             </p>
                                                             {isAdmin && (
-                                                                <div className="flex gap-2">
-                                                                    <Button
-                                                                        size="sm"
-                                                                        onClick={(e) =>
-                                                                            handleApprove(
-                                                                                e,
-                                                                                request.id
-                                                                            )
-                                                                        }
-                                                                        disabled={!!processingId}
-                                                                        className="h-7 px-3 text-xs"
-                                                                    >
-                                                                        {isProcessing &&
-                                                                        approveMutation.isPending ? (
-                                                                            <Loader2 className="h-3 w-3 animate-spin" />
-                                                                        ) : (
-                                                                            <>
-                                                                                <Check className="h-3 w-3 mr-1" />
-                                                                                {translations.approve ||
-                                                                                    "Approve"}
-                                                                            </>
+                                                                <>
+                                                                    {request.urnikNetSynced &&
+                                                                        request.urnikNetStatus ===
+                                                                            "PENDING" && (
+                                                                            <p className="text-xs text-amber-600 dark:text-amber-400 mb-2">
+                                                                                ⚠ Synced to
+                                                                                Urnik.net - must be
+                                                                                approved there
+                                                                            </p>
                                                                         )}
-                                                                    </Button>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="destructive"
-                                                                        onClick={(e) =>
-                                                                            handleReject(
-                                                                                e,
-                                                                                request.id
-                                                                            )
-                                                                        }
-                                                                        disabled={!!processingId}
-                                                                        className="h-7 px-3 text-xs"
-                                                                    >
-                                                                        {isProcessing &&
-                                                                        rejectMutation.isPending ? (
-                                                                            <Loader2 className="h-3 w-3 animate-spin" />
-                                                                        ) : (
-                                                                            <>
-                                                                                <X className="h-3 w-3 mr-1" />
-                                                                                {translations.reject ||
-                                                                                    "Reject"}
-                                                                            </>
-                                                                        )}
-                                                                    </Button>
-                                                                </div>
+                                                                    <div className="flex gap-2">
+                                                                        <Button
+                                                                            size="sm"
+                                                                            onClick={(e) =>
+                                                                                handleApprove(
+                                                                                    e,
+                                                                                    request.id
+                                                                                )
+                                                                            }
+                                                                            disabled={
+                                                                                !!processingId ||
+                                                                                (request.urnikNetSynced &&
+                                                                                    request.urnikNetStatus ===
+                                                                                        "PENDING")
+                                                                            }
+                                                                            className="h-7 px-3 text-xs"
+                                                                            title={
+                                                                                request.urnikNetSynced &&
+                                                                                request.urnikNetStatus ===
+                                                                                    "PENDING"
+                                                                                    ? "This request is synced to Urnik.net and must be approved there"
+                                                                                    : undefined
+                                                                            }
+                                                                        >
+                                                                            {isProcessing &&
+                                                                            approveMutation.isPending ? (
+                                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                                            ) : (
+                                                                                <>
+                                                                                    <Check className="h-3 w-3 mr-1" />
+                                                                                    {translations.approve ||
+                                                                                        "Approve"}
+                                                                                </>
+                                                                            )}
+                                                                        </Button>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="destructive"
+                                                                            onClick={(e) =>
+                                                                                handleReject(
+                                                                                    e,
+                                                                                    request.id
+                                                                                )
+                                                                            }
+                                                                            disabled={
+                                                                                !!processingId ||
+                                                                                (request.urnikNetSynced &&
+                                                                                    request.urnikNetStatus ===
+                                                                                        "PENDING")
+                                                                            }
+                                                                            className="h-7 px-3 text-xs"
+                                                                            title={
+                                                                                request.urnikNetSynced &&
+                                                                                request.urnikNetStatus ===
+                                                                                    "PENDING"
+                                                                                    ? "This request is synced to Urnik.net and must be rejected there"
+                                                                                    : undefined
+                                                                            }
+                                                                        >
+                                                                            {isProcessing &&
+                                                                            rejectMutation.isPending ? (
+                                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                                            ) : (
+                                                                                <>
+                                                                                    <X className="h-3 w-3 mr-1" />
+                                                                                    {translations.reject ||
+                                                                                        "Reject"}
+                                                                                </>
+                                                                            )}
+                                                                        </Button>
+                                                                    </div>
+                                                                </>
                                                             )}
                                                         </div>
                                                     </div>

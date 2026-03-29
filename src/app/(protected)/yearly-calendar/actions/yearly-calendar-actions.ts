@@ -1,7 +1,6 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
+import { requireAuth } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 import type { HourType } from "@/../../prisma/generated/client"
@@ -12,14 +11,6 @@ const GetYearlyCalendarDataSchema = z.object({
 })
 
 type GetYearlyCalendarDataInput = z.infer<typeof GetYearlyCalendarDataSchema>
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
 
 export interface DayData {
     types: Partial<Record<HourType, number>>

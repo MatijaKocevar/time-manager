@@ -8,8 +8,8 @@ import SessionWrapper from "@/providers/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
 import { ConditionalSidebar } from "@/features/sidebar"
 import { AppHeader } from "@/features/sidebar"
+import { getUserLayoutData } from "@/features/sidebar/actions/sidebar-actions"
 import { authConfig } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
 import { getLists } from "./(protected)/tasks/actions/list-actions"
 import { NextIntlClientProvider } from "next-intl"
 import { ThemeProvider } from "@/features/theme/providers/theme-provider"
@@ -72,24 +72,11 @@ export default async function RootLayout({
         pendingRequestsCount = notifications.count
     }
 
-    let defaultOpen = true
-    let userTheme = "light"
-    let sidebarExpandedItems: string[] = []
-    if (session?.user?.id) {
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { sidebarOpen: true, theme: true, sidebarExpandedItems: true },
-        })
-        defaultOpen = user?.sidebarOpen ?? true
-        userTheme = user?.theme ?? "light"
-        sidebarExpandedItems = Array.isArray(user?.sidebarExpandedItems)
-            ? (user.sidebarExpandedItems as string[])
-            : []
-    }
+    const { defaultOpen, userTheme, sidebarExpandedItems, hasUrnikCredentials } =
+        await getUserLayoutData()
 
     const themeColor = userTheme === "dark" ? "#000000" : "#ffffff"
 
-    // Fetch breadcrumb translations server-side
     const t = await getTranslations("navigation")
     const breadcrumbTranslations = {
         "/tracker": t("timeTracker"),
@@ -170,6 +157,7 @@ export default async function RootLayout({
                                         userEmail={session?.user?.email}
                                         lists={lists}
                                         pendingRequestsCount={pendingRequestsCount}
+                                        hasUrnikCredentials={hasUrnikCredentials}
                                         header={
                                             session ? (
                                                 <AppHeader

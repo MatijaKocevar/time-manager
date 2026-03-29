@@ -20,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/datetime-picker"
 import { useEffect } from "react"
 import { format } from "date-fns"
 import {
@@ -30,9 +31,14 @@ import {
 interface RequestDetailFormProps {
     request?: RequestDisplay
     onSuccess?: () => void
+    hasUrnikCredentials?: boolean
 }
 
-export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps) {
+export function RequestDetailForm({
+    request,
+    onSuccess,
+    hasUrnikCredentials = false,
+}: RequestDetailFormProps) {
     const t = useTranslations("requests.form")
     const tCommon = useTranslations("common")
     const tTypes = useTranslations("requests.types")
@@ -120,6 +126,7 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                     formData.type === REQUEST_TYPE.WORK_FROM_HOME ? formData.location : undefined,
                 skipWeekends: formData.skipWeekends,
                 skipHolidays: formData.skipHolidays,
+                sendToUrnikNet: formData.sendToUrnikNet,
             })
         }
     }
@@ -154,7 +161,8 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
         return new Date(date).toLocaleDateString()
     }
 
-    const isEditable = !request || request.status === REQUEST_STATUS.PENDING
+    const isUrnikSynced = !!request?.urnikNetSynced
+    const isEditable = !isUrnikSynced && (!request || request.status === REQUEST_STATUS.PENDING)
     const canCancel = request && request.status === REQUEST_STATUS.PENDING
     const needsLocation = formData.type === REQUEST_TYPE.WORK_FROM_HOME
     const isPending = updateMutation.isPending || createMutation.isPending
@@ -181,6 +189,36 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                             </Button>
                         )}
                     </div>
+                </div>
+            )}
+
+            {isUrnikSynced && (
+                <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-200">
+                    {t("urnikSyncedNote")}
+                </div>
+            )}
+
+            {request?.urnikNetStatus === "FAILED" && request?.urnikNetError && (
+                <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-950">
+                    <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                            <h4 className="text-sm font-semibold text-red-800 dark:text-red-200">
+                                {t("urnikNetSyncError")}
+                            </h4>
+                            <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+                                {t("urnikNetSyncFailed")}
+                            </p>
+                            <p className="mt-2 text-xs text-red-600 dark:text-red-400 font-mono">
+                                {request.urnikNetError}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {request?.urnikNetSynced && request?.urnikNetStatus === "PENDING" && (
+                <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                    {t("urnikNetSyncPending")}
                 </div>
             )}
 
@@ -219,7 +257,7 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                 <div className="space-y-2">
                     <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
                     {isEditable ? (
-                        <>
+                        formData.isFullDay ? (
                             <DatePicker
                                 date={formData.startDate ? new Date(formData.startDate) : undefined}
                                 onDateChange={(date) =>
@@ -229,7 +267,28 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                                 }
                                 placeholder={t("selectStartDate")}
                             />
-                        </>
+                        ) : (
+                            <DateTimePicker
+                                value={
+                                    formData.startDate
+                                        ? new Date(
+                                              `${formData.startDate}T${formData.startTime || "00:00"}:00`
+                                          )
+                                        : undefined
+                                }
+                                onChange={(date) => {
+                                    if (date) {
+                                        setFormData({
+                                            startDate: format(date, "yyyy-MM-dd"),
+                                            startTime: format(date, "HH:mm"),
+                                        })
+                                    }
+                                }}
+                                modal={true}
+                                hideTime={false}
+                                timePicker={{ hour: true, minute: true, second: false }}
+                            />
+                        )
                     ) : (
                         request && (
                             <div className="text-lg">
@@ -246,7 +305,7 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                 <div className="space-y-2">
                     <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
                     {isEditable ? (
-                        <>
+                        formData.isFullDay ? (
                             <DatePicker
                                 date={formData.endDate ? new Date(formData.endDate) : undefined}
                                 onDateChange={(date) =>
@@ -256,7 +315,28 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                                 }
                                 placeholder={t("selectEndDate")}
                             />
-                        </>
+                        ) : (
+                            <DateTimePicker
+                                value={
+                                    formData.endDate
+                                        ? new Date(
+                                              `${formData.endDate}T${formData.endTime || "00:00"}:00`
+                                          )
+                                        : undefined
+                                }
+                                onChange={(date) => {
+                                    if (date) {
+                                        setFormData({
+                                            endDate: format(date, "yyyy-MM-dd"),
+                                            endTime: format(date, "HH:mm"),
+                                        })
+                                    }
+                                }}
+                                modal={true}
+                                hideTime={false}
+                                timePicker={{ hour: true, minute: true, second: false }}
+                            />
+                        )
                     ) : (
                         request && (
                             <div className="text-lg">
@@ -286,59 +366,6 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                             {t("fullDay")}
                         </Label>
                     </div>
-
-                    {!formData.isFullDay && (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="startTime">{t("startTime")}</Label>
-                                <Select
-                                    value={formData.startTime}
-                                    onValueChange={(value) => setFormData({ startTime: value })}
-                                >
-                                    <SelectTrigger id="startTime">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from({ length: 24 }, (_, i) => {
-                                            const hour = i.toString().padStart(2, "0")
-                                            return ["00", "15", "30", "45"].map((min) => {
-                                                const time = `${hour}:${min}`
-                                                return (
-                                                    <SelectItem key={time} value={time}>
-                                                        {time}
-                                                    </SelectItem>
-                                                )
-                                            })
-                                        })}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="endTime">{t("endTime")}</Label>
-                                <Select
-                                    value={formData.endTime}
-                                    onValueChange={(value) => setFormData({ endTime: value })}
-                                >
-                                    <SelectTrigger id="endTime">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {Array.from({ length: 24 }, (_, i) => {
-                                            const hour = i.toString().padStart(2, "0")
-                                            return ["00", "15", "30", "45"].map((min) => {
-                                                const time = `${hour}:${min}`
-                                                return (
-                                                    <SelectItem key={time} value={time}>
-                                                        {time}
-                                                    </SelectItem>
-                                                )
-                                            })
-                                        })}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    )}
 
                     {requestedHours !== null && !formData.isFullDay && (
                         <div className="text-sm text-muted-foreground">
@@ -422,6 +449,30 @@ export function RequestDetailForm({ request, onSuccess }: RequestDetailFormProps
                     )}
                 </>
             )}
+
+            {isEditable &&
+                !request &&
+                hasUrnikCredentials &&
+                formData.type &&
+                formData.type !== "WORK" && (
+                    <div className="space-y-2 rounded-md border border-border p-4">
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="send-to-urnik"
+                                checked={formData.sendToUrnikNet}
+                                onCheckedChange={(checked) =>
+                                    setFormData({ sendToUrnikNet: checked === true })
+                                }
+                            />
+                            <Label htmlFor="send-to-urnik" className="cursor-pointer font-normal">
+                                {t("sendToUrnikNet")}
+                            </Label>
+                        </div>
+                        {formData.sendToUrnikNet && (
+                            <p className="text-sm text-muted-foreground">{t("urnikNetNote")}</p>
+                        )}
+                    </div>
+                )}
 
             {isEditable && (
                 <div className="flex justify-end">

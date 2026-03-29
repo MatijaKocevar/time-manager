@@ -5,14 +5,8 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { DatePicker } from "@/components/ui/date-picker"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { DateTimePicker } from "@/components/ui/datetime-picker"
+import { format } from "date-fns"
 import { WorkTypeBadge } from "@/components/work-type-badge"
 import { useCreateRequestStore } from "../stores/create-request-store"
 import { createUrnikNetRequest } from "../actions/create-urnik-net-request-action"
@@ -47,28 +41,34 @@ export function CreateRequestForm({
     const setSuccess = useCreateRequestStore((state) => state.setSuccess)
     const closeDialog = useCreateRequestStore((state) => state.closeDialog)
 
-    const [date, setDate] = useState<Date>()
-    const [startTime, setStartTime] = useState("09:00")
-    const [endTime, setEndTime] = useState("17:00")
+    const [startDateTime, setStartDateTime] = useState<Date | undefined>(
+        (() => {
+            const d = new Date()
+            d.setHours(9, 0, 0, 0)
+            return d
+        })()
+    )
+    const [endDateTime, setEndDateTime] = useState<Date | undefined>(
+        (() => {
+            const d = new Date()
+            d.setHours(17, 0, 0, 0)
+            return d
+        })()
+    )
     const [comment, setComment] = useState("")
-
-    const timeOptions = Array.from({ length: 24 }, (_, i) => {
-        const hour = i.toString().padStart(2, "0")
-        return ["00", "15", "30", "45"].map((min) => `${hour}:${min}`)
-    }).flat()
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!selectedType || !date) return
+        if (!selectedType || !startDateTime || !endDateTime) return
 
         setSubmitting(true)
         setError(null)
 
         const result = await createUrnikNetRequest({
-            type: selectedType,
-            date,
-            startTime,
-            endTime,
+            type: selectedType as "WORK" | "WORK_FROM_HOME",
+            date: startDateTime,
+            startTime: format(startDateTime, "HH:mm"),
+            endTime: format(endDateTime, "HH:mm"),
             comment: comment || undefined,
         })
 
@@ -95,11 +95,9 @@ export function CreateRequestForm({
     }
 
     const calculateHours = () => {
-        const [startHour, startMin] = startTime.split(":").map(Number)
-        const [endHour, endMin] = endTime.split(":").map(Number)
-        const startMinutes = startHour * 60 + startMin
-        const endMinutes = endHour * 60 + endMin
-        return ((endMinutes - startMinutes) / 60).toFixed(2)
+        if (!startDateTime || !endDateTime) return "0.00"
+        const diffMs = endDateTime.getTime() - startDateTime.getTime()
+        return (diffMs / (1000 * 60 * 60)).toFixed(2)
     }
 
     return (
@@ -127,47 +125,27 @@ export function CreateRequestForm({
             )}
 
             <div className="space-y-2">
-                <Label htmlFor="date">{dateLabel}</Label>
-                <DatePicker
-                    date={date}
-                    onDateChange={setDate}
-                    placeholder={dateLabel}
+                <Label>{dateLabel}</Label>
+                <DateTimePicker
+                    value={startDateTime}
+                    onChange={setStartDateTime}
+                    modal={true}
+                    hideTime={false}
+                    timePicker={{ hour: true, minute: true, second: false }}
                     disabled={isSubmitting}
                 />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="startTime">{startTimeLabel}</Label>
-                    <Select value={startTime} onValueChange={setStartTime} disabled={isSubmitting}>
-                        <SelectTrigger id="startTime">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {timeOptions.map((time) => (
-                                <SelectItem key={time} value={time}>
-                                    {time}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="endTime">{endTimeLabel}</Label>
-                    <Select value={endTime} onValueChange={setEndTime} disabled={isSubmitting}>
-                        <SelectTrigger id="endTime">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {timeOptions.map((time) => (
-                                <SelectItem key={time} value={time}>
-                                    {time}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+            <div className="space-y-2">
+                <Label>{endTimeLabel}</Label>
+                <DateTimePicker
+                    value={endDateTime}
+                    onChange={setEndDateTime}
+                    modal={true}
+                    hideTime={false}
+                    timePicker={{ hour: true, minute: true, second: false }}
+                    disabled={isSubmitting}
+                />
             </div>
 
             <div className="text-sm text-muted-foreground">Total hours: {calculateHours()}h</div>
@@ -185,7 +163,7 @@ export function CreateRequestForm({
             </div>
 
             <div className="flex justify-end pt-2">
-                <Button type="submit" disabled={isSubmitting || !date}>
+                <Button type="submit" disabled={isSubmitting || !startDateTime || !endDateTime}>
                     {isSubmitting ? "Submitting..." : submitButton}
                 </Button>
             </div>

@@ -1,9 +1,8 @@
 "use server"
 
-import { getServerSession } from "next-auth"
+import { requireAuth } from "@/lib/auth-helpers"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import { authConfig } from "@/lib/auth"
 import {
     CreateListSchema,
     UpdateListSchema,
@@ -15,14 +14,6 @@ import {
     type MoveTaskToListInput,
     type ListDisplay,
 } from "../schemas/list-schemas"
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
 
 export async function getListById(listId: string): Promise<ListDisplay | null> {
     try {

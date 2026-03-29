@@ -366,7 +366,8 @@
             "vacation": "Vacation",
             "sickLeave": "Sick Leave",
             "workFromHome": "Work From Home",
-            "businessTrip": "Business Trip"
+            "businessTrip": "Business Trip",
+            "work": "Work"
         },
         "statuses": {
             "pending": "Pending",
@@ -396,7 +397,15 @@
             "startTime": "Start Time",
             "endTime": "End Time",
             "requestedHours": "Requested Hours",
-            "hours": "hours"
+            "hours": "hours",
+            "sendToUrnikNet": "Also submit to Urnik.net",
+            "urnikNetNote": "Approval will come from Urnik.net. This request cannot be edited after submission.",
+            "urnikSyncedNote": "This request was submitted to Urnik.net and cannot be edited. Cancel it and create a new one if changes are needed.",
+            "urnikNetSyncError": "Urnik.net Sync Error",
+            "urnikNetSyncFailed": "Failed to sync this request to Urnik.net. The request was created locally but not submitted to Urnik.net.",
+            "urnikNetSyncPending": "Waiting for approval from Urnik.net",
+            "urnikNetSyncConfirmed": "Approved via Urnik.net",
+            "urnikNetSyncRejected": "Rejected via Urnik.net"
         },
         "table": {
             "approvedBy": "Approved/Rejected By",
@@ -654,7 +663,8 @@
                 "noRequests": "No pending requests found.",
                 "noPending": "No pending requests found.",
                 "searchPlaceholder": "Search...",
-                "cancel": "Cancel"
+                "cancel": "Cancel",
+                "awaitingUrnikNet": "Awaiting Urnik.net decision"
             },
             "filter": {
                 "title": "Filter Column",
@@ -1078,11 +1088,18 @@
             "typeLabel": "New Request",
             "typePlaceholder": "Select request type...",
             "hoursLabel": "Hours",
+            "daysLabel": "Days",
             "typeWork": "Work",
             "typeWorkFromHome": "Work from home",
+            "typeVacation": "Vacation",
+            "typeSickLeave": "Sick leave",
+            "typeDayWorkFromHome": "Work from home",
             "dateLabel": "Date",
             "startTimeLabel": "Start Time",
             "endTimeLabel": "End Time",
+            "startDateLabel": "Start Date",
+            "endDateLabel": "End Date",
+            "workDaysLabel": "Work Days",
             "commentLabel": "Comment (Optional)",
             "submitButton": "Submit to Urnik.net",
             "buttonLabel": "Create Request",

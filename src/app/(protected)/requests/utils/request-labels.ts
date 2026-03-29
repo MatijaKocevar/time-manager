@@ -6,6 +6,7 @@ export const REQUEST_TYPE_KEYS: Record<RequestType, string> = {
     VACATION: "requests.types.vacation",
     SICK_LEAVE: "requests.types.sickLeave",
     WORK_FROM_HOME: "requests.types.workFromHome",
+    WORK: "requests.types.work",
 }
 
 export const REQUEST_STATUS_KEYS: Record<RequestStatus, string> = {

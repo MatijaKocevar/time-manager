@@ -1,7 +1,6 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
+import { requireAuth } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
 import {
     GetTimeSheetEntriesSchema,
@@ -9,14 +8,6 @@ import {
     GetDayEntriesSchema,
     type GetDayEntriesInput,
 } from "../schemas/time-sheet-schemas"
-
-async function requireAuth() {
-    const session = await getServerSession(authConfig)
-    if (!session?.user) {
-        throw new Error("Unauthorized")
-    }
-    return session
-}
 
 export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
     const session = await requireAuth()

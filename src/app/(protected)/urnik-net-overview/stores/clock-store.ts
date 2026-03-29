@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { clockInToUrnik, clockOutAndStopTimer } from "../actions/clock-actions"
 import { toast } from "sonner"
+import { getErrorMessage } from "../utils/helpers"
 
 interface ClockStoreState {
     isClockingIn: boolean
@@ -39,7 +40,7 @@ export const useClockStore = create<ClockStoreState & ClockStoreActions>((set) =
             }
         } catch (error) {
             toast.error(translations.errorTitle, {
-                description: error instanceof Error ? error.message : "Unknown error",
+                description: getErrorMessage(error),
             })
             return { success: false, shouldRefresh: false }
         } finally {
@@ -62,7 +63,7 @@ export const useClockStore = create<ClockStoreState & ClockStoreActions>((set) =
             }
         } catch (error) {
             toast.error(translations.errorTitle, {
-                description: error instanceof Error ? error.message : "Unknown error",
+                description: getErrorMessage(error),
             })
             return { success: false, shouldRefresh: false }
         } finally {

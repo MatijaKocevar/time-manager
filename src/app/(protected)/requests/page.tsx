@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import { getUserRequests } from "./actions/request-actions"
 import { RequestsTableWithDialog } from "./components/requests-table-with-dialog"
 
@@ -10,11 +11,23 @@ export default async function RequestsPage() {
         return null
     }
 
-    const requests = await getUserRequests()
+    const [requests, userRecord] = await Promise.all([
+        getUserRequests(),
+        prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { urnikUsername: true },
+        }),
+    ])
+
+    const hasUrnikCredentials = !!userRecord?.urnikUsername
 
     return (
         <div className="flex flex-col gap-4 min-w-0 h-full">
-            <RequestsTableWithDialog requests={requests} showUser={false} />
+            <RequestsTableWithDialog
+                requests={requests}
+                showUser={false}
+                hasUrnikCredentials={hasUrnikCredentials}
+            />
         </div>
     )
 }
