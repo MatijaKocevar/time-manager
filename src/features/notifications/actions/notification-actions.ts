@@ -281,6 +281,8 @@ export async function sendPushNotification(
         body: string
         icon?: string
         url?: string
+        actions?: Array<{ action: string; title: string }>
+        data?: Record<string, unknown>
     }
 ) {
     if (!ensureVapidDetails()) {
@@ -313,6 +315,8 @@ export async function sendPushNotification(
                             body: payload.body,
                             icon: payload.icon || "/icon-192x192.png",
                             url: payload.url || "/",
+                            actions: payload.actions || [],
+                            data: payload.data || {},
                         })
                     )
                 } catch (error: unknown) {

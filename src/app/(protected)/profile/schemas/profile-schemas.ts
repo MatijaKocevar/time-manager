@@ -9,3 +9,10 @@ export const ProfileFormStateSchema = z.object({
 })
 
 export type ProfileFormState = z.infer<typeof ProfileFormStateSchema>
+
+export const AutoCheckinPreferencesSchema = z.object({
+    autoCheckInEnabled: z.boolean(),
+    autoCheckOutEnabled: z.boolean(),
+})
+
+export type AutoCheckinPreferences = z.infer<typeof AutoCheckinPreferencesSchema>

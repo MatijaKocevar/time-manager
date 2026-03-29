@@ -47,6 +47,10 @@ export function NotificationPreferences({
                 pushRequestApproved: preferences.pushRequestApproved,
                 pushRequestRejected: preferences.pushRequestRejected,
                 pushRequestCancelled: preferences.pushRequestCancelled,
+                emailAutoCheckin: preferences.emailAutoCheckin,
+                pushAutoCheckin: preferences.pushAutoCheckin,
+                emailAutoCheckout: preferences.emailAutoCheckout,
+                pushAutoCheckout: preferences.pushAutoCheckout,
             })
 
             if (result.error) {
@@ -237,6 +241,88 @@ export function NotificationPreferences({
                                     className="h-4 w-4 rounded border-gray-300"
                                 />
                                 <Label htmlFor="pushRequestCancelled" className="cursor-pointer">
+                                    {t("pushLabel")}
+                                </Label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                    <div>
+                        <h3 className="text-sm font-medium mb-3">{t("autoCheckinTitle")}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            {t("autoCheckinDescription")}
+                        </p>
+                        <div className="space-y-3 ml-4">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="emailAutoCheckin"
+                                    checked={preferences.emailAutoCheckin}
+                                    onChange={(e) =>
+                                        handleToggle("emailAutoCheckin", e.target.checked)
+                                    }
+                                    className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="emailAutoCheckin" className="cursor-pointer">
+                                    {t("emailLabel")}
+                                </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="pushAutoCheckin"
+                                    checked={preferences.pushAutoCheckin}
+                                    onChange={(e) =>
+                                        handleToggle("pushAutoCheckin", e.target.checked)
+                                    }
+                                    className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="pushAutoCheckin" className="cursor-pointer">
+                                    {t("pushLabel")}
+                                </Label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                    <div>
+                        <h3 className="text-sm font-medium mb-3">{t("autoCheckoutTitle")}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            {t("autoCheckoutDescription")}
+                        </p>
+                        <div className="space-y-3 ml-4">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="emailAutoCheckout"
+                                    checked={preferences.emailAutoCheckout}
+                                    onChange={(e) =>
+                                        handleToggle("emailAutoCheckout", e.target.checked)
+                                    }
+                                    className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="emailAutoCheckout" className="cursor-pointer">
+                                    {t("emailLabel")}
+                                </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="pushAutoCheckout"
+                                    checked={preferences.pushAutoCheckout}
+                                    onChange={(e) =>
+                                        handleToggle("pushAutoCheckout", e.target.checked)
+                                    }
+                                    className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="pushAutoCheckout" className="cursor-pointer">
                                     {t("pushLabel")}
                                 </Label>
                             </div>
