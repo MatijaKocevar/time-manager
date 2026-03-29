@@ -86,3 +86,43 @@ export async function getUrnikCookie(): Promise<string | null> {
         return null
     }
 }
+
+export async function getUrnikCookieForUser(userId: string): Promise<string | null> {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { urnikUsername: true, urnikPassword: true, urnikUserId: true },
+        })
+
+        if (!user?.urnikUsername || !user?.urnikPassword) {
+            return null
+        }
+
+        const result = await loginToUrnikNet(user.urnikUsername, user.urnikPassword)
+
+        if (result.success && result.cookie) {
+            const updateData: { lastUrnikTestAt: Date; urnikUserId?: string } = {
+                lastUrnikTestAt: new Date(),
+            }
+
+            if (!user.urnikUserId) {
+                const extractedUserId = await extractUrnikUserId(result.cookie)
+                if (extractedUserId) {
+                    updateData.urnikUserId = extractedUserId
+                }
+            }
+
+            await prisma.user.update({
+                where: { id: userId },
+                data: updateData,
+            })
+
+            return result.cookie
+        }
+
+        return null
+    } catch (error) {
+        console.error("Failed to get urnik cookie for user:", error)
+        return null
+    }
+}

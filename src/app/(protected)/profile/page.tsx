@@ -4,7 +4,9 @@ import { ProfileForm } from "./components/profile-form"
 import { PushNotificationManager } from "./components/push-notification-manager"
 import { NotificationPreferences } from "./components/notification-preferences"
 import { UrnikCredentialsForm } from "./components/urnik-credentials-form"
-import { getCurrentUser } from "./actions/profile-actions"
+import { AutoCheckinPreferences } from "./components/auto-checkin-preferences"
+import { WorkTimeAdjustment } from "./components/work-time-adjustment"
+import { getCurrentUser, getAutoCheckinPreferences } from "./actions/profile-actions"
 import {
     hasUserSubscription,
     getNotificationPreferences,
@@ -22,9 +24,14 @@ export default async function ProfilePage() {
 
     const { hasSubscription } = await hasUserSubscription()
     const { preferences, error } = await getNotificationPreferences()
+    const autoCheckinResult = await getAutoCheckinPreferences()
     const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
 
     if (error || !preferences) {
+        return <div>{t("errorLoadingPreferences")}</div>
+    }
+
+    if (autoCheckinResult.error || !autoCheckinResult.preferences) {
         return <div>{t("errorLoadingPreferences")}</div>
     }
 
@@ -56,6 +63,15 @@ export default async function ProfilePage() {
                 lastTestAt={user.lastUrnikTestAt}
                 isDemo={user.isDemo}
                 translations={urnikTranslations}
+            />
+            <AutoCheckinPreferences
+                initialEnabled={autoCheckinResult.preferences.autoCheckInEnabled}
+                initialCheckoutEnabled={autoCheckinResult.preferences.autoCheckOutEnabled}
+                isDemo={user.isDemo}
+            />
+            <WorkTimeAdjustment
+                defaultStartTime={user.workStartTime || undefined}
+                defaultEndTime={user.workEndTime || undefined}
             />
             <PushNotificationManager
                 initialHasSubscription={hasSubscription}

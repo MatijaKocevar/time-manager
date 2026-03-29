@@ -776,6 +776,10 @@
             "rejectedDescription": "Receive notifications when your request is rejected",
             "cancelledTitle": "Request Cancelled",
             "cancelledDescription": "Receive notifications when a request is cancelled",
+            "autoCheckinTitle": "Auto Check-In Notifications",
+            "autoCheckinDescription": "Receive notifications about automatic check-in reminders and confirmations",
+            "autoCheckoutTitle": "Auto Check-Out Notifications",
+            "autoCheckoutDescription": "Receive notifications about automatic check-out reminders and confirmations",
             "enabled": "✓ Notifications are enabled. You will receive push alerts.",
             "subscribed": "You are subscribed to push notifications. You will receive alerts for request updates.",
             "notSubscribed": "Enable push notifications to receive instant alerts about request approvals and new pending requests.",
@@ -832,6 +836,19 @@
                 "noCredentialsSaved": "No urnik.net credentials found. Please save credentials first.",
                 "connectionFailed": "Connection test failed. Please check your credentials.",
                 "updateFailed": "Failed to update urnik.net credentials"
+            }
+        },
+        "autoCheckin": {
+            "title": "Auto Check-In/Out",
+            "description": "Automatically log your arrival and departure to urnik.net based on your work hours",
+            "enableAutoCheckin": "Enable Auto Check-In",
+            "enableAutoCheckout": "Enable Auto Check-Out",
+            "reminderInfo": "You will receive a reminder 15 minutes before your work start/end time. If you don't respond, the system will automatically log you in/out.",
+            "autoDetectType": "Check-in type (Office/Work From Home) will be automatically determined based on your approved requests for the day.",
+            "updateSuccess": "Auto check-in preferences updated successfully",
+            "validation": {
+                "fetchFailed": "Failed to load auto check-in preferences",
+                "updateFailed": "Failed to update auto check-in preferences"
             }
         }
     },

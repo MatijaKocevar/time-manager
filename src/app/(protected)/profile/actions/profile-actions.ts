@@ -287,3 +287,74 @@ export async function testUrnikConnection() {
 export async function clearUrnikCredentials() {
     return updateUrnikCredentials({ clearCredentials: true })
 }
+
+export async function getAutoCheckinPreferences() {
+    const session = await getServerSession(authConfig)
+
+    if (!session?.user) {
+        return { error: "profile.validation.unauthorized" }
+    }
+
+    try {
+        let preferences = await prisma.userPreferences.findUnique({
+            where: { userId: session.user.id },
+            select: {
+                autoCheckInEnabled: true,
+                autoCheckOutEnabled: true,
+            },
+        })
+
+        if (!preferences) {
+            preferences = await prisma.userPreferences.create({
+                data: {
+                    userId: session.user.id,
+                    autoCheckInEnabled: false,
+                    autoCheckOutEnabled: false,
+                },
+                select: {
+                    autoCheckInEnabled: true,
+                    autoCheckOutEnabled: true,
+                },
+            })
+        }
+
+        return { preferences, success: true }
+    } catch (error) {
+        console.error("Failed to get auto check-in preferences:", error)
+        return { error: "profile.autoCheckin.validation.fetchFailed" }
+    }
+}
+
+export async function updateAutoCheckinPreferences(input: {
+    autoCheckInEnabled: boolean
+    autoCheckOutEnabled: boolean
+}) {
+    const session = await getServerSession(authConfig)
+
+    if (!session?.user) {
+        return { error: "profile.validation.unauthorized" }
+    }
+
+    await requireNotDemo(session.user.id)
+
+    try {
+        await prisma.userPreferences.upsert({
+            where: { userId: session.user.id },
+            create: {
+                userId: session.user.id,
+                autoCheckInEnabled: input.autoCheckInEnabled,
+                autoCheckOutEnabled: input.autoCheckOutEnabled,
+            },
+            update: {
+                autoCheckInEnabled: input.autoCheckInEnabled,
+                autoCheckOutEnabled: input.autoCheckOutEnabled,
+            },
+        })
+
+        revalidatePath("/profile")
+        return { success: true }
+    } catch (error) {
+        console.error("Failed to update auto check-in preferences:", error)
+        return { error: "profile.autoCheckin.validation.updateFailed" }
+    }
+}

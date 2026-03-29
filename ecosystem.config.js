@@ -36,5 +36,22 @@ module.exports = {
             autorestart: true,
             watch: false,
         },
+        {
+            name: "auto-checkin-checkout-cron",
+            script: "npx",
+            args: "tsx scripts/auto-checkin-checkout-cron.ts",
+            cwd: "/home/server/time-management-app",
+            instances: 1,
+            exec_mode: "fork",
+            env: {
+                NODE_ENV: "production",
+            },
+            error_file: "./logs/auto-checkin-cron-err.log",
+            out_file: "./logs/auto-checkin-cron-out.log",
+            log_date_format: "YYYY-MM-DD HH:mm:ss Z",
+            merge_logs: true,
+            autorestart: true,
+            watch: false,
+        },
     ],
 }

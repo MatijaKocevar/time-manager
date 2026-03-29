@@ -776,6 +776,10 @@
             "rejectedDescription": "Prejemajte obvestila, ko je vaš zahtevek zavrnjen",
             "cancelledTitle": "Zahtevek preklican",
             "cancelledDescription": "Prejemajte obvestila, ko je zahtevek preklican",
+            "autoCheckinTitle": "Obvestila o samodejnem prihodu",
+            "autoCheckinDescription": "Prejemajte obvestila o opomnikih in potrditvah samodejnega prihoda",
+            "autoCheckoutTitle": "Obvestila o samodejnem odhodu",
+            "autoCheckoutDescription": "Prejemajte obvestila o opomnikih in potrditvah samodejnega odhoda",
             "enabled": "✓ Obvestila so omogočena. Prejemali boste push opozorila.",
             "subscribed": "Naročeni ste na push obvestila. Prejemali boste opozorila o posodobitvah zahtevkov.",
             "notSubscribed": "Omogočite push obvestila za takojšnja opozorila o odobritvah zahtevkov in novih čakajočih zahtevkih.",
@@ -832,6 +836,19 @@
                 "noCredentialsSaved": "Ni najdenih urnik.net poverilnic. Najprej shranite poverilnice.",
                 "connectionFailed": "Test povezave ni uspel. Preverite svoje poverilnice.",
                 "updateFailed": "Posodobitev urnik.net poverilnic ni uspela"
+            }
+        },
+        "autoCheckin": {
+            "title": "Samodejni prihod/odhod",
+            "description": "Samodejno zabeleži vaš prihod in odhod na urnik.net glede na vaše delovne ure",
+            "enableAutoCheckin": "Omogoči samodejni prihod",
+            "enableAutoCheckout": "Omogoči samodejni odhod",
+            "reminderInfo": "Prejeli boste opomnik 15 minut pred začetkom/koncem delovnega časa. Če se ne odzovete, sistem vas bo samodejno prijavil/odjavil.",
+            "autoDetectType": "Tip prihoda (Pisarna/Delo od doma) bo samodejno določen na podlagi vaših odobrenih zahtevkov za ta dan.",
+            "updateSuccess": "Nastavitve samodejnega prihoda so bile uspešno posodobljene",
+            "validation": {
+                "fetchFailed": "Nalaganje nastavitev samodejnega prihoda ni uspelo",
+                "updateFailed": "Posodobitev nastavitev samodejnega prihoda ni uspela"
             }
         }
     },

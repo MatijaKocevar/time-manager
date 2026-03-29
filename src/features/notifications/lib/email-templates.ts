@@ -523,3 +523,260 @@ export function requestCancelledEmail(
 </html>
     `.trim()
 }
+
+export function autoCheckinReminderEmail(
+    userName: string,
+    workStartTime: string,
+    locale: "en" | "sl" = "en"
+): string {
+    const content = {
+        en: {
+            title: "Auto Check-In Reminder",
+            greeting: `Hello ${userName},`,
+            intro: `Your work starts at ${workStartTime}. This is a reminder that auto check-in is enabled.`,
+            info: "If you don't manually check in to urnik.net, the system will automatically log your arrival when your work hours begin.",
+            actionText:
+                "If you prefer to check in manually, please visit urnik.net or use the app.",
+            adjustText:
+                "Need to adjust your start time for today? Visit your profile settings to temporarily change your work hours.",
+            buttonText: "Go to urnik.net Overview",
+        },
+        sl: {
+            title: "Opomnik za samodejni prihod",
+            greeting: `Pozdravljeni ${userName},`,
+            intro: `Vaše delo se začne ob ${workStartTime}. To je opomnik, da imate omogočen samodejni prihod.`,
+            info: "Če se ročno ne prijavite na urnik.net, bo sistem samodejno zabeležil vaš prihod, ko se začnejo vaše delovne ure.",
+            actionText:
+                "Če želite ročno prijaviti prihod, prosimo obiščite urnik.net ali uporabite aplikacijo.",
+            adjustText:
+                "Želite prilagoditi čas začetka za danes? Obiščite nastavitve profila za začasno spremembo delovnih ur.",
+            buttonText: "Pojdi na urnik.net pregled",
+        },
+    }
+
+    const t = content[locale]
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #10b981; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .info-box { background-color: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6; }
+        .button { display: inline-block; background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 20px; }
+        .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${t.title}</h1>
+        </div>
+        <div class="content">
+            <p>${t.greeting}</p>
+            <p>${t.intro}</p>
+            <div class="info-box">
+                ${t.info}
+            </div>
+            <p>${t.actionText}</p>
+            <p style="font-size: 14px; color: #6b7280;">${t.adjustText}</p>
+            <div class="footer">
+                Time Manager - Auto Check-In System
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim()
+}
+
+export function autoCheckinCompletedEmail(
+    userName: string,
+    checkInType: string,
+    locale: "en" | "sl" = "en"
+): string {
+    const content = {
+        en: {
+            title: "Auto Check-In Completed",
+            greeting: `Hello ${userName},`,
+            intro: `You've been automatically checked into urnik.net.`,
+            details: `Check-in type: ${checkInType}`,
+            info: "Your arrival has been logged to urnik.net based on your configured work hours.",
+            buttonText: "View urnik.net Overview",
+        },
+        sl: {
+            title: "Samodejni prihod zaključen",
+            greeting: `Pozdravljeni ${userName},`,
+            intro: `Bili ste samodejno prijavljeni na urnik.net.`,
+            details: `Tip prihoda: ${checkInType === "Office" ? "Pisarna" : "Delo od doma"}`,
+            info: "Vaš prihod je bil zabeležen na urnik.net glede na vaše nastavljene delovne ure.",
+            buttonText: "Poglej urnik.net pregled",
+        },
+    }
+
+    const t = content[locale]
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #10b981; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .success-box { background-color: #d1fae5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
+        .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${t.title}</h1>
+        </div>
+        <div class="content">
+            <p>${t.greeting}</p>
+            <p>${t.intro}</p>
+            <div class="success-box">
+                ${t.details}<br/>
+                ${t.info}
+            </div>
+            <div class="footer">
+                Time Manager - Auto Check-In System
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim()
+}
+
+export function autoCheckoutReminderEmail(
+    userName: string,
+    workEndTime: string,
+    locale: "en" | "sl" = "en"
+): string {
+    const content = {
+        en: {
+            title: "Auto Check-Out Reminder",
+            greeting: `Hello ${userName},`,
+            intro: `Your work ends at ${workEndTime}. This is a reminder that auto check-out is enabled.`,
+            info: "If you don't manually check out from urnik.net, the system will automatically log your departure when your work hours end.",
+            actionText:
+                "If you want to continue working, you can cancel the automatic check-out in your profile settings.",
+            adjustText:
+                "Need to adjust your end time for today? Visit your profile settings to temporarily change your work hours.",
+            buttonText: "Go to Profile Settings",
+        },
+        sl: {
+            title: "Opomnik za samodejni odhod",
+            greeting: `Pozdravljeni ${userName},`,
+            intro: `Vaše delo se konča ob ${workEndTime}. To je opomnik, da imate omogočen samodejni odhod.`,
+            info: "Če se ročno ne odjavite z urnik.net, bo sistem samodejno zabeležil vaš odhod, ko se končajo vaše delovne ure.",
+            actionText:
+                "Če želite nadaljevati z delom, lahko prekličete samodejni odhod v nastavitvah profila.",
+            adjustText:
+                "Želite prilagoditi čas konca za danes? Obiščite nastavitve profila za začasno spremembo delovnih ur.",
+            buttonText: "Pojdi na nastavitve profila",
+        },
+    }
+
+    const t = content[locale]
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f59e0b; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .warning-box { background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }
+        .button { display: inline-block; background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 20px; }
+        .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${t.title}</h1>
+        </div>
+        <div class="content">
+            <p>${t.greeting}</p>
+            <p>${t.intro}</p>
+            <div class="warning-box">
+                ${t.info}
+            </div>
+            <p>${t.actionText}</p>
+            <p style="font-size: 14px; color: #6b7280;">${t.adjustText}</p>
+            <div class="footer">
+                Time Manager - Auto Check-Out System
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim()
+}
+
+export function autoCheckoutCompletedEmail(userName: string, locale: "en" | "sl" = "en"): string {
+    const content = {
+        en: {
+            title: "Auto Check-Out Completed",
+            greeting: `Hello ${userName},`,
+            intro: `You've been automatically checked out from urnik.net.`,
+            info: "Your departure has been logged to urnik.net based on your configured work hours.",
+            buttonText: "View urnik.net Overview",
+        },
+        sl: {
+            title: "Samodejni odhod zaključen",
+            greeting: `Pozdravljeni ${userName},`,
+            intro: `Bili ste samodejno odjavljeni z urnik.net.`,
+            info: "Vaš odhod je bil zabeležen na urnik.net glede na vaše nastavljene delovne ure.",
+            buttonText: "Poglej urnik.net pregled",
+        },
+    }
+
+    const t = content[locale]
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #10b981; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .success-box { background-color: #d1fae5; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981; }
+        .footer { text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${t.title}</h1>
+        </div>
+        <div class="content">
+            <p>${t.greeting}</p>
+            <p>${t.intro}</p>
+            <div class="success-box">
+                ${t.info}
+            </div>
+            <div class="footer">
+                Time Manager - Auto Check-Out System
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim()
+}
