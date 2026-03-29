@@ -400,7 +400,12 @@
             "hours": "ur",
             "sendToUrnikNet": "Pošlji tudi na Urnik.net",
             "urnikNetNote": "Odobritev bo prišla z Urnik.net. Tega zahtevka po oddaji ni mogoče urejati.",
-            "urnikSyncedNote": "Ta zahtevek je bil poslan na Urnik.net in ga ni mogoče urejati. Prekličite ga in ustvarite novega, če so potrebne spremembe."
+            "urnikSyncedNote": "Ta zahtevek je bil poslan na Urnik.net in ga ni mogoče urejati. Prekličite ga in ustvarite novega, če so potrebne spremembe.",
+            "urnikNetSyncError": "Napaka pri sinhronizaciji z Urnik.net",
+            "urnikNetSyncFailed": "Sinhronizacija tega zahtevka z Urnik.net ni uspela. Zahtevek je bil ustvarjen lokalno, vendar ni bil poslan na Urnik.net.",
+            "urnikNetSyncPending": "Čakanje na odobritev z Urnik.net",
+            "urnikNetSyncConfirmed": "Odobreno prek Urnik.net",
+            "urnikNetSyncRejected": "Zavrnjeno prek Urnik.net"
         },
         "table": {
             "approvedBy": "Odobril/Zavrnil",

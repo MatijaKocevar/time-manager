@@ -198,6 +198,30 @@ export function RequestDetailForm({
                 </div>
             )}
 
+            {request?.urnikNetStatus === "FAILED" && request?.urnikNetError && (
+                <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 dark:border-red-800 dark:bg-red-950">
+                    <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                            <h4 className="text-sm font-semibold text-red-800 dark:text-red-200">
+                                {t("urnikNetSyncError")}
+                            </h4>
+                            <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+                                {t("urnikNetSyncFailed")}
+                            </p>
+                            <p className="mt-2 text-xs text-red-600 dark:text-red-400 font-mono">
+                                {request.urnikNetError}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {request?.urnikNetSynced && request?.urnikNetStatus === "PENDING" && (
+                <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                    {t("urnikNetSyncPending")}
+                </div>
+            )}
+
             <div className="space-y-2">
                 <Label htmlFor="type">{tCommon("fields.type")}</Label>
                 {isEditable ? (

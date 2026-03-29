@@ -76,9 +76,14 @@ export function createColumns({
                     >
                         {getTypeTranslation(row.original.type as RequestType)}
                     </span>
-                    {row.original.urnikNetSynced && (
-                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 whitespace-nowrap">
+                    {row.original.urnikNetSynced && row.original.urnikNetStatus === "PENDING" && (
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200 whitespace-nowrap">
                             Urnik.net
+                        </span>
+                    )}
+                    {row.original.urnikNetStatus === "FAILED" && (
+                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 whitespace-nowrap">
+                            Sync Failed
                         </span>
                     )}
                 </div>

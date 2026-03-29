@@ -47,6 +47,8 @@ export interface PendingRequestNotification {
     userName: string
     userEmail: string
     createdAt: Date
+    urnikNetSynced: boolean
+    urnikNetStatus: string | null
 }
 
 export interface UserNotification {
@@ -83,6 +85,8 @@ export async function getNotifications(): Promise<NotificationData> {
                 startDate: true,
                 endDate: true,
                 createdAt: true,
+                urnikNetSynced: true,
+                urnikNetStatus: true,
                 user: {
                     select: {
                         name: true,
@@ -104,6 +108,8 @@ export async function getNotifications(): Promise<NotificationData> {
             userName: req.user.name || req.user.email,
             userEmail: req.user.email,
             createdAt: req.createdAt,
+            urnikNetSynced: req.urnikNetSynced,
+            urnikNetStatus: req.urnikNetStatus,
         }))
 
         const pendingCount = await prisma.request.count({

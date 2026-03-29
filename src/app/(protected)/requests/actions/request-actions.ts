@@ -163,16 +163,20 @@ export async function createRequest(input: CreateRequestInput) {
             }
         }
 
-        notifyAdminsNewRequest({
-            requestId: createdRequest.id,
-            userName: session.user.name || session.user.email || "Unknown User",
-            requestType: type,
-            startDate,
-            endDate,
-            reason,
-        }).catch((error) => {
-            console.error("Failed to notify admins:", error)
-        })
+        const shouldNotifyAdmins = !sendToUrnikNet || createdRequest.urnikNetStatus === "FAILED"
+
+        if (shouldNotifyAdmins) {
+            notifyAdminsNewRequest({
+                requestId: createdRequest.id,
+                userName: session.user.name || session.user.email || "Unknown User",
+                requestType: type,
+                startDate,
+                endDate,
+                reason,
+            }).catch((error) => {
+                console.error("Failed to notify admins:", error)
+            })
+        }
 
         revalidatePath("/requests")
         return { success: true }
@@ -1210,6 +1214,12 @@ export async function approveRequest(input: ApproveRequestInput) {
             return { error: "Can only approve pending requests" }
         }
 
+        if (request.urnikNetSynced && request.urnikNetStatus === "PENDING") {
+            return {
+                error: "Cannot approve - this request is synced to Urnik.net and must be approved there",
+            }
+        }
+
         const earlierPendingRequests = await prisma.request.count({
             where: {
                 userId: request.userId,
@@ -1254,6 +1264,12 @@ export async function rejectRequest(input: RejectRequestInput) {
 
         if (request.status !== "PENDING") {
             return { error: "Can only reject pending requests" }
+        }
+
+        if (request.urnikNetSynced && request.urnikNetStatus === "PENDING") {
+            return {
+                error: "Cannot reject - this request is synced to Urnik.net and must be rejected there",
+            }
         }
 
         const earlierPendingRequests = await prisma.request.count({
