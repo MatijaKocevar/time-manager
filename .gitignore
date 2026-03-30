@@ -57,3 +57,4 @@ next-env.d.ts
 .env*.local
 backups/
 scripts/sync-urnik-cron.js
+scripts/sync-urnik-cron.js
