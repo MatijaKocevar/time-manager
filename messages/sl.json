@@ -128,6 +128,8 @@
             "noNotifications": "Ni obvestil",
             "markAllRead": "Označi vse kot prebrano",
             "viewAll": "Prikaži vse zahtevke",
+            "awaitingUrnikNet": "Čakam na odločitev Urnik.net",
+            "urnikSyncFailed": "Pošiljanje na Urnik.net ni uspelo",
             "sections": {
                 "notifications": "Obvestila",
                 "pendingRequests": "Čakajoči zahtevki"

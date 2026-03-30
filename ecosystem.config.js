@@ -21,8 +21,8 @@ module.exports = {
         },
         {
             name: "urnik-sync-cron",
-            script: "npx",
-            args: "tsx scripts/sync-urnik-cron.ts",
+            script: "node",
+            args: "scripts/sync-urnik-cron.js",
             cwd: "/home/server/time-management-app",
             instances: 1,
             exec_mode: "fork",
