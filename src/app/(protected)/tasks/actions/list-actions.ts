@@ -47,6 +47,7 @@ export async function getListById(listId: string): Promise<ListDisplay | null> {
             icon: list.icon,
             order: list.order,
             isDefault: list.isDefault,
+            isPrivate: list.isPrivate,
             createdAt: list.createdAt,
             updatedAt: list.updatedAt,
             taskCount: list._count.tasks,
@@ -88,6 +89,7 @@ export async function getLists(): Promise<ListDisplay[]> {
             icon: list.icon,
             order: list.order,
             isDefault: list.isDefault,
+            isPrivate: list.isPrivate,
             createdAt: list.createdAt,
             updatedAt: list.updatedAt,
             taskCount: list._count.tasks,
@@ -137,6 +139,7 @@ export async function createList(input: CreateListInput) {
                 icon: data.icon,
                 order: data.order,
                 isDefault: data.isDefault,
+                isPrivate: data.isPrivate,
             },
         })
 

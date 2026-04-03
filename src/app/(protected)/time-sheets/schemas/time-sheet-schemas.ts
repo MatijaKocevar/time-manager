@@ -3,6 +3,7 @@ import { z } from "zod"
 export const GetTimeSheetEntriesSchema = z.object({
     startDate: z.string().datetime(),
     endDate: z.string().datetime(),
+    taskFilter: z.enum(["work", "private"]).optional().default("work"),
 })
 
 export type GetTimeSheetEntriesInput = z.infer<typeof GetTimeSheetEntriesSchema>
@@ -24,6 +25,7 @@ export const TimeEntryTaskSchema = z.object({
             name: z.string(),
             color: z.string().nullable(),
             icon: z.string().nullable(),
+            isPrivate: z.boolean(),
         })
         .nullable(),
 })

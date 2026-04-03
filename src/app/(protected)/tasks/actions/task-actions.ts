@@ -59,6 +59,7 @@ export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
                             name: true,
                             color: true,
                             icon: true,
+                            isPrivate: true,
                         },
                     },
                 },
@@ -82,6 +83,7 @@ export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
             listName: string | null
             listColor: string | null
             listIcon: string | null
+            listIsPrivate: boolean | null
             totalTime: number
             directTime: number
         }
@@ -97,6 +99,7 @@ export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
                         listName: list?.name ?? null,
                         listColor: list?.color ?? null,
                         listIcon: list?.icon ?? null,
+                        listIsPrivate: list?.isPrivate ?? null,
                         totalTime: directTime,
                         directTime,
                     },
@@ -309,6 +312,7 @@ export type TasksByList = {
     listName: string
     listColor: string | null
     listIcon: string | null
+    listIsPrivate: boolean
     tasks: TaskDisplay[]
 }
 
@@ -346,6 +350,7 @@ export async function getInProgressTasksByLists(): Promise<TasksByList[]> {
                             color: true,
                             icon: true,
                             order: true,
+                            isPrivate: true,
                         },
                     },
                 },
@@ -416,6 +421,7 @@ export async function getInProgressTasksByLists(): Promise<TasksByList[]> {
                     listName: list?.name ?? "No List",
                     listColor: list?.color ?? null,
                     listIcon: list?.icon ?? null,
+                    listIsPrivate: list?.isPrivate ?? false,
                     tasks: [],
                 })
             }
@@ -482,6 +488,7 @@ export async function getRecentTasks(): Promise<TaskDisplay[]> {
             listName: task.list?.name ?? null,
             listColor: task.list?.color ?? null,
             listIcon: task.list?.icon ?? null,
+            listIsPrivate: task.list?.isPrivate ?? null,
             title: task.title,
             description: task.description,
             status: task.status,

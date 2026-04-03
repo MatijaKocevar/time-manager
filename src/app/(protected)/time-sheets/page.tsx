@@ -3,7 +3,7 @@ import { getHolidaysInRange } from "../admin/holidays/actions/holiday-actions"
 import { getDateRangeForView } from "./utils/date-helpers"
 
 interface TimeSheetsPageProps {
-    searchParams: Promise<{ mode?: string; date?: string }>
+    searchParams: Promise<{ mode?: string; date?: string; filter?: string }>
 }
 
 export default async function TimeSheetsPage({ searchParams }: TimeSheetsPageProps) {

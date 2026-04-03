@@ -169,6 +169,10 @@
             "week": "Week",
             "month": "Month"
         },
+        "taskFilter": {
+            "work": "Work",
+            "private": "Personal"
+        },
         "table": {
             "task": "Task",
             "total": "Total",
@@ -302,6 +306,8 @@
             "enterListDescription": "Enter list description",
             "descriptionOptional": "Description (Optional)",
             "colorOptional": "Color (Optional)",
+            "privateList": "Private List",
+            "privateListDescription": "Private tasks are excluded from work hours and reports",
             "nameRequired": "Name is required",
             "timeEntries": "Time Entries",
             "duration": "Duration",

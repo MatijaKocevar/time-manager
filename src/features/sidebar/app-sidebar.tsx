@@ -1,6 +1,6 @@
 "use client"
 
-import { MoreHorizontal, Edit, Trash, ChevronRight, ChevronDown } from "lucide-react"
+import { MoreHorizontal, Edit, Trash, ChevronRight, ChevronDown, Lock } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
@@ -114,6 +114,7 @@ export function AppSidebar({
             name: list?.name ?? "",
             description: list?.description ?? "",
             color: list?.color ?? "#3b82f6",
+            isPrivate: list?.isPrivate ?? false,
         })
     }
 
@@ -231,6 +232,9 @@ export function AppSidebar({
                                                                                 />
                                                                             )}
                                                                             {list.name}
+                                                                            {list.isPrivate && (
+                                                                                <Lock className="h-3 w-3 text-muted-foreground" />
+                                                                            )}
                                                                         </span>
                                                                     </Link>
                                                                 </SidebarMenuButton>

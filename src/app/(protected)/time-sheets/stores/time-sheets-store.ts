@@ -6,6 +6,7 @@ interface TimeSheetsState {
     selectedDate: Date
     isLoading: boolean
     error: string | null
+    taskFilter: "work" | "private"
     dayEntriesDialog: {
         isOpen: boolean
         date: string | null
@@ -18,6 +19,7 @@ interface TimeSheetsActions {
     setSelectedDate: (date: Date) => void
     setLoading: (loading: boolean) => void
     setError: (error: string | null) => void
+    setTaskFilter: (filter: "work" | "private") => void
     goToPreviousPeriod: () => void
     goToNextPeriod: () => void
     openDayEntriesDialog: (date: string, type?: string) => void
@@ -29,6 +31,7 @@ export const useTimeSheetsStore = create<TimeSheetsState & TimeSheetsActions>((s
     selectedDate: new Date(),
     isLoading: false,
     error: null,
+    taskFilter: "work",
     dayEntriesDialog: {
         isOpen: false,
         date: null,
@@ -39,6 +42,7 @@ export const useTimeSheetsStore = create<TimeSheetsState & TimeSheetsActions>((s
     setSelectedDate: (date) => set({ selectedDate: date }),
     setLoading: (loading) => set({ isLoading: loading }),
     setError: (error) => set({ error }),
+    setTaskFilter: (filter) => set({ taskFilter: filter }),
 
     openDayEntriesDialog: (date, type) =>
         set({

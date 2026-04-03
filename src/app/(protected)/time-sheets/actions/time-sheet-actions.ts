@@ -17,7 +17,7 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
         return { error: validation.error.message }
     }
 
-    const { startDate, endDate } = validation.data
+    const { startDate, endDate, taskFilter } = validation.data
 
     try {
         const entries = await prisma.taskTimeEntry.findMany({
@@ -35,6 +35,11 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
                         endTime: null,
                     },
                 ],
+                task: {
+                    list: {
+                        isPrivate: taskFilter === "private" ? true : false,
+                    },
+                },
             },
             orderBy: { startTime: "asc" },
             select: {
@@ -52,6 +57,7 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
                                 name: true,
                                 color: true,
                                 icon: true,
+                                isPrivate: true,
                             },
                         },
                     },

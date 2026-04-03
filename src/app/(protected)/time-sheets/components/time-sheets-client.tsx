@@ -35,6 +35,7 @@ interface TimeSheetsClientProps {
     initialData: TimeEntryDisplay[]
     initialViewMode: ViewMode
     initialSelectedDate: Date
+    initialTaskFilter: "work" | "private"
     initialHolidays?: Array<{ date: Date; name: string }>
     userWorkHoursPerDay: number
     initialBalance: number
@@ -42,6 +43,8 @@ interface TimeSheetsClientProps {
     translations: {
         week: string
         month: string
+        filterWork: string
+        filterPrivate: string
         task: string
         total: string
         dailyTotal: string
@@ -57,6 +60,7 @@ export function TimeSheetsClient({
     initialData,
     initialViewMode,
     initialSelectedDate,
+    initialTaskFilter,
     initialHolidays = [],
     userWorkHoursPerDay,
     initialBalance,
@@ -69,8 +73,10 @@ export function TimeSheetsClient({
     const router = useRouter()
     const storeViewMode = useTimeSheetsStore((state) => state.viewMode)
     const storeSelectedDate = useTimeSheetsStore((state) => state.selectedDate)
+    const storeTaskFilter = useTimeSheetsStore((state) => state.taskFilter)
     const setViewMode = useTimeSheetsStore((state) => state.setViewMode)
     const setSelectedDate = useTimeSheetsStore((state) => state.setSelectedDate)
+    const setTaskFilter = useTimeSheetsStore((state) => state.setTaskFilter)
     const goToPreviousPeriod = useTimeSheetsStore((state) => state.goToPreviousPeriod)
     const goToNextPeriod = useTimeSheetsStore((state) => state.goToNextPeriod)
 
@@ -83,12 +89,13 @@ export function TimeSheetsClient({
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
     const [isNavigating, setIsNavigating] = useState(false)
     const currentPeriodRef = useRef<string>(
-        `${initialViewMode}-${initialSelectedDate.toISOString()}`
+        `${initialViewMode}-${initialSelectedDate.toISOString()}-${initialTaskFilter}`
     )
 
     useEffect(() => {
         setViewMode(initialViewMode)
         setSelectedDate(initialSelectedDate)
+        setTaskFilter(initialTaskFilter)
         setIsInitialized(true)
         setIsNavigating(false)
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,25 +103,29 @@ export function TimeSheetsClient({
 
     const viewMode = isInitialized ? storeViewMode : initialViewMode
     const selectedDate = isInitialized ? storeSelectedDate : initialSelectedDate
+    const taskFilter = isInitialized ? storeTaskFilter : initialTaskFilter
 
     useEffect(() => {
-        const serverPeriodKey = `${initialViewMode}-${initialSelectedDate.toISOString()}`
+        const serverPeriodKey = `${initialViewMode}-${initialSelectedDate.toISOString()}-${initialTaskFilter}`
         currentPeriodRef.current = serverPeriodKey
         setIsNavigating(false)
-    }, [initialViewMode, initialSelectedDate, initialData])
+    }, [initialViewMode, initialSelectedDate, initialData, initialTaskFilter])
 
     useEffect(() => {
         const params = new URLSearchParams()
         params.set("mode", viewMode)
         params.set("date", selectedDate.toISOString().split("T")[0])
+        if (taskFilter === "private") {
+            params.set("filter", "private")
+        }
 
-        const newPeriodKey = `${viewMode}-${selectedDate.toISOString()}`
+        const newPeriodKey = `${viewMode}-${selectedDate.toISOString()}-${taskFilter}`
         if (newPeriodKey !== currentPeriodRef.current) {
             setIsNavigating(true)
         }
 
         router.replace(`?${params.toString()}`, { scroll: false })
-    }, [viewMode, selectedDate, router])
+    }, [viewMode, selectedDate, taskFilter, router])
 
     const dateRange = getDateRangeForView(selectedDate, viewMode)
     const monthRange = getDateRangeForView(selectedDate, "month")
@@ -226,22 +237,46 @@ export function TimeSheetsClient({
                             {isNavigating ? (
                                 <>
                                     <Skeleton className="inline-block h-4 w-14 align-middle" />
-                                    <span className="text-muted-foreground"> | </span>
-                                    <Skeleton className="inline-block h-4 w-14 align-middle" />
+                                    {taskFilter === "work" && (
+                                        <>
+                                            <span className="text-muted-foreground"> | </span>
+                                            <Skeleton className="inline-block h-4 w-14 align-middle" />
+                                        </>
+                                    )}
                                 </>
                             ) : (
                                 <>
                                     <span className="font-semibold">
                                         {formatHoursMinutesLib(totalSeconds)}
                                     </span>
-                                    <span className="text-muted-foreground"> | </span>
-                                    <span className={`font-semibold ${getBalanceColor(balance)}`}>
-                                        {formatBalance(balance)}
-                                    </span>
+                                    {taskFilter === "work" && (
+                                        <>
+                                            <span className="text-muted-foreground"> | </span>
+                                            <span
+                                                className={`font-semibold ${getBalanceColor(balance)}`}
+                                            >
+                                                {formatBalance(balance)}
+                                            </span>
+                                        </>
+                                    )}
                                 </>
                             )}
                         </div>
                         <div className="hidden md:flex gap-2">
+                            <Button
+                                variant={taskFilter === "work" ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setTaskFilter("work")}
+                            >
+                                {translations.filterWork}
+                            </Button>
+                            <Button
+                                variant={taskFilter === "private" ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setTaskFilter("private")}
+                            >
+                                {translations.filterPrivate}
+                            </Button>
                             <Button
                                 variant={viewMode === "week" ? "default" : "outline"}
                                 size="sm"
@@ -256,34 +291,44 @@ export function TimeSheetsClient({
                             >
                                 {translations.month}
                             </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setIsExportDialogOpen(true)}
-                            >
-                                <Download className="h-4 w-4 mr-1" />
-                                {tCommon("actions.export")}
-                            </Button>
+                            {taskFilter === "work" && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setIsExportDialogOpen(true)}
+                                >
+                                    <Download className="h-4 w-4 mr-1" />
+                                    {tCommon("actions.export")}
+                                </Button>
+                            )}
                         </div>
                         <div className="md:hidden flex items-center gap-2">
                             <div className="text-sm">
                                 {isNavigating ? (
                                     <>
                                         <Skeleton className="inline-block h-4 w-12 align-middle" />
-                                        <span className="text-muted-foreground"> | </span>
-                                        <Skeleton className="inline-block h-4 w-12 align-middle" />
+                                        {taskFilter === "work" && (
+                                            <>
+                                                <span className="text-muted-foreground"> | </span>
+                                                <Skeleton className="inline-block h-4 w-12 align-middle" />
+                                            </>
+                                        )}
                                     </>
                                 ) : (
                                     <>
                                         <span className="font-semibold">
                                             {formatHoursMinutesLib(totalSeconds)}
                                         </span>
-                                        <span className="text-muted-foreground"> | </span>
-                                        <span
-                                            className={`font-semibold ${getBalanceColor(balance)}`}
-                                        >
-                                            {formatBalance(balance)}
-                                        </span>
+                                        {taskFilter === "work" && (
+                                            <>
+                                                <span className="text-muted-foreground"> | </span>
+                                                <span
+                                                    className={`font-semibold ${getBalanceColor(balance)}`}
+                                                >
+                                                    {formatBalance(balance)}
+                                                </span>
+                                            </>
+                                        )}
                                     </>
                                 )}
                             </div>
@@ -294,16 +339,26 @@ export function TimeSheetsClient({
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => setTaskFilter("work")}>
+                                        {translations.filterWork}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setTaskFilter("private")}>
+                                        {translations.filterPrivate}
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => setViewMode("week")}>
                                         {translations.week}
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => setViewMode("month")}>
                                         {translations.month}
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)}>
-                                        <Download className="h-4 w-4 mr-2" />
-                                        {tCommon("actions.export")}
-                                    </DropdownMenuItem>
+                                    {taskFilter === "work" && (
+                                        <DropdownMenuItem
+                                            onClick={() => setIsExportDialogOpen(true)}
+                                        >
+                                            <Download className="h-4 w-4 mr-2" />
+                                            {tCommon("actions.export")}
+                                        </DropdownMenuItem>
+                                    )}
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>

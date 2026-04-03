@@ -9,7 +9,7 @@ import { aggregateTimeEntriesByTaskAndDate } from "../utils/aggregation-helpers"
 import { calculateExpectedHoursToDate, calculateBalance } from "@/lib/balance-helpers"
 
 interface TimeSheetsViewProps {
-    searchParams: { mode?: string; date?: string }
+    searchParams: { mode?: string; date?: string; filter?: string }
     initialHolidays?: Array<{ date: Date; name: string }>
 }
 
@@ -20,11 +20,13 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
 
     const viewMode = (searchParams.mode === "month" ? "month" : "week") as ViewMode
     const selectedDate = searchParams.date ? new Date(searchParams.date) : new Date()
+    const taskFilter = searchParams.filter === "private" ? "private" : "work"
 
     const dateRange = getDateRangeForView(selectedDate, viewMode)
     const result = await getTimeSheetEntries({
         startDate: dateRange.startDate.toISOString(),
         endDate: dateRange.endDate.toISOString(),
+        taskFilter,
     })
 
     const initialData = "data" in result && result.data ? result.data : []
@@ -42,14 +44,17 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
         0
     )
 
-    const expectedHours = calculateExpectedHoursToDate(
-        dateRange.startDate,
-        dateRange.endDate,
-        initialHolidays,
-        userWorkHoursPerDay
-    )
+    const expectedHours =
+        taskFilter === "private"
+            ? 0
+            : calculateExpectedHoursToDate(
+                  dateRange.startDate,
+                  dateRange.endDate,
+                  initialHolidays,
+                  userWorkHoursPerDay
+              )
 
-    const balance = calculateBalance(totalSeconds, expectedHours)
+    const balance = taskFilter === "private" ? 0 : calculateBalance(totalSeconds, expectedHours)
 
     return (
         <>
@@ -57,6 +62,7 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
                 initialData={initialData}
                 initialViewMode={viewMode}
                 initialSelectedDate={selectedDate}
+                initialTaskFilter={taskFilter}
                 initialHolidays={initialHolidays}
                 userWorkHoursPerDay={userWorkHoursPerDay}
                 initialBalance={balance}
@@ -64,6 +70,8 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
                 translations={{
                     week: t("viewMode.week"),
                     month: t("viewMode.month"),
+                    filterWork: t("taskFilter.work"),
+                    filterPrivate: t("taskFilter.private"),
                     task: t("table.task"),
                     total: tSummary("total"),
                     dailyTotal: t("table.dailyTotal"),
