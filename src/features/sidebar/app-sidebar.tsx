@@ -109,7 +109,12 @@ export function AppSidebar({
     })
 
     const handleEditList = (listId: string) => {
-        openListDialog(listId)
+        const list = lists.find((l) => l.id === listId)
+        openListDialog(listId, {
+            name: list?.name ?? "",
+            description: list?.description ?? "",
+            color: list?.color ?? "#3b82f6",
+        })
     }
 
     const onDeleteList = async (listId: string) => {

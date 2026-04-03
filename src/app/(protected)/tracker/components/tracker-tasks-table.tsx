@@ -66,6 +66,12 @@ function TaskTreeRow({ task }: { task: TaskTreeNode }) {
                         style={{ paddingLeft: `${task.depth * 24}px` }}
                         className="flex items-center gap-2"
                     >
+                        {task.listColor && (
+                            <span
+                                className="h-2 w-2 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: task.listColor }}
+                            />
+                        )}
                         <span className="font-medium">{task.title}</span>
                     </div>
                 </TableCell>
@@ -81,7 +87,6 @@ function TaskTreeRow({ task }: { task: TaskTreeNode }) {
                                 color: task.listColor ?? undefined,
                             }}
                         >
-                            {task.listIcon && <span className="mr-1">{task.listIcon}</span>}
                             {task.listName}
                         </Badge>
                     )}
