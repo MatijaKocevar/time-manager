@@ -147,9 +147,16 @@ export function RequestsTable({
                                         </TableCell>
                                     )}
                                     <TableCell>
-                                        <WorkTypeBadge type={request.type as WorkType}>
-                                            {tTypes(getRequestTypeTranslationKey(request.type))}
-                                        </WorkTypeBadge>
+                                        <div className="flex flex-wrap gap-1 items-center">
+                                            <WorkTypeBadge type={request.type as WorkType}>
+                                                {tTypes(getRequestTypeTranslationKey(request.type))}
+                                            </WorkTypeBadge>
+                                            {request.urnikNetSynced && (
+                                                <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700 whitespace-nowrap">
+                                                    Urnik.net
+                                                </span>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
                                         {formatDateTime(request.startDate, request.startTime)}

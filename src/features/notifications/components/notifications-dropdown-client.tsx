@@ -21,6 +21,8 @@ interface NotificationsDropdownClientProps {
         }
         approve?: string
         reject?: string
+        awaitingUrnikNet?: string
+        urnikSyncFailed?: string
     }
 }
 

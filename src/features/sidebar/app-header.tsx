@@ -49,6 +49,8 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
         },
         approve: tCommon("approve"),
         reject: tCommon("reject"),
+        awaitingUrnikNet: t("notifications.awaitingUrnikNet"),
+        urnikSyncFailed: t("notifications.urnikSyncFailed"),
     }
 
     const timerStatusTranslations = {

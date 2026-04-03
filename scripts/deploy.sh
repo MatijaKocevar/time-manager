@@ -22,6 +22,10 @@ echo "🚀 Starting deployment to $SERVER_HOST..."
 echo "📦 Building application..."
 npm run build
 
+# Compile cron script to standalone JS
+echo "🔧 Compiling cron script..."
+npm run build:cron
+
 # Run migrations if needed
 if [ "$NO_MIGRATE" = false ]; then
     echo "🔄 Running migrations..."
@@ -41,7 +45,8 @@ tar -czf deploy.tar.gz \
     .env.production \
     prisma/schema.prisma \
     prisma/migrations \
-    ecosystem.config.js
+    ecosystem.config.js \
+    scripts/sync-urnik-cron.js
 
 # Transfer to server
 echo "📤 Transferring files to server..."
@@ -74,6 +79,7 @@ cp -r public .next/standalone/
 # Copy .env.production file to standalone directory as .env
 echo "📝 Copying production environment file..."
 cp .env.production .next/standalone/.env
+cp .env.production .env
 
 # Create logs directory if it doesn't exist
 mkdir -p logs
@@ -81,6 +87,7 @@ mkdir -p logs
 # Restart application with PM2
 echo "🔄 Restarting application..."
 pm2 delete time-management-app 2>/dev/null || true
+pm2 delete urnik-sync-cron 2>/dev/null || true
 pm2 start ecosystem.config.js
 pm2 save
 

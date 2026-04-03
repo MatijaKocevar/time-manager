@@ -128,6 +128,8 @@
             "noNotifications": "No notifications",
             "markAllRead": "Mark all as read",
             "viewAll": "View all requests",
+            "awaitingUrnikNet": "Awaiting Urnik.net decision",
+            "urnikSyncFailed": "Urnik.net submission failed",
             "sections": {
                 "notifications": "Notifications",
                 "pendingRequests": "Pending Requests"
