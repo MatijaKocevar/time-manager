@@ -93,7 +93,7 @@ interface TasksStoreActions {
     closeEditTimeEntryDialog: () => void
     openDeleteDialog: (taskId: string) => void
     closeDeleteDialog: () => void
-    openListDialog: (listId?: string) => void
+    openListDialog: (listId?: string, initialData?: { name: string; description: string; color: string }) => void
     closeListDialog: () => void
     openMoveTaskDialog: (taskId: string) => void
     closeMoveTaskDialog: () => void
@@ -127,10 +127,12 @@ const initialFormData: CreateFormData = {
     status: TASK_STATUS.TODO,
 }
 
+const DEFAULT_LIST_COLOR = "#3b82f6"
+
 const initialListFormData = {
     name: "",
     description: "",
-    color: "",
+    color: DEFAULT_LIST_COLOR,
 }
 
 const saveExpandedTasks = (expandedTasks: Set<string>) => {
@@ -349,11 +351,11 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
             deleteDialog: { isOpen: false, taskId: null },
         })),
 
-    openListDialog: (listId) =>
+    openListDialog: (listId, initialData) =>
         set(() => ({
             listDialog: { isOpen: true, listId: listId || null },
             listForm: {
-                data: initialListFormData,
+                data: initialData ?? initialListFormData,
                 isLoading: false,
                 error: "",
             },

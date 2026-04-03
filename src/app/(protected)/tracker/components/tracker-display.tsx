@@ -173,10 +173,13 @@ export function TrackerDisplay({
                                         {inProgressTasks.map((task) => (
                                             <SelectItem key={task.id} value={task.id}>
                                                 <div className="flex items-center gap-2">
-                                                    {task.listIcon && (
-                                                        <span className="text-xs">
-                                                            {task.listIcon}
-                                                        </span>
+                                                    {task.listColor && (
+                                                        <span
+                                                            className="h-2 w-2 rounded-full flex-shrink-0"
+                                                            style={{
+                                                                backgroundColor: task.listColor,
+                                                            }}
+                                                        />
                                                     )}
                                                     <span
                                                         className={`truncate ${task.parentId ? "pl-4" : ""}`}
