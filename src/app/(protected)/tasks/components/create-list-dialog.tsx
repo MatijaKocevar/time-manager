@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
 import { useTasksStore } from "../stores/tasks-store"
 import { createList, updateList } from "../actions/list-actions"
 import { listKeys } from "../query-keys"
@@ -58,11 +59,13 @@ export function CreateListDialog() {
                           name: listForm.data.name,
                           description: listForm.data.description || undefined,
                           color: listForm.data.color || undefined,
+                          isPrivate: listForm.data.isPrivate,
                       })
                     : await createList({
                           name: listForm.data.name,
                           description: listForm.data.description || undefined,
                           color: listForm.data.color || undefined,
+                          isPrivate: listForm.data.isPrivate,
                       })
 
             if (result.success) {
@@ -122,6 +125,25 @@ export function CreateListDialog() {
                                 onChange={(e) => setListFormData({ color: e.target.value })}
                                 disabled={listForm.isLoading}
                             />
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                            <Checkbox
+                                id="list-private"
+                                checked={listForm.data.isPrivate}
+                                onCheckedChange={(checked) =>
+                                    setListFormData({ isPrivate: checked === true })
+                                }
+                                disabled={listForm.isLoading}
+                            />
+                            <div className="space-y-1">
+                                <Label htmlFor="list-private" className="cursor-pointer">
+                                    {t("privateList")}
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    {t("privateListDescription")}
+                                </p>
+                            </div>
                         </div>
 
                         {listForm.error && (

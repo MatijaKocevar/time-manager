@@ -15,6 +15,7 @@ export const TaskDisplaySchema = z.object({
     listName: z.string().nullable().optional(),
     listColor: z.string().nullable().optional(),
     listIcon: z.string().nullable().optional(),
+    listIsPrivate: z.boolean().nullable().optional(),
     title: z.string(),
     description: z.string().nullable(),
     status: TaskStatusSchema,

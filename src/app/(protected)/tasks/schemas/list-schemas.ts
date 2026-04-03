@@ -7,6 +7,7 @@ export const CreateListSchema = z.object({
     icon: z.string().optional(),
     order: z.number().int().min(0).optional().default(0),
     isDefault: z.boolean().optional().default(false),
+    isPrivate: z.boolean().optional().default(false),
 })
 
 export const UpdateListSchema = z.object({
@@ -16,6 +17,7 @@ export const UpdateListSchema = z.object({
     color: z.string().optional(),
     icon: z.string().optional(),
     order: z.number().int().min(0).optional(),
+    isPrivate: z.boolean().optional(),
 })
 
 export const DeleteListSchema = z.object({
@@ -41,6 +43,7 @@ export const ListDisplaySchema = z.object({
     icon: z.string().nullable(),
     order: z.number(),
     isDefault: z.boolean(),
+    isPrivate: z.boolean(),
     createdAt: z.date(),
     updatedAt: z.date(),
     taskCount: z.number().optional(),

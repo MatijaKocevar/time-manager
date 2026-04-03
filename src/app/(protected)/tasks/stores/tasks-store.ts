@@ -57,6 +57,7 @@ interface TasksStoreState {
             name: string
             description: string
             color: string
+            isPrivate: boolean
         }
         isLoading: boolean
         error: string
@@ -93,7 +94,10 @@ interface TasksStoreActions {
     closeEditTimeEntryDialog: () => void
     openDeleteDialog: (taskId: string) => void
     closeDeleteDialog: () => void
-    openListDialog: (listId?: string, initialData?: { name: string; description: string; color: string }) => void
+    openListDialog: (
+        listId?: string,
+        initialData?: { name: string; description: string; color: string; isPrivate: boolean }
+    ) => void
     closeListDialog: () => void
     openMoveTaskDialog: (taskId: string) => void
     closeMoveTaskDialog: () => void
@@ -102,7 +106,9 @@ interface TasksStoreActions {
     setCreateLoading: (isLoading: boolean) => void
     setCreateError: (error: string) => void
     clearCreateError: () => void
-    setListFormData: (data: Partial<{ name: string; description: string; color: string }>) => void
+    setListFormData: (
+        data: Partial<{ name: string; description: string; color: string; isPrivate: boolean }>
+    ) => void
     resetListForm: () => void
     setListLoading: (isLoading: boolean) => void
     setListError: (error: string) => void
@@ -133,6 +139,7 @@ const initialListFormData = {
     name: "",
     description: "",
     color: DEFAULT_LIST_COLOR,
+    isPrivate: false,
 }
 
 const saveExpandedTasks = (expandedTasks: Set<string>) => {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Play, Square, Clock } from "lucide-react"
+import { Play, Square, Clock, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -187,6 +187,9 @@ export function TrackerDisplay({
                                                         {task.parentId && "↳ "}
                                                         {task.title}
                                                     </span>
+                                                    {task.listIsPrivate && (
+                                                        <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                                    )}
                                                 </div>
                                             </SelectItem>
                                         ))}

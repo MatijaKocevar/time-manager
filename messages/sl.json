@@ -169,6 +169,10 @@
             "week": "Teden",
             "month": "Mesec"
         },
+        "taskFilter": {
+            "work": "Službenо",
+            "private": "Zasebno"
+        },
         "table": {
             "task": "Naloga",
             "total": "Skupaj",
@@ -302,6 +306,8 @@
             "enterListDescription": "Vnesite opis seznama",
             "descriptionOptional": "Opis (neobvezno)",
             "colorOptional": "Barva (neobvezno)",
+            "privateList": "Zaseben seznam",
+            "privateListDescription": "Zasebne naloge so izključene iz delovnih ur in poročil",
             "nameRequired": "Ime je obvezno",
             "timeEntries": "Časovni vnosi",
             "duration": "Trajanje",

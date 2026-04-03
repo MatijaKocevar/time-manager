@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronRight, ChevronDown } from "lucide-react"
+import { ChevronRight, ChevronDown, Lock } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { buildTaskTree } from "@/app/(protected)/tasks/utils/task-tree-helpers"
 import { toggleTaskExpanded } from "@/app/(protected)/tasks/actions/task-actions"
@@ -73,6 +73,9 @@ function TaskTreeRow({ task }: { task: TaskTreeNode }) {
                             />
                         )}
                         <span className="font-medium">{task.title}</span>
+                        {task.listIsPrivate && (
+                            <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                        )}
                     </div>
                 </TableCell>
                 <TableCell>
