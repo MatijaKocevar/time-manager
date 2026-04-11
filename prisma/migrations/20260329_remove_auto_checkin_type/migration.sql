@@ -1,2 +1,3 @@
 -- AlterTable
-ALTER TABLE "UserPreferences" DROP COLUMN IF EXISTS "autoCheckInType";
+ALTER TABLE "UserPreferences"
+DROP COLUMN IF EXISTS "autoCheckInType";

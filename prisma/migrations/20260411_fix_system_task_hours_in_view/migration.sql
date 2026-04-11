@@ -5,6 +5,7 @@
 
 DROP MATERIALIZED VIEW IF EXISTS daily_hour_summary;
 
+
 CREATE MATERIALIZED VIEW daily_hour_summary AS
 WITH date_range AS (
     SELECT DISTINCT

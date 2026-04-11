@@ -15,12 +15,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { HourEntryDisplay } from "../schemas/hour-entry-schemas"
 import { HOUR_TYPES } from "../constants/hour-types"
 import type { ViewMode } from "../schemas/hour-filter-schemas"
-import { EditableHourCell } from "./editable-hour-cell"
 import { HourTypeRow } from "./hour-type-row"
 import { useHoursBatchStore } from "../stores/hours-batch-store"
 import { generateDateColumns, groupEntriesByType, getTypeColor } from "../utils/table-helpers"
 import { formatDateKey, isToday, buildHolidayMap } from "../utils/date-helpers"
 import { mergeEntriesWithPendingChanges } from "../utils/entry-helpers"
+import { formatHoursToTime } from "../utils/time-helpers"
 
 interface HoursTableProps {
     entries: HourEntryDisplay[]
@@ -29,7 +29,6 @@ interface HoursTableProps {
     endDate: string
     userId: string
     holidays?: Array<{ date: Date; name: string }>
-    initialExpandedTypes?: string[]
 }
 
 export function HoursTable({
@@ -38,7 +37,6 @@ export function HoursTable({
     endDate,
     userId,
     holidays = [],
-    initialExpandedTypes = [],
 }: HoursTableProps) {
     const t = useTranslations("hours.table")
     const tLabels = useTranslations("hours.labels")
@@ -166,16 +164,17 @@ export function HoursTable({
                                                 )}
                                             </div>
                                         )}
-                                        <EditableHourCell
-                                            date={date}
-                                            type={HOUR_TYPE_VALUES.WORK}
-                                            entry={{
-                                                ...entry,
-                                                taskId: TASK_ID_VALUES.GRAND_TOTAL,
-                                            }}
-                                            userId={userId}
-                                            showProgressBar={false}
-                                        />
+                                        <div
+                                            className={`h-8 w-16 text-center flex items-center justify-center rounded mx-auto font-bold ${
+                                                (entry?.hours || 0) === 0
+                                                    ? "text-muted-foreground"
+                                                    : "text-foreground"
+                                            }`}
+                                        >
+                                            {(entry?.hours || 0) === 0
+                                                ? "-"
+                                                : formatHoursToTime(entry.hours)}
+                                        </div>
                                     </TableCell>
                                 )
                             })}
@@ -187,9 +186,7 @@ export function HoursTable({
                                 hourType={hourType.value}
                                 dates={dates}
                                 groupedEntries={displayGroupedEntries}
-                                userId={userId}
                                 holidays={holidays}
-                                initiallyExpanded={initialExpandedTypes.includes(hourType.value)}
                             />
                         ))}
                     </TableBody>
