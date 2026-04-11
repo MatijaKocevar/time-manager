@@ -1,5 +1,4 @@
 import { getServerSession } from "next-auth"
-import { cookies } from "next/headers"
 import { authConfig } from "@/lib/auth"
 import { HoursView } from "./components/hours-view"
 import { getHourEntries, getUserPreferences, getAttendanceData } from "./actions/hour-actions"
@@ -29,15 +28,6 @@ export default async function HoursPage({ searchParams }: HoursPageProps) {
         VIEW_MODE_VALUES.WEEKLY
     const selectedDate = params.date ? new Date(params.date) : new Date()
 
-    const cookieStore = await cookies()
-    const expandedTypesCookie = cookieStore.get("hours-expanded-types")
-    const initialExpandedTypes =
-        preferences.hoursExpandedRows.length > 0
-            ? preferences.hoursExpandedRows
-            : expandedTypesCookie?.value
-              ? JSON.parse(expandedTypesCookie.value)
-              : []
-
     const dateRange = getDateRange(viewMode, selectedDate)
     const weekRange = getDateRange(VIEW_MODE_VALUES.WEEKLY, selectedDate)
     const monthRange = getDateRange(VIEW_MODE_VALUES.MONTHLY, selectedDate)
@@ -60,7 +50,6 @@ export default async function HoursPage({ searchParams }: HoursPageProps) {
             initialSelectedDate={selectedDate}
             initialHolidays={holidays}
             initialDateRange={monthRange}
-            initialExpandedTypes={initialExpandedTypes}
             initialSummaryCollapsed={preferences.hoursCardCollapsed}
             initialAttendanceData={attendanceData}
         />

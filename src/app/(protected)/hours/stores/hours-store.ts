@@ -5,7 +5,7 @@ import {
     type EditFormData,
 } from "../schemas/hour-action-schemas"
 import { type ViewMode, VIEW_MODE_VALUES } from "../schemas/hour-filter-schemas"
-import { DEFAULT_HOURS, ALL_HOUR_TYPES, HOUR_TYPE_VALUES } from "../constants/hour-types"
+import { DEFAULT_HOURS, HOUR_TYPE_VALUES } from "../constants/hour-types"
 import { saveUserPreferences } from "../actions/hour-actions"
 import type { z } from "zod"
 import { HourTypeSchema } from "../schemas/hour-action-schemas"
@@ -36,7 +36,6 @@ interface EditFormState {
 }
 
 interface HoursStoreState {
-    expandedTypes: Set<string>
     summaryCollapsed: boolean
     singleEntryForm: SingleEntryFormState
     bulkEntryForm: BulkEntryFormState
@@ -51,10 +50,6 @@ interface HoursStoreState {
 }
 
 interface HoursStoreActions {
-    initializeExpandedTypes: (types: string[]) => void
-    toggleType: (type: string) => void
-    expandAll: () => void
-    collapseAll: () => void
     toggleSummary: () => void
     setSingleEntryFormData: (data: Partial<SingleEntryFormData>) => void
     resetSingleEntryForm: () => void
@@ -73,20 +68,6 @@ interface HoursStoreActions {
     setSelectedDate: (date: Date) => void
     openHourTypeDialog: (type: HourType, entries: HourTypeDialogEntry[]) => void
     closeHourTypeDialog: () => void
-}
-
-const saveExpandedTypes = (types: Set<string>) => {
-    if (typeof window === "undefined") return
-    const typesArray = Array.from(types)
-    try {
-        localStorage.setItem("hours-expanded-types", JSON.stringify(typesArray))
-        saveUserPreferences({ hoursExpandedRows: typesArray }).catch(() => {
-            // Ignore errors
-        })
-    } catch {
-        // Ignore localStorage errors
-    }
-    document.cookie = `hours-expanded-types=${JSON.stringify(typesArray)}; path=/; max-age=31536000; SameSite=Lax`
 }
 
 const saveSummaryCollapsed = (collapsed: boolean) => {
@@ -113,20 +94,6 @@ const saveViewMode = (mode: ViewMode) => {
     }
 }
 
-// Read initial state synchronously from localStorage
-const getInitialExpandedTypes = (): Set<string> => {
-    if (typeof window === "undefined") return new Set<string>()
-    try {
-        const stored = localStorage.getItem("hours-expanded-types")
-        if (stored) {
-            return new Set<string>(JSON.parse(stored) as string[])
-        }
-    } catch {
-        // Ignore localStorage errors
-    }
-    return new Set<string>()
-}
-
 const getInitialSummaryCollapsed = (): boolean => {
     if (typeof window === "undefined") return false
     try {
@@ -144,33 +111,7 @@ export const useHoursStore = create<HoursStoreState & HoursStoreActions>((set) =
     const today = new Date().toISOString().split("T")[0]
 
     return {
-        expandedTypes: getInitialExpandedTypes(),
         summaryCollapsed: getInitialSummaryCollapsed(),
-        initializeExpandedTypes: (types) => {
-            const expandedTypes = new Set<string>(types)
-            set({ expandedTypes })
-        },
-        toggleType: (type) =>
-            set((state) => {
-                const newExpanded = new Set(state.expandedTypes)
-                if (newExpanded.has(type)) {
-                    newExpanded.delete(type)
-                } else {
-                    newExpanded.add(type)
-                }
-                saveExpandedTypes(newExpanded)
-                return { expandedTypes: newExpanded }
-            }),
-        expandAll: () => {
-            const allTypes = new Set(ALL_HOUR_TYPES)
-            saveExpandedTypes(allTypes)
-            set({ expandedTypes: allTypes })
-        },
-        collapseAll: () => {
-            const emptySet = new Set<string>()
-            saveExpandedTypes(emptySet)
-            set({ expandedTypes: emptySet })
-        },
         toggleSummary: () =>
             set((state) => {
                 const newCollapsed = !state.summaryCollapsed

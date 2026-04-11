@@ -38,7 +38,6 @@ interface HoursViewProps {
     initialSelectedDate: Date
     initialHolidays?: Array<{ date: Date; name: string }>
     initialDateRange?: { start: Date; end: Date }
-    initialExpandedTypes?: string[]
     initialSummaryCollapsed?: boolean
     initialAttendanceData?: { officeCount: number; remoteCount: number }
 }
@@ -51,7 +50,6 @@ export function HoursView({
     initialViewMode,
     initialSelectedDate,
     initialHolidays = [],
-    initialExpandedTypes = [],
     initialSummaryCollapsed = false,
     initialAttendanceData,
 }: HoursViewProps) {
@@ -78,11 +76,6 @@ export function HoursView({
         )
 
     const holidays = useHolidays(monthRange.startDate, monthRange.endDate, initialHolidays)
-
-    useEffect(() => {
-        const initializeExpandedTypes = useHoursStore.getState().initializeExpandedTypes
-        initializeExpandedTypes(initialExpandedTypes)
-    }, [initialExpandedTypes])
 
     useEffect(() => {
         const hoursStore = useHoursStore.getState()
@@ -249,7 +242,6 @@ export function HoursView({
                         endDate={dateRange.endDate}
                         userId={userId}
                         holidays={holidays}
-                        initialExpandedTypes={initialExpandedTypes}
                     />
                 </div>
             </div>
