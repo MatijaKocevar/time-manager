@@ -38,8 +38,8 @@ module.exports = {
         },
         {
             name: "auto-checkin-checkout-cron",
-            script: "npx",
-            args: "tsx scripts/auto-checkin-checkout-cron.ts",
+            script: "node",
+            args: "scripts/auto-checkin-checkout-cron.js",
             cwd: "/home/server/time-management-app",
             instances: 1,
             exec_mode: "fork",

@@ -12,6 +12,7 @@ import {
     syncUrnikNetStatuses,
     getSubmittedUrnikNetRequests,
 } from "./actions/urnik-net-requests-actions"
+import { syncRequestStatuses } from "../../requests/actions/sync-request-statuses"
 
 export const dynamic = "force-dynamic"
 
@@ -31,6 +32,10 @@ export default async function UrnikNetRequestsPage({
 
     if (!user) {
         redirect("/login")
+    }
+
+    if (session.user.role === "ADMIN") {
+        await syncRequestStatuses()
     }
 
     const today = new Date()

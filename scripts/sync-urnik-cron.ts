@@ -14,7 +14,7 @@ async function syncUrnikStatuses(): Promise<void> {
         return
     }
 
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000"
+    const baseUrl = "http://localhost:3000"
     const url = `${baseUrl}/api/internal/sync-urnik-statuses`
 
     try {
