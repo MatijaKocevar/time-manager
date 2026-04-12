@@ -24,13 +24,17 @@ export function useTimeSheetsPusher() {
         const channel = pusher.subscribe(`private-user-${session.user.id}`)
         pusherChannelRef.current = channel
 
-        channel.bind("timer-started", () => {
+        const handleTimerEvent = async () => {
+            await fetch("/api/invalidate-time-sheets", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId: session.user.id }),
+            })
             router.refresh()
-        })
+        }
 
-        channel.bind("timer-stopped", () => {
-            router.refresh()
-        })
+        channel.bind("timer-started", handleTimerEvent)
+        channel.bind("timer-stopped", handleTimerEvent)
 
         return () => {
             channel.unbind_all()
