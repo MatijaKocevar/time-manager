@@ -27,7 +27,7 @@
         "postinstall": "prisma generate",
         "cleanup:notifications": "tsx src/features/notifications/scripts/cleanup-notifications.ts",
         "generate-encryption-key": "tsx scripts/generate-encryption-key.ts",
-        "build:cron": "esbuild scripts/sync-urnik-cron.ts --bundle --platform=node --outfile=scripts/sync-urnik-cron.js"
+        "build:cron": "esbuild scripts/sync-urnik-cron.ts --bundle --platform=node --outfile=scripts/sync-urnik-cron.js && esbuild scripts/auto-checkin-checkout-cron.ts --bundle --platform=node --external:@opentelemetry/api --external:@prisma/client --outfile=scripts/auto-checkin-checkout-cron.js"
     },
     "dependencies": {
         "@hookform/resolvers": "^5.2.2",

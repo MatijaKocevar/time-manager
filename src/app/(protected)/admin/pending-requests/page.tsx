@@ -5,6 +5,7 @@ import { authConfig } from "@/lib/auth"
 import { getAllRequests } from "../../requests/actions/request-actions"
 import { getHolidays } from "../holidays/actions/holiday-actions"
 import { PendingRequestsTable } from "./components/pending-requests-table"
+import { syncRequestStatuses } from "../../requests/actions/sync-request-statuses"
 
 export default async function PendingRequestsPage() {
     const session = await getServerSession(authConfig)
@@ -12,6 +13,8 @@ export default async function PendingRequestsPage() {
     if (!session?.user || session.user.role !== "ADMIN") {
         redirect("/")
     }
+
+    await syncRequestStatuses()
 
     const [tTable, tReject, tPagination, tFilter, tTypes, locale] = await Promise.all([
         getTranslations("admin.pendingRequests.table"),
