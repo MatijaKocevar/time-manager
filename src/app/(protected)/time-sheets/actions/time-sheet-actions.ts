@@ -16,21 +16,16 @@ async function fetchTimeSheetEntriesFromDb(
     endDate: string,
     taskFilter: "work" | "private"
 ) {
+    const startDateTime = new Date(startDate)
+    const endDateTime = new Date(new Date(endDate).getTime() + 86400000)
+
     return await prisma.taskTimeEntry.findMany({
         where: {
             userId,
-            OR: [
-                {
-                    startTime: {
-                        gte: new Date(startDate),
-                        lt: new Date(new Date(endDate).getTime() + 86400000),
-                    },
-                    endTime: { not: null },
-                },
-                {
-                    endTime: null,
-                },
-            ],
+            startTime: {
+                gte: startDateTime,
+                lt: endDateTime,
+            },
             AND: [
                 {
                     OR: [

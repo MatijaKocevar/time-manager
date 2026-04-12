@@ -1,10 +1,9 @@
 "use client"
 
-import { useEffect, useState, useMemo, useRef } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, Download, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -87,29 +86,18 @@ export function TimeSheetsClient({
     const [isInitialized, setIsInitialized] = useState(false)
     const [currentTime, setCurrentTime] = useState(new Date())
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
-    const [isNavigating, setIsNavigating] = useState(false)
-    const currentPeriodRef = useRef<string>(
-        `${initialViewMode}-${initialSelectedDate.toISOString()}-${initialTaskFilter}`
-    )
 
     useEffect(() => {
         setViewMode(initialViewMode)
         setSelectedDate(initialSelectedDate)
         setTaskFilter(initialTaskFilter)
         setIsInitialized(true)
-        setIsNavigating(false)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const viewMode = isInitialized ? storeViewMode : initialViewMode
     const selectedDate = isInitialized ? storeSelectedDate : initialSelectedDate
     const taskFilter = isInitialized ? storeTaskFilter : initialTaskFilter
-
-    useEffect(() => {
-        const serverPeriodKey = `${initialViewMode}-${initialSelectedDate.toISOString()}-${initialTaskFilter}`
-        currentPeriodRef.current = serverPeriodKey
-        setIsNavigating(false)
-    }, [initialViewMode, initialSelectedDate, initialData, initialTaskFilter])
 
     useEffect(() => {
         const params = new URLSearchParams()
@@ -119,16 +107,10 @@ export function TimeSheetsClient({
             params.set("filter", "private")
         }
 
-        const newPeriodKey = `${viewMode}-${selectedDate.toISOString()}-${taskFilter}`
-        if (newPeriodKey !== currentPeriodRef.current) {
-            setIsNavigating(true)
-        }
-
         router.replace(`?${params.toString()}`, { scroll: false })
     }, [viewMode, selectedDate, taskFilter, router])
 
     const dateRange = getDateRangeForView(selectedDate, viewMode)
-    const monthRange = getDateRangeForView(selectedDate, "month")
 
     const formatHoursMinutes = (seconds: number): string => {
         const totalHours = seconds / 3600
@@ -234,31 +216,15 @@ export function TimeSheetsClient({
 
                     <div className="flex items-center gap-2">
                         <div className="text-sm hidden md:block">
-                            {isNavigating ? (
+                            <span className="font-semibold">
+                                {formatHoursMinutesLib(totalSeconds)}
+                            </span>
+                            {taskFilter === "work" && (
                                 <>
-                                    <Skeleton className="inline-block h-4 w-14 align-middle" />
-                                    {taskFilter === "work" && (
-                                        <>
-                                            <span className="text-muted-foreground"> | </span>
-                                            <Skeleton className="inline-block h-4 w-14 align-middle" />
-                                        </>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <span className="font-semibold">
-                                        {formatHoursMinutesLib(totalSeconds)}
+                                    <span className="text-muted-foreground"> | </span>
+                                    <span className={`font-semibold ${getBalanceColor(balance)}`}>
+                                        {formatBalance(balance)}
                                     </span>
-                                    {taskFilter === "work" && (
-                                        <>
-                                            <span className="text-muted-foreground"> | </span>
-                                            <span
-                                                className={`font-semibold ${getBalanceColor(balance)}`}
-                                            >
-                                                {formatBalance(balance)}
-                                            </span>
-                                        </>
-                                    )}
                                 </>
                             )}
                         </div>
@@ -304,31 +270,17 @@ export function TimeSheetsClient({
                         </div>
                         <div className="md:hidden flex items-center gap-2">
                             <div className="text-sm">
-                                {isNavigating ? (
+                                <span className="font-semibold">
+                                    {formatHoursMinutesLib(totalSeconds)}
+                                </span>
+                                {taskFilter === "work" && (
                                     <>
-                                        <Skeleton className="inline-block h-4 w-12 align-middle" />
-                                        {taskFilter === "work" && (
-                                            <>
-                                                <span className="text-muted-foreground"> | </span>
-                                                <Skeleton className="inline-block h-4 w-12 align-middle" />
-                                            </>
-                                        )}
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="font-semibold">
-                                            {formatHoursMinutesLib(totalSeconds)}
+                                        <span className="text-muted-foreground"> | </span>
+                                        <span
+                                            className={`font-semibold ${getBalanceColor(balance)}`}
+                                        >
+                                            {formatBalance(balance)}
                                         </span>
-                                        {taskFilter === "work" && (
-                                            <>
-                                                <span className="text-muted-foreground"> | </span>
-                                                <span
-                                                    className={`font-semibold ${getBalanceColor(balance)}`}
-                                                >
-                                                    {formatBalance(balance)}
-                                                </span>
-                                            </>
-                                        )}
                                     </>
                                 )}
                             </div>
