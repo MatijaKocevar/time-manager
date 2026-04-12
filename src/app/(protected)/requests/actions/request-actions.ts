@@ -958,6 +958,7 @@ async function executeApproval(request: ApproveableRequest, approvedById?: strin
                             title: systemTaskTitle,
                             description: "Automatically created for request tracking",
                             status: "DONE",
+                            isSystemTask: true,
                         },
                     })
                 }
