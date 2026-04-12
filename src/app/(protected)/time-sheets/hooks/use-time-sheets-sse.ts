@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 
 export function useTimeSheetsSSE() {
     const router = useRouter()
+    const { data: session } = useSession()
     const eventSourceRef = useRef<EventSource | null>(null)
     const reconnectCountRef = useRef(0)
 
@@ -10,11 +12,14 @@ export function useTimeSheetsSSE() {
         const eventSource = new EventSource("/api/tracker/events")
         eventSourceRef.current = eventSource
 
-        const handleTimerStarted = () => {
-            router.refresh()
-        }
-
-        const handleTimerStopped = () => {
+        const handleTimerEvent = async () => {
+            if (session?.user?.id) {
+                await fetch("/api/invalidate-time-sheets", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId: session.user.id }),
+                })
+            }
             router.refresh()
         }
 
@@ -22,21 +27,21 @@ export function useTimeSheetsSSE() {
             const reconnectCount = reconnectCountRef.current
 
             if (reconnectCount > 0) {
-                router.refresh()
+                handleTimerEvent()
             }
 
             reconnectCountRef.current += 1
         }
 
-        eventSource.addEventListener("timer-started", handleTimerStarted)
-        eventSource.addEventListener("timer-stopped", handleTimerStopped)
+        eventSource.addEventListener("timer-started", handleTimerEvent)
+        eventSource.addEventListener("timer-stopped", handleTimerEvent)
 
         eventSource.onerror = () => {}
 
         return () => {
-            eventSource.removeEventListener("timer-started", handleTimerStarted)
-            eventSource.removeEventListener("timer-stopped", handleTimerStopped)
+            eventSource.removeEventListener("timer-started", handleTimerEvent)
+            eventSource.removeEventListener("timer-stopped", handleTimerEvent)
             eventSource.close()
         }
-    }, [router])
+    }, [router, session?.user?.id])
 }
