@@ -55,8 +55,6 @@ const BulkCreateHourEntriesInputSchema = z.object({
     startDate: z.string(),
     endDate: z.string(),
     hours: z.number().max(MAX_HOURS_PER_DAY, `Hours cannot exceed ${MAX_HOURS_PER_DAY}`),
-    type: HourTypeSchema,
-    description: z.string().optional(),
     skipWeekends: z.boolean().default(true),
     skipHolidays: z.boolean().default(true),
 })
@@ -78,8 +76,6 @@ export const BulkEntryFormDataSchema = z.object({
     startDate: z.string(),
     endDate: z.string(),
     hours: z.number(),
-    type: HourTypeSchema,
-    description: z.string(),
     skipWeekends: z.boolean(),
     skipHolidays: z.boolean(),
 })

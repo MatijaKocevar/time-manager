@@ -23,6 +23,8 @@ import {
 import { requireAuth, requireAdmin } from "@/lib/auth-helpers"
 import { formatDateKey, parseDate, parseEndDate } from "../utils/date-helpers"
 import { buildManualEntriesMap, buildGrandTotalEntries } from "../utils/entry-helpers"
+import { mapRequestTypeToHourType } from "@/app/(protected)/shifts/utils/request-shift-mapping"
+import { getOrCreateSystemTaskForHourType } from "@/app/(protected)/tracker/utils/system-task-helpers"
 
 export async function createHourEntry(input: CreateHourEntryInput) {
     try {
@@ -173,12 +175,23 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
             return { error: validation.error.issues[0].message }
         }
 
-        const { startDate, endDate, hours, type, description, skipWeekends, skipHolidays } =
-            validation.data
+        const { startDate, endDate, hours, skipWeekends, skipHolidays } = validation.data
 
         if (startDate > endDate) {
             return { error: "Start date must be before end date" }
         }
+
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: {
+                workHoursPerDay: true,
+                workStartTime: true,
+                workEndTime: true,
+            },
+        })
+
+        const userStartTime = user?.workStartTime || "08:00"
+        const userEndTime = user?.workEndTime || "16:00"
 
         const holidays = skipHolidays
             ? await prisma.holiday.findMany({
@@ -191,9 +204,40 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
               })
             : []
 
-        const entriesToUpsert: Array<{
+        const approvedRequests = await prisma.request.findMany({
+            where: {
+                userId: session.user.id,
+                status: "APPROVED",
+                startDate: { lte: endDate },
+                endDate: { gte: startDate },
+            },
+            select: {
+                type: true,
+                startDate: true,
+                endDate: true,
+            },
+        })
+
+        const requestsByDate = new Map<string, HourType>()
+        for (const request of approvedRequests) {
+            const reqStartDate = new Date(request.startDate)
+            reqStartDate.setHours(0, 0, 0, 0)
+            const reqEndDate = new Date(request.endDate)
+            reqEndDate.setHours(0, 0, 0, 0)
+
+            const currentReqDate = new Date(reqStartDate)
+            while (currentReqDate <= reqEndDate) {
+                const dateKey = currentReqDate.toISOString().split("T")[0]
+                const hourType = mapRequestTypeToHourType(request.type)
+                requestsByDate.set(dateKey, hourType)
+                currentReqDate.setDate(currentReqDate.getDate() + 1)
+            }
+        }
+
+        const entriesToCreate: Array<{
             date: Date
             hours: number
+            hourType: HourType
         }> = []
         const currentDate = new Date(startDate)
 
@@ -211,46 +255,47 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
                 })
 
             if ((!skipWeekends || !isWeekend) && !isHol) {
-                entriesToUpsert.push({
+                const dateKey = currentDate.toISOString().split("T")[0]
+                const hourType = requestsByDate.get(dateKey) || "WORK"
+
+                entriesToCreate.push({
                     date: new Date(currentDate),
                     hours,
+                    hourType,
                 })
             }
 
             currentDate.setDate(currentDate.getDate() + 1)
         }
 
-        if (entriesToUpsert.length > 0) {
+        if (entriesToCreate.length > 0) {
             await prisma.$transaction(async (tx) => {
-                for (const entry of entriesToUpsert) {
-                    const existing = await tx.hourEntry.findFirst({
-                        where: {
+                for (const entry of entriesToCreate) {
+                    const systemTask = await getOrCreateSystemTaskForHourType(
+                        tx,
+                        session.user.id,
+                        entry.hourType
+                    )
+
+                    const [startHour, startMin] = userStartTime.split(":").map(Number)
+                    const [endHour, endMin] = userEndTime.split(":").map(Number)
+
+                    const startTime = new Date(entry.date)
+                    startTime.setHours(startHour, startMin, 0, 0)
+
+                    const endTime = new Date(entry.date)
+                    endTime.setHours(endHour, endMin, 0, 0)
+
+                    await tx.taskTimeEntry.create({
+                        data: {
+                            taskId: systemTask.id,
                             userId: session.user.id,
-                            date: entry.date,
-                            type,
-                            taskId: null,
+                            startTime,
+                            endTime,
+                            duration: Math.round(entry.hours * 3600),
+                            type: entry.hourType,
                         },
                     })
-
-                    if (existing) {
-                        await tx.hourEntry.update({
-                            where: { id: existing.id },
-                            data: {
-                                hours: existing.hours + entry.hours,
-                                description,
-                            },
-                        })
-                    } else {
-                        await tx.hourEntry.create({
-                            data: {
-                                userId: session.user.id,
-                                date: entry.date,
-                                hours: entry.hours,
-                                type,
-                                description,
-                            },
-                        })
-                    }
                 }
 
                 await refreshDailyHourSummaryInTransaction(tx)
@@ -260,7 +305,7 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
         revalidatePath("/hours")
         revalidatePath("/tracker")
         revalidatePath("/time-sheets")
-        return { success: true, count: entriesToUpsert.length }
+        return { success: true, count: entriesToCreate.length }
     } catch (error) {
         if (error instanceof Error) {
             return { error: error.message }

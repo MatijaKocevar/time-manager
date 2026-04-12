@@ -2,25 +2,14 @@
 
 import { useTranslations } from "next-intl"
 import { useQueryClient } from "@tanstack/react-query"
-import type { HourType } from "@/../../prisma/generated/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { DatePicker } from "@/components/ui/date-picker"
-import { WorkTypeBadge } from "@/components/work-type-badge"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 import { useHoursStore } from "../stores/hours-store"
 import { bulkCreateHourEntries } from "../actions/hour-actions"
-import { HOUR_TYPES, MAX_HOURS_PER_DAY } from "../constants/hour-types"
+import { MAX_HOURS_PER_DAY } from "../constants/hour-types"
 import { hourKeys } from "../query-keys"
-import { getHourTypeTranslationKey } from "../utils/translation-helpers"
-import type { WorkType } from "@/lib/work-type-styles"
 import { format } from "date-fns"
 
 interface HourEntryFormProps {
@@ -44,8 +33,7 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
         if (
             !bulkEntryForm.data.startDate ||
             !bulkEntryForm.data.endDate ||
-            !bulkEntryForm.data.hours ||
-            !bulkEntryForm.data.type
+            !bulkEntryForm.data.hours
         ) {
             return
         }
@@ -57,9 +45,8 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
             startDate: bulkEntryForm.data.startDate,
             endDate: bulkEntryForm.data.endDate,
             hours: bulkEntryForm.data.hours,
-            type: bulkEntryForm.data.type,
-            description: bulkEntryForm.data.description || undefined,
             skipWeekends: bulkEntryForm.data.skipWeekends,
+            skipHolidays: bulkEntryForm.data.skipHolidays,
         })
 
         if (result.error) {
@@ -122,48 +109,6 @@ export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
                     value={bulkEntryForm.data.hours || ""}
                     onChange={(e) => setBulkEntryFormData({ hours: parseFloat(e.target.value) })}
                     required
-                />
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="type">{tCommon("fields.type")}</Label>
-                <Select
-                    value={bulkEntryForm.data.type}
-                    onValueChange={(value) =>
-                        setBulkEntryFormData({
-                            type: value as HourType,
-                        })
-                    }
-                >
-                    <SelectTrigger id="type">
-                        {bulkEntryForm.data.type ? (
-                            <WorkTypeBadge type={bulkEntryForm.data.type as WorkType}>
-                                {tTypes(getHourTypeTranslationKey(bulkEntryForm.data.type))}
-                            </WorkTypeBadge>
-                        ) : (
-                            <SelectValue placeholder={tCommon("placeholders.selectType")} />
-                        )}
-                    </SelectTrigger>
-                    <SelectContent>
-                        {HOUR_TYPES.map((hourType) => (
-                            <SelectItem key={hourType.value} value={hourType.value}>
-                                <WorkTypeBadge type={hourType.value as WorkType}>
-                                    {tTypes(getHourTypeTranslationKey(hourType.value))}
-                                </WorkTypeBadge>
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="description">{t("descriptionOptional")}</Label>
-                <Input
-                    id="description"
-                    type="text"
-                    value={bulkEntryForm.data.description || ""}
-                    onChange={(e) => setBulkEntryFormData({ description: e.target.value })}
-                    placeholder={tCommon("placeholders.addNote")}
                 />
             </div>
 
