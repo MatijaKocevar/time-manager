@@ -39,9 +39,7 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
                     {
                         OR: [
                             {
-                                task: {
-                                    isSystemTask: true,
-                                },
+                                task: { isSystemTask: true },
                                 type:
                                     taskFilter === "private"
                                         ? { in: ["PRIVATE", "BREAK"] }
@@ -65,10 +63,12 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
                 startTime: true,
                 endTime: true,
                 duration: true,
+                type: true,
                 task: {
                     select: {
                         title: true,
                         status: true,
+                        isSystemTask: true,
                         list: {
                             select: {
                                 name: true,
