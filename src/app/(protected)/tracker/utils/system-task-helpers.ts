@@ -10,6 +10,56 @@ export function getSystemTaskTitle(type: SystemTaskType): string {
     return `System: ${type}`
 }
 
+export function getSystemTaskTitleForHourType(hourType: HourType): string {
+    switch (hourType) {
+        case "WORK":
+            return "System: General Work"
+        case "VACATION":
+            return "System: VACATION"
+        case "SICK_LEAVE":
+            return "System: SICK_LEAVE"
+        case "WORK_FROM_HOME":
+            return "System: WORK_FROM_HOME"
+        case "BREAK":
+            return "System: BREAK"
+        case "PRIVATE":
+            return "System: PRIVATE"
+    }
+}
+
+export async function getOrCreateSystemTaskForHourType(
+    tx: Omit<
+        PrismaClient,
+        "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+    >,
+    userId: string,
+    hourType: HourType
+) {
+    const title = getSystemTaskTitleForHourType(hourType)
+
+    let systemTask = await tx.task.findFirst({
+        where: {
+            userId,
+            title,
+            isSystemTask: true,
+        },
+    })
+
+    if (!systemTask) {
+        systemTask = await tx.task.create({
+            data: {
+                userId,
+                title,
+                description: `Automatically created for ${hourType.toLowerCase()} tracking`,
+                status: "DONE",
+                isSystemTask: true,
+            },
+        })
+    }
+
+    return systemTask
+}
+
 export function isBreakOrPrivate(type: HourType): boolean {
     return type === "BREAK" || type === "PRIVATE"
 }

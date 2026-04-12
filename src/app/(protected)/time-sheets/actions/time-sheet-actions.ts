@@ -35,11 +35,28 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
                         endTime: null,
                     },
                 ],
-                task: {
-                    list: {
-                        isPrivate: taskFilter === "private" ? true : false,
+                AND: [
+                    {
+                        OR: [
+                            {
+                                task: {
+                                    isSystemTask: true,
+                                },
+                                type:
+                                    taskFilter === "private"
+                                        ? { in: ["PRIVATE", "BREAK"] }
+                                        : { notIn: ["PRIVATE", "BREAK"] },
+                            },
+                            {
+                                task: {
+                                    list: {
+                                        isPrivate: taskFilter === "private" ? true : false,
+                                    },
+                                },
+                            },
+                        ],
                     },
-                },
+                ],
             },
             orderBy: { startTime: "asc" },
             select: {
