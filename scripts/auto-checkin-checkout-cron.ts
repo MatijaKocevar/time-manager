@@ -1,5 +1,5 @@
 import "dotenv/config"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "../prisma/generated/client"
 import {
     sendCheckinReminder,
     sendCheckoutReminder,
@@ -30,8 +30,19 @@ function parseTimeToDate(timeString: string): Date {
 function shouldTrigger(triggerTime: Date | null, lastChecked: Date | null): boolean {
     if (!triggerTime) return false
     const now = new Date()
+
+    // Only trigger if current time is after trigger time
     if (now < triggerTime) return false
+
+    // Only trigger if within 15 minutes of the trigger time
+    // This prevents late triggering when cron restarts
+    const fifteenMinutesAfterTrigger = new Date(triggerTime.getTime() + 15 * 60 * 1000)
+    if (now > fifteenMinutesAfterTrigger) return false
+
+    // If we haven't checked before, trigger
     if (!lastChecked) return true
+
+    // Only trigger if we haven't triggered since the trigger time
     return lastChecked < triggerTime && now >= triggerTime
 }
 
