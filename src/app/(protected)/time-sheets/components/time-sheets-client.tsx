@@ -136,14 +136,15 @@ export function TimeSheetsClient({
         const activeEntry = data.find((entry) => entry.endTime === null)
 
         if (activeEntry) {
+            const entryStartTime = new Date(activeEntry.startTime)
             if (
                 !activeTimer ||
                 activeTimer.taskId !== activeEntry.taskId ||
                 activeTimer.entryId !== activeEntry.id ||
-                activeTimer.startTime.getTime() !== activeEntry.startTime.getTime()
+                activeTimer.startTime.getTime() !== entryStartTime.getTime()
             ) {
                 clearActiveTimer()
-                setActiveTimer(activeEntry.taskId, activeEntry.id, activeEntry.startTime)
+                setActiveTimer(activeEntry.taskId, activeEntry.id, entryStartTime)
             }
         } else if (activeTimer) {
             clearActiveTimer()
