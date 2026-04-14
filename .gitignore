@@ -58,5 +58,4 @@ next-env.d.ts
 backups/
 
 # Compiled cron scripts (regenerated during build)
-scripts/sync-urnik-cron.js
-scripts/auto-checkin-checkout-cron.js
+scripts/build/*.js

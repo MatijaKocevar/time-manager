@@ -1,5 +1,6 @@
 import "dotenv/config"
 import { PrismaClient } from "../prisma/generated/client"
+import { fromZonedTime } from "date-fns-tz"
 import {
     sendCheckinReminder,
     sendCheckoutReminder,
@@ -10,6 +11,8 @@ import {
 const prisma = new PrismaClient()
 
 const CHECK_INTERVAL_MS = 60 * 1000
+
+const TIMEZONE = "Europe/Ljubljana"
 
 interface UserTrigger {
     userId: string
@@ -22,9 +25,25 @@ interface UserTrigger {
 
 function parseTimeToDate(timeString: string): Date {
     const [hours, minutes] = timeString.split(":").map(Number)
-    const date = new Date()
-    date.setHours(hours, minutes, 0, 0)
-    return date
+
+    // Get today's date in UTC
+    const nowUtc = new Date()
+    const year = nowUtc.getUTCFullYear()
+    const month = nowUtc.getUTCMonth()
+    const day = nowUtc.getUTCDate()
+
+    // Create a date object representing the time in Ljubljana timezone
+    // We use the UTC date components to create a naive date, then interpret it as Ljubljana time
+    const ljubljanaDate = new Date(year, month, day, hours, minutes, 0, 0)
+
+    // Convert Ljubljana time to UTC using fromZonedTime
+    const utcDate = fromZonedTime(ljubljanaDate, TIMEZONE)
+
+    console.log(
+        `[parseTimeToDate] Parsed "${timeString}" as ${ljubljanaDate.toLocaleString("sl-SI", { timeZone: TIMEZONE })} Ljubljana → ${utcDate.toISOString()} UTC`
+    )
+
+    return utcDate
 }
 
 function shouldTrigger(triggerTime: Date | null, lastChecked: Date | null): boolean {
@@ -91,11 +110,17 @@ async function getUserTriggers(): Promise<UserTrigger[]> {
         if (user.preferences?.autoCheckInEnabled && effectiveStartTime) {
             checkinTime = parseTimeToDate(effectiveStartTime)
             checkinReminderTime = new Date(checkinTime.getTime() - 15 * 60 * 1000)
+            console.log(
+                `[getUserTriggers] User "${user.name}" check-in: ${effectiveStartTime} → reminder at ${checkinReminderTime.toISOString()}`
+            )
         }
 
         if (user.preferences?.autoCheckOutEnabled && effectiveEndTime) {
             checkoutTime = parseTimeToDate(effectiveEndTime)
             checkoutReminderTime = new Date(checkoutTime.getTime() - 15 * 60 * 1000)
+            console.log(
+                `[getUserTriggers] User "${user.name}" check-out: ${effectiveEndTime} → reminder at ${checkoutReminderTime.toISOString()}`
+            )
         }
 
         triggers.push({
@@ -118,6 +143,11 @@ const lastCheckout = new Map<string, Date>()
 
 async function processTriggers(): Promise<void> {
     try {
+        const nowUtc = new Date()
+        console.log(
+            `[processTriggers] Checking triggers at ${nowUtc.toISOString()} UTC (${nowUtc.toLocaleString("sl-SI", { timeZone: TIMEZONE })} Ljubljana)`
+        )
+
         const triggers = await getUserTriggers()
 
         for (const trigger of triggers) {

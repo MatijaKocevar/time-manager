@@ -46,8 +46,8 @@ tar -czf deploy.tar.gz \
     prisma/schema.prisma \
     prisma/migrations \
     ecosystem.config.js \
-    scripts/sync-urnik-cron.js \
-    scripts/auto-checkin-checkout-cron.js
+    scripts/build/sync-urnik-cron.js \
+    scripts/build/auto-checkin-checkout-cron.js
 
 # Transfer to server
 echo "📤 Transferring files to server..."
