@@ -22,7 +22,7 @@ module.exports = {
         {
             name: "urnik-sync-cron",
             script: "node",
-            args: "scripts/sync-urnik-cron.js",
+            args: "scripts/build/sync-urnik-cron.js",
             cwd: "/home/server/time-management-app",
             instances: 1,
             exec_mode: "fork",
@@ -39,7 +39,7 @@ module.exports = {
         {
             name: "auto-checkin-checkout-cron",
             script: "node",
-            args: "scripts/auto-checkin-checkout-cron.js",
+            args: "scripts/build/auto-checkin-checkout-cron.js",
             cwd: "/home/server/time-management-app",
             instances: 1,
             exec_mode: "fork",
