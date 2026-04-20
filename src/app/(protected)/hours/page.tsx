@@ -78,12 +78,6 @@ export default async function HoursPage({ searchParams }: HoursPageProps) {
                         description: tHours("table.description"),
                         side: "top",
                     },
-                    {
-                        element: ".hours-editable-cell",
-                        title: tHours("editCell.title"),
-                        description: tHours("editCell.description"),
-                        side: "top",
-                    },
                 ]}
             />
             <HoursView

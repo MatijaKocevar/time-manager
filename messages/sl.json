@@ -1320,10 +1320,6 @@
             "table": {
                 "title": "Tabela ur",
                 "description": "Vsaka vrstica je vrsta ure (Delo, Dopust, Bolniška itn.). Vsak stolpec je dan. Zgornja vrstica prikazuje skupne ure na dan za vse vrste."
-            },
-            "editCell": {
-                "title": "Urejanje ur v tabeli",
-                "description": "Kliknite katero koli celico v vrstici ROČNO za neposredno vnašanje ur. Spremembe se zberejo in shranijo skupaj ob kliku na Shrani."
             }
         }
     }

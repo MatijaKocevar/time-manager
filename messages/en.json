@@ -1320,10 +1320,6 @@
             "table": {
                 "title": "Hours Table",
                 "description": "Each row is an hour type (Work, Vacation, Sick Leave, etc.). Each column is a day. The top row shows your total hours per day across all types."
-            },
-            "editCell": {
-                "title": "Edit Hours Inline",
-                "description": "Click any cell in a MANUAL row to set hours directly. Changes are batched and saved together when you click Save."
             }
         }
     }
