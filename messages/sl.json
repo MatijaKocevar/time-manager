@@ -1285,6 +1285,24 @@
                 "title": "Klikabilne celice",
                 "description": "Kliknite katero koli celico za ogled podrobnosti izmene, ali kliknite prazno delovno celico za oddajo zahtevka, npr. za dopust ali delo od doma."
             }
+        },
+        "yearlyCalendar": {
+            "navigation": {
+                "title": "Pomikanje po letih",
+                "description": "Uporabite puščice za premikanje med leti ali izberite leto iz spustnega seznama."
+            },
+            "balance": {
+                "title": "Letna bilanca",
+                "description": "Vaša skupna bilanca ur za izbrano leto. Zelena pomeni, da ste pred pričakovano normo, oranžna pa, da ste za njo."
+            },
+            "calendar": {
+                "title": "Pregled leta",
+                "description": "Vsaka vrstica predstavlja mesec, vsak stolpec pa dan. Barvne oznake prikazujejo zabeležene ure po vrsti. Vikendi so zatemnjen, prazniki so označeni z oranžno."
+            },
+            "cell": {
+                "title": "Kliknite dan",
+                "description": "Kliknite katero koli celico z zabeleženimi urami za ogled podrobnih časovnih vnosov za ta dan."
+            }
         }
     }
 }

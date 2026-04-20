@@ -1285,6 +1285,24 @@
                 "title": "Clickable Cells",
                 "description": "Click any cell to see shift details, or click an empty workday cell to submit a request such as vacation or working from home."
             }
+        },
+        "yearlyCalendar": {
+            "navigation": {
+                "title": "Navigate Years",
+                "description": "Use the arrows to step through years, or pick a specific year from the dropdown."
+            },
+            "balance": {
+                "title": "Yearly Balance",
+                "description": "Your total hours balance for the selected year. Green means you are ahead of your expected hours, orange means behind."
+            },
+            "calendar": {
+                "title": "Year at a Glance",
+                "description": "Each row is a month, each column a day. Colored badges show your logged hours by type. Weekends are dimmed and holidays are highlighted in orange."
+            },
+            "cell": {
+                "title": "Click a Day",
+                "description": "Click any day cell that has logged hours to see the detailed time entries recorded for that day."
+            }
         }
     }
 }

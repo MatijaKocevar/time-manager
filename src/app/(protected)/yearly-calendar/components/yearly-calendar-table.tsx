@@ -58,7 +58,7 @@ export function YearlyCalendarTable({
     const days = Array.from({ length: 31 }, (_, i) => i + 1)
 
     return (
-        <div className="border rounded-lg overflow-auto h-full">
+        <div id="yearly-table" className="border rounded-lg overflow-auto h-full">
             <Table className="h-full">
                 <colgroup>
                     <col style={{ width: "120px", minWidth: "120px" }} />
@@ -115,7 +115,7 @@ export function YearlyCalendarTable({
                                     return (
                                         <TableCell
                                             key={day}
-                                            className={`p-0.5 text-center align-middle ${bgClass} ${hasData ? "cursor-pointer hover:ring-2 hover:ring-primary" : ""}`}
+                                            className={`p-0.5 text-center align-middle ${bgClass} ${hasData ? "yearly-cell cursor-pointer hover:ring-2 hover:ring-primary" : ""}`}
                                             onClick={() => handleCellClick(dateKey, hasData)}
                                         >
                                             {hasData && (
