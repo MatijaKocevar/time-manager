@@ -1208,6 +1208,10 @@
             "dailySummary": {
                 "title": "Dnevni povzetek",
                 "description": "Pregled sledenih, ročnih in skupnih ur za današnji dan."
+            },
+            "timeEntries": {
+                "title": "Vnosi časa",
+                "description": "Prikaže vse posamezne vnose časa, zabeležene danes za izbrano nalogo."
             }
         }
     }

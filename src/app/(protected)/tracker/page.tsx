@@ -94,6 +94,12 @@ export default async function TrackerPage() {
                         side: "bottom",
                     },
                     {
+                        element: "#tracker-time-entries",
+                        title: tTrackerTour("timeEntries.title"),
+                        description: tTrackerTour("timeEntries.description"),
+                        side: "bottom",
+                    },
+                    {
                         element: "#tracker-timer-button",
                         title: tTrackerTour("timerButton.title"),
                         description: tTrackerTour("timerButton.description"),

@@ -1208,6 +1208,10 @@
             "dailySummary": {
                 "title": "Daily Summary",
                 "description": "A live breakdown of your tracked, manual, and total hours for today."
+            },
+            "timeEntries": {
+                "title": "Time Entries",
+                "description": "View all individual time entries logged today for the selected task."
             }
         }
     }

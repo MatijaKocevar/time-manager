@@ -209,6 +209,7 @@ export function TrackerDisplay({
                                     -
                                 </label>
                                 <Button
+                                    id="tracker-time-entries"
                                     variant="outline"
                                     onClick={handleViewEntries}
                                     disabled={taskEntries.length === 0}
