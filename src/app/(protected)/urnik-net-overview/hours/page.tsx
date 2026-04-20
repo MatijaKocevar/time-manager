@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth-helpers"
 import { getTranslations } from "next-intl/server"
 import { fetchMonthlyHours } from "./actions/hours-actions"
 import { HoursView } from "./components/hours-view"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export const dynamic = "force-dynamic"
 
@@ -13,8 +14,13 @@ export default async function UrnikNetHoursPage({
 }) {
     await requireAuth().catch(() => redirect("/login"))
 
-    const t = await getTranslations("urnikNetHours")
-    const tYearlyCalendar = await getTranslations("yearlyCalendar")
+    const [t, tYearlyCalendar, tTutorial, tPage, tutorialsSeen] = await Promise.all([
+        getTranslations("urnikNetHours"),
+        getTranslations("yearlyCalendar"),
+        getTranslations("tutorial"),
+        getTranslations("tutorial.urnikNetHours"),
+        getTutorialsSeen(),
+    ])
 
     const params = await searchParams
     const today = new Date()
@@ -26,7 +32,35 @@ export default async function UrnikNetHoursPage({
     const result = await fetchMonthlyHours(currentYear, currentMonth)
 
     return (
-        <div className="flex flex-col gap-4 h-full">
+        <>
+            <PageTour
+                pageKey="/urnik-net-overview/hours"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("prev")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#urnik-hours-nav",
+                        title: tPage("nav.title"),
+                        description: tPage("nav.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#urnik-hours-details",
+                        title: tPage("details.title"),
+                        description: tPage("details.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#urnik-hours-table",
+                        title: tPage("table.title"),
+                        description: tPage("table.description"),
+                        side: "top",
+                    },
+                ]}
+            />
+            <div className="flex flex-col gap-4 h-full">
             <HoursView
                 result={result}
                 currentYear={currentYear}
@@ -67,5 +101,6 @@ export default async function UrnikNetHoursPage({
                 }}
             />
         </div>
+        </>
     )
 }

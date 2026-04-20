@@ -1335,6 +1335,48 @@
                 "title": "Vaši zahtevki",
                 "description": "Tu so navedeni vsi oddani zahtevki z vrsto, datumi, urami in trenutnim statusom. Dvokliknite vrstico za ogled ali urejanje čakajočega zahtevka."
             }
+        },
+        "urnikNetClock": {
+            "clockCard": {
+                "title": "Prihod / Odhod",
+                "description": "Zabeležite prihod in odhod na urnik.net neposredno od tu. Oznake prikazujejo, ali ste danes že evidentirali prihod ali odhod."
+            },
+            "workTime": {
+                "title": "Delošni čas danes",
+                "description": "Podatki v živo z urnik.net: skupne ure dela danes, nadure, odmor za malico in kdaj se konča vaša izmena."
+            },
+            "balance": {
+                "title": "Bilanca ur",
+                "description": "Vaša bilanca za tekouči dan, skupna bilanca do zdaj v tem mesecu in letna bilanca do včeraj."
+            },
+            "vacation": {
+                "title": "Dopust in odsotnost",
+                "description": "Preostali dni dopusta iz lanskega leta, letna pravica do dopusta in nastavljeni dnevni delovni čas."
+            }
+        },
+        "urnikNetRequests": {
+            "nav": {
+                "title": "Pomikanje in ustvarjanje",
+                "description": "Premikajte se po mesecih s puščicami za pregled preteklih ali prihodnjih zahtevkov. Gumb Ustvari zahtevek odda novo vlogo neposredno na urnik.net. Oznaka prikazuje status povezave."
+            },
+            "table": {
+                "title": "Tabela zahtevkov",
+                "description": "Prikazuje tako čakajoče zahtevke (izračunane iz odobrenih odsotnosti) kot že oddane zahtevke na urnik.net z njihovim statusom in podrobnostmi potrditve."
+            }
+        },
+        "urnikNetHours": {
+            "nav": {
+                "title": "Pomikanje po mesecih",
+                "description": "Premikajte se med meseci s puščicami. Na desni strani sta prikazana stanje dopusta in bilanca ur za hiter pregled."
+            },
+            "details": {
+                "title": "Mesečni povzetek",
+                "description": "Odpre podrobno razdelitev: obračunske ure, načrtovane ure, bilanca, stanje dopusta, bolniška, dni dela od doma in več."
+            },
+            "table": {
+                "title": "Dnevna tabela ur",
+                "description": "Vsaka vrstica je en delovni dan. Stolpci prikazujejo prihod, odhod, prisotnost, obračunane ure in tečočo bilanco dneva, meseca in leta."
+            }
         }
     }
 }

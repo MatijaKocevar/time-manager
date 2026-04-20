@@ -13,6 +13,7 @@ import {
     getSubmittedUrnikNetRequests,
 } from "./actions/urnik-net-requests-actions"
 import { syncRequestStatuses } from "../../requests/actions/sync-request-statuses"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export const dynamic = "force-dynamic"
 
@@ -85,6 +86,11 @@ export default async function UrnikNetRequestsPage({
 
     const t = await getTranslations("clock.urnikNetRequests")
     const tCreateRequest = await getTranslations("urnikNetOverview.createRequest")
+    const [tTutorial, tPage, tutorialsSeen] = await Promise.all([
+        getTranslations("tutorial"),
+        getTranslations("tutorial.urnikNetRequests"),
+        getTutorialsSeen(),
+    ])
 
     const urnikNetTranslations = {
         pageTitle: t("pageTitle"),
@@ -129,16 +135,39 @@ export default async function UrnikNetRequestsPage({
     }
 
     return (
-        <div className="flex flex-col gap-4 h-full">
-            <UrnikNetRequestsView
-                user={user}
-                translations={urnikNetTranslations}
-                requestsResult={requestsResult}
-                pendingRequestsResult={pendingRequestsResult}
-                submittedRequests={submittedRequests}
-                currentMonth={currentMonth}
+        <>
+            <PageTour
+                pageKey="/urnik-net-overview/requests"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("prev")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#urnik-requests-nav",
+                        title: tPage("nav.title"),
+                        description: tPage("nav.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#urnik-requests-table",
+                        title: tPage("table.title"),
+                        description: tPage("table.description"),
+                        side: "top",
+                    },
+                ]}
             />
-            <CreateRequestDialog />
-        </div>
+            <div className="flex flex-col gap-4 h-full">
+                <UrnikNetRequestsView
+                    user={user}
+                    translations={urnikNetTranslations}
+                    requestsResult={requestsResult}
+                    pendingRequestsResult={pendingRequestsResult}
+                    submittedRequests={submittedRequests}
+                    currentMonth={currentMonth}
+                />
+                <CreateRequestDialog />
+            </div>
+        </>
     )
 }

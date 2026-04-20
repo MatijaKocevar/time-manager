@@ -67,7 +67,7 @@ export function HoursView({
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <div className="flex items-center justify-between gap-2">
+            <div id="urnik-hours-nav" className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1 sm:gap-2">
                     <Button
                         variant="outline"
@@ -106,7 +106,7 @@ export function HoursView({
                         </div>
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button variant="outline" size="sm">
+                                <Button id="urnik-hours-details" variant="outline" size="sm">
                                     {translations.detailsButton}
                                 </Button>
                             </DialogTrigger>
@@ -233,7 +233,7 @@ export function HoursView({
 
             {days.length > 0 && (
                 <div className="flex-1 overflow-hidden relative">
-                    <div className="rounded-md border overflow-auto h-full">
+                    <div id="urnik-hours-table" className="rounded-md border overflow-auto h-full">
                         <Table>
                             <TableHeader className="sticky top-0 z-30 bg-background">
                                 <TableRow>

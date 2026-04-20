@@ -74,7 +74,7 @@ export function ClockView({ translations, status, hasApprovedWFH, wfhLocation }:
 
     return (
         <div className="space-y-6">
-            <Card>
+            <Card id="urnik-clock-card">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Clock className="h-5 w-5" />
@@ -133,7 +133,7 @@ export function ClockView({ translations, status, hasApprovedWFH, wfhLocation }:
             </Card>
 
             <div className="grid gap-6 md:grid-cols-2">
-                <Card>
+                <Card id="urnik-work-time">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Clock className="h-5 w-5" />
@@ -151,7 +151,7 @@ export function ClockView({ translations, status, hasApprovedWFH, wfhLocation }:
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card id="urnik-balance">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <TrendingUp className="h-5 w-5" />
@@ -174,7 +174,7 @@ export function ClockView({ translations, status, hasApprovedWFH, wfhLocation }:
                 </Card>
             </div>
 
-            <Card>
+            <Card id="urnik-vacation">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Calendar className="h-5 w-5" />

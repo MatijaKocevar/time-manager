@@ -1335,6 +1335,48 @@
                 "title": "Your Requests",
                 "description": "All your submitted requests are listed here with their type, dates, hours, and current status. Double-click any row to view or edit a pending request."
             }
+        },
+        "urnikNetClock": {
+            "clockCard": {
+                "title": "Clock In / Clock Out",
+                "description": "Log your arrival and departure to urnik.net directly from here. The badges show whether you have already clocked in or out today."
+            },
+            "workTime": {
+                "title": "Today's Work Time",
+                "description": "Live figures pulled from urnik.net: total hours worked today, overtime, lunch break, and when your shift ends."
+            },
+            "balance": {
+                "title": "Hour Balance",
+                "description": "Your current day balance, cumulative balance so far this month, and total annual balance as of yesterday."
+            },
+            "vacation": {
+                "title": "Vacation & Leave",
+                "description": "Remaining vacation days from last year, this year's leave entitlement, and your configured daily work time."
+            }
+        },
+        "urnikNetRequests": {
+            "nav": {
+                "title": "Navigate and Create",
+                "description": "Step through months with the arrows to review past or future requests. Use Create Request to submit a new request directly to urnik.net. The badge shows your connection status."
+            },
+            "table": {
+                "title": "Requests Table",
+                "description": "Shows both pending requests (calculated from your approved leave) and requests already submitted to urnik.net, with their status and confirmation details."
+            }
+        },
+        "urnikNetHours": {
+            "nav": {
+                "title": "Navigate Months",
+                "description": "Step through months with the arrows. Your vacation balance and hour balance are shown on the right for a quick overview."
+            },
+            "details": {
+                "title": "Monthly Summary",
+                "description": "Opens a detailed breakdown: billing hours, planned hours, balance, vacation balance, sick leave, work from home days, and more."
+            },
+            "table": {
+                "title": "Daily Hours Table",
+                "description": "Each row is one working day. Columns show clock-in, clock-out, attendance hours, accounted hours, and running day, month, and year balances."
+            }
         }
     }
 }
