@@ -1,5 +1,0 @@
--- AlterTable
-ALTER TABLE "User"
-ADD COLUMN "anonymizedAt" TIMESTAMP(3),
-ADD COLUMN "deactivatedAt" TIMESTAMP(3),
-ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT true;
