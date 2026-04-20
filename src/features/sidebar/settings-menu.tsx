@@ -19,7 +19,7 @@ import { signOut } from "next-auth/react"
 import { locales, localeNames, type Locale } from "@/features/locale/config"
 import { resetTutorialSeen } from "@/features/tutorial"
 
-const TUTORIAL_PAGES = new Set(["/tracker", "/time-sheets", "/shifts", "/yearly-calendar"])
+const TUTORIAL_PAGES = new Set(["/tracker", "/time-sheets", "/shifts", "/yearly-calendar", "/hours"])
 
 function getTutorialPageKey(pathname: string): string | null {
     if (pathname === "/tasks") return "/tasks"

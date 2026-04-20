@@ -1303,6 +1303,28 @@
                 "title": "Click a Day",
                 "description": "Click any day cell that has logged hours to see the detailed time entries recorded for that day."
             }
+        },
+        "hours": {
+            "summary": {
+                "title": "Hours Summary",
+                "description": "A quick overview of your total logged hours, balance vs expected, and a breakdown by hour type for both the current week and month."
+            },
+            "navigation": {
+                "title": "Navigate Periods",
+                "description": "Step through weeks or months with the arrows, and switch between week and month view with the buttons on the right."
+            },
+            "addEntry": {
+                "title": "Add Hours",
+                "description": "Manually log hours for a date range. Choose an hour type, pick dates, and enter the number of hours."
+            },
+            "table": {
+                "title": "Hours Table",
+                "description": "Each row is an hour type (Work, Vacation, Sick Leave, etc.). Each column is a day. The top row shows your total hours per day across all types."
+            },
+            "editCell": {
+                "title": "Edit Hours Inline",
+                "description": "Click any cell in a MANUAL row to set hours directly. Changes are batched and saved together when you click Save."
+            }
         }
     }
 }

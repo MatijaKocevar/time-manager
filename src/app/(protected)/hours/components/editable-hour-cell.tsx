@@ -209,7 +209,7 @@ export function EditableHourCell({
     }
 
     return (
-        <div className="flex flex-col items-center gap-1 mx-auto w-20">
+        <div className="hours-editable-cell flex flex-col items-center gap-1 mx-auto w-20">
             <div
                 onClick={handleClick}
                 className={`h-8 w-16 text-center flex items-center justify-center cursor-pointer hover:bg-accent hover:text-accent-foreground rounded font-normal border border-transparent hover:border-border transition-colors ${

@@ -123,7 +123,7 @@ export function HoursView({
 
             <div className="space-y-2 pt-2">
                 <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                    <div id="hours-nav" className="flex items-center gap-2">
                         <Button
                             variant="outline"
                             size="sm"
@@ -186,6 +186,7 @@ export function HoursView({
                         </Button>
                         <div className="w-px h-6 bg-border mx-1" />
                         <Button
+                            id="hours-add-entry"
                             variant="default"
                             size="sm"
                             onClick={() => setIsFormOpen(true)}

@@ -1303,6 +1303,28 @@
                 "title": "Kliknite dan",
                 "description": "Kliknite katero koli celico z zabeleženimi urami za ogled podrobnih časovnih vnosov za ta dan."
             }
+        },
+        "hours": {
+            "summary": {
+                "title": "Povzetek ur",
+                "description": "Hiter pregled skupnih zabeleženih ur, bilance v primerjavi s pričakovanimi in razčlenitev po vrsti ure za tekoči teden in mesec."
+            },
+            "navigation": {
+                "title": "Pomikanje po obdobjih",
+                "description": "Premikajte se med tedni ali meseci s puščicami ter preklapljajte med tedenskim in mesečnim pogledom z gumbi na desni."
+            },
+            "addEntry": {
+                "title": "Dodaj ure",
+                "description": "Ročno zabeležite ure za določeno obdobje. Izberite vrsto ure, datum in število ur."
+            },
+            "table": {
+                "title": "Tabela ur",
+                "description": "Vsaka vrstica je vrsta ure (Delo, Dopust, Bolniška itn.). Vsak stolpec je dan. Zgornja vrstica prikazuje skupne ure na dan za vse vrste."
+            },
+            "editCell": {
+                "title": "Urejanje ur v tabeli",
+                "description": "Kliknite katero koli celico v vrstici ROČNO za neposredno vnašanje ur. Spremembe se zberejo in shranijo skupaj ob kliku na Shrani."
+            }
         }
     }
 }

@@ -122,7 +122,7 @@ export function HoursSummary({
     const showBalance = dateRange && workingDays > 0
 
     return (
-        <Card>
+        <Card id="hours-summary">
             <CardContent className="p-2">
                 <div
                     className={`grid grid-cols-1 gap-2 w-full ${showWeekly ? "lg:grid-cols-[max-content_1fr]" : "lg:grid-cols-2"}`}
