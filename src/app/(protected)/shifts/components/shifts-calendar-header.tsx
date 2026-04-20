@@ -34,7 +34,7 @@ export function ShiftsCalendarHeader({
     return (
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 shrink-0">
             <div className="flex items-center justify-between lg:justify-start gap-2">
-                <div className="flex items-center gap-2">
+                <div id="shifts-nav-controls" className="flex items-center gap-2">
                     <Button variant="outline" size="sm" onClick={onPrevious}>
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -77,7 +77,7 @@ export function ShiftsCalendarHeader({
                           year: "numeric",
                       })}
             </h2>
-            <div className="hidden lg:flex gap-2">
+            <div id="shifts-view-toggle" className="hidden lg:flex gap-2">
                 <Button
                     variant={viewMode === "week" ? "default" : "outline"}
                     size="sm"

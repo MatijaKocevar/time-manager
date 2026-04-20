@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server"
 import { getShiftsForPeriod, getAllUsers } from "./actions/shift-actions"
 import { getHolidaysInRange } from "../admin/holidays/actions/holiday-actions"
 import { ShiftsCalendar } from "./components/shifts-calendar"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export const dynamic = "force-dynamic"
 
@@ -25,12 +26,15 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
         return `${year}-${month}-${day}`
     }
 
-    const [shiftsResult, usersResult, holidays, t, tShifts] = await Promise.all([
+    const [shiftsResult, usersResult, holidays, t, tShifts, tutorialsSeen, tTutorial, tShiftsTutorial] = await Promise.all([
         getShiftsForPeriod({ startDate, endDate }),
         getAllUsers(),
         getHolidaysInRange(formatDate(startDate), formatDate(endDate)),
         getTranslations("navigation"),
         getTranslations("shifts.messages"),
+        getTutorialsSeen(),
+        getTranslations("tutorial"),
+        getTranslations("tutorial.shifts"),
     ])
 
     if (shiftsResult.error || usersResult.error) {
@@ -61,6 +65,39 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
 
     return (
         <div className="flex flex-col gap-4 h-full">
+            <PageTour
+                pageKey="/shifts"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("previous")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#shifts-nav-controls",
+                        title: tShiftsTutorial("navigation.title"),
+                        description: tShiftsTutorial("navigation.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#shifts-view-toggle",
+                        title: tShiftsTutorial("viewToggle.title"),
+                        description: tShiftsTutorial("viewToggle.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#shifts-table",
+                        title: tShiftsTutorial("calendar.title"),
+                        description: tShiftsTutorial("calendar.description"),
+                        side: "top",
+                    },
+                    {
+                        element: ".shifts-cell",
+                        title: tShiftsTutorial("cell.title"),
+                        description: tShiftsTutorial("cell.description"),
+                        side: "top",
+                    },
+                ]}
+            />
             <div className="flex-1 min-h-0">
                 <ShiftsCalendar
                     initialShifts={shiftsWithNormalizedDates}

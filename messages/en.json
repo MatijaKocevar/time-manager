@@ -1267,6 +1267,24 @@
                 "title": "Task Actions",
                 "description": "Use the plus button to add a subtask, or the trash button to delete the task."
             }
+        },
+        "shifts": {
+            "navigation": {
+                "title": "Navigate Periods",
+                "description": "Use the arrows to move forward or backward by week or month. Click Today to jump back to the current period."
+            },
+            "viewToggle": {
+                "title": "Week and Month View",
+                "description": "Switch between a 7-day week view and a full month view. The calendar updates instantly."
+            },
+            "calendar": {
+                "title": "Shifts Calendar",
+                "description": "Each row is a team member. Each column is a day. Colored badges show where they are working — office, home, vacation, or sick leave."
+            },
+            "cell": {
+                "title": "Clickable Cells",
+                "description": "Click any cell to see shift details, or click an empty workday cell to submit a request such as vacation or working from home."
+            }
         }
     }
 }

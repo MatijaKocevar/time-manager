@@ -1267,6 +1267,24 @@
                 "title": "Dejanja naloge",
                 "description": "Uporabite gumb plus za dodajanje podnaloge ali gumb koš za brisanje naloge."
             }
+        },
+        "shifts": {
+            "navigation": {
+                "title": "Pomikanje po obdobjih",
+                "description": "Uporabite puščice za premik naprej ali nazaj po tednih ali mesecih. Kliknite Danes za vrnitev na trenutno obdobje."
+            },
+            "viewToggle": {
+                "title": "Pogled po tednih in mesecih",
+                "description": "Preklapljajte med 7-dnevnim tedenskim pogledom in celomesečnim pogledom. Koledar se takoj posodobi."
+            },
+            "calendar": {
+                "title": "Koledar izmen",
+                "description": "Vsaka vrstica predstavlja člana ekipe, vsak stolpec pa dan. Barvne oznake prikazujejo, kje delajo — pisarna, dom, dopust ali bolniška."
+            },
+            "cell": {
+                "title": "Klikabilne celice",
+                "description": "Kliknite katero koli celico za ogled podrobnosti izmene, ali kliknite prazno delovno celico za oddajo zahtevka, npr. za dopust ali delo od doma."
+            }
         }
     }
 }
