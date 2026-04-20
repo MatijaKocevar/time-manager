@@ -121,7 +121,8 @@
         "menu": {
             "settings": "Nastavitve",
             "language": "Jezik",
-            "theme": "Tema"
+            "theme": "Tema",
+            "restartTutorial": "Ponovi vodič"
         },
         "notifications": {
             "title": "Obvestila",
@@ -1191,6 +1192,23 @@
         "previous": "Nazaj",
         "done": "Razumem",
         "skip": "Preskoči vodič",
-        "progress": "{{current}} od {{total}}"
+        "tracker": {
+            "hourType": {
+                "title": "Vrsta ure",
+                "description": "Izberite vrsto časa, ki ga beležite — delo, odmor ali zasebno."
+            },
+            "taskSelect": {
+                "title": "Naloga",
+                "description": "Po želji povežite beleženi čas z določeno nalogo v teku."
+            },
+            "timerButton": {
+                "title": "Zaženi / Ustavi štoparico",
+                "description": "Pritisnite za začetek beleženja časa. Znova pritisnite za ustavitev in shranitev vnosa."
+            },
+            "dailySummary": {
+                "title": "Dnevni povzetek",
+                "description": "Pregled sledenih, ročnih in skupnih ur za današnji dan."
+            }
+        }
     }
 }

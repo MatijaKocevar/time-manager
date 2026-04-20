@@ -1,13 +1,14 @@
 "use client"
 
-import { Settings, UserCircle, LogOut, Languages, Palette, Check } from "lucide-react"
+import { Settings, UserCircle, LogOut, Languages, Palette, Check, GraduationCap } from "lucide-react"
 import { useLocale } from "next-intl"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
@@ -16,6 +17,9 @@ import {
 import { useThemeStore } from "@/features/theme/stores/theme-store"
 import { signOut } from "next-auth/react"
 import { locales, localeNames, type Locale } from "@/features/locale/config"
+import { resetTutorialSeen } from "@/features/tutorial"
+
+const TUTORIAL_PAGES = new Set(["/tracker"])
 
 interface SettingsMenuProps {
     translations: {
@@ -24,14 +28,18 @@ interface SettingsMenuProps {
         theme: string
         profile: string
         logout: string
+        restartTutorial: string
     }
 }
 
 export function SettingsMenu({ translations }: SettingsMenuProps) {
     const locale = useLocale() as Locale
     const router = useRouter()
+    const pathname = usePathname()
     const theme = useThemeStore((state) => state.theme)
     const setTheme = useThemeStore((state) => state.setTheme)
+
+    const tutorialPageKey = TUTORIAL_PAGES.has(pathname) ? pathname : null
 
     const handleLocaleChange = async (newLocale: Locale) => {
         const response = await fetch("/api/set-locale", {
@@ -42,6 +50,12 @@ export function SettingsMenu({ translations }: SettingsMenuProps) {
         if (response.ok) {
             router.refresh()
         }
+    }
+
+    const handleRestartTutorial = async () => {
+        if (!tutorialPageKey) return
+        await resetTutorialSeen(tutorialPageKey)
+        router.refresh()
     }
 
     const themeOptions = [
@@ -100,6 +114,16 @@ export function SettingsMenu({ translations }: SettingsMenuProps) {
                     <UserCircle className="mr-2 h-4 w-4" />
                     <span>{translations.profile}</span>
                 </DropdownMenuItem>
+                {tutorialPageKey && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleRestartTutorial}>
+                            <GraduationCap className="mr-2 h-4 w-4" />
+                            <span>{translations.restartTutorial}</span>
+                        </DropdownMenuItem>
+                    </>
+                )}
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>{translations.logout}</span>

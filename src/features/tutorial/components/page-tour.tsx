@@ -13,8 +13,6 @@ interface PageTourProps {
     nextLabel: string
     prevLabel: string
     doneLabel: string
-    skipLabel: string
-    progressLabel: string
 }
 
 export function PageTour({
@@ -24,15 +22,13 @@ export function PageTour({
     nextLabel,
     prevLabel,
     doneLabel,
-    skipLabel,
-    progressLabel,
 }: PageTourProps) {
     useEffect(() => {
         if (seenPages.includes(pageKey)) return
 
         const driverObj = driver({
             showProgress: true,
-            progressText: progressLabel,
+            progressText: "{{current}} / {{total}}",
             nextBtnText: nextLabel,
             prevBtnText: prevLabel,
             doneBtnText: doneLabel,
@@ -52,5 +48,9 @@ export function PageTour({
         })
 
         driverObj.drive()
-    }, []) // eslint-disable-line react-hooks/exhaustive-deps
+    // seenPages changing means the server re-fetched — re-run to start the tour
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [seenPages])
+
+    return null
 }

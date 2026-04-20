@@ -121,7 +121,8 @@
         "menu": {
             "settings": "Settings",
             "language": "Language",
-            "theme": "Theme"
+            "theme": "Theme",
+            "restartTutorial": "Restart tutorial"
         },
         "notifications": {
             "title": "Notifications",
@@ -1191,6 +1192,23 @@
         "previous": "Previous",
         "done": "Got it",
         "skip": "Skip tour",
-        "progress": "{{current}} of {{total}}"
+        "tracker": {
+            "hourType": {
+                "title": "Hour Type",
+                "description": "Select the type of time you are tracking — work, break, or private."
+            },
+            "taskSelect": {
+                "title": "Task",
+                "description": "Optionally link your tracked time to a specific in-progress task."
+            },
+            "timerButton": {
+                "title": "Start / Stop Timer",
+                "description": "Press to start tracking time. Press again to stop and save the entry."
+            },
+            "dailySummary": {
+                "title": "Daily Summary",
+                "description": "A live breakdown of your tracked, manual, and total hours for today."
+            }
+        }
     }
 }

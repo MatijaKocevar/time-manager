@@ -31,3 +31,14 @@ export async function markTutorialSeen(pageKey: string): Promise<void> {
         update: {},
     })
 }
+
+export async function resetTutorialSeen(pageKey: string): Promise<void> {
+    const session = await requireAuth()
+
+    await prisma.tutorialSeen.deleteMany({
+        where: {
+            userId: session.user.id,
+            pageKey,
+        },
+    })
+}
