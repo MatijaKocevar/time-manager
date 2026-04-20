@@ -1213,6 +1213,24 @@
                 "title": "Time Entries",
                 "description": "View all individual time entries logged today for the selected task."
             }
+        },
+        "timeSheets": {
+            "table": {
+                "title": "Time Sheets",
+                "description": "This page shows all tasks you tracked time on, with daily totals organized by the selected week or month."
+            },
+            "taskCell": {
+                "title": "Task Time Entries",
+                "description": "Click any duration on a task row to view its entries. You can adjust start and end times — the duration updates instantly. Useful if you forgot to start tracking, or need to correct a time."
+            },
+            "dateCell": {
+                "title": "Clickable Totals",
+                "description": "Click any hours number in a date column to see all individual time entries recorded that day."
+            },
+            "balance": {
+                "title": "Balance",
+                "description": "Your balance compares total logged hours against expected working hours for the selected period. Green means ahead, orange means behind."
+            }
         }
     }
 }

@@ -90,5 +90,16 @@
 }
 
 .driver-overlay {
-    background: rgb(0 0 0 / 0.6) !important;
+    background: rgb(0 0 0 / 0.5) !important;
+}
+
+.driver-active-element {
+    position: relative !important;
+    z-index: 10002 !important;
+}
+
+#driver-highlighted-element-stage {
+    outline: 3px solid var(--primary) !important;
+    outline-offset: 0px !important;
+    border-radius: 6px !important;
 }

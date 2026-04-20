@@ -7,6 +7,7 @@ import { getDateRangeForView, type ViewMode } from "../utils/date-helpers"
 import { getCurrentUser } from "../../profile/actions/profile-actions"
 import { aggregateTimeEntriesByTaskAndDate } from "../utils/aggregation-helpers"
 import { calculateExpectedHoursToDate, calculateBalance } from "@/lib/balance-helpers"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 interface TimeSheetsViewProps {
     searchParams: { mode?: string; date?: string; filter?: string }
@@ -17,21 +18,26 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
     const t = await getTranslations("timeSheets")
     const tSummary = await getTranslations("hours.summary")
     const tDialog = await getTranslations("timeSheets.dayEntriesDialog")
+    const tTutorial = await getTranslations("tutorial")
+    const tTimeSheetsToure = await getTranslations("tutorial.timeSheets")
 
     const viewMode = (searchParams.mode === "month" ? "month" : "week") as ViewMode
     const selectedDate = searchParams.date ? new Date(searchParams.date) : new Date()
     const taskFilter = searchParams.filter === "private" ? "private" : "work"
 
     const dateRange = getDateRangeForView(selectedDate, viewMode)
-    const result = await getTimeSheetEntries({
-        startDate: dateRange.startDate.toISOString(),
-        endDate: dateRange.endDate.toISOString(),
-        taskFilter,
-    })
+    const [result, currentUser, tutorialsSeen] = await Promise.all([
+        getTimeSheetEntries({
+            startDate: dateRange.startDate.toISOString(),
+            endDate: dateRange.endDate.toISOString(),
+            taskFilter,
+        }),
+        getCurrentUser(),
+        getTutorialsSeen(),
+    ])
 
     const initialData = "data" in result && result.data ? result.data : []
 
-    const currentUser = await getCurrentUser()
     const userWorkHoursPerDay = currentUser?.workHoursPerDay || 8
 
     const aggregatedData = aggregateTimeEntriesByTaskAndDate(
@@ -58,6 +64,39 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
 
     return (
         <>
+            <PageTour
+                pageKey="/time-sheets"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("previous")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#time-sheets-table-header",
+                        title: tTimeSheetsToure("table.title"),
+                        description: tTimeSheetsToure("table.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: ".time-sheets-task-cell",
+                        title: tTimeSheetsToure("taskCell.title"),
+                        description: tTimeSheetsToure("taskCell.description"),
+                        side: "top",
+                    },
+                    {
+                        element: ".time-sheets-date-header",
+                        title: tTimeSheetsToure("dateCell.title"),
+                        description: tTimeSheetsToure("dateCell.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#time-sheets-balance",
+                        title: tTimeSheetsToure("balance.title"),
+                        description: tTimeSheetsToure("balance.description"),
+                        side: "bottom",
+                    },
+                ]}
+            />
             <TimeSheetsClient
                 initialData={initialData}
                 initialViewMode={viewMode}

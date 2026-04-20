@@ -1213,6 +1213,24 @@
                 "title": "Vnosi časa",
                 "description": "Prikaže vse posamezne vnose časa, zabeležene danes za izbrano nalogo."
             }
+        },
+        "timeSheets": {
+            "table": {
+                "title": "Urnik dela",
+                "description": "Ta stran prikazuje vse naloge, na katerih ste sledili čas, z dnevnimi vsotami za izbrani teden ali mesec."
+            },
+            "taskCell": {
+                "title": "Vnosi časa naloge",
+                "description": "Kliknite trajanje v vrstici naloge za ogled vnosov. Čas začetka in konca lahko popravite — trajanje se takoj posodobi. Koristno, če ste pozabili začeti sledenje ali morate popraviti čas."
+            },
+            "dateCell": {
+                "title": "Klikalnе vsote",
+                "description": "Kliknite katero koli število ur v stolpcu datuma, da vidite vse posamezne vnose časa za tisti dan."
+            },
+            "balance": {
+                "title": "Bilanca",
+                "description": "Bilanca primerja skupne zabeležene ure s pričakovanimi delovnimi urami za izbrano obdobje. Zelena pomeni več, oranžna manj."
+            }
         }
     }
 }

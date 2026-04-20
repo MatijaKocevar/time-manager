@@ -33,6 +33,9 @@ export function PageTour({
             prevBtnText: prevLabel,
             doneBtnText: doneLabel,
             allowClose: true,
+            overlayOpacity: 0.5,
+            stagePadding: 4,
+            stageRadius: 6,
             steps: steps.map((s) => ({
                 element: s.element,
                 popover: {

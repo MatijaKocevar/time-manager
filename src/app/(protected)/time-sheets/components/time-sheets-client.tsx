@@ -216,7 +216,7 @@ export function TimeSheetsClient({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <div className="text-sm hidden md:block">
+                        <div id="time-sheets-balance" className="text-sm hidden md:block">
                             <span className="font-semibold">
                                 {formatHoursMinutesLib(totalSeconds)}
                             </span>

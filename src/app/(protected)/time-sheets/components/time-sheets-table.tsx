@@ -135,7 +135,7 @@ export function TimeSheetsTable({
 
     return (
         <>
-            <div className="border rounded-lg overflow-auto h-full">
+            <div id="time-sheets-table" className="border rounded-lg overflow-auto h-full">
                 <Table>
                     <colgroup>
                         <col style={{ width: "180px", minWidth: "150px", maxWidth: "200px" }} />
@@ -144,7 +144,10 @@ export function TimeSheetsTable({
                         ))}
                         <col style={{ width: "100px", minWidth: "100px" }} />
                     </colgroup>
-                    <TableHeader className="sticky top-0 z-30 bg-background">
+                    <TableHeader
+                        id="time-sheets-table-header"
+                        className="sticky top-0 z-30 bg-background"
+                    >
                         <TableRow>
                             <TableHead className="sticky left-0 z-40 bg-background border-r font-semibold min-w-[150px] max-w-[200px] py-2">
                                 {translations.task}
@@ -160,7 +163,7 @@ export function TimeSheetsTable({
                                 return (
                                     <TableHead
                                         key={dateStr}
-                                        className={`text-center min-w-[100px] relative py-2 ${
+                                        className={`time-sheets-date-header text-center min-w-[100px] relative py-2 ${
                                             isWeekendDay ? "bg-muted/50" : ""
                                         } ${holiday ? "bg-orange-100 dark:bg-orange-950" : ""} ${isTodayDay ? "bg-blue-50 dark:bg-blue-950" : ""}`}
                                     >
@@ -364,7 +367,7 @@ export function TimeSheetsTable({
                                                         }`}
                                                     >
                                                         <span
-                                                            className={`${
+                                                            className={`time-sheets-task-cell ${
                                                                 displayDuration
                                                                     ? "cursor-pointer hover:underline"
                                                                     : ""
