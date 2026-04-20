@@ -74,7 +74,7 @@ export function RequestsTable({
 
     return (
         <>
-            <div className="flex items-center justify-between gap-4">
+            <div id="requests-controls" className="flex items-center justify-between gap-4">
                 <div className="relative flex-1 max-w-sm">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
@@ -85,13 +85,13 @@ export function RequestsTable({
                     />
                 </div>
                 {showNewButton && (
-                    <Button onClick={onNewRequestClick}>
+                    <Button id="requests-new-btn" onClick={onNewRequestClick}>
                         <Plus className="h-4 w-4 mr-2" />
                         {t("form.newRequest")}
                     </Button>
                 )}
             </div>
-            <div className="rounded-md border overflow-auto flex-1 min-h-0">
+            <div id="requests-table" className="rounded-md border overflow-auto flex-1 min-h-0">
                 <Table>
                     <TableHeader className="sticky top-0 z-10 bg-background">
                         <TableRow>

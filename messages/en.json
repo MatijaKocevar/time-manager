@@ -1321,6 +1321,20 @@
                 "title": "Hours Table",
                 "description": "Each row is an hour type (Work, Vacation, Sick Leave, etc.). Each column is a day. The top row shows your total hours per day across all types."
             }
+        },
+        "requests": {
+            "controls": {
+                "title": "Filter and Create",
+                "description": "Use the search box to filter your requests by type, date, or status. Click New Request to submit a new leave or work request."
+            },
+            "newRequest": {
+                "title": "New Request",
+                "description": "Opens the request form where you can choose the type (vacation, sick leave, work from home, etc.), select dates, and optionally add a reason."
+            },
+            "table": {
+                "title": "Your Requests",
+                "description": "All your submitted requests are listed here with their type, dates, hours, and current status. Double-click any row to view or edit a pending request."
+            }
         }
     }
 }

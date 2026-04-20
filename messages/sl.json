@@ -1321,6 +1321,20 @@
                 "title": "Tabela ur",
                 "description": "Vsaka vrstica je vrsta ure (Delo, Dopust, Bolniška itn.). Vsak stolpec je dan. Zgornja vrstica prikazuje skupne ure na dan za vse vrste."
             }
+        },
+        "requests": {
+            "controls": {
+                "title": "Iskanje in ustvarjanje",
+                "description": "Uporabite iskalno polje za filtriranje zahtev po vrsti, datumu ali statusu. Kliknite Nov zahtevek za oddajo nove vloge za odsotnost ali delo."
+            },
+            "newRequest": {
+                "title": "Nov zahtevek",
+                "description": "Odpre obrazec za zahtevek, kjer izberete vrsto (dopust, bolniška, delo od doma itn.), določite datume in po želji dodate razlog."
+            },
+            "table": {
+                "title": "Vaši zahtevki",
+                "description": "Tu so navedeni vsi oddani zahtevki z vrsto, datumi, urami in trenutnim statusom. Dvokliknite vrstico za ogled ali urejanje čakajočega zahtevka."
+            }
         }
     }
 }
