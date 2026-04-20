@@ -21,6 +21,12 @@ import { resetTutorialSeen } from "@/features/tutorial"
 
 const TUTORIAL_PAGES = new Set(["/tracker", "/time-sheets"])
 
+function getTutorialPageKey(pathname: string): string | null {
+    if (pathname === "/tasks") return "/tasks"
+    if (pathname.startsWith("/tasks/")) return "/tasks/list"
+    return TUTORIAL_PAGES.has(pathname) ? pathname : null
+}
+
 interface SettingsMenuProps {
     translations: {
         settings: string
@@ -39,7 +45,7 @@ export function SettingsMenu({ translations }: SettingsMenuProps) {
     const theme = useThemeStore((state) => state.theme)
     const setTheme = useThemeStore((state) => state.setTheme)
 
-    const tutorialPageKey = TUTORIAL_PAGES.has(pathname) ? pathname : null
+    const tutorialPageKey = getTutorialPageKey(pathname)
 
     const handleLocaleChange = async (newLocale: Locale) => {
         const response = await fetch("/api/set-locale", {

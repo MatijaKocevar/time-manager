@@ -1231,6 +1231,42 @@
                 "title": "Bilanca",
                 "description": "Bilanca primerja skupne zabeležene ure s pričakovanimi delovnimi urami za izbrano obdobje. Zelena pomeni več, oranžna manj."
             }
+        },
+        "tasks": {
+            "newTask": {
+                "title": "Ustvari nalogo",
+                "description": "Kliknite za dodajanje nove naloge. Dodelite jo seznamu, nastavite status in takoj začnite slediti času."
+            },
+            "groups": {
+                "title": "Skupine nalog",
+                "description": "Naloge so razvrščene po seznamih. Tukaj se prikazujejo samo naloge v teku — odprite seznam za ogled vseh statusov."
+            },
+            "timer": {
+                "title": "Sledenje časa",
+                "description": "Pritisnite gumb za predvajanje, da začnete slediti času naloge. Pritisnite stop, ko končate. Hkrati lahko teče samo ena naloga."
+            },
+            "timeEntries": {
+                "title": "Vnosi časa",
+                "description": "Kliknite trajanje za ogled in urejanje posameznih vnosov. Koristno za popravek časa začetka ali konca po dejstvu."
+            }
+        },
+        "tasksList": {
+            "newTask": {
+                "title": "Ustvari nalogo",
+                "description": "Dodajte novo nalogo v ta seznam. Nastavite status, sledite času in ugnezdite podnaloge."
+            },
+            "statusSections": {
+                "title": "Razdelki po statusu",
+                "description": "Naloge so razvrščene po statusu. Kliknite glavo razdelka za razširitev ali skrčitev."
+            },
+            "timer": {
+                "title": "Sledenje časa",
+                "description": "Pritisnite gumb za predvajanje, da začnete slediti času naloge. Pritisnite stop, ko končate. Hkrati lahko teče samo ena naloga."
+            },
+            "actions": {
+                "title": "Dejanja naloge",
+                "description": "Uporabite gumb plus za dodajanje podnaloge ali gumb koš za brisanje naloge."
+            }
         }
     }
 }

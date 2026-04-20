@@ -195,7 +195,7 @@ export function TaskRow({ task, lists }: TaskRowProps) {
                 <TableCell>
                     <TaskTimeTracker task={task} />
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="tasks-row-actions text-right">
                     <div className="flex gap-1 justify-end">
                         <Button
                             variant="ghost"

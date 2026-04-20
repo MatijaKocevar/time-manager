@@ -1231,6 +1231,42 @@
                 "title": "Balance",
                 "description": "Your balance compares total logged hours against expected working hours for the selected period. Green means ahead, orange means behind."
             }
+        },
+        "tasks": {
+            "newTask": {
+                "title": "Create a Task",
+                "description": "Click to add a new task. You can assign it to a list, set a status, and start tracking time right away."
+            },
+            "groups": {
+                "title": "Task Groups",
+                "description": "Tasks are grouped by list. Only in-progress tasks appear here — switch to a list to see all statuses."
+            },
+            "timer": {
+                "title": "Time Tracking",
+                "description": "Press the play button to start tracking time on a task. Press stop when done. Only one task can run at a time."
+            },
+            "timeEntries": {
+                "title": "Time Entries",
+                "description": "Click the duration to view and edit individual entries. Useful for correcting start or end times after the fact."
+            }
+        },
+        "tasksList": {
+            "newTask": {
+                "title": "Create a Task",
+                "description": "Add a new task to this list. You can set its status, track time, and nest subtasks under it."
+            },
+            "statusSections": {
+                "title": "Status Sections",
+                "description": "Tasks are grouped by status. Click a section header to expand or collapse it."
+            },
+            "timer": {
+                "title": "Time Tracking",
+                "description": "Press the play button to start tracking time on a task. Press stop when done. Only one task can run at a time."
+            },
+            "actions": {
+                "title": "Task Actions",
+                "description": "Use the plus button to add a subtask, or the trash button to delete the task."
+            }
         }
     }
 }

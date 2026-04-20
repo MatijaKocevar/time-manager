@@ -51,8 +51,8 @@ export function PageTour({
         })
 
         driverObj.drive()
-    // seenPages changing means the server re-fetched — re-run to start the tour
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // seenPages changing means the server re-fetched — re-run to start the tour
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [seenPages])
 
     return null
