@@ -1185,5 +1185,12 @@
         "title": "Time Manager",
         "description": "Manage your time, tasks, and hours efficiently",
         "company": "Acme Corporation"
+    },
+    "tutorial": {
+        "next": "Next",
+        "previous": "Previous",
+        "done": "Got it",
+        "skip": "Skip tour",
+        "progress": "{{current}} of {{total}}"
     }
 }

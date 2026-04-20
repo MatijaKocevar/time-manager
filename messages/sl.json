@@ -1185,5 +1185,12 @@
         "title": "Upravljavec časa",
         "description": "Učinkovito upravljajte svoj čas, naloge in ure",
         "company": "Acme Corporation"
+    },
+    "tutorial": {
+        "next": "Naprej",
+        "previous": "Nazaj",
+        "done": "Razumem",
+        "skip": "Preskoči vodič",
+        "progress": "{{current}} od {{total}}"
     }
 }
