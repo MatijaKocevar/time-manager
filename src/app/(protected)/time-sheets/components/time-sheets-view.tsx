@@ -72,7 +72,7 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
                 doneLabel={tTutorial("done")}
                 steps={[
                     {
-                        element: "#time-sheets-table-header",
+                        element: "#time-sheets-table",
                         title: tTimeSheetsToure("table.title"),
                         description: tTimeSheetsToure("table.description"),
                         side: "bottom",
