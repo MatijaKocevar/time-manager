@@ -74,7 +74,7 @@ export function HoursTable({
         })
 
         return (
-            <div className="rounded-md border overflow-x-auto">
+            <div id="hours-table" className="rounded-md border overflow-x-auto">
                 <Table>
                     <colgroup>
                         <col style={{ width: "200px", minWidth: "150px", maxWidth: "200px" }} />

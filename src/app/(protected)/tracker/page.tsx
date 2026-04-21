@@ -12,6 +12,7 @@ import { TrackerDisplay } from "./components/tracker-display"
 import { TimeEntriesDialog } from "@/app/(protected)/tasks/components/time-entries-dialog"
 import { DayEntriesDialog } from "@/app/(protected)/time-sheets/components/day-entries-dialog"
 import { getTranslations } from "next-intl/server"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function TrackerPage() {
     const t = await getTranslations("tasks.tracker")
@@ -19,15 +20,24 @@ export default async function TrackerPage() {
     const tDialog = await getTranslations("timeSheets.dayEntriesDialog")
     const tClock = await getTranslations("clock")
     const tCommon = await getTranslations("common")
+    const tTutorial = await getTranslations("tutorial")
+    const tTrackerTour = await getTranslations("tutorial.tracker")
 
-    const [inProgressTasks, activeTimer, generalWorkTask, trackerPreferences, dailySummary] =
-        await Promise.all([
-            getTasks({ status: TASK_STATUS.IN_PROGRESS }),
-            getActiveTimer(),
-            getGeneralWorkTask(),
-            getTrackerPreferences(),
-            getTodayTimeSummary(),
-        ])
+    const [
+        inProgressTasks,
+        activeTimer,
+        generalWorkTask,
+        trackerPreferences,
+        dailySummary,
+        tutorialsSeen,
+    ] = await Promise.all([
+        getTasks({ status: TASK_STATUS.IN_PROGRESS }),
+        getActiveTimer(),
+        getGeneralWorkTask(),
+        getTrackerPreferences(),
+        getTodayTimeSummary(),
+        getTutorialsSeen(),
+    ])
 
     let finalSelectedTaskId = trackerPreferences.selectedTaskId
 
@@ -64,6 +74,45 @@ export default async function TrackerPage() {
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
+            <PageTour
+                pageKey="/tracker"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("previous")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#tracker-hour-type",
+                        title: tTrackerTour("hourType.title"),
+                        description: tTrackerTour("hourType.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#tracker-task-select",
+                        title: tTrackerTour("taskSelect.title"),
+                        description: tTrackerTour("taskSelect.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#tracker-time-entries",
+                        title: tTrackerTour("timeEntries.title"),
+                        description: tTrackerTour("timeEntries.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#tracker-timer-button",
+                        title: tTrackerTour("timerButton.title"),
+                        description: tTrackerTour("timerButton.description"),
+                        side: "top",
+                    },
+                    {
+                        element: "#tracker-daily-summary",
+                        title: tTrackerTour("dailySummary.title"),
+                        description: tTrackerTour("dailySummary.description"),
+                        side: "left",
+                    },
+                ]}
+            />
             <div className="flex-1 overflow-auto">
                 <TrackerDisplay
                     inProgressTasks={inProgressTasks}

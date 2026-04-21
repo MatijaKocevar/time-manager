@@ -230,7 +230,7 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
     return (
         <div className="flex flex-col gap-4 h-full">
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+                <div id="holidays-year-nav" className="flex items-center gap-2">
                     <Button
                         variant="outline"
                         size="icon"
@@ -251,6 +251,7 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
                 </div>
                 <div className="flex gap-2">
                     <Button
+                        id="holidays-import-btn"
                         variant="secondary"
                         onClick={() => generateMutation.mutate()}
                         disabled={generateMutation.isPending}
@@ -262,7 +263,7 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
                     </Button>
                     <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
                         <DialogTrigger asChild>
-                            <Button>
+                            <Button id="holidays-add-btn">
                                 <Plus className="h-4 w-4 mr-2" />
                                 {translations.form.addHoliday}
                             </Button>
@@ -357,7 +358,7 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
                     </Dialog>
                 </div>
             </div>
-            <div className="rounded-md border overflow-auto flex-1 min-h-0">
+            <div id="holidays-table" className="rounded-md border overflow-auto flex-1 min-h-0">
                 <Table>
                     <TableHeader className="sticky top-0 z-10 bg-background">
                         <TableRow>

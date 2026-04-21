@@ -143,7 +143,7 @@ export function RequestHistoryTable({
     return (
         <>
             <div className="flex flex-col gap-4 h-full min-w-0">
-                <div className="rounded-md border flex-1 min-h-0">
+                <div id="history-table" className="rounded-md border flex-1 min-h-0">
                     <Table>
                         <TableHeader className="sticky top-0 z-30 bg-background">
                             {table.getHeaderGroups().map((headerGroup) => (

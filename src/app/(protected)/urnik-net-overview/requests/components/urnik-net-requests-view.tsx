@@ -91,7 +91,7 @@ export function UrnikNetRequestsView({
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            <div className="flex items-center justify-between gap-2">
+            <div id="urnik-requests-nav" className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1 sm:gap-2">
                     <Button
                         variant="outline"
@@ -155,7 +155,7 @@ export function UrnikNetRequestsView({
 
             {allRows.length > 0 && (
                 <div className="flex-1 overflow-hidden relative">
-                    <div className="rounded-md border overflow-auto h-full">
+                    <div id="urnik-requests-table" className="rounded-md border overflow-auto h-full">
                         <Table>
                             <RequestsTableHeader {...t.table} />
                             <TableBody>

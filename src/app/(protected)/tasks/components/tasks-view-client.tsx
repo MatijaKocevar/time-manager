@@ -82,7 +82,7 @@ export function TasksViewClient({ listId }: TasksViewClientProps) {
     return (
         <>
             <div className="flex items-center justify-end w-full">
-                <Button onClick={() => openCreateDialog()}>
+                <Button id="tasks-list-new-task" onClick={() => openCreateDialog()}>
                     <Plus className="h-4 w-4 mr-2" />
                     {t("newTask")}
                 </Button>

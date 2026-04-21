@@ -42,7 +42,7 @@ export function ShiftsTable({
     locationsShortTranslations,
 }: ShiftsTableProps) {
     return (
-        <div className="rounded-md border overflow-auto flex-1 min-h-0">
+        <div id="shifts-table" className="rounded-md border overflow-auto flex-1 min-h-0">
             <Table>
                 <TableHeader className="sticky top-0 z-30 bg-background">
                     <TableRow>
@@ -112,7 +112,7 @@ export function ShiftsTable({
                                 return (
                                     <TableCell
                                         key={date.toISOString()}
-                                        className={`text-center p-2 cursor-pointer ${
+                                        className={`shifts-cell text-center p-2 cursor-pointer ${
                                             isWeekend ? "bg-muted/50" : ""
                                         } ${holiday ? "bg-orange-100 dark:bg-orange-950" : ""} ${isToday(date) ? "bg-primary/5" : ""}`}
                                         onClick={() => onCellClick(date, user, shifts)}

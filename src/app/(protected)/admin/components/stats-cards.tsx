@@ -19,7 +19,7 @@ interface StatsCardsProps {
 
 export function StatsCards({ stats, translations }: StatsCardsProps) {
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div id="admin-stats" className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {STAT_CONFIGS.map(({ key, icon: Icon, color, href }) => (
                 <Link key={key} href={href}>
                     <Card className="hover:bg-accent transition-colors cursor-pointer">

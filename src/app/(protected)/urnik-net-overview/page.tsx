@@ -5,15 +5,20 @@ import { ClockView } from "./components/clock-view"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { getArrivalLeaveStatus, getTodayWorkFromHomeStatus } from "@/lib/clock-status"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function ClockPage() {
     await requireAuth().catch(() => redirect("/login"))
 
-    const t = await getTranslations("clock")
-    const tCommon = await getTranslations("common")
-
-    const status = await getArrivalLeaveStatus()
-    const wfhStatus = await getTodayWorkFromHomeStatus()
+    const [t, tCommon, tTutorial, tPage, tutorialsSeen, status, wfhStatus] = await Promise.all([
+        getTranslations("clock"),
+        getTranslations("common"),
+        getTranslations("tutorial"),
+        getTranslations("tutorial.urnikNetClock"),
+        getTutorialsSeen(),
+        getArrivalLeaveStatus(),
+        getTodayWorkFromHomeStatus(),
+    ])
 
     const translations = {
         title: t("view.title"),
@@ -50,27 +55,64 @@ export default async function ClockPage() {
     }
 
     return (
-        <div className="space-y-6">
-            {!status.success && (
-                <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>{t("messages.errorLoadingDayInfo")}</AlertTitle>
-                    <AlertDescription>{status.error}</AlertDescription>
-                </Alert>
-            )}
-            {status.success && status.structureValid === false && (
-                <Alert variant="default">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>{t("messages.structureChangedWarning")}</AlertTitle>
-                    <AlertDescription>{t("messages.structureChangedDescription")}</AlertDescription>
-                </Alert>
-            )}
-            <ClockView
-                translations={translations}
-                status={status}
-                hasApprovedWFH={wfhStatus.hasApprovedWFH}
-                wfhLocation={wfhStatus.location}
+        <>
+            <PageTour
+                pageKey="/urnik-net-overview"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("previous")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#urnik-clock-card",
+                        title: tPage("clockCard.title"),
+                        description: tPage("clockCard.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#urnik-work-time",
+                        title: tPage("workTime.title"),
+                        description: tPage("workTime.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#urnik-balance",
+                        title: tPage("balance.title"),
+                        description: tPage("balance.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#urnik-vacation",
+                        title: tPage("vacation.title"),
+                        description: tPage("vacation.description"),
+                        side: "bottom",
+                    },
+                ]}
             />
-        </div>
+            <div className="space-y-6">
+                {!status.success && (
+                    <Alert variant="destructive">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>{t("messages.errorLoadingDayInfo")}</AlertTitle>
+                        <AlertDescription>{status.error}</AlertDescription>
+                    </Alert>
+                )}
+                {status.success && status.structureValid === false && (
+                    <Alert variant="default">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>{t("messages.structureChangedWarning")}</AlertTitle>
+                        <AlertDescription>
+                            {t("messages.structureChangedDescription")}
+                        </AlertDescription>
+                    </Alert>
+                )}
+                <ClockView
+                    translations={translations}
+                    status={status}
+                    hasApprovedWFH={wfhStatus.hasApprovedWFH}
+                    wfhLocation={wfhStatus.location}
+                />
+            </div>
+        </>
     )
 }

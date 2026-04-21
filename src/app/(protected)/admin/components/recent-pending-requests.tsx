@@ -14,6 +14,7 @@ interface RecentPendingRequestsProps {
         title: string
         description: string
         viewAll: (params: { count: number }) => string
+        noPending: string
         user: string
         type: string
         period: string
@@ -27,13 +28,23 @@ export function RecentPendingRequests({
     translations,
 }: RecentPendingRequestsProps) {
     if (requests.length === 0) {
-        return null
+        return (
+            <Card id="admin-recent-requests">
+                <CardHeader>
+                    <CardTitle>{translations.title}</CardTitle>
+                    <CardDescription>{translations.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">{translations.noPending}</p>
+                </CardContent>
+            </Card>
+        )
     }
 
     const displayedRequests = requests.slice(0, 5)
 
     return (
-        <Card>
+        <Card id="admin-recent-requests">
             <CardHeader>
                 <CardTitle>{translations.title}</CardTitle>
                 <CardDescription>{translations.description}</CardDescription>

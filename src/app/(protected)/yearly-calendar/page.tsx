@@ -7,10 +7,16 @@ import { calculateExpectedHoursToDate } from "@/lib/balance-helpers"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function YearlyCalendarPage() {
-    const t = await getTranslations("yearlyCalendar")
-    const tTimeSheets = await getTranslations("timeSheets.dayEntriesDialog")
+    const [t, tTimeSheets, tutorialsSeen, tTutorial, tYearlyCal] = await Promise.all([
+        getTranslations("yearlyCalendar"),
+        getTranslations("timeSheets.dayEntriesDialog"),
+        getTutorialsSeen(),
+        getTranslations("tutorial"),
+        getTranslations("tutorial.yearlyCalendar"),
+    ])
 
     const session = await getServerSession(authConfig)
     if (!session?.user?.id) {
@@ -74,6 +80,39 @@ export default async function YearlyCalendarPage() {
 
     return (
         <div className="flex flex-col gap-4 h-full">
+            <PageTour
+                pageKey="/yearly-calendar"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("previous")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#yearly-nav-controls",
+                        title: tYearlyCal("navigation.title"),
+                        description: tYearlyCal("navigation.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#yearly-balance",
+                        title: tYearlyCal("balance.title"),
+                        description: tYearlyCal("balance.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#yearly-table",
+                        title: tYearlyCal("calendar.title"),
+                        description: tYearlyCal("calendar.description"),
+                        side: "top",
+                    },
+                    {
+                        element: ".yearly-cell",
+                        title: tYearlyCal("cell.title"),
+                        description: tYearlyCal("cell.description"),
+                        side: "top",
+                    },
+                ]}
+            />
             <YearlyCalendarClient
                 initialYear={currentYear}
                 initialData={initialData}

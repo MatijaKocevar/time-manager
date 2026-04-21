@@ -14,7 +14,7 @@ export function OverviewNewTaskButton({ listId }: OverviewNewTaskButtonProps) {
     const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
 
     return (
-        <Button onClick={() => openCreateDialog(undefined, listId)}>
+        <Button id="tasks-overview-new-task" onClick={() => openCreateDialog(undefined, listId)}>
             <Plus className="h-4 w-4 mr-2" />
             {t("newTask")}
         </Button>

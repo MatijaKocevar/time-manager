@@ -136,7 +136,11 @@ export function TrackerDisplay({
                                 onValueChange={handleTypeChange}
                                 disabled={isLoading}
                             >
-                                <SelectTrigger className="w-full" suppressHydrationWarning>
+                                <SelectTrigger
+                                    id="tracker-hour-type"
+                                    className="w-full"
+                                    suppressHydrationWarning
+                                >
                                     <SelectValue>{getTypeLabel(selectedType)}</SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
@@ -157,7 +161,11 @@ export function TrackerDisplay({
                                     onValueChange={handleTaskChange}
                                     disabled={selectedType !== "WORK" || isLoading}
                                 >
-                                    <SelectTrigger className="w-full" suppressHydrationWarning>
+                                    <SelectTrigger
+                                        id="tracker-task-select"
+                                        className="w-full"
+                                        suppressHydrationWarning
+                                    >
                                         <SelectValue>{getSelectedTaskLabel()}</SelectValue>
                                     </SelectTrigger>
                                     <SelectContent className="max-h-[300px]">
@@ -201,6 +209,7 @@ export function TrackerDisplay({
                                     -
                                 </label>
                                 <Button
+                                    id="tracker-time-entries"
                                     variant="outline"
                                     onClick={handleViewEntries}
                                     disabled={taskEntries.length === 0}
@@ -239,6 +248,7 @@ export function TrackerDisplay({
                             </div>
 
                             <Button
+                                id="tracker-timer-button"
                                 size="lg"
                                 onClick={handlePlayStop}
                                 disabled={isLoading || (!isTrackingCurrentSelection && !canStart)}
@@ -256,7 +266,7 @@ export function TrackerDisplay({
                             </Button>
                         </div>
 
-                        <div className="xl:col-span-2">
+                        <div id="tracker-daily-summary" className="xl:col-span-2">
                             <DailySummaryCard
                                 initialData={initialDailySummary}
                                 translations={{

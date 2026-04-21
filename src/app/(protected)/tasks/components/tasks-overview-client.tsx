@@ -87,7 +87,7 @@ export function TasksOverviewClient({ groups, lists: initialLists }: TasksOvervi
         <div className="space-y-8">
             {groups.map((group) => {
                 return (
-                    <div key={group.listId ?? "no-list"} className="space-y-3">
+                    <div key={group.listId ?? "no-list"} className="tasks-overview-group space-y-3">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 {group.listColor && (

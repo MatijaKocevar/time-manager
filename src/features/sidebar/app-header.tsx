@@ -30,6 +30,7 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
         settings: t("menu.settings"),
         language: t("menu.language"),
         theme: t("menu.theme"),
+        restartTutorial: t("menu.restartTutorial"),
         profile: tNav("profile"),
         logout: tCommon("logOut"),
     }

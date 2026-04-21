@@ -50,7 +50,7 @@ export function TasksTable({ tasks, listId, lists }: TasksTableProps) {
                     <div key={group.status} className="rounded-md border overflow-x-auto">
                         <button
                             onClick={() => toggleStatusSection(listId, group.status)}
-                            className="w-full bg-muted/50 px-4 py-3 border-b hover:bg-muted transition-colors"
+                            className="tasks-status-section w-full bg-muted/50 px-4 py-3 border-b hover:bg-muted transition-colors"
                         >
                             <div className="flex items-center gap-2">
                                 {isExpanded ? (

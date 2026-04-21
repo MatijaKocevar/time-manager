@@ -22,7 +22,7 @@ export function UpcomingHolidays({ holidays, locale, translations }: UpcomingHol
     const displayedHolidays = holidays.slice(0, 5)
 
     return (
-        <Card>
+        <Card id="admin-upcoming-holidays">
             <CardHeader>
                 <CardTitle>{translations.title}</CardTitle>
                 <CardDescription>{translations.description}</CardDescription>

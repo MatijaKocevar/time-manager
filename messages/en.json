@@ -121,7 +121,8 @@
         "menu": {
             "settings": "Settings",
             "language": "Language",
-            "theme": "Theme"
+            "theme": "Theme",
+            "restartTutorial": "Restart tutorial"
         },
         "notifications": {
             "title": "Notifications",
@@ -486,6 +487,7 @@
             "viewRequestHistory": "View Request History",
             "recentPendingRequests": "Recent Pending Requests",
             "recentPendingRequestsDesc": "Latest requests awaiting your approval",
+            "noPendingRequests": "No pending requests",
             "upcomingHolidaysSection": "Upcoming Holidays",
             "upcomingHolidaysSectionDesc": "Next scheduled holidays",
             "viewAllPending": "View all {count} pending requests",
@@ -1185,5 +1187,295 @@
         "title": "Time Manager",
         "description": "Manage your time, tasks, and hours efficiently",
         "company": "Acme Corporation"
+    },
+    "tutorial": {
+        "next": "Next",
+        "previous": "Previous",
+        "done": "Got it",
+        "skip": "Skip tour",
+        "tracker": {
+            "hourType": {
+                "title": "Hour Type",
+                "description": "Select the type of time you are tracking — work, break, or private."
+            },
+            "taskSelect": {
+                "title": "Task",
+                "description": "Optionally link your tracked time to a specific in-progress task."
+            },
+            "timerButton": {
+                "title": "Start / Stop Timer",
+                "description": "Press to start tracking time. Press again to stop and save the entry."
+            },
+            "dailySummary": {
+                "title": "Daily Summary",
+                "description": "A live breakdown of your tracked, manual, and total hours for today."
+            },
+            "timeEntries": {
+                "title": "Time Entries",
+                "description": "View all individual time entries logged today for the selected task."
+            }
+        },
+        "timeSheets": {
+            "table": {
+                "title": "Time Sheets",
+                "description": "This page shows all tasks you tracked time on, with daily totals organized by the selected week or month."
+            },
+            "taskCell": {
+                "title": "Task Time Entries",
+                "description": "Click any duration on a task row to view its entries. You can adjust start and end times — the duration updates instantly. Useful if you forgot to start tracking, or need to correct a time."
+            },
+            "dateCell": {
+                "title": "Clickable Totals",
+                "description": "Click any hours number in a date column to see all individual time entries recorded that day."
+            },
+            "balance": {
+                "title": "Balance",
+                "description": "Your balance compares total logged hours against expected working hours for the selected period. Green means ahead, orange means behind."
+            }
+        },
+        "tasks": {
+            "newTask": {
+                "title": "Create a Task",
+                "description": "Click to add a new task. You can assign it to a list, set a status, and start tracking time right away."
+            },
+            "groups": {
+                "title": "Task Groups",
+                "description": "Tasks are grouped by list. Only in-progress tasks appear here — switch to a list to see all statuses."
+            },
+            "timer": {
+                "title": "Time Tracking",
+                "description": "Press the play button to start tracking time on a task. Press stop when done. Only one task can run at a time."
+            },
+            "timeEntries": {
+                "title": "Time Entries",
+                "description": "Click the duration to view and edit individual entries. Useful for correcting start or end times after the fact."
+            }
+        },
+        "tasksList": {
+            "newTask": {
+                "title": "Create a Task",
+                "description": "Add a new task to this list. You can set its status, track time, and nest subtasks under it."
+            },
+            "statusSections": {
+                "title": "Status Sections",
+                "description": "Tasks are grouped by status. Click a section header to expand or collapse it."
+            },
+            "timer": {
+                "title": "Time Tracking",
+                "description": "Press the play button to start tracking time on a task. Press stop when done. Only one task can run at a time."
+            },
+            "actions": {
+                "title": "Task Actions",
+                "description": "Use the plus button to add a subtask, or the trash button to delete the task."
+            }
+        },
+        "shifts": {
+            "navigation": {
+                "title": "Navigate Periods",
+                "description": "Use the arrows to move forward or backward by week or month. Click Today to jump back to the current period."
+            },
+            "viewToggle": {
+                "title": "Week and Month View",
+                "description": "Switch between a 7-day week view and a full month view. The calendar updates instantly."
+            },
+            "calendar": {
+                "title": "Shifts Calendar",
+                "description": "Each row is a team member. Each column is a day. Colored badges show where they are working — office, home, vacation, or sick leave."
+            },
+            "cell": {
+                "title": "Clickable Cells",
+                "description": "Click any cell to see shift details, or click an empty workday cell to submit a request such as vacation or working from home."
+            }
+        },
+        "yearlyCalendar": {
+            "navigation": {
+                "title": "Navigate Years",
+                "description": "Use the arrows to step through years, or pick a specific year from the dropdown."
+            },
+            "balance": {
+                "title": "Yearly Balance",
+                "description": "Your total hours balance for the selected year. Green means you are ahead of your expected hours, orange means behind."
+            },
+            "calendar": {
+                "title": "Year at a Glance",
+                "description": "Each row is a month, each column a day. Colored badges show your logged hours by type. Weekends are dimmed and holidays are highlighted in orange."
+            },
+            "cell": {
+                "title": "Click a Day",
+                "description": "Click any day cell that has logged hours to see the detailed time entries recorded for that day."
+            }
+        },
+        "hours": {
+            "summary": {
+                "title": "Hours Summary",
+                "description": "A quick overview of your total logged hours, balance vs expected, and a breakdown by hour type for both the current week and month."
+            },
+            "navigation": {
+                "title": "Navigate Periods",
+                "description": "Step through weeks or months with the arrows, and switch between week and month view with the buttons on the right."
+            },
+            "addEntry": {
+                "title": "Add Hours",
+                "description": "Manually log hours for a date range. Choose an hour type, pick dates, and enter the number of hours."
+            },
+            "table": {
+                "title": "Hours Table",
+                "description": "Each row is an hour type (Work, Vacation, Sick Leave, etc.). Each column is a day. The top row shows your total hours per day across all types."
+            }
+        },
+        "requests": {
+            "controls": {
+                "title": "Filter and Create",
+                "description": "Use the search box to filter your requests by type, date, or status. Click New Request to submit a new leave or work request."
+            },
+            "newRequest": {
+                "title": "New Request",
+                "description": "Opens the request form where you can choose the type (vacation, sick leave, work from home, etc.), select dates, and optionally add a reason."
+            },
+            "table": {
+                "title": "Your Requests",
+                "description": "All your submitted requests are listed here with their type, dates, hours, and current status. Double-click any row to view or edit a pending request."
+            }
+        },
+        "urnikNetClock": {
+            "clockCard": {
+                "title": "Clock In / Clock Out",
+                "description": "Log your arrival and departure to urnik.net directly from here. The badges show whether you have already clocked in or out today."
+            },
+            "workTime": {
+                "title": "Today's Work Time",
+                "description": "Live figures pulled from urnik.net: total hours worked today, overtime, lunch break, and when your shift ends."
+            },
+            "balance": {
+                "title": "Hour Balance",
+                "description": "Your current day balance, cumulative balance so far this month, and total annual balance as of yesterday."
+            },
+            "vacation": {
+                "title": "Vacation & Leave",
+                "description": "Remaining vacation days from last year, this year's leave entitlement, and your configured daily work time."
+            }
+        },
+        "urnikNetRequests": {
+            "nav": {
+                "title": "Navigate and Create",
+                "description": "Step through months with the arrows to review past or future requests. Use Create Request to submit a new request directly to urnik.net. The badge shows your connection status."
+            },
+            "table": {
+                "title": "Requests Table",
+                "description": "Shows both pending requests (calculated from your approved leave) and requests already submitted to urnik.net, with their status and confirmation details."
+            }
+        },
+        "urnikNetHours": {
+            "nav": {
+                "title": "Navigate Months",
+                "description": "Step through months with the arrows. Your vacation balance and hour balance are shown on the right for a quick overview."
+            },
+            "details": {
+                "title": "Monthly Summary",
+                "description": "Opens a detailed breakdown: billing hours, planned hours, balance, vacation balance, sick leave, work from home days, and more."
+            },
+            "table": {
+                "title": "Daily Hours Table",
+                "description": "Each row is one working day. Columns show clock-in, clock-out, attendance hours, accounted hours, and running day, month, and year balances."
+            }
+        },
+        "adminOverview": {
+            "stats": {
+                "title": "Overview Statistics",
+                "description": "At a glance: total users, pending requests, upcoming holidays, and active task lists."
+            },
+            "statusBreakdown": {
+                "title": "Request Status Breakdown",
+                "description": "Counts of all requests by status: pending, approved, rejected, and cancelled."
+            },
+            "quickActions": {
+                "title": "Quick Actions",
+                "description": "Shortcuts to the most common admin tasks — manage users, review pending requests, manage holidays, and view request history."
+            },
+            "recentRequests": {
+                "title": "Recent Pending Requests",
+                "description": "The five most recent requests that are still waiting for your approval."
+            },
+            "upcomingHolidays": {
+                "title": "Upcoming Holidays",
+                "description": "The next scheduled holidays. Click View All to manage the full holiday list."
+            }
+        },
+        "adminUsers": {
+            "toolbar": {
+                "title": "Search and Create Users",
+                "description": "Filter users by name, toggle showing deactivated accounts, or open the menu to create a new user or export the list."
+            },
+            "table": {
+                "title": "User List",
+                "description": "All users with their role and status. Double-click a row to open the user's detail page."
+            }
+        },
+        "adminUserDetail": {
+            "editForm": {
+                "title": "Edit User Profile",
+                "description": "Update the user's name, email, role, work hours, and account status. Changes take effect immediately."
+            },
+            "hours": {
+                "title": "User Hours & Tracking",
+                "description": "View and edit the user's manual and tracked hours for the current month, including a daily attendance breakdown."
+            },
+            "requests": {
+                "title": "User Request History",
+                "description": "All leave and work requests submitted by this user, with their current status."
+            }
+        },
+        "adminHolidays": {
+            "yearNav": {
+                "title": "Year Navigation",
+                "description": "Switch between years to view, add, or remove holidays for any year."
+            },
+            "importBtn": {
+                "title": "Import Public Holidays",
+                "description": "Automatically populate Slovenian public holidays for the current and next year with a single click."
+            },
+            "addBtn": {
+                "title": "Add Holiday",
+                "description": "Manually create a new holiday entry with a date, name, description, and optional annual recurrence."
+            },
+            "table": {
+                "title": "Holiday List",
+                "description": "All holidays for the selected year. Click the edit or delete icons to modify entries."
+            }
+        },
+        "adminPendingRequests": {
+            "table": {
+                "title": "Pending Requests",
+                "description": "All requests awaiting your decision. Use the column header filters to narrow down by user, type, or date. Click Approve or Reject on any row to process it."
+            }
+        },
+        "adminRequestHistory": {
+            "table": {
+                "title": "Request History",
+                "description": "All processed requests — approved, rejected, and cancelled. Use the column filters to search. Approved requests can still be cancelled if needed."
+            }
+        },
+        "adminDev": {
+            "testEmail": {
+                "title": "Test Email Notifications",
+                "description": "Send a test email to any address to verify that the email notification pipeline is working correctly."
+            },
+            "testPush": {
+                "title": "Test Push Notification",
+                "description": "Send a test push notification to a specific user by their ID to verify their subscription is active."
+            },
+            "testAdminPush": {
+                "title": "Test Admin Push",
+                "description": "Broadcast a test push notification to all admin users at once."
+            },
+            "simulateFlow": {
+                "title": "Simulate User Flow",
+                "description": "Run a full request-approval flow for a user by email — useful for end-to-end testing of the notification pipeline."
+            },
+            "subscriptions": {
+                "title": "View Subscriptions",
+                "description": "List all active push notification subscriptions registered by admin users, with their device details."
+            }
+        }
     }
 }
