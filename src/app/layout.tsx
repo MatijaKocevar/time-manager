@@ -15,6 +15,7 @@ import { NextIntlClientProvider } from "next-intl"
 import { ThemeProvider } from "@/features/theme/providers/theme-provider"
 import { NavigationProgress } from "@/features/navigation/components/navigation-progress"
 import { BreadcrumbProvider } from "@/features/breadcrumbs"
+import { CookieBanner } from "@/features/cookie-consent"
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -78,6 +79,13 @@ export default async function RootLayout({
     const themeColor = userTheme === "dark" ? "#000000" : "#ffffff"
 
     const t = await getTranslations("navigation")
+    const tCookie = await getTranslations("cookieConsent")
+    let cookieConsent: boolean | null = null
+    if (session) {
+        const { getCookieConsent } =
+            await import("@/features/cookie-consent/actions/cookie-consent-actions")
+        cookieConsent = await getCookieConsent()
+    }
     const breadcrumbTranslations = {
         "/tracker": t("timeTracker"),
         "/tasks": t("tasks"),
@@ -172,6 +180,14 @@ export default async function RootLayout({
                             </SessionWrapper>
                         </QueryProvider>
                         <Toaster />
+                        {session && (
+                            <CookieBanner
+                                initialConsent={cookieConsent}
+                                title={tCookie("title")}
+                                description={tCookie("description")}
+                                acknowledgeLabel={tCookie("acknowledge")}
+                            />
+                        )}
                     </ThemeProvider>
                 </NextIntlClientProvider>
             </body>

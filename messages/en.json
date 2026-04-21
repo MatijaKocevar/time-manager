@@ -1477,5 +1477,10 @@
                 "description": "List all active push notification subscriptions registered by admin users, with their device details."
             }
         }
+    },
+    "cookieConsent": {
+        "title": "We use cookies",
+        "description": "This app uses strictly necessary cookies for authentication and functional cookies to remember your preferences (language, theme, sidebar state). No tracking or advertising cookies are used.",
+        "acknowledge": "OK, I understand"
     }
 }
