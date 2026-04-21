@@ -3,8 +3,8 @@ self.addEventListener("push", function (event) {
         const data = event.data.json()
         const options = {
             body: data.body,
-            icon: data.icon || "/icon-192x192.png",
-            badge: "/icon-192x192.png",
+            icon: data.icon || "/logo.svg",
+            badge: "/pwa/icon-192x192.png",
             vibrate: [100, 50, 100],
             data: {
                 dateOfArrival: Date.now(),
@@ -43,8 +43,8 @@ self.addEventListener("notificationclick", function (event) {
                 .then(() => {
                     return self.registration.showNotification("Time Adjusted", {
                         body: `Work time delayed by ${minutes} minutes`,
-                        icon: "/icon-192x192.png",
-                        badge: "/icon-192x192.png",
+                        icon: "/logo.svg",
+                        badge: "/pwa/icon-192x192.png",
                     })
                 })
                 .catch((error) => {
@@ -76,8 +76,8 @@ self.addEventListener("notificationclick", function (event) {
                             cancelType === "checkout"
                                 ? "Auto check-out cancelled for today"
                                 : "Auto check-in cancelled for today",
-                        icon: "/icon-192x192.png",
-                        badge: "/icon-192x192.png",
+                        icon: "/logo.svg",
+                        badge: "/pwa/icon-192x192.png",
                     })
                 })
                 .catch((error) => {

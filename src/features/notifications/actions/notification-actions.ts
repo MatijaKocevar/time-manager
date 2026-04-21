@@ -313,7 +313,7 @@ export async function sendPushNotification(
                         JSON.stringify({
                             title: payload.title,
                             body: payload.body,
-                            icon: payload.icon || "/icon-192x192.png",
+                            icon: payload.icon || "/logo.svg",
                             url: payload.url || "/",
                             actions: payload.actions || [],
                             data: payload.data || {},
