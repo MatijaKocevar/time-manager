@@ -1,6 +1,14 @@
 "use client"
 
-import { Settings, UserCircle, LogOut, Languages, Palette, Check, GraduationCap } from "lucide-react"
+import {
+    Settings,
+    UserCircle,
+    LogOut,
+    Languages,
+    Palette,
+    Check,
+    GraduationCap,
+} from "lucide-react"
 import { useLocale } from "next-intl"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -19,11 +27,29 @@ import { signOut } from "next-auth/react"
 import { locales, localeNames, type Locale } from "@/features/locale/config"
 import { resetTutorialSeen } from "@/features/tutorial"
 
-const TUTORIAL_PAGES = new Set(["/tracker", "/time-sheets", "/shifts", "/yearly-calendar", "/hours", "/requests", "/urnik-net-overview", "/urnik-net-overview/requests", "/urnik-net-overview/hours"])
+const TUTORIAL_PAGES = new Set([
+    "/tracker",
+    "/time-sheets",
+    "/shifts",
+    "/yearly-calendar",
+    "/hours",
+    "/requests",
+    "/urnik-net-overview",
+    "/urnik-net-overview/requests",
+    "/urnik-net-overview/hours",
+    "/admin",
+    "/admin/users",
+    "/admin/holidays",
+    "/admin/pending-requests",
+    "/admin/request-history",
+    "/admin/dev",
+])
 
 function getTutorialPageKey(pathname: string): string | null {
     if (pathname === "/tasks") return "/tasks"
     if (pathname.startsWith("/tasks/")) return "/tasks/list"
+    if (pathname.startsWith("/admin/users/") && pathname !== "/admin/users")
+        return "/admin/users/detail"
     return TUTORIAL_PAGES.has(pathname) ? pathname : null
 }
 

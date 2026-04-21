@@ -13,6 +13,7 @@ import { getHolidaysInRange } from "../../holidays/actions/holiday-actions"
 import { getUserRequestsForAdmin } from "@/app/(protected)/requests/actions/request-actions"
 import { RequestsTable } from "@/app/(protected)/requests/components/requests-table"
 import { UserHoursSection } from "./components/user-hours-section"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 function getCurrentMonthDates() {
     const now = new Date()
@@ -40,43 +41,93 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
     const { startDate, endDate } = getCurrentMonthDates()
     const session = await getServerSession(authConfig)
 
-    const [user, userHours, userRequests, holidays, attendanceData] = await Promise.all([
+    const [
+        user,
+        userHours,
+        userRequests,
+        holidays,
+        attendanceData,
+        tutorialsSeen,
+        tTutorial,
+        tAdminUserDetail,
+    ] = await Promise.all([
         getUserById(id),
         getHourEntriesForUser(id, startDate, endDate),
         getUserRequestsForAdmin(id),
         getHolidaysInRange(startDate, endDate),
         getAttendanceDataForUser(id, startDate, endDate),
+        getTutorialsSeen(),
+        getTranslations("tutorial"),
+        getTranslations("tutorial.adminUserDetail"),
     ])
 
     return (
-        <div className="flex flex-col gap-6">
-            <Card>
-                <CardContent>
-                    <EditUserForm user={user} currentUserIsDemo={session?.user?.isDemo || false} />
-                </CardContent>
-            </Card>
-
-            <Separator />
-
-            <UserHoursSection
-                userId={id}
-                user={user}
-                initialEntries={userHours}
-                initialHolidays={holidays}
-                initialAttendanceData={attendanceData}
+        <>
+            <PageTour
+                pageKey="/admin/users/detail"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("previous")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#user-edit-form",
+                        title: tAdminUserDetail("editForm.title"),
+                        description: tAdminUserDetail("editForm.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#user-hours",
+                        title: tAdminUserDetail("hours.title"),
+                        description: tAdminUserDetail("hours.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#user-requests",
+                        title: tAdminUserDetail("requests.title"),
+                        description: tAdminUserDetail("requests.description"),
+                        side: "bottom",
+                    },
+                ]}
             />
+            <div className="flex flex-col gap-6">
+                <Card id="user-edit-form">
+                    <CardContent>
+                        <EditUserForm
+                            user={user}
+                            currentUserIsDemo={session?.user?.isDemo || false}
+                        />
+                    </CardContent>
+                </Card>
 
-            <Separator />
+                <Separator />
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t("requests")}</CardTitle>
-                    <CardDescription>{t("requestsDescription")}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <RequestsTable requests={userRequests} showUser={false} showNewButton={false} />
-                </CardContent>
-            </Card>
-        </div>
+                <div id="user-hours">
+                    <UserHoursSection
+                        userId={id}
+                        user={user}
+                        initialEntries={userHours}
+                        initialHolidays={holidays}
+                        initialAttendanceData={attendanceData}
+                    />
+                </div>
+
+                <Separator />
+
+                <Card id="user-requests">
+                    <CardHeader>
+                        <CardTitle>{t("requests")}</CardTitle>
+                        <CardDescription>{t("requestsDescription")}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <RequestsTable
+                            requests={userRequests}
+                            showUser={false}
+                            showNewButton={false}
+                        />
+                    </CardContent>
+                </Card>
+            </div>
+        </>
     )
 }

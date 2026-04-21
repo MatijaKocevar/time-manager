@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server"
 import { getHolidays } from "./actions/holiday-actions"
 import { HolidaysTable } from "./components/holidays-table"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export const dynamic = "force-dynamic"
 
@@ -43,9 +44,50 @@ export default async function HolidaysPage() {
         },
     }
 
+    const [tutorialsSeen, tTutorial, tAdminHolidays] = await Promise.all([
+        getTutorialsSeen(),
+        getTranslations("tutorial"),
+        getTranslations("tutorial.adminHolidays"),
+    ])
+
     return (
-        <div className="flex flex-col gap-4 min-w-0 h-full">
-            <HolidaysTable holidays={holidays} translations={translations} />
-        </div>
+        <>
+            <PageTour
+                pageKey="/admin/holidays"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("previous")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#holidays-year-nav",
+                        title: tAdminHolidays("yearNav.title"),
+                        description: tAdminHolidays("yearNav.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#holidays-import-btn",
+                        title: tAdminHolidays("importBtn.title"),
+                        description: tAdminHolidays("importBtn.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#holidays-add-btn",
+                        title: tAdminHolidays("addBtn.title"),
+                        description: tAdminHolidays("addBtn.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#holidays-table",
+                        title: tAdminHolidays("table.title"),
+                        description: tAdminHolidays("table.description"),
+                        side: "top",
+                    },
+                ]}
+            />
+            <div className="flex flex-col gap-4 min-w-0 h-full">
+                <HolidaysTable holidays={holidays} translations={translations} />
+            </div>
+        </>
     )
 }

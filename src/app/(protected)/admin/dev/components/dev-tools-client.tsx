@@ -80,7 +80,7 @@ export function DevToolsClient({ translations: t }: DevToolsClientProps) {
 
     return (
         <div className="space-y-4">
-            <Card>
+            <Card id="dev-test-email">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Mail className="h-5 w-5" />
@@ -108,7 +108,7 @@ export function DevToolsClient({ translations: t }: DevToolsClientProps) {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card id="dev-test-push">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Bell className="h-5 w-5" />
@@ -135,7 +135,7 @@ export function DevToolsClient({ translations: t }: DevToolsClientProps) {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card id="dev-test-admin-push">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5" />
@@ -152,7 +152,7 @@ export function DevToolsClient({ translations: t }: DevToolsClientProps) {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card id="dev-simulate-flow">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Workflow className="h-5 w-5" />
@@ -180,7 +180,7 @@ export function DevToolsClient({ translations: t }: DevToolsClientProps) {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card id="dev-subscriptions">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <List className="h-5 w-5" />

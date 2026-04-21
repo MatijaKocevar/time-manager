@@ -487,6 +487,7 @@
             "viewRequestHistory": "Preglej zgodovino zahtevkov",
             "recentPendingRequests": "Nedavni čakajoči zahtevki",
             "recentPendingRequestsDesc": "Najnovejši zahtevki, ki čakajo na odobritev",
+            "noPendingRequests": "Ni čakajočih zahtevkov",
             "upcomingHolidaysSection": "Prihajajoči prazniki",
             "upcomingHolidaysSectionDesc": "Naslednji načrtovani prazniki",
             "viewAllPending": "Preglej vse {count} čakajoče zahtevke",
@@ -1376,6 +1377,104 @@
             "table": {
                 "title": "Dnevna tabela ur",
                 "description": "Vsaka vrstica je en delovni dan. Stolpci prikazujejo prihod, odhod, prisotnost, obračunane ure in tečočo bilanco dneva, meseca in leta."
+            }
+        },
+        "adminOverview": {
+            "stats": {
+                "title": "Statistike pregleda",
+                "description": "Na enem mestu: skupno število uporabnikov, čakajoči zahtevki, prihajajoči prazniki in aktivni seznami nalog."
+            },
+            "statusBreakdown": {
+                "title": "Pregled statusov zahtevkov",
+                "description": "Število vseh zahtevkov po statusu: čakajoči, odobreni, zavrnjeni in preklicani."
+            },
+            "quickActions": {
+                "title": "Hitre akcije",
+                "description": "Bližnjice do najpogostejših administratorskih opravil — upravljanje uporabnikov, pregled čakajočih zahtevkov, upravljanje praznikov in ogled zgodovine zahtevkov."
+            },
+            "recentRequests": {
+                "title": "Nedavni čakajoči zahtevki",
+                "description": "Pet najnovejših zahtevkov, ki še čakajo na vašo odločitev."
+            },
+            "upcomingHolidays": {
+                "title": "Prihajajoči prazniki",
+                "description": "Naslednji načrtovani prazniki. Kliknite Prikaži vse za upravljanje celotnega seznama praznikov."
+            }
+        },
+        "adminUsers": {
+            "toolbar": {
+                "title": "Iskanje in ustvarjanje uporabnikov",
+                "description": "Filtrirajte uporabnike po imenu, vklopite prikaz deaktiviranih računov ali odprite meni za ustvarjanje novega uporabnika oz. izvoz seznama."
+            },
+            "table": {
+                "title": "Seznam uporabnikov",
+                "description": "Vsi uporabniki z vlogo in statusom. Dvokliknite vrstico za odpiranje podrobne strani uporabnika."
+            }
+        },
+        "adminUserDetail": {
+            "editForm": {
+                "title": "Uredi profil uporabnika",
+                "description": "Posodobite ime, e-pošto, vlogo, delovni čas in status računa. Spremembe se uveljavijo takoj."
+            },
+            "hours": {
+                "title": "Ure in sledenje uporabnika",
+                "description": "Oglejte si in uredite ročne ter sledene ure uporabnika za tekoči mesec, vključno z dnevno razčlenitvijo prisotnosti."
+            },
+            "requests": {
+                "title": "Zgodovina zahtevkov uporabnika",
+                "description": "Vse vloge za odsotnost in delo, ki jih je oddal ta uporabnik, z njihovim trenutnim statusom."
+            }
+        },
+        "adminHolidays": {
+            "yearNav": {
+                "title": "Pomikanje po letih",
+                "description": "Preklapljajte med leti za ogled, dodajanje ali brisanje praznikov za katerokoli leto."
+            },
+            "importBtn": {
+                "title": "Uvozi državne praznike",
+                "description": "Z enim klikom samodejno dodajte slovenske državne praznike za tekoče in naslednje leto."
+            },
+            "addBtn": {
+                "title": "Dodaj praznik",
+                "description": "Ročno ustvarite nov praznik z datumom, imenom, opisom in možnostjo letnega ponavljanja."
+            },
+            "table": {
+                "title": "Seznam praznikov",
+                "description": "Vsi prazniki za izbrano leto. Kliknite ikono za urejanje ali brisanje."
+            }
+        },
+        "adminPendingRequests": {
+            "table": {
+                "title": "Čakajoči zahtevki",
+                "description": "Vsi zahtevki, ki čakajo na vašo odločitev. Uporabite filtre v glavi stolpcev za zožitev po uporabniku, vrsti ali datumu. Kliknite Odobri ali Zavrni za obdelavo."
+            }
+        },
+        "adminRequestHistory": {
+            "table": {
+                "title": "Zgodovina zahtevkov",
+                "description": "Vsi obdelani zahtevki — odobreni, zavrnjeni in preklicani. Uporabite filtre za iskanje. Odobrene zahtevke je še vedno mogoče preklicati."
+            }
+        },
+        "adminDev": {
+            "testEmail": {
+                "title": "Test e-poštnih obvestil",
+                "description": "Pošljite testno e-pošto na katerikoli naslov za preveritev, ali cevovod e-poštnih obvestil deluje pravilno."
+            },
+            "testPush": {
+                "title": "Test potisnih obvestil",
+                "description": "Pošljite testno potisno obvestilo določenemu uporabniku po ID-ju za preveritev aktivnosti naročnine."
+            },
+            "testAdminPush": {
+                "title": "Test admin potisnih obvestil",
+                "description": "Oddajte testno potisno obvestilo vsem administratorskim uporabnikom hkrati."
+            },
+            "simulateFlow": {
+                "title": "Simuliraj potek",
+                "description": "Zaženite celoten potek oddaje in odobritve zahtevka za uporabnika po e-pošti — koristno za celovito testiranje cevovoda obvestil."
+            },
+            "subscriptions": {
+                "title": "Ogled naročnin",
+                "description": "Seznam vseh aktivnih naročnin na potisna obvestila, ki so jih registrirali administratorski uporabniki, z informacijami o napravah."
             }
         }
     }

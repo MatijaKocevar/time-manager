@@ -6,6 +6,7 @@ import { getAllRequests } from "../../requests/actions/request-actions"
 import { getHolidays } from "../holidays/actions/holiday-actions"
 import { PendingRequestsTable } from "./components/pending-requests-table"
 import { syncRequestStatuses } from "../../requests/actions/sync-request-statuses"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function PendingRequestsPage() {
     const session = await getServerSession(authConfig)
@@ -73,9 +74,12 @@ export default async function PendingRequestsPage() {
         },
     }
 
-    const [requests, holidaysResult] = await Promise.all([
+    const [requests, holidaysResult, tutorialsSeen, tTutorial, tAdminPending] = await Promise.all([
         getAllRequests(["PENDING"]),
         getHolidays(),
+        getTutorialsSeen(),
+        getTranslations("tutorial"),
+        getTranslations("tutorial.adminPendingRequests"),
     ])
 
     const requestsData = requests.map((r) => ({
@@ -86,15 +90,32 @@ export default async function PendingRequestsPage() {
     const holidays = (holidaysResult.success ? holidaysResult.data : []) ?? []
 
     return (
-        <div className="flex flex-col gap-4 h-full">
-            <div className="flex-1 min-h-0">
-                <PendingRequestsTable
-                    requests={requestsData}
-                    holidays={holidays}
-                    translations={translations}
-                    locale={locale}
-                />
+        <>
+            <PageTour
+                pageKey="/admin/pending-requests"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("previous")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#pending-table",
+                        title: tAdminPending("table.title"),
+                        description: tAdminPending("table.description"),
+                        side: "top",
+                    },
+                ]}
+            />
+            <div className="flex flex-col gap-4 h-full">
+                <div className="flex-1 min-h-0">
+                    <PendingRequestsTable
+                        requests={requestsData}
+                        holidays={holidays}
+                        translations={translations}
+                        locale={locale}
+                    />
+                </div>
             </div>
-        </div>
+        </>
     )
 }

@@ -121,7 +121,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
 
     return (
         <>
-            <div className="flex items-center justify-between gap-4">
+            <div id="users-toolbar" className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-4 flex-1">
                     <div className="relative max-w-sm flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -167,7 +167,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <div className="rounded-md border overflow-auto flex-1 min-h-0">
+            <div id="users-table" className="rounded-md border overflow-auto flex-1 min-h-0">
                 <Table>
                     <TableHeader className="sticky top-0 z-30 bg-background">
                         <TableRow>

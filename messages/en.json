@@ -487,6 +487,7 @@
             "viewRequestHistory": "View Request History",
             "recentPendingRequests": "Recent Pending Requests",
             "recentPendingRequestsDesc": "Latest requests awaiting your approval",
+            "noPendingRequests": "No pending requests",
             "upcomingHolidaysSection": "Upcoming Holidays",
             "upcomingHolidaysSectionDesc": "Next scheduled holidays",
             "viewAllPending": "View all {count} pending requests",
@@ -1376,6 +1377,104 @@
             "table": {
                 "title": "Daily Hours Table",
                 "description": "Each row is one working day. Columns show clock-in, clock-out, attendance hours, accounted hours, and running day, month, and year balances."
+            }
+        },
+        "adminOverview": {
+            "stats": {
+                "title": "Overview Statistics",
+                "description": "At a glance: total users, pending requests, upcoming holidays, and active task lists."
+            },
+            "statusBreakdown": {
+                "title": "Request Status Breakdown",
+                "description": "Counts of all requests by status: pending, approved, rejected, and cancelled."
+            },
+            "quickActions": {
+                "title": "Quick Actions",
+                "description": "Shortcuts to the most common admin tasks — manage users, review pending requests, manage holidays, and view request history."
+            },
+            "recentRequests": {
+                "title": "Recent Pending Requests",
+                "description": "The five most recent requests that are still waiting for your approval."
+            },
+            "upcomingHolidays": {
+                "title": "Upcoming Holidays",
+                "description": "The next scheduled holidays. Click View All to manage the full holiday list."
+            }
+        },
+        "adminUsers": {
+            "toolbar": {
+                "title": "Search and Create Users",
+                "description": "Filter users by name, toggle showing deactivated accounts, or open the menu to create a new user or export the list."
+            },
+            "table": {
+                "title": "User List",
+                "description": "All users with their role and status. Double-click a row to open the user's detail page."
+            }
+        },
+        "adminUserDetail": {
+            "editForm": {
+                "title": "Edit User Profile",
+                "description": "Update the user's name, email, role, work hours, and account status. Changes take effect immediately."
+            },
+            "hours": {
+                "title": "User Hours & Tracking",
+                "description": "View and edit the user's manual and tracked hours for the current month, including a daily attendance breakdown."
+            },
+            "requests": {
+                "title": "User Request History",
+                "description": "All leave and work requests submitted by this user, with their current status."
+            }
+        },
+        "adminHolidays": {
+            "yearNav": {
+                "title": "Year Navigation",
+                "description": "Switch between years to view, add, or remove holidays for any year."
+            },
+            "importBtn": {
+                "title": "Import Public Holidays",
+                "description": "Automatically populate Slovenian public holidays for the current and next year with a single click."
+            },
+            "addBtn": {
+                "title": "Add Holiday",
+                "description": "Manually create a new holiday entry with a date, name, description, and optional annual recurrence."
+            },
+            "table": {
+                "title": "Holiday List",
+                "description": "All holidays for the selected year. Click the edit or delete icons to modify entries."
+            }
+        },
+        "adminPendingRequests": {
+            "table": {
+                "title": "Pending Requests",
+                "description": "All requests awaiting your decision. Use the column header filters to narrow down by user, type, or date. Click Approve or Reject on any row to process it."
+            }
+        },
+        "adminRequestHistory": {
+            "table": {
+                "title": "Request History",
+                "description": "All processed requests — approved, rejected, and cancelled. Use the column filters to search. Approved requests can still be cancelled if needed."
+            }
+        },
+        "adminDev": {
+            "testEmail": {
+                "title": "Test Email Notifications",
+                "description": "Send a test email to any address to verify that the email notification pipeline is working correctly."
+            },
+            "testPush": {
+                "title": "Test Push Notification",
+                "description": "Send a test push notification to a specific user by their ID to verify their subscription is active."
+            },
+            "testAdminPush": {
+                "title": "Test Admin Push",
+                "description": "Broadcast a test push notification to all admin users at once."
+            },
+            "simulateFlow": {
+                "title": "Simulate User Flow",
+                "description": "Run a full request-approval flow for a user by email — useful for end-to-end testing of the notification pipeline."
+            },
+            "subscriptions": {
+                "title": "View Subscriptions",
+                "description": "List all active push notification subscriptions registered by admin users, with their device details."
             }
         }
     }

@@ -5,6 +5,7 @@ import { authConfig } from "@/lib/auth"
 import { getAllRequests } from "../../requests/actions/request-actions"
 import { getHolidays } from "../holidays/actions/holiday-actions"
 import { RequestHistoryTable } from "./components/request-history-table"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function RequestHistoryPage() {
     const session = await getServerSession(authConfig)
@@ -76,10 +77,14 @@ export default async function RequestHistoryPage() {
         },
     }
 
-    const [historyRequests, holidaysResult] = await Promise.all([
-        getAllRequests(["APPROVED", "REJECTED", "CANCELLED"]),
-        getHolidays(),
-    ])
+    const [historyRequests, holidaysResult, tutorialsSeen, tTutorial, tAdminHistory] =
+        await Promise.all([
+            getAllRequests(["APPROVED", "REJECTED", "CANCELLED"]),
+            getHolidays(),
+            getTutorialsSeen(),
+            getTranslations("tutorial"),
+            getTranslations("tutorial.adminRequestHistory"),
+        ])
 
     const historyData = historyRequests.map((r) => ({
         ...r,
@@ -89,15 +94,32 @@ export default async function RequestHistoryPage() {
     const holidays = (holidaysResult.success ? holidaysResult.data : []) ?? []
 
     return (
-        <div className="flex flex-col gap-4 h-full">
-            <div className="flex-1 min-h-0">
-                <RequestHistoryTable
-                    requests={historyData}
-                    holidays={holidays}
-                    translations={translations}
-                    locale={locale}
-                />
+        <>
+            <PageTour
+                pageKey="/admin/request-history"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("previous")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#history-table",
+                        title: tAdminHistory("table.title"),
+                        description: tAdminHistory("table.description"),
+                        side: "top",
+                    },
+                ]}
+            />
+            <div className="flex flex-col gap-4 h-full">
+                <div className="flex-1 min-h-0">
+                    <RequestHistoryTable
+                        requests={historyData}
+                        holidays={holidays}
+                        translations={translations}
+                        locale={locale}
+                    />
+                </div>
             </div>
-        </div>
+        </>
     )
 }

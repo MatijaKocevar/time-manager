@@ -23,7 +23,7 @@ export function RequestStatusBreakdown({
     translations,
 }: RequestStatusBreakdownProps) {
     return (
-        <Card>
+        <Card id="admin-status-breakdown">
             <CardHeader>
                 <CardTitle>{translations.title}</CardTitle>
                 <CardDescription>{translations.description}</CardDescription>

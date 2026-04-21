@@ -17,7 +17,7 @@ interface QuickActionsProps {
 
 export function QuickActions({ translations }: QuickActionsProps) {
     return (
-        <Card>
+        <Card id="admin-quick-actions">
             <CardHeader>
                 <CardTitle>{translations.title}</CardTitle>
                 <CardDescription>{translations.description}</CardDescription>

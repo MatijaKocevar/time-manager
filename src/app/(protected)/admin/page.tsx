@@ -13,6 +13,7 @@ import { RecentPendingRequests } from "./components/recent-pending-requests"
 import { UpcomingHolidays } from "./components/upcoming-holidays"
 import { getUpcomingHolidays } from "./utils"
 import type { Request } from "./schemas"
+import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function AdminOverviewPage() {
     const session = await getServerSession(authConfig)
@@ -25,12 +26,24 @@ export default async function AdminOverviewPage() {
     const tAdmin = await getTranslations("admin.overview")
     const tRequests = await getTranslations("requests.statuses")
 
-    const [users, pendingRequests, allRequests, holidaysResult, taskLists] = await Promise.all([
+    const [
+        users,
+        pendingRequests,
+        allRequests,
+        holidaysResult,
+        taskLists,
+        tutorialsSeen,
+        tTutorial,
+        tAdminOverview,
+    ] = await Promise.all([
         getUsers(),
         getAllRequests(["PENDING"]),
         getAllRequests(),
         getHolidays(),
         prisma.list.count(),
+        getTutorialsSeen(),
+        getTranslations("tutorial"),
+        getTranslations("tutorial.adminOverview"),
     ])
 
     const holidays = (holidaysResult.success ? holidaysResult.data : []) ?? []
@@ -108,6 +121,7 @@ export default async function AdminOverviewPage() {
         title: tAdmin("recentPendingRequests"),
         description: tAdmin("recentPendingRequestsDesc"),
         viewAll: (params: { count: number }) => tAdmin("viewAllPending", params),
+        noPending: tAdmin("noPendingRequests"),
         user: tAdmin("user"),
         type: tAdmin("type"),
         period: tAdmin("period"),
@@ -120,29 +134,70 @@ export default async function AdminOverviewPage() {
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <StatsCards stats={stats} translations={statsTranslations} />
+        <>
+            <PageTour
+                pageKey="/admin"
+                seenPages={tutorialsSeen}
+                nextLabel={tTutorial("next")}
+                prevLabel={tTutorial("previous")}
+                doneLabel={tTutorial("done")}
+                steps={[
+                    {
+                        element: "#admin-stats",
+                        title: tAdminOverview("stats.title"),
+                        description: tAdminOverview("stats.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#admin-status-breakdown",
+                        title: tAdminOverview("statusBreakdown.title"),
+                        description: tAdminOverview("statusBreakdown.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#admin-quick-actions",
+                        title: tAdminOverview("quickActions.title"),
+                        description: tAdminOverview("quickActions.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#admin-recent-requests",
+                        title: tAdminOverview("recentRequests.title"),
+                        description: tAdminOverview("recentRequests.description"),
+                        side: "bottom",
+                    },
+                    {
+                        element: "#admin-upcoming-holidays",
+                        title: tAdminOverview("upcomingHolidays.title"),
+                        description: tAdminOverview("upcomingHolidays.description"),
+                        side: "bottom",
+                    },
+                ]}
+            />
+            <div className="flex flex-col gap-4">
+                <StatsCards stats={stats} translations={statsTranslations} />
 
-            <div className="grid gap-4 md:grid-cols-2">
-                <RequestStatusBreakdown
-                    statusCounts={statusCounts}
-                    translations={statusTranslations}
+                <div className="grid gap-4 md:grid-cols-2">
+                    <RequestStatusBreakdown
+                        statusCounts={statusCounts}
+                        translations={statusTranslations}
+                    />
+                    <QuickActions translations={quickActionsTranslations} />
+                </div>
+
+                <RecentPendingRequests
+                    requests={recentPendingRequests}
+                    locale={locale}
+                    totalPending={pendingRequests.length}
+                    translations={recentRequestsTranslations}
                 />
-                <QuickActions translations={quickActionsTranslations} />
+
+                <UpcomingHolidays
+                    holidays={upcomingHolidays}
+                    locale={locale}
+                    translations={holidaysTranslations}
+                />
             </div>
-
-            <RecentPendingRequests
-                requests={recentPendingRequests}
-                locale={locale}
-                totalPending={pendingRequests.length}
-                translations={recentRequestsTranslations}
-            />
-
-            <UpcomingHolidays
-                holidays={upcomingHolidays}
-                locale={locale}
-                translations={holidaysTranslations}
-            />
-        </div>
+        </>
     )
 }
