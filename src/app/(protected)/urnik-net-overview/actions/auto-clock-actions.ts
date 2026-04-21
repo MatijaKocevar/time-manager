@@ -1,7 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { clockInToUrnik, clockOutFromUrnik } from "./clock-actions"
+import { performClockInWithCookie, performClockOutWithCookie } from "./clock-actions"
 import {
     notifyAutoCheckinReminder,
     notifyAutoCheckinCompleted,
@@ -139,7 +139,7 @@ export async function processAutoCheckin(userId: string): Promise<ActionResult> 
         })
 
         const isWorkFromHome = !!wfhRequest
-        const clockInResult = await clockInToUrnik(isWorkFromHome)
+        const clockInResult = await performClockInWithCookie(cookie, isWorkFromHome)
 
         if (!clockInResult.success) {
             return { success: false, error: clockInResult.error || "Failed to clock in" }
@@ -206,7 +206,7 @@ export async function processAutoCheckout(userId: string): Promise<ActionResult>
             return { success: false, error: "Failed to authenticate with urnik.net" }
         }
 
-        const clockOutResult = await clockOutFromUrnik()
+        const clockOutResult = await performClockOutWithCookie(cookie)
 
         if (!clockOutResult.success) {
             return { success: false, error: clockOutResult.error || "Failed to clock out" }

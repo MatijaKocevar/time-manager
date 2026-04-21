@@ -157,6 +157,78 @@ export async function getTodayDayInfo(): Promise<DayInfoResult> {
     }
 }
 
+export async function performClockInWithCookie(cookie: string, isWorkFromHome: boolean = false) {
+    const clockInType = isWorkFromHome ? "14" : "0"
+    const response = await fetch(
+        `https://urnik.net/App/Main?handler=SetTimeInNow&rid=null&ClockInType=${clockInType}`,
+        {
+            method: "GET",
+            headers: {
+                "User-Agent": URNIK_USER_AGENT,
+                Cookie: cookie,
+                "X-Requested-With": "XMLHttpRequest",
+                Accept: "application/json, text/javascript, */*; q=0.01",
+                "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
+                Origin: "https://urnik.net",
+                Referer: "https://urnik.net/App/Main",
+            },
+        }
+    )
+
+    if (!response.ok) {
+        return { success: false, error: `Request failed: ${response.status}` }
+    }
+
+    const responseText = await response.text()
+
+    let responseData
+    try {
+        responseData = JSON.parse(responseText)
+    } catch {
+        return { success: true, message: "Clocked in successfully" }
+    }
+
+    if (responseData.res === false && responseData.msg) {
+        return { success: false, error: responseData.msg }
+    }
+
+    return { success: true, message: "Clocked in successfully" }
+}
+
+export async function performClockOutWithCookie(cookie: string) {
+    const response = await fetch("https://urnik.net/App/Main?handler=SetTimeOutPicker&type=0", {
+        method: "GET",
+        headers: {
+            "User-Agent": URNIK_USER_AGENT,
+            Cookie: cookie,
+            "X-Requested-With": "XMLHttpRequest",
+            Accept: "application/json, text/javascript, */*; q=0.01",
+            "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
+            Origin: "https://urnik.net",
+            Referer: "https://urnik.net/App/Main",
+        },
+    })
+
+    if (!response.ok) {
+        return { success: false, error: `Request failed: ${response.status}` }
+    }
+
+    const responseText = await response.text()
+
+    let responseData
+    try {
+        responseData = JSON.parse(responseText)
+    } catch {
+        return { success: true, message: "Clocked out successfully" }
+    }
+
+    if (responseData.res === false && responseData.msg) {
+        return { success: false, error: responseData.msg }
+    }
+
+    return { success: true, message: "Clocked out successfully" }
+}
+
 export async function clockInToUrnik(isWorkFromHome: boolean = false) {
     try {
         await requireAuth()
@@ -167,42 +239,13 @@ export async function clockInToUrnik(isWorkFromHome: boolean = false) {
             return { success: false, error: "No urnik credentials or login failed" }
         }
 
-        const clockInType = isWorkFromHome ? "14" : "0"
-        const response = await fetch(
-            `https://urnik.net/App/Main?handler=SetTimeInNow&rid=null&ClockInType=${clockInType}`,
-            {
-                method: "GET",
-                headers: {
-                    "User-Agent": URNIK_USER_AGENT,
-                    Cookie: cookie,
-                    "X-Requested-With": "XMLHttpRequest",
-                    Accept: "application/json, text/javascript, */*; q=0.01",
-                    "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
-                    Origin: "https://urnik.net",
-                    Referer: "https://urnik.net/App/Main",
-                },
-            }
-        )
+        const result = await performClockInWithCookie(cookie, isWorkFromHome)
 
-        if (!response.ok) {
-            return { success: false, error: `Request failed: ${response.status}` }
+        if (result.success) {
+            revalidatePath("/urnik-net-overview")
         }
 
-        const responseText = await response.text()
-
-        let responseData
-        try {
-            responseData = JSON.parse(responseText)
-        } catch {
-            return { success: true, message: "Clocked in successfully" }
-        }
-
-        if (responseData.res === false && responseData.msg) {
-            return { success: false, error: responseData.msg }
-        }
-
-        revalidatePath("/urnik-net-overview")
-        return { success: true, message: "Clocked in successfully" }
+        return result
     } catch (error) {
         return {
             success: false,
@@ -221,38 +264,13 @@ export async function clockOutFromUrnik() {
             return { success: false, error: "No urnik credentials or login failed" }
         }
 
-        const response = await fetch("https://urnik.net/App/Main?handler=SetTimeOutPicker&type=0", {
-            method: "GET",
-            headers: {
-                "User-Agent": URNIK_USER_AGENT,
-                Cookie: cookie,
-                "X-Requested-With": "XMLHttpRequest",
-                Accept: "application/json, text/javascript, */*; q=0.01",
-                "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
-                Origin: "https://urnik.net",
-                Referer: "https://urnik.net/App/Main",
-            },
-        })
+        const result = await performClockOutWithCookie(cookie)
 
-        if (!response.ok) {
-            return { success: false, error: `Request failed: ${response.status}` }
+        if (result.success) {
+            revalidatePath("/urnik-net-overview")
         }
 
-        const responseText = await response.text()
-
-        let responseData
-        try {
-            responseData = JSON.parse(responseText)
-        } catch {
-            return { success: true, message: "Clocked out successfully" }
-        }
-
-        if (responseData.res === false && responseData.msg) {
-            return { success: false, error: responseData.msg }
-        }
-
-        revalidatePath("/urnik-net-overview")
-        return { success: true, message: "Clocked out successfully" }
+        return result
     } catch (error) {
         return {
             success: false,
