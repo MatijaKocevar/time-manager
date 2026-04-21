@@ -1477,5 +1477,10 @@
                 "description": "Seznam vseh aktivnih naročnin na potisna obvestila, ki so jih registrirali administratorski uporabniki, z informacijami o napravah."
             }
         }
+    },
+    "cookieConsent": {
+        "title": "Uporabljamo piškotke",
+        "description": "Ta aplikacija uporablja nujno potrebne piškotke za avtentikacijo in funkcionalne piškotke za shranjevanje vaših nastavitev (jezik, tema, stanje stranske vrstice). Piškotki za sledenje ali oglaševanje niso uporabljeni.",
+        "acknowledge": "V redu, razumem"
     }
 }
