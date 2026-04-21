@@ -140,7 +140,7 @@ export default async function UrnikNetRequestsPage({
                 pageKey="/urnik-net-overview/requests"
                 seenPages={tutorialsSeen}
                 nextLabel={tTutorial("next")}
-                prevLabel={tTutorial("prev")}
+                prevLabel={tTutorial("previous")}
                 doneLabel={tTutorial("done")}
                 steps={[
                     {

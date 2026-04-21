@@ -37,7 +37,7 @@ export default async function UrnikNetHoursPage({
                 pageKey="/urnik-net-overview/hours"
                 seenPages={tutorialsSeen}
                 nextLabel={tTutorial("next")}
-                prevLabel={tTutorial("prev")}
+                prevLabel={tTutorial("previous")}
                 doneLabel={tTutorial("done")}
                 steps={[
                     {
@@ -61,46 +61,46 @@ export default async function UrnikNetHoursPage({
                 ]}
             />
             <div className="flex flex-col gap-4 h-full">
-            <HoursView
-                result={result}
-                currentYear={currentYear}
-                currentMonth={currentMonth}
-                monthName={monthName}
-                translations={{
-                    previousMonth: t("previousMonth"),
-                    nextMonth: t("nextMonth"),
-                    detailsButton: t("detailsButton"),
-                    summary: {
-                        billingHours: t("summary.billingHours"),
-                        plannedHours: t("summary.plannedHours"),
-                        workDays: t("summary.workDays"),
-                        holidays: t("summary.holidays"),
-                        lunches: t("summary.lunches"),
-                        vacationBalance: t("summary.vacationBalance"),
-                        vacationBalanceShort: t("summary.vacationBalanceShort"),
-                        sickLeave: t("summary.sickLeave"),
-                        leaveDays: t("summary.leaveDays"),
-                        balance: t("summary.balance"),
-                        workFromHome: t("summary.workFromHome"),
-                        userType: t("summary.userType"),
-                        hoursInDay: t("summary.hoursInDay"),
-                    },
-                    table: {
-                        no: t("table.no"),
-                        date: t("table.date"),
-                        day: t("table.day"),
-                        status: t("table.status"),
-                        clockIn: t("table.clockIn"),
-                        clockOut: t("table.clockOut"),
-                        attendance: t("table.attendance"),
-                        accounted: t("table.accounted"),
-                        dayBalance: t("table.dayBalance"),
-                        balanceMonth: t("table.balanceMonth"),
-                        balanceYear: t("table.balanceYear"),
-                    },
-                }}
-            />
-        </div>
+                <HoursView
+                    result={result}
+                    currentYear={currentYear}
+                    currentMonth={currentMonth}
+                    monthName={monthName}
+                    translations={{
+                        previousMonth: t("previousMonth"),
+                        nextMonth: t("nextMonth"),
+                        detailsButton: t("detailsButton"),
+                        summary: {
+                            billingHours: t("summary.billingHours"),
+                            plannedHours: t("summary.plannedHours"),
+                            workDays: t("summary.workDays"),
+                            holidays: t("summary.holidays"),
+                            lunches: t("summary.lunches"),
+                            vacationBalance: t("summary.vacationBalance"),
+                            vacationBalanceShort: t("summary.vacationBalanceShort"),
+                            sickLeave: t("summary.sickLeave"),
+                            leaveDays: t("summary.leaveDays"),
+                            balance: t("summary.balance"),
+                            workFromHome: t("summary.workFromHome"),
+                            userType: t("summary.userType"),
+                            hoursInDay: t("summary.hoursInDay"),
+                        },
+                        table: {
+                            no: t("table.no"),
+                            date: t("table.date"),
+                            day: t("table.day"),
+                            status: t("table.status"),
+                            clockIn: t("table.clockIn"),
+                            clockOut: t("table.clockOut"),
+                            attendance: t("table.attendance"),
+                            accounted: t("table.accounted"),
+                            dayBalance: t("table.dayBalance"),
+                            balanceMonth: t("table.balanceMonth"),
+                            balanceYear: t("table.balanceYear"),
+                        },
+                    }}
+                />
+            </div>
         </>
     )
 }

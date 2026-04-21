@@ -60,7 +60,7 @@ export default async function ClockPage() {
                 pageKey="/urnik-net-overview"
                 seenPages={tutorialsSeen}
                 nextLabel={tTutorial("next")}
-                prevLabel={tTutorial("prev")}
+                prevLabel={tTutorial("previous")}
                 doneLabel={tTutorial("done")}
                 steps={[
                     {
@@ -101,7 +101,9 @@ export default async function ClockPage() {
                     <Alert variant="default">
                         <AlertCircle className="h-4 w-4" />
                         <AlertTitle>{t("messages.structureChangedWarning")}</AlertTitle>
-                        <AlertDescription>{t("messages.structureChangedDescription")}</AlertDescription>
+                        <AlertDescription>
+                            {t("messages.structureChangedDescription")}
+                        </AlertDescription>
                     </Alert>
                 )}
                 <ClockView
