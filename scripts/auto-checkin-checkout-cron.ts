@@ -141,6 +141,10 @@ const lastCheckin = new Map<string, Date>()
 const lastCheckoutReminder = new Map<string, Date>()
 const lastCheckout = new Map<string, Date>()
 
+let cachedTriggers: UserTrigger[] | null = null
+let cachedTriggersAt: Date | null = null
+const TRIGGER_CACHE_TTL_MS = 60 * 60 * 1000
+
 async function processTriggers(): Promise<void> {
     try {
         const nowUtc = new Date()
@@ -148,7 +152,12 @@ async function processTriggers(): Promise<void> {
             `[processTriggers] Checking triggers at ${nowUtc.toISOString()} UTC (${nowUtc.toLocaleString("sl-SI", { timeZone: TIMEZONE })} Ljubljana)`
         )
 
-        const triggers = await getUserTriggers()
+        const cacheExpired = !cachedTriggersAt || nowUtc.getTime() - cachedTriggersAt.getTime() > TRIGGER_CACHE_TTL_MS
+        if (!cachedTriggers || cacheExpired) {
+            cachedTriggers = await getUserTriggers()
+            cachedTriggersAt = nowUtc
+        }
+        const triggers = cachedTriggers
 
         for (const trigger of triggers) {
             if (
@@ -222,6 +231,8 @@ function resetDailyTracking() {
         lastCheckin.clear()
         lastCheckoutReminder.clear()
         lastCheckout.clear()
+        cachedTriggers = null
+        cachedTriggersAt = null
     }
 }
 
