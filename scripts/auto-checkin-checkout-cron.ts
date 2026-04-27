@@ -1,6 +1,6 @@
 import "dotenv/config"
 import { PrismaClient } from "../prisma/generated/client"
-import { fromZonedTime } from "date-fns-tz"
+import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import {
     sendCheckinReminder,
     sendCheckoutReminder,
@@ -26,22 +26,12 @@ interface UserTrigger {
 function parseTimeToDate(timeString: string): Date {
     const [hours, minutes] = timeString.split(":").map(Number)
 
-    // Get today's date in UTC
     const nowUtc = new Date()
     const year = nowUtc.getUTCFullYear()
     const month = nowUtc.getUTCMonth()
     const day = nowUtc.getUTCDate()
-
-    // Create a date object representing the time in Ljubljana timezone
-    // We use the UTC date components to create a naive date, then interpret it as Ljubljana time
     const ljubljanaDate = new Date(year, month, day, hours, minutes, 0, 0)
-
-    // Convert Ljubljana time to UTC using fromZonedTime
     const utcDate = fromZonedTime(ljubljanaDate, TIMEZONE)
-
-    console.log(
-        `[parseTimeToDate] Parsed "${timeString}" as ${ljubljanaDate.toLocaleString("sl-SI", { timeZone: TIMEZONE })} Ljubljana → ${utcDate.toISOString()} UTC`
-    )
 
     return utcDate
 }
@@ -50,23 +40,19 @@ function shouldTrigger(triggerTime: Date | null, lastChecked: Date | null): bool
     if (!triggerTime) return false
     const now = new Date()
 
-    // Only trigger if current time is after trigger time
     if (now < triggerTime) return false
 
-    // Only trigger if within 15 minutes of the trigger time
-    // This prevents late triggering when cron restarts
     const fifteenMinutesAfterTrigger = new Date(triggerTime.getTime() + 15 * 60 * 1000)
     if (now > fifteenMinutesAfterTrigger) return false
 
-    // If we haven't checked before, trigger
     if (!lastChecked) return true
 
-    // Only trigger if we haven't triggered since the trigger time
     return lastChecked < triggerTime && now >= triggerTime
 }
 
 async function getUserTriggers(): Promise<UserTrigger[]> {
-    const today = new Date()
+    const nowInLjubljana = toZonedTime(new Date(), TIMEZONE)
+    const today = new Date(nowInLjubljana)
     today.setHours(0, 0, 0, 0)
 
     const users = await prisma.user.findMany({
@@ -110,17 +96,11 @@ async function getUserTriggers(): Promise<UserTrigger[]> {
         if (user.preferences?.autoCheckInEnabled && effectiveStartTime) {
             checkinTime = parseTimeToDate(effectiveStartTime)
             checkinReminderTime = new Date(checkinTime.getTime() - 15 * 60 * 1000)
-            console.log(
-                `[getUserTriggers] User "${user.name}" check-in: ${effectiveStartTime} → reminder at ${checkinReminderTime.toISOString()}`
-            )
         }
 
         if (user.preferences?.autoCheckOutEnabled && effectiveEndTime) {
             checkoutTime = parseTimeToDate(effectiveEndTime)
             checkoutReminderTime = new Date(checkoutTime.getTime() - 15 * 60 * 1000)
-            console.log(
-                `[getUserTriggers] User "${user.name}" check-out: ${effectiveEndTime} → reminder at ${checkoutReminderTime.toISOString()}`
-            )
         }
 
         triggers.push({
@@ -141,23 +121,9 @@ const lastCheckin = new Map<string, Date>()
 const lastCheckoutReminder = new Map<string, Date>()
 const lastCheckout = new Map<string, Date>()
 
-let cachedTriggers: UserTrigger[] | null = null
-let cachedTriggersAt: Date | null = null
-const TRIGGER_CACHE_TTL_MS = 60 * 60 * 1000
-
 async function processTriggers(): Promise<void> {
     try {
-        const nowUtc = new Date()
-        console.log(
-            `[processTriggers] Checking triggers at ${nowUtc.toISOString()} UTC (${nowUtc.toLocaleString("sl-SI", { timeZone: TIMEZONE })} Ljubljana)`
-        )
-
-        const cacheExpired = !cachedTriggersAt || nowUtc.getTime() - cachedTriggersAt.getTime() > TRIGGER_CACHE_TTL_MS
-        if (!cachedTriggers || cacheExpired) {
-            cachedTriggers = await getUserTriggers()
-            cachedTriggersAt = nowUtc
-        }
-        const triggers = cachedTriggers
+        const triggers = await getUserTriggers()
 
         for (const trigger of triggers) {
             if (
@@ -166,9 +132,6 @@ async function processTriggers(): Promise<void> {
                     lastCheckinReminder.get(trigger.userId) || null
                 )
             ) {
-                console.log(
-                    `[${new Date().toISOString()}] Sending check-in reminder to ${trigger.userName}`
-                )
                 const result = await sendCheckinReminder(trigger.userId)
                 if (result.success) {
                     lastCheckinReminder.set(trigger.userId, new Date())
@@ -177,10 +140,13 @@ async function processTriggers(): Promise<void> {
                 }
             }
 
-            if (shouldTrigger(trigger.checkinTime, lastCheckin.get(trigger.userId) || null)) {
-                console.log(
-                    `[${new Date().toISOString()}] Processing auto check-in for ${trigger.userName}`
-                )
+            const lastCheckinTime = lastCheckin.get(trigger.userId) || null
+            const alreadyCheckedInToday =
+                lastCheckinTime !== null &&
+                trigger.checkinTime !== null &&
+                lastCheckinTime >= trigger.checkinTime
+
+            if (!alreadyCheckedInToday && shouldTrigger(trigger.checkinTime, lastCheckinTime)) {
                 const result = await processAutoCheckin(trigger.userId)
                 if (result.success) {
                     lastCheckin.set(trigger.userId, new Date())
@@ -195,9 +161,6 @@ async function processTriggers(): Promise<void> {
                     lastCheckoutReminder.get(trigger.userId) || null
                 )
             ) {
-                console.log(
-                    `[${new Date().toISOString()}] Sending check-out reminder to ${trigger.userName}`
-                )
                 const result = await sendCheckoutReminder(trigger.userId)
                 if (result.success) {
                     lastCheckoutReminder.set(trigger.userId, new Date())
@@ -207,9 +170,6 @@ async function processTriggers(): Promise<void> {
             }
 
             if (shouldTrigger(trigger.checkoutTime, lastCheckout.get(trigger.userId) || null)) {
-                console.log(
-                    `[${new Date().toISOString()}] Processing auto check-out for ${trigger.userName}`
-                )
                 const result = await processAutoCheckout(trigger.userId)
                 if (result.success) {
                     lastCheckout.set(trigger.userId, new Date())
@@ -224,21 +184,16 @@ async function processTriggers(): Promise<void> {
 }
 
 function resetDailyTracking() {
-    const now = new Date()
+    const now = toZonedTime(new Date(), TIMEZONE)
     if (now.getHours() === 0 && now.getMinutes() < 2) {
-        console.log(`[${new Date().toISOString()}] Resetting daily tracking`)
         lastCheckinReminder.clear()
         lastCheckin.clear()
         lastCheckoutReminder.clear()
         lastCheckout.clear()
-        cachedTriggers = null
-        cachedTriggersAt = null
     }
 }
 
 async function run(): Promise<void> {
-    console.log(`[${new Date().toISOString()}] Auto check-in/check-out cron started`)
-
     while (true) {
         resetDailyTracking()
         await processTriggers()
