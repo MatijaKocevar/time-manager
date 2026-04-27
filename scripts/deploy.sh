@@ -26,12 +26,6 @@ npm run build
 echo "🔧 Compiling cron script..."
 npm run build:cron
 
-# Run migrations if needed
-if [ "$NO_MIGRATE" = false ]; then
-    echo "🔄 Running migrations..."
-    npm run migrate
-fi
-
 # Generate Prisma client
 echo "🔧 Generating Prisma client..."
 npx prisma generate
@@ -55,8 +49,10 @@ scp deploy.tar.gz $SERVER_USER@$SERVER_HOST:/tmp/
 
 # Deploy on server
 echo "🔧 Deploying on server..."
-ssh $SERVER_USER@$SERVER_HOST << 'ENDSSH'
+ssh $SERVER_USER@$SERVER_HOST bash -s "$NO_MIGRATE" << 'ENDSSH'
 set -e
+NO_MIGRATE=$1
+RUN_MIGRATE=$( [ "$NO_MIGRATE" = false ] && echo true || echo false )
 
 cd /home/server/time-management-app
 
@@ -81,6 +77,12 @@ cp -r public .next/standalone/
 echo "📝 Copying production environment file..."
 cp .env.production .next/standalone/.env
 cp .env.production .env
+
+# Run migrations if needed
+if [ "$RUN_MIGRATE" = true ]; then
+    echo "🔄 Running migrations..."
+    npx prisma migrate deploy
+fi
 
 # Create logs directory if it doesn't exist
 mkdir -p logs
