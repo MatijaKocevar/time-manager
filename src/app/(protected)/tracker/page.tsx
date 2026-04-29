@@ -1,4 +1,3 @@
-import { getTasks } from "@/app/(protected)/tasks/actions/task-actions"
 import { getActiveTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import {
     getGeneralWorkTask,
@@ -6,8 +5,8 @@ import {
     getTaskTimeEntries,
     getSystemTaskByType,
     getTodayTimeSummary,
+    getInProgressTasksForTracker,
 } from "./actions/tracker-actions"
-import { TASK_STATUS } from "@/app/(protected)/tasks/constants/task-statuses"
 import { TrackerDisplay } from "./components/tracker-display"
 import { TimeEntriesDialog } from "@/app/(protected)/tasks/components/time-entries-dialog"
 import { DayEntriesDialog } from "@/app/(protected)/time-sheets/components/day-entries-dialog"
@@ -31,7 +30,7 @@ export default async function TrackerPage() {
         dailySummary,
         tutorialsSeen,
     ] = await Promise.all([
-        getTasks({ status: TASK_STATUS.IN_PROGRESS }),
+        getInProgressTasksForTracker(),
         getActiveTimer(),
         getGeneralWorkTask(),
         getTrackerPreferences(),
@@ -57,6 +56,7 @@ export default async function TrackerPage() {
         trackingType: t("trackingType"),
         todayEntries: t("todayEntries"),
         work: tTypes("work"),
+        workFromHome: tTypes("workFromHome"),
         break: tTypes("break"),
         private: tTypes("private"),
         noTasksAvailable: t("noTasksAvailable"),

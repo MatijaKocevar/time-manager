@@ -102,6 +102,8 @@ export function TrackerDisplay({
         switch (type) {
             case "WORK":
                 return translations.work
+            case "WORK_FROM_HOME":
+                return translations.workFromHome
             case "BREAK":
                 return translations.break
             case "PRIVATE":
@@ -132,7 +134,7 @@ export function TrackerDisplay({
                                 {translations.trackingType}
                             </label>
                             <Select
-                                value={selectedType}
+                                value={selectedType === "WORK_FROM_HOME" ? "WORK" : selectedType}
                                 onValueChange={handleTypeChange}
                                 disabled={isLoading}
                             >
@@ -151,7 +153,7 @@ export function TrackerDisplay({
                             </Select>
                         </div>
 
-                        <div className="grid grid-cols-[1fr_auto] gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4">
                             <div>
                                 <label className="text-sm font-medium mb-2 block">
                                     {translations.selectTask}
@@ -205,12 +207,13 @@ export function TrackerDisplay({
                                 </Select>
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-2 block opacity-0">
+                                <label className="text-sm font-medium mb-2 hidden sm:block opacity-0">
                                     -
                                 </label>
                                 <Button
                                     id="tracker-time-entries"
                                     variant="outline"
+                                    className="w-full sm:w-auto"
                                     onClick={handleViewEntries}
                                     disabled={taskEntries.length === 0}
                                 >

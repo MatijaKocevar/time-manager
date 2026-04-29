@@ -5,6 +5,88 @@ import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
 import type { HourType } from "@/../../prisma/generated/client"
+import type { TaskDisplay } from "@/app/(protected)/tasks/schemas/task-schemas"
+import { TASK_STATUS } from "@/app/(protected)/tasks/constants/task-statuses"
+
+export async function getInProgressTasksForTracker(): Promise<TaskDisplay[]> {
+    try {
+        const session = await requireAuth()
+
+        const [tasks, latestEntries] = await Promise.all([
+            prisma.task.findMany({
+                where: {
+                    userId: session.user.id,
+                    status: TASK_STATUS.IN_PROGRESS,
+                    isSystemTask: false,
+                },
+                select: {
+                    id: true,
+                    userId: true,
+                    listId: true,
+                    title: true,
+                    description: true,
+                    status: true,
+                    parentId: true,
+                    order: true,
+                    isExpanded: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    list: {
+                        select: {
+                            name: true,
+                            color: true,
+                            icon: true,
+                            isPrivate: true,
+                        },
+                    },
+                },
+            }),
+            prisma.taskTimeEntry.groupBy({
+                by: ["taskId"],
+                where: {
+                    userId: session.user.id,
+                    task: {
+                        status: TASK_STATUS.IN_PROGRESS,
+                        isSystemTask: false,
+                    },
+                },
+                _max: {
+                    startTime: true,
+                },
+            }),
+        ])
+
+        const latestEntryMap = new Map(
+            latestEntries.map((e) => [e.taskId, e._max.startTime])
+        )
+
+        const taskDisplays: TaskDisplay[] = tasks.map((task) => {
+            const { list, ...taskData } = task
+            return {
+                ...taskData,
+                listName: list?.name ?? null,
+                listColor: list?.color ?? null,
+                listIcon: list?.icon ?? null,
+                listIsPrivate: list?.isPrivate ?? null,
+            }
+        })
+
+        return taskDisplays.sort((a, b) => {
+            const aList = a.listName ?? ""
+            const bList = b.listName ?? ""
+            if (aList !== bList) return aList.localeCompare(bList)
+
+            const aLatest = latestEntryMap.get(a.id)
+            const bLatest = latestEntryMap.get(b.id)
+            if (aLatest && bLatest) return bLatest.getTime() - aLatest.getTime()
+            if (aLatest) return -1
+            if (bLatest) return 1
+            return a.title.localeCompare(b.title)
+        })
+    } catch {
+        return []
+    }
+}
 
 export async function getTrackerPreferences() {
     try {

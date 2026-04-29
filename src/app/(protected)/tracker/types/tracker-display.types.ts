@@ -47,6 +47,7 @@ export interface TrackerDisplayProps {
         trackingType: string
         todayEntries: string
         work: string
+        workFromHome: string
         break: string
         private: string
         noTasksAvailable: string
