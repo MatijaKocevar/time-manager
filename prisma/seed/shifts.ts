@@ -62,6 +62,24 @@ export async function seedShiftsForUser(
             date: normalizeDate(date),
             location,
             notes: null,
+            startDateTime: new Date(
+                Date.UTC(
+                    date.getFullYear(),
+                    date.getMonth(),
+                    date.getDate(),
+                    7 + random.nextInt(0, 1),
+                    random.choice([0, 15, 30, 45])
+                )
+            ),
+            endDateTime: new Date(
+                Date.UTC(
+                    date.getFullYear(),
+                    date.getMonth(),
+                    date.getDate(),
+                    15 + random.nextInt(0, 2),
+                    random.choice([0, 15, 30, 45])
+                )
+            ),
         })
     }
 

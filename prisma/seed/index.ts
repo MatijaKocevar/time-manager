@@ -215,7 +215,7 @@ async function main() {
     }
 
     console.log(`    Refreshing materialized view...`)
-    await recalculateSummariesForUser(prisma, "", startDate, endDate)
+    await recalculateSummariesForUser()
     console.log(`    Refreshed daily summaries`)
 
     const stats = {

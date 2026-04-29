@@ -21,6 +21,7 @@
         "db:reset:minimal": "prisma migrate reset --skip-seed && npm run db:seed:minimal",
         "db:studio": "prisma studio",
         "db:clear": "tsx scripts/clear-time-data.ts",
+        "db:seed:test-user": "tsx scripts/seed-test-user.ts",
         "dev:db": "npm run db:push && npm run db:seed && npm run dev",
         "format": "prettier --write .",
         "format:check": "prettier --check .",

@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma"
 export async function getTutorialsSeen(): Promise<string[]> {
     const session = await requireAuth()
 
+    if (session.user.isDemo) return []
+
     const rows = await prisma.tutorialSeen.findMany({
         where: { userId: session.user.id },
         select: { pageKey: true },

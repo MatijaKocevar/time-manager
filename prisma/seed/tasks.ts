@@ -1,4 +1,4 @@
-import { PrismaClient, TaskStatus } from "../generated/client"
+import { PrismaClient, TaskStatus, HourType } from "../generated/client"
 import { SeededRandom, TASK_TEMPLATES, addDays } from "./utils"
 
 export async function seedTasksForUser(
@@ -90,12 +90,19 @@ export async function seedTimeEntriesForUser(
         const durationSeconds = isCompleted ? random.nextInt(900, 7200) : null
         const endTime = isCompleted ? new Date(startTime.getTime() + durationSeconds! * 1000) : null
 
+        const typeRand = random.next()
+        let entryType: HourType
+        if (typeRand < 0.8) entryType = "WORK"
+        else if (typeRand < 0.95) entryType = "WORK_FROM_HOME"
+        else entryType = "WORK"
+
         entries.push({
             taskId: task.id,
             userId,
             startTime,
             endTime,
             duration: durationSeconds,
+            type: entryType,
         })
     }
 

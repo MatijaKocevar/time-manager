@@ -51,14 +51,14 @@ export async function seedHourEntriesForUser(
         const dateKey = normalizeDate(date).toISOString().split("T")[0]
         if (requestDateMap.has(dateKey)) continue
 
-        if (random.next() > 0.3) continue
+        if (random.next() > 0.85) continue
 
         const rand = random.next()
         let type: HourType
         if (rand < 0.85) type = "WORK"
         else type = "WORK_FROM_HOME"
 
-        const hours = random.nextInt(1, 3)
+        const hours = random.nextInt(7, 9)
         const isTaskLinked = random.next() < 0.3 && tasks.length > 0
 
         entries.push({
@@ -82,12 +82,6 @@ export async function seedHourEntriesForUser(
     return entries.length
 }
 
-export async function recalculateSummariesForUser(
-    prisma: PrismaClient,
-    userId: string,
-    startDate: Date,
-    endDate: Date
-) {
+export async function recalculateSummariesForUser() {
     await refreshDailyHourSummary()
-    return 0
 }
