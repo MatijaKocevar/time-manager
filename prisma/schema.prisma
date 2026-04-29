@@ -85,7 +85,7 @@ model User {
   autoCheckoutCancellations AutoCheckoutCancellation[]
   workTimeAdjustments       WorkTimeAdjustment[]
   tutorialsSeen             TutorialSeen[]
-  autoClockLogs             AutoClockLog[]
+  autoClockState            AutoClockState?
 }
 
 model HourEntry {
@@ -458,23 +458,17 @@ model WorkTimeAdjustment {
   @@index([date])
 }
 
-model AutoClockLog {
+model AutoClockState {
   id                      String    @id @default(cuid())
-  userId                  String
-  date                    DateTime
+  userId                  String    @unique
   clockedInAt             DateTime?
   clockedOutAt            DateTime?
   checkinReminderFiredAt  DateTime?
   checkinFiredAt          DateTime?
   checkoutReminderFiredAt DateTime?
   checkoutFiredAt         DateTime?
-  createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
   user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, date])
-  @@index([userId])
-  @@index([date])
 }
 
 model UrnikRequest {
