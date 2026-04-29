@@ -162,6 +162,12 @@ export async function processAutoCheckin(userId: string): Promise<ActionResult> 
             return { success: false, error: clockInResult.error || "Failed to clock in" }
         }
 
+        await prisma.autoClockState.upsert({
+            where: { userId },
+            create: { userId, clockedInAt: new Date() },
+            update: { clockedInAt: new Date() },
+        })
+
         await notifyAutoCheckinCompleted({
             userId,
             userName: user.name || "User",
@@ -244,6 +250,16 @@ export async function processAutoCheckout(userId: string): Promise<ActionResult>
         if (!clockOutResult.success) {
             return { success: false, error: clockOutResult.error || "Failed to clock out" }
         }
+
+        await prisma.autoClockState.upsert({
+            where: { userId },
+            create: { userId, clockedOutAt: new Date() },
+            update: { clockedOutAt: new Date() },
+        })
+
+        await prisma.workTimeAdjustment.deleteMany({
+            where: { userId, date: today },
+        })
 
         await notifyAutoCheckoutCompleted({ userId, userName: user.name || "User" })
 
