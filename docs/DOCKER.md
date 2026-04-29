@@ -65,6 +65,7 @@ docker compose logs -f app
 ```
 
 Access the application:
+
 - **Main App**: https://localhost (accept self-signed certificate warning)
 - **pgAdmin**: http://localhost:5050
 - **Direct App Access**: http://localhost:3000 (without Nginx)
@@ -251,8 +252,8 @@ docker compose ps
 1. Open https://localhost in browser
 2. Accept self-signed certificate warning (development only)
 3. Login with default credentials:
-   - Email: `admin@example.com`
-   - Password: `Admin123!`
+    - Email: `admin@example.com`
+    - Password: `Admin123!`
 
 **Important**: Change the admin password immediately after first login!
 
@@ -332,12 +333,12 @@ docker compose exec app npm run generate:encryption-key
 1. Access pgAdmin: http://localhost:5050
 2. Login with credentials from `docker-compose.env`
 3. Add server connection:
-   - Name: timeapp
-   - Host: db
-   - Port: 5432
-   - Database: timeapp
-   - Username: timeapp
-   - Password: (from docker-compose.env)
+    - Name: timeapp
+    - Host: db
+    - Port: 5432
+    - Database: timeapp
+    - Username: timeapp
+    - Password: (from docker-compose.env)
 
 ### Using CLI
 
@@ -403,15 +404,16 @@ This Docker setup serves HTTP only for simplicity and flexibility.
 ### Adding HTTPS (Your Choice)
 
 **Option 1: Caddy (Easiest - Auto SSL)**
+
 ```yaml
 # Add to docker-compose.yml
 caddy:
-  image: caddy:alpine
-  ports:
-    - "443:443"
-  volumes:
-    - ./Caddyfile:/etc/caddy/Caddyfile
-    - caddy_data:/data
+    image: caddy:alpine
+    ports:
+        - "443:443"
+    volumes:
+        - ./Caddyfile:/etc/caddy/Caddyfile
+        - caddy_data:/data
 ```
 
 ```caddyfile
@@ -422,6 +424,7 @@ yourdomain.com {
 ```
 
 **Option 2: Cloudflare Tunnel**
+
 ```bash
 # Zero-config SSL with Cloudflare
 docker run cloudflare/cloudflared:latest tunnel --no-autoupdate run --token YOUR_TOKEN
@@ -657,102 +660,108 @@ docker compose up -d --build
 ### Security Hardening
 
 1. **Change Default Passwords**
-   ```bash
-   # Update docker-compose.env
-   POSTGRES_PASSWORD=<strong-random-password>
-   PGADMIN_DEFAULT_PASSWORD=<strong-random-password>
-   ```
+
+    ```bash
+    # Update docker-compose.env
+    POSTGRES_PASSWORD=<strong-random-password>
+    PGADMIN_DEFAULT_PASSWORD=<strong-random-password>
+    ```
 
 2. **Use Secrets Management**
-   - Use Docker Secrets or external secret management (Vault, AWS Secrets Manager)
-   - Never commit `.env` or `docker-compose.env` to version control
+    - Use Docker Secrets or external secret management (Vault, AWS Secrets Manager)
+    - Never commit `.env` or `docker-compose.env` to version control
 
 3. **Restrict Network Access**
-   ```yaml
-   # docker-compose.yml: Remove port exposure for internal services
-   services:
-     db:
-       # Remove or comment out:
-       # ports:
-       #   - "5432:5432"
-   ```
+
+    ```yaml
+    # docker-compose.yml: Remove port exposure for internal services
+    services:
+        db:
+            # Remove or comment out:
+            # ports:
+            #   - "5432:5432"
+    ```
 
 4. **Enable Firewall**
-   ```bash
-   # Only allow HTTPS traffic
-   sudo ufw allow 443/tcp
-   sudo ufw enable
-   ```
+    ```bash
+    # Only allow HTTPS traffic
+    sudo ufw allow 443/tcp
+    sudo ufw enable
+    ```
 
 ### Performance Optimization
 
 1. **Database Connection Pooling**
-   ```bash
-   # .env - adjust pool size for your workload
-   DATABASE_URL="postgresql://user:pass@db:5432/timeapp?connection_limit=20"
-   ```
+
+    ```bash
+    # .env - adjust pool size for your workload
+    DATABASE_URL="postgresql://user:pass@db:5432/timeapp?connection_limit=20"
+    ```
 
 2. **Nginx Caching**
-   - Already configured in [nginx/nginx.conf](nginx/nginx.conf)
-   - Static assets cached for 365 days
-   - Enable additional caching if needed
+    - Already configured in [nginx/nginx.conf](nginx/nginx.conf)
+    - Static assets cached for 365 days
+    - Enable additional caching if needed
 
 3. **Resource Limits**
-   ```yaml
-   # docker-compose.yml
-   services:
-     app:
-       deploy:
-         resources:
-           limits:
-             cpus: '2'
-             memory: 2G
-           reservations:
-             memory: 512M
-   ```
+    ```yaml
+    # docker-compose.yml
+    services:
+        app:
+            deploy:
+                resources:
+                    limits:
+                        cpus: "2"
+                        memory: 2G
+                    reservations:
+                        memory: 512M
+    ```
 
 ### Monitoring
 
 1. **Health Checks**
-   - Already configured in docker-compose.yml
-   - Monitor with: `docker compose ps`
+    - Already configured in docker-compose.yml
+    - Monitor with: `docker compose ps`
 
 2. **Logs Aggregation**
-   ```bash
-   # Use Docker logging driver
-   # docker-compose.yml
-   services:
-     app:
-       logging:
-         driver: "json-file"
-         options:
-           max-size: "10m"
-           max-file: "3"
-   ```
+
+    ```bash
+    # Use Docker logging driver
+    # docker-compose.yml
+    services:
+      app:
+        logging:
+          driver: "json-file"
+          options:
+            max-size: "10m"
+            max-file: "3"
+    ```
 
 3. **Metrics Collection**
-   - Consider adding Prometheus + Grafana
-   - Or use external monitoring (DataDog, New Relic)
+    - Consider adding Prometheus + Grafana
+    - Or use external monitoring (DataDog, New Relic)
 
 ### Backup Strategy
 
 1. **Automated Backups**
-   ```bash
-   # Add to crontab
-   0 2 * * * /path/to/scripts/docker-backup-db.sh
-   ```
+
+    ```bash
+    # Add to crontab
+    0 2 * * * /path/to/scripts/docker-backup-db.sh
+    ```
 
 2. **Off-site Backups**
-   ```bash
-   # Upload to S3, rsync to remote server, etc.
-   aws s3 cp backup-$(date +%Y%m%d).sql.gz s3://your-bucket/backups/
-   ```
+
+    ```bash
+    # Upload to S3, rsync to remote server, etc.
+    aws s3 cp backup-$(date +%Y%m%d).sql.gz s3://your-bucket/backups/
+    ```
 
 3. **Test Restores Regularly**
-   ```bash
-   # Verify backups work monthly
-   ./scripts/docker-restore-db.sh latest-backup.sql
-   ```
+    ```bash
+    # Verify backups work monthly
+    ./scripts/docker-restore-db.sh latest-backup.sql
+    ```
 
 ### High Availability
 
@@ -781,6 +790,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ## Support
 
 For issues or questions:
+
 - Check [Troubleshooting](#troubleshooting) section
 - Review Docker logs: `docker compose logs`
 - Open an issue in the repository

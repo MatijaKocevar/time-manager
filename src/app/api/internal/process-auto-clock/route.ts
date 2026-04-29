@@ -146,7 +146,10 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        if (!clockedOutToday && shouldTrigger(checkoutReminderTime, state.checkoutReminderFiredAt)) {
+        if (
+            !clockedOutToday &&
+            shouldTrigger(checkoutReminderTime, state.checkoutReminderFiredAt)
+        ) {
             const result = await sendCheckoutReminder(user.id)
             if (result.success) {
                 await prisma.autoClockState.update({

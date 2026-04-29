@@ -56,9 +56,7 @@ export async function getInProgressTasksForTracker(): Promise<TaskDisplay[]> {
             }),
         ])
 
-        const latestEntryMap = new Map(
-            latestEntries.map((e) => [e.taskId, e._max.startTime])
-        )
+        const latestEntryMap = new Map(latestEntries.map((e) => [e.taskId, e._max.startTime]))
 
         const taskDisplays: TaskDisplay[] = tasks.map((task) => {
             const { list, ...taskData } = task

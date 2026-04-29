@@ -17,14 +17,14 @@ function cleanText(text: string): string {
 function extractTextBetween(html: string, before: string): string | null {
     const directTextRegex = new RegExp(`${before}\\s*</b>\\s*([^<]+)`, "i")
     const directMatch = html.match(directTextRegex)
-    
+
     if (directMatch && directMatch[1].trim() !== "") {
         return cleanText(directMatch[1])
     }
 
     const spanRegex = new RegExp(`${before}\\s*</b>\\s*<span[^>]*>([^<]+)</span>`, "i")
     const spanMatch = html.match(spanRegex)
-    
+
     if (spanMatch) {
         return cleanText(spanMatch[1])
     }
@@ -34,7 +34,7 @@ function extractTextBetween(html: string, before: string): string | null {
         "i"
     )
     const nextLineMatch = html.match(nextLineSpanRegex)
-    
+
     if (nextLineMatch) {
         return cleanText(nextLineMatch[1])
     }
