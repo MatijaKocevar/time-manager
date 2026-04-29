@@ -57,6 +57,7 @@ export default async function TrackerPage() {
         trackingType: t("trackingType"),
         todayEntries: t("todayEntries"),
         work: tTypes("work"),
+        workFromHome: tTypes("workFromHome"),
         break: tTypes("break"),
         private: tTypes("private"),
         noTasksAvailable: t("noTasksAvailable"),
