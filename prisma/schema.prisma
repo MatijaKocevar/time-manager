@@ -85,6 +85,7 @@ model User {
   autoCheckoutCancellations AutoCheckoutCancellation[]
   workTimeAdjustments       WorkTimeAdjustment[]
   tutorialsSeen             TutorialSeen[]
+  autoClockLogs             AutoClockLog[]
 }
 
 model HourEntry {
@@ -451,6 +452,25 @@ model WorkTimeAdjustment {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId])
+  @@index([date])
+}
+
+model AutoClockLog {
+  id                      String    @id @default(cuid())
+  userId                  String
+  date                    DateTime
+  clockedInAt             DateTime?
+  clockedOutAt            DateTime?
+  checkinReminderFiredAt  DateTime?
+  checkinFiredAt          DateTime?
+  checkoutReminderFiredAt DateTime?
+  checkoutFiredAt         DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
   @@index([userId])

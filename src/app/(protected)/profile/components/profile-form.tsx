@@ -9,14 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
 import { UserAvatar } from "@/components/user-avatar"
+import { TimePicker } from "@/components/ui/datetime-picker"
 import { Eye, EyeOff, AlertTriangle } from "lucide-react"
 import { updateProfile } from "../actions/profile-actions"
 import { useProfileStore } from "../stores/profile-store"
@@ -24,7 +18,6 @@ import { DeactivateAccountDialog } from "./deactivate-account-dialog"
 import {
     MIN_PASSWORD_LENGTH,
     ROLE_COLORS,
-    TIME_PICKER_CONFIG,
     DEFAULT_WORK_HOURS,
 } from "../constants/profile-constants"
 import type { UserRole } from "@/types"
@@ -40,9 +33,13 @@ interface ProfileFormProps {
         workEndTime: string | null
         workHoursPerDay: number | null
     }
+    todayAdjustment?: {
+        adjustedStartTime: string | null
+        adjustedEndTime: string | null
+    } | null
 }
 
-export function ProfileForm({ user }: ProfileFormProps) {
+export function ProfileForm({ user, todayAdjustment }: ProfileFormProps) {
     const router = useRouter()
     const t = useTranslations("profile.form")
     const tWorkHours = useTranslations("profile.workHours")
@@ -69,12 +66,15 @@ export function ProfileForm({ user }: ProfileFormProps) {
     const setError = useProfileStore((state) => state.setError)
     const setSuccess = useProfileStore((state) => state.setSuccess)
 
-    const timeOptions = Array.from({ length: TIME_PICKER_CONFIG.TOTAL_INTERVALS }, (_, i) => {
-        const hours = Math.floor(i / TIME_PICKER_CONFIG.INTERVALS_PER_HOUR)
-        const minutes =
-            (i % TIME_PICKER_CONFIG.INTERVALS_PER_HOUR) * TIME_PICKER_CONFIG.MINUTES_PER_INTERVAL
-        return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`
-    })
+    const timeStringToDate = (time: string): Date => {
+        const [h, m] = time.split(":").map(Number)
+        const d = new Date()
+        d.setHours(h, m, 0, 0)
+        return d
+    }
+
+    const dateToTimeString = (date: Date): string =>
+        `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`
 
     const calculateHoursPerDay = (start: string, end: string): number => {
         const [startH, startM] = start.split(":").map(Number)
@@ -178,41 +178,29 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="work-start-time">{tWorkHours("startTime")}</Label>
-                                <Select
-                                    value={workStartTime}
-                                    onValueChange={setWorkStartTime}
-                                    disabled={isLoading}
-                                >
-                                    <SelectTrigger id="work-start-time">
-                                        <SelectValue>{workStartTime}</SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {timeOptions.map((time) => (
-                                            <SelectItem key={time} value={time}>
-                                                {time}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <TimePicker
+                                    value={timeStringToDate(workStartTime)}
+                                    onChange={(date) => setWorkStartTime(dateToTimeString(date))}
+                                    timePicker={{ hour: true, minute: true, second: false }}
+                                />
+                                {todayAdjustment?.adjustedStartTime && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Today: {todayAdjustment.adjustedStartTime}
+                                    </p>
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="work-end-time">{tWorkHours("endTime")}</Label>
-                                <Select
-                                    value={workEndTime}
-                                    onValueChange={setWorkEndTime}
-                                    disabled={isLoading}
-                                >
-                                    <SelectTrigger id="work-end-time">
-                                        <SelectValue>{workEndTime}</SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {timeOptions.map((time) => (
-                                            <SelectItem key={time} value={time}>
-                                                {time}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <TimePicker
+                                    value={timeStringToDate(workEndTime)}
+                                    onChange={(date) => setWorkEndTime(dateToTimeString(date))}
+                                    timePicker={{ hour: true, minute: true, second: false }}
+                                />
+                                {todayAdjustment?.adjustedEndTime && (
+                                    <p className="text-xs text-muted-foreground">
+                                        Today: {todayAdjustment.adjustedEndTime}
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <div className="text-sm text-muted-foreground">

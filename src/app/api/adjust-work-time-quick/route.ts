@@ -43,43 +43,76 @@ export async function POST(request: NextRequest) {
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
-        const timeToAdjust = type === "start" ? user.workStartTime : user.workEndTime
-        if (!timeToAdjust) {
-            return NextResponse.json({ error: `Work ${type} time not configured` }, { status: 400 })
+        const addMinutes = (time: string, minutes: number): string => {
+            const [h, m] = time.split(":").map(Number)
+            const total = h * 60 + m + minutes
+            return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`
         }
 
-        const [hours, minutes] = timeToAdjust.split(":").map(Number)
-        const newMinutes = minutes + delayMinutes
-        const extraHours = Math.floor(newMinutes / 60)
-        const finalMinutes = newMinutes % 60
-        const finalHours = (hours + extraHours) % 24
+        if (type === "start") {
+            if (!user.workStartTime) {
+                return NextResponse.json(
+                    { error: "Work start time not configured" },
+                    { status: 400 }
+                )
+            }
+            const adjustedStartTime = addMinutes(user.workStartTime, delayMinutes)
+            const adjustedEndTime = user.workEndTime
+                ? addMinutes(user.workEndTime, delayMinutes)
+                : undefined
 
-        const adjustedTime = `${String(finalHours).padStart(2, "0")}:${String(finalMinutes).padStart(2, "0")}`
+            const existing = await prisma.workTimeAdjustment.findUnique({
+                where: { userId_date: { userId: session.user.id, date: today } },
+            })
 
-        const updateData =
-            type === "start"
-                ? { adjustedStartTime: adjustedTime }
-                : { adjustedEndTime: adjustedTime }
+            const baseStart = existing?.adjustedStartTime ?? user.workStartTime
+            const baseEnd = existing?.adjustedEndTime ?? user.workEndTime
 
-        await prisma.workTimeAdjustment.upsert({
-            where: {
-                userId_date: {
+            const newStart = addMinutes(baseStart, delayMinutes)
+            const newEnd = baseEnd ? addMinutes(baseEnd, delayMinutes) : undefined
+
+            await prisma.workTimeAdjustment.upsert({
+                where: { userId_date: { userId: session.user.id, date: today } },
+                create: {
                     userId: session.user.id,
                     date: today,
+                    adjustedStartTime: newStart,
+                    ...(newEnd && { adjustedEndTime: newEnd }),
                 },
-            },
-            create: {
-                userId: session.user.id,
-                date: today,
-                ...updateData,
-            },
-            update: updateData,
+                update: {
+                    adjustedStartTime: newStart,
+                    ...(newEnd && { adjustedEndTime: newEnd }),
+                },
+            })
+
+            return NextResponse.json({
+                success: true,
+                message: `Work times delayed by ${delayMinutes} minutes`,
+                adjustedStartTime: newStart,
+                adjustedEndTime: newEnd,
+            })
+        }
+
+        if (!user.workEndTime) {
+            return NextResponse.json({ error: "Work end time not configured" }, { status: 400 })
+        }
+
+        const existing = await prisma.workTimeAdjustment.findUnique({
+            where: { userId_date: { userId: session.user.id, date: today } },
+        })
+        const baseEnd = existing?.adjustedEndTime ?? user.workEndTime
+        const newEnd = addMinutes(baseEnd, delayMinutes)
+
+        await prisma.workTimeAdjustment.upsert({
+            where: { userId_date: { userId: session.user.id, date: today } },
+            create: { userId: session.user.id, date: today, adjustedEndTime: newEnd },
+            update: { adjustedEndTime: newEnd },
         })
 
         return NextResponse.json({
             success: true,
-            message: `Work ${type} time delayed by ${delayMinutes} minutes`,
-            adjustedTime,
+            message: `Work end time delayed by ${delayMinutes} minutes`,
+            adjustedEndTime: newEnd,
         })
     } catch (error) {
         console.error("Error adjusting work time:", error)

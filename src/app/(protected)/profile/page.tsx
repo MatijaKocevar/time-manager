@@ -5,7 +5,6 @@ import { PushNotificationManager } from "./components/push-notification-manager"
 import { NotificationPreferences } from "./components/notification-preferences"
 import { UrnikCredentialsForm } from "./components/urnik-credentials-form"
 import { AutoCheckinPreferences } from "./components/auto-checkin-preferences"
-import { WorkTimeAdjustment } from "./components/work-time-adjustment"
 import { getCurrentUser, getAutoCheckinPreferences } from "./actions/profile-actions"
 import {
     hasUserSubscription,
@@ -56,7 +55,7 @@ export default async function ProfilePage() {
 
     return (
         <div className="space-y-4">
-            <ProfileForm user={user} />
+            <ProfileForm user={user} todayAdjustment={user.workTimeAdjustments[0] ?? null} />
             <UrnikCredentialsForm
                 initialUsername={user.urnikUsername}
                 hasCredentials={!!user.urnikUsername}
@@ -68,10 +67,6 @@ export default async function ProfilePage() {
                 initialEnabled={autoCheckinResult.preferences.autoCheckInEnabled}
                 initialCheckoutEnabled={autoCheckinResult.preferences.autoCheckOutEnabled}
                 isDemo={user.isDemo}
-            />
-            <WorkTimeAdjustment
-                defaultStartTime={user.workStartTime || undefined}
-                defaultEndTime={user.workEndTime || undefined}
             />
             <PushNotificationManager
                 initialHasSubscription={hasSubscription}
