@@ -496,6 +496,20 @@
             "type": "Tip",
             "period": "Obdobje"
         },
+        "managedUsers": {
+            "title": "Upravljani uporabniki",
+            "description": "Izberite, za katere uporabnike je ta administratorski račun odgovoren. Prejemali boste samo obvestila o zahtevkih teh uporabnikov.",
+            "emptyDescription": "Ni dodeljenih uporabnikov. Prejemali boste obvestila o vseh uporabnikih.",
+            "autoAdminLabel": "Samodejni administrator",
+            "autoAdminDescription": "Samodejno odobri zahtevke dodeljenih uporabnikov. Ob samodejnem odobrenju boste prejeli informativno obvestilo.",
+            "selectAll": "Izberi vse",
+            "deselectAll": "Počisti vse",
+            "saveButton": "Shrani nastavitve",
+            "saving": "Shranjevanje...",
+            "saveSuccess": "Nastavitve administratorja uspešno shranjene",
+            "saveError": "Napaka pri shranjevanju nastavitev administratorja",
+            "noUsers": "Ni aktivnih uporabnikov"
+        },
         "users": {
             "createUser": "Ustvari uporabnika",
             "deleteUserConfirm": "Trajno odstrani tega uporabnika iz sistema. Tega dejanja ni mogoče razveljaviti.",

@@ -86,6 +86,22 @@ model User {
   workTimeAdjustments       WorkTimeAdjustment[]
   tutorialsSeen             TutorialSeen[]
   autoClockState            AutoClockState?
+  autoAdmin                 Boolean                    @default(false)
+  managedUsers              AdminUserAssignment[]      @relation("AdminAssignments")
+  assignedAdmins            AdminUserAssignment[]      @relation("ManagedByAdmin")
+}
+
+model AdminUserAssignment {
+  id        String   @id @default(cuid())
+  adminId   String
+  userId    String
+  createdAt DateTime @default(now())
+  admin     User     @relation("AdminAssignments", fields: [adminId], references: [id], onDelete: Cascade)
+  user      User     @relation("ManagedByAdmin", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([adminId, userId])
+  @@index([adminId])
+  @@index([userId])
 }
 
 model HourEntry {

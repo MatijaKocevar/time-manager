@@ -11,6 +11,7 @@ import { RequestStatusBreakdown } from "./components/request-status-breakdown"
 import { QuickActions } from "./components/quick-actions"
 import { RecentPendingRequests } from "./components/recent-pending-requests"
 import { UpcomingHolidays } from "./components/upcoming-holidays"
+import { ManagedUsersSection } from "./components/managed-users-section"
 import { getUpcomingHolidays } from "./utils"
 import type { Request } from "./schemas"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
@@ -184,6 +185,8 @@ export default async function AdminOverviewPage() {
                     />
                     <QuickActions translations={quickActionsTranslations} />
                 </div>
+
+                <ManagedUsersSection />
 
                 <RecentPendingRequests
                     requests={recentPendingRequests}

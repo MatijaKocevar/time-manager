@@ -166,13 +166,33 @@ export async function createRequest(input: CreateRequestInput) {
         const shouldNotifyAdmins = !sendToUrnikNet || createdRequest.urnikNetStatus === "FAILED"
 
         if (shouldNotifyAdmins) {
+            const autoAdmin = await prisma.user.findFirst({
+                where: {
+                    role: "ADMIN",
+                    autoAdmin: true,
+                    managedUsers: { some: { userId: session.user.id } },
+                },
+                select: { id: true },
+            })
+
+            if (autoAdmin) {
+                const latestRequest = await prisma.request.findUnique({
+                    where: { id: createdRequest.id },
+                })
+                if (latestRequest) {
+                    await executeApproval(latestRequest, autoAdmin.id)
+                }
+            }
+
             notifyAdminsNewRequest({
                 requestId: createdRequest.id,
+                requestUserId: session.user.id,
                 userName: session.user.name || session.user.email || "Unknown User",
                 requestType: type,
                 startDate,
                 endDate,
                 reason,
+                autoApproved: !!autoAdmin,
             }).catch((error) => {
                 console.error("Failed to notify admins:", error)
             })

@@ -496,6 +496,20 @@
             "type": "Type",
             "period": "Period"
         },
+        "managedUsers": {
+            "title": "Managed Users",
+            "description": "Select which users this admin account is responsible for. You will only receive notifications about requests from these users.",
+            "emptyDescription": "No users assigned. You will receive notifications about all users.",
+            "autoAdminLabel": "Auto-Admin",
+            "autoAdminDescription": "Automatically approve requests from your assigned users. You will receive an informational notification when a request is auto-approved.",
+            "selectAll": "Select all",
+            "deselectAll": "Deselect all",
+            "saveButton": "Save Settings",
+            "saving": "Saving...",
+            "saveSuccess": "Admin settings saved successfully",
+            "saveError": "Failed to save admin settings",
+            "noUsers": "No active users found"
+        },
         "users": {
             "createUser": "Create User",
             "deleteUserConfirm": "Permanently remove this user from the system. This action cannot be undone.",

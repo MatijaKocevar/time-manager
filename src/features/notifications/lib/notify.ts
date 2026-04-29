@@ -49,17 +49,26 @@ async function createNotificationRecord(
 
 interface NotifyAdminsNewRequestParams {
     requestId: string
+    requestUserId: string
     userName: string
     requestType: string
     startDate: Date
     endDate: Date
     reason?: string
+    autoApproved?: boolean
 }
 
 export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParams) {
     try {
         const admins = await prisma.user.findMany({
-            where: { role: "ADMIN" },
+            where: {
+                role: "ADMIN",
+                id: { not: params.requestUserId },
+                OR: [
+                    { managedUsers: { none: {} } },
+                    { managedUsers: { some: { userId: params.requestUserId } } },
+                ],
+            },
             select: { id: true, email: true, name: true, locale: true },
         })
 
@@ -76,6 +85,13 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
 
         const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
 
+        const notificationTitle = params.autoApproved
+            ? "Request Auto-Approved"
+            : "New Time-Off Request"
+        const notificationBody = params.autoApproved
+            ? `${params.userName} submitted a ${requestTypeLabel} request (auto-approved)`
+            : `${params.userName} has submitted a new ${requestTypeLabel} request`
+
         let pushSent = 0
         let emailsSent = 0
 
@@ -85,8 +101,8 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
             if (preferences.pushNewRequest) {
                 try {
                     await sendPushNotification(admin.id, {
-                        title: "New Time-Off Request",
-                        body: `${params.userName} has submitted a new ${requestTypeLabel} request`,
+                        title: notificationTitle,
+                        body: notificationBody,
                         url: "/admin/pending-requests",
                     })
                     pushSent++
@@ -98,13 +114,14 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
             await createNotificationRecord(
                 admin.id,
                 "REQUEST_SUBMITTED",
-                "New Time-Off Request",
-                `${params.userName} has submitted a new ${requestTypeLabel} request`,
+                notificationTitle,
+                notificationBody,
                 "/admin/pending-requests",
                 {
                     requestId: params.requestId,
                     requestType: params.requestType,
                     userName: params.userName,
+                    autoApproved: params.autoApproved ?? false,
                 }
             )
 
@@ -112,7 +129,7 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
                 const locale = (admin.locale === "sl" ? "sl" : "en") as "en" | "sl"
                 const emailResult = await sendEmail(
                     admin.email,
-                    `New Request: ${params.userName} - ${requestTypeLabel}`,
+                    `${params.autoApproved ? "[Auto-Approved] " : ""}New Request: ${params.userName} - ${requestTypeLabel}`,
                     newRequestForAdminsEmail(
                         {
                             userName: params.userName,
