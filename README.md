@@ -77,22 +77,26 @@ Run the complete application stack with Docker (includes Next.js app, PostgreSQL
 ```
 
 **That's it!** The script will:
+
 - Create `.env.docker` with Docker-specific configuration
 - Generate secure secrets automatically
 - Start all services (app, database, pgAdmin, nginx)
 
 **Access the application:**
+
 - Main app: http://localhost:6280
 - pgAdmin: http://localhost:8888
 - Default credentials: `demo@example.com` / `password123`
 
 **For HTTPS/SSL:**
 This setup uses HTTP only for simplicity. If you need HTTPS:
+
 - Use Caddy, Traefik, or nginx reverse proxy
 - Use Cloudflare Tunnel
 - Use your domain's SSL termination
 
 **Management commands:**
+
 ```bash
 # View logs
 docker compose logs -f app

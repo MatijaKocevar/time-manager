@@ -20,14 +20,24 @@ function parseTimeToDate(timeString: string): Date {
     return fromZonedTime(ljubljanaDate, TIMEZONE)
 }
 
-function shouldTrigger(triggerTime: Date | null, lastChecked: Date | null): boolean {
+function shouldTrigger(triggerTime: Date | null, lastFired: Date | null): boolean {
     if (!triggerTime) return false
     const now = new Date()
     if (now < triggerTime) return false
     const fifteenMinutesAfterTrigger = new Date(triggerTime.getTime() + 15 * 60 * 1000)
     if (now > fifteenMinutesAfterTrigger) return false
-    if (!lastChecked) return true
-    return lastChecked < triggerTime && now >= triggerTime
+    if (!lastFired) return true
+    return lastFired < triggerTime && now >= triggerTime
+}
+
+function isTodayInLjubljana(date: Date): boolean {
+    const nowInLjubljana = toZonedTime(new Date(), TIMEZONE)
+    const dateInLjubljana = toZonedTime(date, TIMEZONE)
+    return (
+        dateInLjubljana.getFullYear() === nowInLjubljana.getFullYear() &&
+        dateInLjubljana.getMonth() === nowInLjubljana.getMonth() &&
+        dateInLjubljana.getDate() === nowInLjubljana.getDate()
+    )
 }
 
 function getTodayDate(): Date {
@@ -97,17 +107,21 @@ export async function POST(request: NextRequest) {
             ? new Date(checkoutTime.getTime() - 15 * 60 * 1000)
             : null
 
-        const log = await prisma.autoClockLog.upsert({
-            where: { userId_date: { userId: user.id, date: today } },
+        const state = await prisma.autoClockState.upsert({
+            where: { userId: user.id },
             update: {},
-            create: { userId: user.id, date: today },
+            create: { userId: user.id },
         })
 
-        if (!log.clockedInAt && shouldTrigger(checkinReminderTime, log.checkinReminderFiredAt)) {
+        const clockedInToday = state.clockedInAt !== null && isTodayInLjubljana(state.clockedInAt)
+        const clockedOutToday =
+            state.clockedOutAt !== null && isTodayInLjubljana(state.clockedOutAt)
+
+        if (!clockedInToday && shouldTrigger(checkinReminderTime, state.checkinReminderFiredAt)) {
             const result = await sendCheckinReminder(user.id)
             if (result.success) {
-                await prisma.autoClockLog.update({
-                    where: { userId_date: { userId: user.id, date: today } },
+                await prisma.autoClockState.update({
+                    where: { userId: user.id },
                     data: { checkinReminderFiredAt: new Date() },
                 })
             } else {
@@ -116,15 +130,15 @@ export async function POST(request: NextRequest) {
         }
 
         const alreadyCheckedInToday =
-            log.clockedInAt !== null ||
-            (log.checkinFiredAt !== null &&
+            clockedInToday ||
+            (state.checkinFiredAt !== null &&
                 checkinTime !== null &&
-                log.checkinFiredAt >= checkinTime)
+                isTodayInLjubljana(state.checkinFiredAt))
 
-        if (!alreadyCheckedInToday && shouldTrigger(checkinTime, log.checkinFiredAt)) {
+        if (!alreadyCheckedInToday && shouldTrigger(checkinTime, state.checkinFiredAt)) {
             const result = await processAutoCheckin(user.id)
-            await prisma.autoClockLog.update({
-                where: { userId_date: { userId: user.id, date: today } },
+            await prisma.autoClockState.update({
+                where: { userId: user.id },
                 data: { checkinFiredAt: new Date() },
             })
             if (!result.success) {
@@ -132,11 +146,14 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        if (!log.clockedOutAt && shouldTrigger(checkoutReminderTime, log.checkoutReminderFiredAt)) {
+        if (
+            !clockedOutToday &&
+            shouldTrigger(checkoutReminderTime, state.checkoutReminderFiredAt)
+        ) {
             const result = await sendCheckoutReminder(user.id)
             if (result.success) {
-                await prisma.autoClockLog.update({
-                    where: { userId_date: { userId: user.id, date: today } },
+                await prisma.autoClockState.update({
+                    where: { userId: user.id },
                     data: { checkoutReminderFiredAt: new Date() },
                 })
             } else {
@@ -144,12 +161,10 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const alreadyCheckedOutToday = log.clockedOutAt !== null
-
-        if (!alreadyCheckedOutToday && shouldTrigger(checkoutTime, log.checkoutFiredAt)) {
+        if (!clockedOutToday && shouldTrigger(checkoutTime, state.checkoutFiredAt)) {
             const result = await processAutoCheckout(user.id)
-            await prisma.autoClockLog.update({
-                where: { userId_date: { userId: user.id, date: today } },
+            await prisma.autoClockState.update({
+                where: { userId: user.id },
                 data: { checkoutFiredAt: new Date() },
             })
             if (!result.success) {

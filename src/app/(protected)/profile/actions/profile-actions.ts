@@ -118,6 +118,14 @@ export async function updateProfile(input: UpdateProfileInput) {
                 data: updateData,
             })
 
+            if (workStartTime !== undefined || workEndTime !== undefined) {
+                const today = new Date()
+                today.setHours(0, 0, 0, 0)
+                await prisma.workTimeAdjustment.deleteMany({
+                    where: { userId: session.user.id, date: today },
+                })
+            }
+
             revalidatePath("/profile")
             return { success: true }
         } catch (error) {
@@ -142,6 +150,14 @@ export async function updateProfile(input: UpdateProfileInput) {
             where: { id: session.user.id },
             data: updateData,
         })
+
+        if (workStartTime !== undefined || workEndTime !== undefined) {
+            const today = new Date()
+            today.setHours(0, 0, 0, 0)
+            await prisma.workTimeAdjustment.deleteMany({
+                where: { userId: session.user.id, date: today },
+            })
+        }
 
         revalidatePath("/profile")
         return { success: true }

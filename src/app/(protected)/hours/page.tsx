@@ -34,7 +34,16 @@ export default async function HoursPage({ searchParams }: HoursPageProps) {
     const weekRange = getDateRange(VIEW_MODE_VALUES.WEEKLY, selectedDate)
     const monthRange = getDateRange(VIEW_MODE_VALUES.MONTHLY, selectedDate)
 
-    const [entries, weeklyEntries, monthlyEntries, holidays, attendanceData, tutorialsSeen, tTutorial, tHours] = await Promise.all([
+    const [
+        entries,
+        weeklyEntries,
+        monthlyEntries,
+        holidays,
+        attendanceData,
+        tutorialsSeen,
+        tTutorial,
+        tHours,
+    ] = await Promise.all([
         getHourEntries(dateRange.startDate, dateRange.endDate),
         getHourEntries(weekRange.startDate, weekRange.endDate),
         getHourEntries(monthRange.startDate, monthRange.endDate),

@@ -35,6 +35,7 @@ sudo cp /etc/letsencrypt/live/yourdomain.com/privkey.pem nginx/ssl/key.pem
 ### Option 2: Commercial Certificate
 
 Place your certificate files in this directory:
+
 - `cert.pem` - Your SSL certificate (or `fullchain.pem` for Let's Encrypt)
 - `key.pem` - Your private key
 

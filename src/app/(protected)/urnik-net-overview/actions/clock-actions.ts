@@ -244,9 +244,9 @@ export async function clockInToUrnik(isWorkFromHome: boolean = false) {
         if (result.success) {
             const today = new Date()
             today.setUTCHours(0, 0, 0, 0)
-            await prisma.autoClockLog.upsert({
-                where: { userId_date: { userId: session.user.id, date: today } },
-                create: { userId: session.user.id, date: today, clockedInAt: new Date() },
+            await prisma.autoClockState.upsert({
+                where: { userId: session.user.id },
+                create: { userId: session.user.id, clockedInAt: new Date() },
                 update: { clockedInAt: new Date() },
             })
             revalidatePath("/urnik-net-overview")
@@ -276,9 +276,9 @@ export async function clockOutFromUrnik() {
         if (result.success) {
             const today = new Date()
             today.setUTCHours(0, 0, 0, 0)
-            await prisma.autoClockLog.upsert({
-                where: { userId_date: { userId: session.user.id, date: today } },
-                create: { userId: session.user.id, date: today, clockedOutAt: new Date() },
+            await prisma.autoClockState.upsert({
+                where: { userId: session.user.id },
+                create: { userId: session.user.id, clockedOutAt: new Date() },
                 update: { clockedOutAt: new Date() },
             })
             revalidatePath("/urnik-net-overview")

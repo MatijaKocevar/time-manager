@@ -155,7 +155,10 @@ export function UrnikNetRequestsView({
 
             {allRows.length > 0 && (
                 <div className="flex-1 overflow-hidden relative">
-                    <div id="urnik-requests-table" className="rounded-md border overflow-auto h-full">
+                    <div
+                        id="urnik-requests-table"
+                        className="rounded-md border overflow-auto h-full"
+                    >
                         <Table>
                             <RequestsTableHeader {...t.table} />
                             <TableBody>

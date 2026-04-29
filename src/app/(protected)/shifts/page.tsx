@@ -26,7 +26,16 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
         return `${year}-${month}-${day}`
     }
 
-    const [shiftsResult, usersResult, holidays, t, tShifts, tutorialsSeen, tTutorial, tShiftsTutorial] = await Promise.all([
+    const [
+        shiftsResult,
+        usersResult,
+        holidays,
+        t,
+        tShifts,
+        tutorialsSeen,
+        tTutorial,
+        tShiftsTutorial,
+    ] = await Promise.all([
         getShiftsForPeriod({ startDate, endDate }),
         getAllUsers(),
         getHolidaysInRange(formatDate(startDate), formatDate(endDate)),
