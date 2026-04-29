@@ -12,6 +12,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { UserAvatar } from "@/components/user-avatar"
 import { TimePicker } from "@/components/ui/datetime-picker"
 import { Eye, EyeOff, AlertTriangle } from "lucide-react"
+import { toast } from "sonner"
 import { updateProfile } from "../actions/profile-actions"
 import { useProfileStore } from "../stores/profile-store"
 import { DeactivateAccountDialog } from "./deactivate-account-dialog"
@@ -60,11 +61,7 @@ export function ProfileForm({ user, todayAdjustment }: ProfileFormProps) {
     const [workEndTime, setWorkEndTime] = useState(user.workEndTime || DEFAULT_WORK_HOURS.END_TIME)
 
     const isLoading = useProfileStore((state) => state.isLoading)
-    const error = useProfileStore((state) => state.error)
-    const success = useProfileStore((state) => state.success)
     const setLoading = useProfileStore((state) => state.setLoading)
-    const setError = useProfileStore((state) => state.setError)
-    const setSuccess = useProfileStore((state) => state.setSuccess)
 
     const timeStringToDate = (time: string): Date => {
         const [h, m] = time.split(":").map(Number)
@@ -87,11 +84,9 @@ export function ProfileForm({ user, todayAdjustment }: ProfileFormProps) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
-        setSuccess(false)
-        setError("")
 
         if (newPassword && newPassword !== confirmPassword) {
-            setError(tValidation("passwordsDoNotMatch"))
+            toast.error(tValidation("passwordsDoNotMatch"))
             setLoading(false)
             return
         }
@@ -110,10 +105,10 @@ export function ProfileForm({ user, todayAdjustment }: ProfileFormProps) {
             const errorMessage = result.error.startsWith("profile.")
                 ? tValidation(result.error.split(".").pop() as never)
                 : result.error
-            setError(errorMessage)
+            toast.error(errorMessage)
             setLoading(false)
         } else {
-            setSuccess(true)
+            toast.success(tMessages("updateSuccess"))
             setCurrentPassword("")
             setNewPassword("")
             setConfirmPassword("")
@@ -142,14 +137,6 @@ export function ProfileForm({ user, todayAdjustment }: ProfileFormProps) {
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    {error && (
-                        <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</div>
-                    )}
-                    {success && (
-                        <div className="text-sm text-green-600 bg-green-50 p-3 rounded-md">
-                            {tMessages("updateSuccess")}
-                        </div>
-                    )}
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">{t("name")}</Label>
