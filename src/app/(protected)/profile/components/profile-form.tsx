@@ -331,23 +331,27 @@ export function ProfileForm({ user, todayAdjustment }: ProfileFormProps) {
                     <CardDescription>{t("dangerZoneDescription")}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <div className="inline-block">
-                                <Button
-                                    type="button"
-                                    variant="destructive"
-                                    onClick={() => setShowDeactivateDialog(true)}
-                                    disabled={isLoading || user.isDemo}
-                                >
-                                    {t("deactivateButton")}
-                                </Button>
-                            </div>
-                        </TooltipTrigger>
-                        {user.isDemo && (
-                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
-                        )}
-                    </Tooltip>
+                    <div className="flex justify-end">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className="inline-block">
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        onClick={() => setShowDeactivateDialog(true)}
+                                        disabled={isLoading || user.isDemo}
+                                    >
+                                        {t("deactivateButton")}
+                                    </Button>
+                                </div>
+                            </TooltipTrigger>
+                            {user.isDemo && (
+                                <TooltipContent>
+                                    {tCommonMessages("demoRestriction")}
+                                </TooltipContent>
+                            )}
+                        </Tooltip>
+                    </div>
                 </CardContent>
             </Card>
 

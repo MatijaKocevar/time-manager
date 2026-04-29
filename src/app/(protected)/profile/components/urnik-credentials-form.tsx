@@ -161,14 +161,22 @@ export function UrnikCredentialsForm({
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-2">
-                        <Button type="submit" disabled={isLoading || isTesting || isDemo}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {isLoading ? t.saving : t.saveCredentials}
-                        </Button>
+                    {!hasCredentials && (
+                        <div className="flex justify-end">
+                            <Button type="submit" disabled={isLoading || isTesting || isDemo}>
+                                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {isLoading ? t.saving : t.saveCredentials}
+                            </Button>
+                        </div>
+                    )}
 
-                        {hasCredentials && (
-                            <>
+                    {hasCredentials && (
+                        <>
+                            <div className="hidden sm:flex sm:justify-end sm:gap-2">
+                                <Button type="submit" disabled={isLoading || isTesting || isDemo}>
+                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isLoading ? t.saving : t.saveCredentials}
+                                </Button>
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -178,7 +186,6 @@ export function UrnikCredentialsForm({
                                     {isTesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {isTesting ? t.testing : t.testConnection}
                                 </Button>
-
                                 <Button
                                     type="button"
                                     variant="destructive"
@@ -187,9 +194,41 @@ export function UrnikCredentialsForm({
                                 >
                                     {t.clearCredentials}
                                 </Button>
-                            </>
-                        )}
-                    </div>
+                            </div>
+
+                            <div className="space-y-2 sm:hidden">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleTest}
+                                    disabled={isLoading || isTesting || isDemo}
+                                    className="w-full"
+                                >
+                                    {isTesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isTesting ? t.testing : t.testConnection}
+                                </Button>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Button
+                                        type="submit"
+                                        disabled={isLoading || isTesting || isDemo}
+                                    >
+                                        {isLoading && (
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        )}
+                                        {isLoading ? t.saving : t.saveCredentials}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        onClick={handleClear}
+                                        disabled={isLoading || isTesting || isDemo}
+                                    >
+                                        {t.clearCredentials}
+                                    </Button>
+                                </div>
+                            </div>
+                        </>
+                    )}
 
                     {hasCredentials && (
                         <>
