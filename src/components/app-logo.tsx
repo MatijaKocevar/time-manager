@@ -44,7 +44,9 @@ export function AppLogo({ size = "md", showText = true, className = "" }: AppLog
                     <span className={`font-bold tracking-tight ${textSizes[size]}`}>
                         {t("title")}
                     </span>
-                    <span className="text-xs text-muted-foreground">{t("company")}</span>
+                    <span className="text-xs text-muted-foreground">
+                        {process.env.NEXT_PUBLIC_COMPANY_NAME ?? "Local Server"}
+                    </span>
                 </div>
             )}
         </div>
