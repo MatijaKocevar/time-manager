@@ -81,6 +81,8 @@ export async function updateProfile(input: UpdateProfileInput) {
         return { error: "profile.validation.currentPasswordRequired" }
     }
 
+    let hashedPassword: string | undefined
+
     if (currentPassword && newPassword) {
         await requireNotDemo(session.user.id)
 
@@ -98,50 +100,19 @@ export async function updateProfile(input: UpdateProfileInput) {
             return { error: "profile.validation.currentPasswordIncorrect" }
         }
 
-        const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS)
-
-        try {
-            const updateData: {
-                name: string
-                password: string
-                workStartTime?: string
-                workEndTime?: string
-                workHoursPerDay?: number
-            } = { name, password: hashedPassword }
-
-            if (workStartTime !== undefined) updateData.workStartTime = workStartTime
-            if (workEndTime !== undefined) updateData.workEndTime = workEndTime
-            if (workHoursPerDay !== undefined) updateData.workHoursPerDay = workHoursPerDay
-
-            await prisma.user.update({
-                where: { id: session.user.id },
-                data: updateData,
-            })
-
-            if (workStartTime !== undefined || workEndTime !== undefined) {
-                const today = new Date()
-                today.setHours(0, 0, 0, 0)
-                await prisma.workTimeAdjustment.deleteMany({
-                    where: { userId: session.user.id, date: today },
-                })
-            }
-
-            revalidatePath("/profile")
-            return { success: true }
-        } catch (error) {
-            console.error("Failed to update profile with password:", error)
-            return { error: "profile.messages.updateFailed" }
-        }
+        hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS)
     }
 
     try {
         const updateData: {
             name: string
+            password?: string
             workStartTime?: string
             workEndTime?: string
             workHoursPerDay?: number
         } = { name }
 
+        if (hashedPassword !== undefined) updateData.password = hashedPassword
         if (workStartTime !== undefined) updateData.workStartTime = workStartTime
         if (workEndTime !== undefined) updateData.workEndTime = workEndTime
         if (workHoursPerDay !== undefined) updateData.workHoursPerDay = workHoursPerDay
