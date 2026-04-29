@@ -6,7 +6,6 @@ interface ProfileStoreState {
     formData: ProfileFormState
     isLoading: boolean
     error: string
-    success: boolean
     deactivateForm: {
         isLoading: boolean
         error: string
@@ -20,7 +19,6 @@ interface ProfileStoreActions {
     setLoading: (isLoading: boolean) => void
     setError: (error: string) => void
     clearError: () => void
-    setSuccess: (success: boolean) => void
     setDeactivateLoading: (isLoading: boolean) => void
     setDeactivateError: (error: string) => void
     clearDeactivateError: () => void
@@ -36,7 +34,6 @@ export const useProfileStore = create<ProfileStoreState & ProfileStoreActions>((
     },
     isLoading: false,
     error: "",
-    success: false,
     deactivateForm: {
         isLoading: false,
         error: "",
@@ -59,12 +56,10 @@ export const useProfileStore = create<ProfileStoreState & ProfileStoreActions>((
                 workEndTime: DEFAULT_WORK_HOURS.END_TIME,
             },
             error: "",
-            success: false,
         })),
     setLoading: (isLoading) => set({ isLoading }),
     setError: (error) => set({ error, isLoading: false }),
     clearError: () => set({ error: "" }),
-    setSuccess: (success) => set({ success }),
     setDeactivateLoading: (isLoading) =>
         set((state) => ({
             deactivateForm: { ...state.deactivateForm, isLoading },

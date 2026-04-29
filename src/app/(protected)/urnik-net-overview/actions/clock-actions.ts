@@ -231,7 +231,7 @@ export async function performClockOutWithCookie(cookie: string) {
 
 export async function clockInToUrnik(isWorkFromHome: boolean = false) {
     try {
-        await requireAuth()
+        const session = await requireAuth()
 
         const cookie = await getUrnikCookie()
 
@@ -242,6 +242,13 @@ export async function clockInToUrnik(isWorkFromHome: boolean = false) {
         const result = await performClockInWithCookie(cookie, isWorkFromHome)
 
         if (result.success) {
+            const today = new Date()
+            today.setUTCHours(0, 0, 0, 0)
+            await prisma.autoClockLog.upsert({
+                where: { userId_date: { userId: session.user.id, date: today } },
+                create: { userId: session.user.id, date: today, clockedInAt: new Date() },
+                update: { clockedInAt: new Date() },
+            })
             revalidatePath("/urnik-net-overview")
         }
 
@@ -256,7 +263,7 @@ export async function clockInToUrnik(isWorkFromHome: boolean = false) {
 
 export async function clockOutFromUrnik() {
     try {
-        await requireAuth()
+        const session = await requireAuth()
 
         const cookie = await getUrnikCookie()
 
@@ -267,6 +274,13 @@ export async function clockOutFromUrnik() {
         const result = await performClockOutWithCookie(cookie)
 
         if (result.success) {
+            const today = new Date()
+            today.setUTCHours(0, 0, 0, 0)
+            await prisma.autoClockLog.upsert({
+                where: { userId_date: { userId: session.user.id, date: today } },
+                create: { userId: session.user.id, date: today, clockedOutAt: new Date() },
+                update: { clockedOutAt: new Date() },
+            })
             revalidatePath("/urnik-net-overview")
         }
 

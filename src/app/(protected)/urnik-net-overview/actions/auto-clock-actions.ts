@@ -10,6 +10,7 @@ import {
 } from "@/features/notifications/lib/notify"
 import { getUrnikCookieForUser } from "@/lib/urnik-session"
 import { requireAuth } from "@/lib/auth-helpers"
+import { sendPushNotification } from "@/features/notifications/actions/notification-actions"
 
 interface ActionResult {
     success: boolean
@@ -115,16 +116,12 @@ export async function processAutoCheckin(userId: string): Promise<ActionResult> 
             return { success: false, error: "Auto check-in not enabled" }
         }
 
-        if (!user.urnikUsername || !user.urnikPassword) {
+        const isDryRun = process.env.AUTO_CLOCK_DRY_RUN === "true"
+
+        if (!isDryRun && (!user.urnikUsername || !user.urnikPassword)) {
             return { success: false, error: "Urnik credentials not configured" }
         }
 
-        const cookie = await getUrnikCookieForUser(userId)
-        if (!cookie) {
-            return { success: false, error: "Failed to authenticate with urnik.net" }
-        }
-
-        // Check if user has approved WORK_FROM_HOME request for today
         const today = new Date()
         today.setHours(0, 0, 0, 0)
 
@@ -139,6 +136,26 @@ export async function processAutoCheckin(userId: string): Promise<ActionResult> 
         })
 
         const isWorkFromHome = !!wfhRequest
+
+        if (isDryRun) {
+            const time = new Date().toLocaleTimeString("sl-SI", {
+                timeZone: "Europe/Ljubljana",
+                hour: "2-digit",
+                minute: "2-digit",
+            })
+            await sendPushNotification(userId, {
+                title: "DRY RUN: Auto Check-In",
+                body: `Would have checked in${isWorkFromHome ? " from home" : " at office"} at ${time}`,
+                url: "/urnik-net-overview",
+            })
+            return { success: true, message: "Dry run: auto check-in simulated" }
+        }
+
+        const cookie = await getUrnikCookieForUser(userId)
+        if (!cookie) {
+            return { success: false, error: "Failed to authenticate with urnik.net" }
+        }
+
         const clockInResult = await performClockInWithCookie(cookie, isWorkFromHome)
 
         if (!clockInResult.success) {
@@ -181,7 +198,9 @@ export async function processAutoCheckout(userId: string): Promise<ActionResult>
             return { success: false, error: "Auto check-out not enabled" }
         }
 
-        if (!user.urnikUsername || !user.urnikPassword) {
+        const isDryRun = process.env.AUTO_CLOCK_DRY_RUN === "true"
+
+        if (!isDryRun && (!user.urnikUsername || !user.urnikPassword)) {
             return { success: false, error: "Urnik credentials not configured" }
         }
 
@@ -199,6 +218,20 @@ export async function processAutoCheckout(userId: string): Promise<ActionResult>
 
         if (cancellation) {
             return { success: false, error: "Auto check-out cancelled for today" }
+        }
+
+        if (isDryRun) {
+            const time = new Date().toLocaleTimeString("sl-SI", {
+                timeZone: "Europe/Ljubljana",
+                hour: "2-digit",
+                minute: "2-digit",
+            })
+            await sendPushNotification(userId, {
+                title: "DRY RUN: Auto Check-Out",
+                body: `Would have checked out at ${time}`,
+                url: "/urnik-net-overview",
+            })
+            return { success: true, message: "Dry run: auto check-out simulated" }
         }
 
         const cookie = await getUrnikCookieForUser(userId)

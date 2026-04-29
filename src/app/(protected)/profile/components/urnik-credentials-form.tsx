@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -50,22 +51,18 @@ export function UrnikCredentialsForm({
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [isTesting, setIsTesting] = useState(false)
-    const [error, setError] = useState("")
-    const [success, setSuccess] = useState("")
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault()
-        setError("")
-        setSuccess("")
         setIsLoading(true)
 
         try {
             const result = await updateUrnikCredentials({ username, password })
 
             if (result.error) {
-                setError(result.error)
+                toast.error(result.error)
             } else {
-                setSuccess(t.updateSuccess)
+                toast.success(t.updateSuccess)
                 setPassword("")
             }
         } finally {
@@ -74,17 +71,15 @@ export function UrnikCredentialsForm({
     }
 
     const handleTest = async () => {
-        setError("")
-        setSuccess("")
         setIsTesting(true)
 
         try {
             const result = await testUrnikConnection()
 
             if (result.error) {
-                setError(result.error)
+                toast.error(result.error)
             } else {
-                setSuccess(t.testSuccess)
+                toast.success(t.testSuccess)
             }
         } finally {
             setIsTesting(false)
@@ -96,19 +91,17 @@ export function UrnikCredentialsForm({
             return
         }
 
-        setError("")
-        setSuccess("")
         setIsLoading(true)
 
         try {
             const result = await clearUrnikCredentials()
 
             if (result.error) {
-                setError(result.error)
+                toast.error(result.error)
             } else {
                 setUsername("")
                 setPassword("")
-                setSuccess(t.clearSuccess)
+                toast.success(t.clearSuccess)
             }
         } finally {
             setIsLoading(false)
@@ -127,15 +120,6 @@ export function UrnikCredentialsForm({
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSave} className="space-y-4">
-                    {error && (
-                        <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</div>
-                    )}
-                    {success && (
-                        <div className="text-sm text-green-600 bg-green-50 p-3 rounded-md">
-                            {success}
-                        </div>
-                    )}
-
                     <div className="space-y-2">
                         <Label htmlFor="urnik-username">{t.username}</Label>
                         <Input
@@ -177,14 +161,22 @@ export function UrnikCredentialsForm({
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <Button type="submit" disabled={isLoading || isTesting || isDemo}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            {isLoading ? t.saving : t.saveCredentials}
-                        </Button>
+                    {!hasCredentials && (
+                        <div className="flex justify-end">
+                            <Button type="submit" disabled={isLoading || isTesting || isDemo}>
+                                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {isLoading ? t.saving : t.saveCredentials}
+                            </Button>
+                        </div>
+                    )}
 
-                        {hasCredentials && (
-                            <>
+                    {hasCredentials && (
+                        <>
+                            <div className="hidden sm:flex sm:justify-end sm:gap-2">
+                                <Button type="submit" disabled={isLoading || isTesting || isDemo}>
+                                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isLoading ? t.saving : t.saveCredentials}
+                                </Button>
                                 <Button
                                     type="button"
                                     variant="outline"
@@ -194,7 +186,6 @@ export function UrnikCredentialsForm({
                                     {isTesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {isTesting ? t.testing : t.testConnection}
                                 </Button>
-
                                 <Button
                                     type="button"
                                     variant="destructive"
@@ -203,9 +194,41 @@ export function UrnikCredentialsForm({
                                 >
                                     {t.clearCredentials}
                                 </Button>
-                            </>
-                        )}
-                    </div>
+                            </div>
+
+                            <div className="space-y-2 sm:hidden">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={handleTest}
+                                    disabled={isLoading || isTesting || isDemo}
+                                    className="w-full"
+                                >
+                                    {isTesting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isTesting ? t.testing : t.testConnection}
+                                </Button>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Button
+                                        type="submit"
+                                        disabled={isLoading || isTesting || isDemo}
+                                    >
+                                        {isLoading && (
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        )}
+                                        {isLoading ? t.saving : t.saveCredentials}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        onClick={handleClear}
+                                        disabled={isLoading || isTesting || isDemo}
+                                    >
+                                        {t.clearCredentials}
+                                    </Button>
+                                </div>
+                            </div>
+                        </>
+                    )}
 
                     {hasCredentials && (
                         <>

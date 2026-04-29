@@ -503,27 +503,29 @@ function MonthYearPicker({
     )
 }
 
-interface TimeOption {
-    value: number
-    label: string
-    disabled: boolean
-}
-
-function TimePicker({
-    value,
-    onChange,
-    use12HourFormat,
-    min,
-    max,
-    timePicker,
-}: {
+export interface TimePickerProps {
     use12HourFormat?: boolean
     value: Date
     onChange: (date: Date) => void
     min?: Date
     max?: Date
     timePicker?: DateTimePickerProps["timePicker"]
-}) {
+}
+
+interface TimeOption {
+    value: number
+    label: string
+    disabled: boolean
+}
+
+export function TimePicker({
+    value,
+    onChange,
+    use12HourFormat,
+    min,
+    max,
+    timePicker,
+}: TimePickerProps) {
     // hours24h = HH
     // hours12h = hh
     const formatStr = useMemo(

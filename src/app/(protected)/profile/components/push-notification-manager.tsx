@@ -6,6 +6,7 @@ import { usePushNotificationStore } from "@/app/(protected)/profile/stores/push-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bell, BellOff } from "lucide-react"
+import { toast } from "sonner"
 
 interface PushNotificationManagerProps {
     initialHasSubscription: boolean
@@ -23,8 +24,16 @@ export function PushNotificationManager({
 
     const isLoading = usePushNotificationStore((state) => state.isLoading)
     const error = usePushNotificationStore((state) => state.error)
+    const setError = usePushNotificationStore((state) => state.setError)
     const subscribeToPush = usePushNotificationStore((state) => state.subscribeToPush)
     const unsubscribeFromPush = usePushNotificationStore((state) => state.unsubscribeFromPush)
+
+    useEffect(() => {
+        if (error) {
+            toast.error(error)
+            setError(null)
+        }
+    }, [error, setError])
 
     useEffect(() => {
         async function checkBrowserSubscription() {
@@ -64,12 +73,6 @@ export function PushNotificationManager({
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                {error && (
-                    <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                        {error}
-                    </div>
-                )}
-
                 {isCheckingBrowser ? (
                     <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
                         Checking browser subscription status...

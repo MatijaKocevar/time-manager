@@ -24,6 +24,9 @@ export async function getCurrentUser() {
         return null
     }
 
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
     const user = await prisma.user.findUnique({
         where: { id: session.user.id },
         select: {
@@ -38,6 +41,10 @@ export async function getCurrentUser() {
             urnikUsername: true,
             urnikPassword: true,
             lastUrnikTestAt: true,
+            workTimeAdjustments: {
+                where: { date: today },
+                take: 1,
+            },
         },
     })
 
