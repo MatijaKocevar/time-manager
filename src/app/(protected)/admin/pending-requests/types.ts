@@ -36,6 +36,9 @@ export interface PendingRequestTranslations {
         noPending: string
         searchPlaceholder: string
         awaitingUrnikNet: string
+        approveSuccess: string
+        rejectSuccess: string
+        approveError: string
     }
     reject: {
         title: string

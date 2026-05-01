@@ -1,9 +1,13 @@
 import { create } from "zustand"
+import type { ColumnFiltersState, SortingState } from "@tanstack/react-table"
 
 interface PendingRequestsState {
     rejectDialogOpen: boolean
     selectedRequestId: string
     rejectionReason: string
+    sorting: SortingState
+    columnFilters: ColumnFiltersState
+    approvingId: string | null
 }
 
 interface PendingRequestsActions {
@@ -13,6 +17,9 @@ interface PendingRequestsActions {
     openRejectDialog: (requestId: string) => void
     closeRejectDialog: () => void
     resetRejectDialog: () => void
+    setSorting: (sorting: SortingState) => void
+    setColumnFilters: (columnFilters: ColumnFiltersState) => void
+    setApprovingId: (id: string | null) => void
 }
 
 export const usePendingRequestsStore = create<PendingRequestsState & PendingRequestsActions>(
@@ -20,6 +27,9 @@ export const usePendingRequestsStore = create<PendingRequestsState & PendingRequ
         rejectDialogOpen: false,
         selectedRequestId: "",
         rejectionReason: "",
+        sorting: [],
+        columnFilters: [],
+        approvingId: null,
         setRejectDialogOpen: (open) => set({ rejectDialogOpen: open }),
         setSelectedRequestId: (id) => set({ selectedRequestId: id }),
         setRejectionReason: (reason) => set({ rejectionReason: reason }),
@@ -28,5 +38,8 @@ export const usePendingRequestsStore = create<PendingRequestsState & PendingRequ
         closeRejectDialog: () => set({ rejectDialogOpen: false }),
         resetRejectDialog: () =>
             set({ rejectDialogOpen: false, selectedRequestId: "", rejectionReason: "" }),
+        setSorting: (sorting) => set({ sorting }),
+        setColumnFilters: (columnFilters) => set({ columnFilters }),
+        setApprovingId: (approvingId) => set({ approvingId }),
     })
 )

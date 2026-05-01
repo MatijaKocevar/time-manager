@@ -1,12 +1,10 @@
+import { getTranslations } from "next-intl/server"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
-import { getTranslations, getLocale } from "next-intl/server"
 import { authConfig } from "@/lib/auth"
-import { getAllRequests } from "../../requests/actions/request-actions"
-import { getHolidays } from "../holidays/actions/holiday-actions"
-import { PendingRequestsTable } from "./components/pending-requests-table"
-import { syncRequestStatuses } from "../../requests/actions/sync-request-statuses"
+import { PendingRequestsTable } from "./components/pending-requests-table-wrapper"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
+import { loadPendingRequestsData } from "./loaders/pending-requests-data"
 
 export default async function PendingRequestsPage() {
     const session = await getServerSession(authConfig)
@@ -15,79 +13,12 @@ export default async function PendingRequestsPage() {
         redirect("/")
     }
 
-    await syncRequestStatuses()
-
-    const [tTable, tReject, tPagination, tFilter, tTypes, locale] = await Promise.all([
-        getTranslations("admin.pendingRequests.table"),
-        getTranslations("admin.pendingRequests.reject"),
-        getTranslations("admin.pendingRequests.pagination"),
-        getTranslations("admin.pendingRequests.filter"),
-        getTranslations("requests.types"),
-        getLocale(),
-    ])
-
-    const translations = {
-        table: {
-            user: tTable("user"),
-            type: tTable("type"),
-            startDate: tTable("startDate"),
-            endDate: tTable("endDate"),
-            hours: tTable("hours"),
-            days: tTable("days"),
-            reason: tTable("reason"),
-            actions: tTable("actions"),
-            approve: tTable("approve"),
-            reject: tTable("reject"),
-            approving: tTable("approving"),
-            rejecting: tTable("rejecting"),
-            noPending: tTable("noPending"),
-            searchPlaceholder: tTable("searchPlaceholder"),
-            awaitingUrnikNet: tTable("awaitingUrnikNet"),
-        },
-        reject: {
-            title: tReject("title"),
-            confirmQuestion: tReject("confirmQuestion"),
-            user: tReject("user"),
-            type: tReject("type"),
-            period: tReject("period"),
-            reason: tReject("reason"),
-            reasonRequired: tReject("reasonRequired"),
-            reasonPlaceholder: tReject("reasonPlaceholder"),
-            cancel: tReject("cancel"),
-            rejecting: tReject("rejecting"),
-            rejectRequest: tReject("rejectRequest"),
-        },
-        pagination: {
-            previous: tPagination("previous"),
-            next: tPagination("next"),
-        },
-        filter: {
-            title: tFilter("title"),
-            search: tFilter("search"),
-            clear: tFilter("clear"),
-            apply: tFilter("apply"),
-        },
-        types: {
-            vacation: tTypes("vacation"),
-            sickLeave: tTypes("sickLeave"),
-            workFromHome: tTypes("workFromHome"),
-        },
-    }
-
-    const [requests, holidaysResult, tutorialsSeen, tTutorial, tAdminPending] = await Promise.all([
-        getAllRequests(["PENDING"]),
-        getHolidays(),
+    const [data, tutorialsSeen, tTutorial, tAdminPending] = await Promise.all([
+        loadPendingRequestsData(),
         getTutorialsSeen(),
         getTranslations("tutorial"),
         getTranslations("tutorial.adminPendingRequests"),
     ])
-
-    const requestsData = requests.map((r) => ({
-        ...r,
-        user: r.user ?? { name: null, email: "Unknown" },
-    }))
-
-    const holidays = (holidaysResult.success ? holidaysResult.data : []) ?? []
 
     return (
         <>
@@ -109,10 +40,9 @@ export default async function PendingRequestsPage() {
             <div className="flex flex-col gap-4 h-full">
                 <div className="flex-1 min-h-0">
                     <PendingRequestsTable
-                        requests={requestsData}
-                        holidays={holidays}
-                        translations={translations}
-                        locale={locale}
+                        requests={data.requests}
+                        holidays={data.holidays}
+                        locale={data.locale}
                     />
                 </div>
             </div>

@@ -697,7 +697,10 @@
                 "searchPlaceholder": "Iskanje...",
                 "cancel": "Prekliči",
                 "days": "d",
-                "awaitingUrnikNet": "Čakam na odločitev Urnik.net"
+                "awaitingUrnikNet": "Čakam na odločitev Urnik.net",
+                "approveSuccess": "Zahtevek uspešno odobren",
+                "rejectSuccess": "Zahtevek uspešno zavrnjen",
+                "approveError": "Napaka pri odobritvi zahtevka"
             },
             "filter": {
                 "title": "Filtriraj stolpec",

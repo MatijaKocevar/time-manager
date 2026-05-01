@@ -697,7 +697,10 @@
                 "noPending": "No pending requests found.",
                 "searchPlaceholder": "Search...",
                 "cancel": "Cancel",
-                "awaitingUrnikNet": "Awaiting Urnik.net decision"
+                "awaitingUrnikNet": "Awaiting Urnik.net decision",
+                "approveSuccess": "Request approved successfully",
+                "rejectSuccess": "Request rejected successfully",
+                "approveError": "Failed to approve request"
             },
             "filter": {
                 "title": "Filter Column",

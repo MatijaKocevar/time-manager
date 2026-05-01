@@ -1,10 +1,6 @@
 "use client"
 
-import { useMemo, useState, useEffect } from "react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useSearchParams, useRouter } from "next/navigation"
 import {
-    ColumnFiltersState,
     flexRender,
     getCoreRowModel,
     getFacetedRowModel,
@@ -12,7 +8,6 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    SortingState,
     useReactTable,
 } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
@@ -25,130 +20,43 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { approveRequest, rejectRequest } from "../../../requests/actions/request-actions"
-import { requestKeys } from "../../../requests/query-keys"
-import { hourKeys } from "../../../hours/query-keys"
-import { toast } from "sonner"
 import { ColumnFilter } from "./column-filter"
 import { RejectDialog } from "./reject-dialog"
-import { createColumns } from "../utils/columns"
-import { usePendingRequestsStore } from "../stores/pending-requests-store"
+import { usePendingRequestsTable } from "../hooks/use-pending-requests-table"
 import type { RequestDisplay, PendingRequestTranslations } from "../types"
 
-interface PendingRequestsTableProps {
+interface PendingRequestsTableClientProps {
     requests: RequestDisplay[]
     holidays: Array<{ date: Date; name: string }>
     translations: PendingRequestTranslations
     locale: string
 }
 
-export function PendingRequestsTable({
+export function PendingRequestsTableClient({
     requests,
     holidays,
     translations,
     locale,
-}: PendingRequestsTableProps) {
-    const queryClient = useQueryClient()
-    const searchParams = useSearchParams()
-    const router = useRouter()
-    const [sorting, setSorting] = useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
-        const filters: ColumnFiltersState = []
-        searchParams.forEach((value, key) => {
-            if (key.startsWith("filter_")) {
-                const columnId = key.replace("filter_", "")
-                filters.push({ id: columnId, value })
-            }
-        })
-        return filters
-    })
-
-    const rejectDialogOpen = usePendingRequestsStore((state) => state.rejectDialogOpen)
-    const selectedRequestId = usePendingRequestsStore((state) => state.selectedRequestId)
-    const rejectionReason = usePendingRequestsStore((state) => state.rejectionReason)
-    const setRejectionReason = usePendingRequestsStore((state) => state.setRejectionReason)
-    const openRejectDialog = usePendingRequestsStore((state) => state.openRejectDialog)
-    const setRejectDialogOpen = usePendingRequestsStore((state) => state.setRejectDialogOpen)
-    const resetRejectDialog = usePendingRequestsStore((state) => state.resetRejectDialog)
-
-    const [approvingId, setApprovingId] = useState<string | null>(null)
-
-    const approveMutation = useMutation({
-        mutationFn: approveRequest,
-        onMutate: async (variables) => {
-            setApprovingId(variables.id)
-            await queryClient.cancelQueries({ queryKey: requestKeys.all })
-            const previousRequests = queryClient.getQueryData(requestKeys.all)
-            queryClient.setQueryData(requestKeys.all, (old: RequestDisplay[] | undefined) => {
-                if (!old) return old
-                return old.filter((req) => req.id !== variables.id)
-            })
-            return { previousRequests }
-        },
-        onSuccess: (data) => {
-            if ("error" in data) {
-                toast.error(data.error)
-                queryClient.invalidateQueries({ queryKey: requestKeys.all })
-            } else {
-                queryClient.invalidateQueries({ queryKey: hourKeys.all })
-            }
-        },
-        onError: (error, _variables, context) => {
-            toast.error(error instanceof Error ? error.message : "Unknown error")
-            if (context?.previousRequests) {
-                queryClient.setQueryData(requestKeys.all, context.previousRequests)
-            }
-        },
-        onSettled: () => {
-            setApprovingId(null)
-            queryClient.invalidateQueries({ queryKey: requestKeys.adminRequests() })
-        },
-    })
-
-    const rejectMutation = useMutation({
-        mutationFn: rejectRequest,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: requestKeys.all })
-            resetRejectDialog()
-        },
-    })
-
-    const columns = useMemo(
-        () =>
-            createColumns({
-                translations,
-                holidays,
-                locale,
-                isApproving: approveMutation.isPending,
-                isRejecting: rejectMutation.isPending,
-                approvingId,
-                onApprove: (requestId: string) => approveMutation.mutate({ id: requestId }),
-                onReject: openRejectDialog,
-                requests,
-            }),
-        [
-            approveMutation.isPending,
-            approveMutation.mutate,
-            rejectMutation.isPending,
-            approvingId,
-            holidays,
-            translations,
-            locale,
-            openRejectDialog,
-            requests,
-        ]
-    )
-
-    const handleReject = () => {
-        if (!rejectionReason || !selectedRequestId) return
-        rejectMutation.mutate({ id: selectedRequestId, rejectionReason })
-    }
+}: PendingRequestsTableClientProps) {
+    const {
+        columns,
+        sorting,
+        columnFilters,
+        onSortingChange,
+        onColumnFiltersChange,
+        rejectDialogOpen,
+        rejectionReason,
+        isRejectPending,
+        setRejectDialogOpen,
+        setRejectionReason,
+        handleReject,
+    } = usePendingRequestsTable({ requests, holidays, locale, translations })
 
     const table = useReactTable({
         data: requests,
         columns,
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
+        onSortingChange,
+        onColumnFiltersChange,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
@@ -160,29 +68,6 @@ export function PendingRequestsTable({
             columnFilters,
         },
     })
-
-    useEffect(() => {
-        const params = new URLSearchParams(searchParams.toString())
-
-        Array.from(params.keys()).forEach((key) => {
-            if (key.startsWith("filter_")) {
-                params.delete(key)
-            }
-        })
-
-        columnFilters.forEach((filter) => {
-            if (filter.value) {
-                params.set(`filter_${filter.id}`, String(filter.value))
-            }
-        })
-
-        const newSearch = params.toString()
-        const currentSearch = searchParams.toString()
-
-        if (newSearch !== currentSearch) {
-            router.replace(`?${newSearch}`, { scroll: false })
-        }
-    }, [columnFilters, router, searchParams])
 
     return (
         <>
@@ -299,7 +184,7 @@ export function PendingRequestsTable({
                 rejectionReason={rejectionReason}
                 onReasonChange={setRejectionReason}
                 onConfirm={handleReject}
-                isPending={rejectMutation.isPending}
+                isPending={isRejectPending}
                 translations={translations.reject}
             />
         </>
