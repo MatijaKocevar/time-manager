@@ -15,6 +15,10 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { ChevronLeft, ChevronRight, Plus, MoreVertical, Save, X, Download } from "lucide-react"
@@ -144,7 +148,7 @@ export function HoursView({
                             <ChevronRight className="h-4 w-4" />
                         </Button>
                     </div>
-                    <div className="hidden md:flex items-center gap-2">
+                    <div className="flex items-center gap-2">
                         {isDirty && (
                             <>
                                 <Button
@@ -165,69 +169,43 @@ export function HoursView({
                                     <X className="h-4 w-4 mr-1" />
                                     {tCommon("actions.cancel")}
                                 </Button>
-                                <div className="w-px h-6 bg-border mx-1" />
                             </>
                         )}
-                        <Button
-                            variant={viewMode === VIEW_MODE_VALUES.WEEKLY ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handleViewModeChange(VIEW_MODE_VALUES.WEEKLY)}
-                            disabled={isLoading || isDirty}
-                        >
-                            {tCommon("time.week")}
-                        </Button>
-                        <Button
-                            variant={viewMode === VIEW_MODE_VALUES.MONTHLY ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handleViewModeChange(VIEW_MODE_VALUES.MONTHLY)}
-                            disabled={isLoading || isDirty}
-                        >
-                            {tCommon("time.month")}
-                        </Button>
-                        <div className="w-px h-6 bg-border mx-1" />
-                        <Button
-                            id="hours-add-entry"
-                            variant="default"
-                            size="sm"
-                            onClick={() => setIsFormOpen(true)}
-                            disabled={isDirty}
-                        >
-                            <Plus className="h-4 w-4 mr-1" />
-                            {t("addNewEntry")}
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsExportDialogOpen(true)}
-                            disabled={isDirty}
-                        >
-                            <Download className="h-4 w-4 mr-1" />
-                            {tCommon("actions.export")}
-                        </Button>
-                    </div>
-                    <div className="md:hidden">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm">
+                                <Button id="hours-add-entry" variant="outline" size="sm">
                                     <MoreVertical className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                    onClick={() => handleViewModeChange(VIEW_MODE_VALUES.WEEKLY)}
+                                <DropdownMenuLabel>{tViews("viewLabel")}</DropdownMenuLabel>
+                                <DropdownMenuRadioGroup
+                                    value={viewMode}
+                                    onValueChange={(v) => handleViewModeChange(v as ViewMode)}
                                 >
-                                    {tViews("weekView")}
-                                </DropdownMenuItem>
+                                    <DropdownMenuRadioItem
+                                        value={VIEW_MODE_VALUES.WEEKLY}
+                                        disabled={isLoading || isDirty}
+                                    >
+                                        {tViews("weekView")}
+                                    </DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem
+                                        value={VIEW_MODE_VALUES.MONTHLY}
+                                        disabled={isLoading || isDirty}
+                                    >
+                                        {tViews("monthView")}
+                                    </DropdownMenuRadioItem>
+                                </DropdownMenuRadioGroup>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>{tViews("actionsLabel")}</DropdownMenuLabel>
                                 <DropdownMenuItem
-                                    onClick={() => handleViewModeChange(VIEW_MODE_VALUES.MONTHLY)}
+                                    onClick={() => setIsFormOpen(true)}
+                                    disabled={isDirty}
                                 >
-                                    {tViews("monthView")}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setIsFormOpen(true)}>
                                     <Plus className="h-4 w-4 mr-2" />
                                     {t("addNewEntry")}
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)}>
+                                <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)} disabled={isDirty}>
                                     <Download className="h-4 w-4 mr-2" />
                                     {tCommon("actions.export")}
                                 </DropdownMenuItem>

@@ -265,8 +265,10 @@
             "saveWithCount": "Shrani ({count})"
         },
         "views": {
+            "viewLabel": "Pogled",
             "weekView": "Tedenski pogled",
-            "monthView": "Mesečni pogled"
+            "monthView": "Mesečni pogled",
+            "actionsLabel": "Dejanja"
         },
         "messages": {
             "discardChanges": "Zavrzi vse neshranjene spremembe?",

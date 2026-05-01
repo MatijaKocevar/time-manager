@@ -265,8 +265,10 @@
             "saveWithCount": "Save ({count})"
         },
         "views": {
+            "viewLabel": "View",
             "weekView": "Week View",
-            "monthView": "Month View"
+            "monthView": "Month View",
+            "actionsLabel": "Actions"
         },
         "messages": {
             "discardChanges": "Discard all unsaved changes?",
