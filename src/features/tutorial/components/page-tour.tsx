@@ -41,10 +41,12 @@ export function PageTour({
     prevLabel,
     doneLabel,
 }: PageTourProps) {
-    const { data: session } = useSession()
+    const { data: session, status } = useSession()
     const isDemo = session?.user?.isDemo ?? false
 
     useEffect(() => {
+        if (status === "loading") return
+
         if (isDemo) {
             if (getDemoSeenPages().includes(pageKey)) return
         } else {
@@ -81,7 +83,7 @@ export function PageTour({
 
         driverObj.drive()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [seenPages, isDemo])
+    }, [seenPages, isDemo, status])
 
     return null
 }

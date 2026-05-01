@@ -47,8 +47,8 @@ export default function DemoPage() {
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted">
             <div className="text-center space-y-6 p-8">
                 <div className="space-y-2">
-                    <h1 className="text-4xl font-bold tracking-tight">Welcome to Demo</h1>
-                    <p className="text-muted-foreground text-lg">Signing in as demo admin...</p>
+                    <h1 className="text-4xl font-bold tracking-tight">Welcome to Time Manager Demo</h1>
+                    <p className="text-muted-foreground text-lg">Signing in as a demo user for demonstration purposes...</p>
                 </div>
                 <LoadingSpinner size="lg" />
             </div>
