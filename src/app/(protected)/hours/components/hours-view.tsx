@@ -205,7 +205,10 @@ export function HoursView({
                                     <Plus className="h-4 w-4 mr-2" />
                                     {t("addNewEntry")}
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => setIsExportDialogOpen(true)} disabled={isDirty}>
+                                <DropdownMenuItem
+                                    onClick={() => setIsExportDialogOpen(true)}
+                                    disabled={isDirty}
+                                >
                                     <Download className="h-4 w-4 mr-2" />
                                     {tCommon("actions.export")}
                                 </DropdownMenuItem>
