@@ -1,104 +1,49 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { useQuery } from "@tanstack/react-query"
-import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Download } from "lucide-react"
 import { HoursSummary } from "@/app/(protected)/hours/components/hours-summary"
 import { HourTypeBreakdownDialog } from "@/app/(protected)/hours/components/hour-type-breakdown-dialog"
-import { getHourEntriesForUser } from "@/app/(protected)/hours/actions/hour-actions"
-import { getDateRange, getViewTitle } from "@/app/(protected)/hours/utils/view-helpers"
 import { VIEW_MODE_VALUES } from "@/app/(protected)/hours/schemas/hour-filter-schemas"
-import { getHolidaysInRange } from "@/app/(protected)/admin/holidays/actions/holiday-actions"
-import { exportUserDetailsWithHours } from "../../actions/export-actions"
-import { ExportDialog, type ExportFormat } from "@/features/export"
-import { userHourKeys } from "../../query-keys"
-import { useHoursStore } from "@/app/(protected)/hours/stores/hours-store"
-import { TASK_ID_VALUES } from "@/app/(protected)/hours/constants/hour-types"
+import { ExportDialog } from "@/features/export"
+import { useUserHoursSection } from "../hooks/use-user-hours-section"
 import type { HourEntryDisplay } from "@/app/(protected)/hours/schemas/hour-entry-schemas"
-import type { HourType } from "@/app/(protected)/hours/schemas/hour-action-schemas"
 
-interface UserHoursSectionProps {
+interface UserHoursSectionClientProps {
     userId: string
-    user: { workHoursPerDay: number | null }
-    initialEntries: Awaited<ReturnType<typeof getHourEntriesForUser>>
-    initialHolidays?: Array<{ date: Date }>
+    workHoursPerDay: number | null
+    initialEntries: HourEntryDisplay[]
+    initialHolidays: Array<{ date: Date }>
     initialAttendanceData?: { officeCount: number; remoteCount: number }
+    translations: {
+        title: string
+        description: string
+        exportLabel: string
+    }
 }
 
-export function UserHoursSection({
+export function UserHoursSectionClient({
     userId,
-    user,
+    workHoursPerDay,
     initialEntries,
-    initialHolidays = [],
+    initialHolidays,
     initialAttendanceData,
-}: UserHoursSectionProps) {
-    const t = useTranslations("admin.users.detail")
-    const tCommon = useTranslations("common.actions")
-    const [currentDate, setCurrentDate] = useState(new Date())
-    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
-    const openHourTypeDialog = useHoursStore((state) => state.openHourTypeDialog)
-
-    const { startDate, endDate, start, end } = getDateRange(VIEW_MODE_VALUES.MONTHLY, currentDate)
-    const monthTitle = getViewTitle(VIEW_MODE_VALUES.MONTHLY, { start, end }, currentDate)
-
-    const { data: entries = initialEntries, isLoading } = useQuery({
-        queryKey: userHourKeys.detail(userId, startDate),
-        queryFn: () => getHourEntriesForUser(userId, startDate, endDate),
-        initialData: initialEntries,
-    })
-
-    const { data: holidays = initialHolidays } = useQuery({
-        queryKey: ["holidays", startDate, endDate],
-        queryFn: () => getHolidaysInRange(startDate, endDate),
-        initialData: initialHolidays,
-    })
-
-    const prepareHourTypeData = useMemo(() => {
-        return (type: string) => {
-            const filteredEntries = entries.filter(
-                (entry: HourEntryDisplay) =>
-                    entry.type === type && entry.taskId === TASK_ID_VALUES.TOTAL
-            )
-
-            const entriesByDate = filteredEntries.reduce(
-                (acc, entry) => {
-                    const dateKey = entry.date.toISOString().split("T")[0]
-                    if (!acc[dateKey]) {
-                        acc[dateKey] = { date: entry.date, hours: 0 }
-                    }
-                    acc[dateKey].hours += entry.hours
-                    return acc
-                },
-                {} as Record<string, { date: Date; hours: number }>
-            )
-
-            return Object.values(entriesByDate).filter((entry) => entry.hours > 0)
-        }
-    }, [entries])
-
-    const handleHourTypeClick = (type: string) => {
-        const data = prepareHourTypeData(type)
-        openHourTypeDialog(type as HourType, data)
-    }
-
-    const handleNavigate = (direction: "prev" | "next") => {
-        const newDate = new Date(currentDate)
-        newDate.setMonth(newDate.getMonth() + (direction === "next" ? 1 : -1))
-        setCurrentDate(newDate)
-    }
-
-    const handleExport = async (format: ExportFormat, months: string[]) => {
-        return await exportUserDetailsWithHours({ format, months, userId })
-    }
-
-    const getCurrentMonth = () => {
-        const year = currentDate.getFullYear()
-        const month = String(currentDate.getMonth() + 1).padStart(2, "0")
-        return `${year}-${month}`
-    }
+    translations,
+}: UserHoursSectionClientProps) {
+    const {
+        entries,
+        holidays,
+        isLoading,
+        isExportDialogOpen,
+        monthTitle,
+        dateRange,
+        currentMonth,
+        setIsExportDialogOpen,
+        handleNavigate,
+        handleHourTypeClick,
+        handleExport,
+    } = useUserHoursSection({ userId, initialEntries, initialHolidays })
 
     return (
         <>
@@ -106,8 +51,8 @@ export function UserHoursSection({
                 <CardHeader>
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
-                            <CardTitle>{t("hoursSummary")}</CardTitle>
-                            <CardDescription>{t("hoursSummaryDescription")}</CardDescription>
+                            <CardTitle>{translations.title}</CardTitle>
+                            <CardDescription>{translations.description}</CardDescription>
                         </div>
                         <div className="flex flex-wrap items-center justify-center gap-2 lg:justify-end">
                             <Button
@@ -135,7 +80,7 @@ export function UserHoursSection({
                                 onClick={() => setIsExportDialogOpen(true)}
                             >
                                 <Download className="h-4 w-4 lg:mr-1" />
-                                <span className="hidden lg:inline">{tCommon("export")}</span>
+                                <span className="hidden lg:inline">{translations.exportLabel}</span>
                             </Button>
                         </div>
                     </div>
@@ -147,9 +92,9 @@ export function UserHoursSection({
                         weeklyEntries={[]}
                         monthlyEntries={entries}
                         isLoading={isLoading}
-                        dateRange={{ start, end }}
+                        dateRange={dateRange}
                         holidays={holidays}
-                        userData={{ workHoursPerDay: user.workHoursPerDay || 8 }}
+                        userData={{ workHoursPerDay: workHoursPerDay ?? 8 }}
                         initialAttendanceData={initialAttendanceData}
                         onHourTypeClick={handleHourTypeClick}
                     />
@@ -158,7 +103,7 @@ export function UserHoursSection({
                 <ExportDialog
                     open={isExportDialogOpen}
                     onOpenChange={setIsExportDialogOpen}
-                    defaultMonth={getCurrentMonth()}
+                    defaultMonth={currentMonth}
                     onExport={handleExport}
                     filenamePrefix={`user-${userId}-hours`}
                 />

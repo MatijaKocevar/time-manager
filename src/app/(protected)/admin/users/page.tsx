@@ -1,14 +1,11 @@
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
-import { UsersTableWrapper } from "./components/users-table"
-import { getUsers } from "./actions/user-actions"
 import { getTranslations } from "next-intl/server"
+import { UsersTableWrapper } from "./components/users-table-wrapper"
+import { loadUsersListData } from "./loaders/users-list-data"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function AdminUsersPage() {
-    const session = await getServerSession(authConfig)
-    const [users, tutorialsSeen, tTutorial, tAdminUsers] = await Promise.all([
-        getUsers(true),
+    const [data, tutorialsSeen, tTutorial, tAdminUsers] = await Promise.all([
+        loadUsersListData(),
         getTutorialsSeen(),
         getTranslations("tutorial"),
         getTranslations("tutorial.adminUsers"),
@@ -38,7 +35,7 @@ export default async function AdminUsersPage() {
                 ]}
             />
             <div className="flex flex-col gap-4 min-w-0 h-full">
-                <UsersTableWrapper users={users} currentUserId={session!.user.id} />
+                <UsersTableWrapper users={data.users} currentUserId={data.currentUserId} />
             </div>
         </>
     )

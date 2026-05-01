@@ -1,21 +1,5 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useTranslations } from "next-intl"
-import {
-    updateUser,
-    changeUserPassword,
-    deactivateUser,
-    reactivateUser,
-    anonymizeUser,
-} from "../actions/user-actions"
-import { useUserFormStore } from "../stores/user-form-store"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
     Select,
     SelectContent,
@@ -23,178 +7,100 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Eye, EyeOff } from "lucide-react"
-import { getUserRoleTranslationKey } from "../utils/translation-helpers"
 import { type UserRole } from "../schemas/user-action-schemas"
+import { USER_ROLE_COLORS } from "../constants/user-constants"
+import { useEditUserForm } from "../hooks/use-edit-user-form"
 
-interface EditUserFormProps {
-    user: {
-        id: string
-        name: string | null
-        email: string
-        role: UserRole
-        isDemo: boolean
-        isActive: boolean
-        deactivatedAt: Date | null
-        anonymizedAt: Date | null
-    }
-    currentUserIsDemo: boolean
+interface EditUserFormUser {
+    id: string
+    name: string | null
+    email: string
+    role: UserRole
+    isDemo: boolean
+    isActive: boolean
+    deactivatedAt: Date | null
+    anonymizedAt: Date | null
 }
 
-export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
-    console.log("EditUserForm - currentUserIsDemo:", currentUserIsDemo, "user.isDemo:", user.isDemo)
+interface EditUserFormTranslations {
+    nameLabel: string
+    emailLabel: string
+    roleLabel: string
+    roleLabels: Record<UserRole, string>
+    saving: string
+    saveChanges: string
+    cancel: string
+    changePasswordLabel: string
+    enterNewPasswordPlaceholder: string
+    demoRestriction: string
+    confirmPasswordLabel: string
+    confirmNewPasswordPlaceholder: string
+    changing: string
+    deactivateUserLabel: string
+    reactivateUserLabel: string
+    deactivateDescription: string
+    reactivateDescription: string
+    deactivating: string
+    reactivating: string
+    anonymizeUserLabel: string
+    anonymizeDescription: string
+    anonymizing: string
+    passwordMismatch: string
+    deactivateConfirmMsg: string
+    reactivateConfirmMsg: string
+    anonymizeConfirmMsg: string
+}
 
-    const router = useRouter()
-    const t = useTranslations("admin.users.form")
-    const tRoles = useTranslations("admin.users.roles")
-    const tCommon = useTranslations("common.actions")
-    const tCommonMessages = useTranslations("common.messages")
+interface EditUserFormClientProps {
+    user: EditUserFormUser
+    currentUserIsDemo: boolean
+    translations: EditUserFormTranslations
+}
 
-    const [name, setName] = useState(user.name ?? "")
-    const [role, setRole] = useState<UserRole>(user.role)
-    const [showPassword, setShowPassword] = useState(false)
-    const [confirmPassword, setConfirmPassword] = useState("")
-
-    const newPassword = useUserFormStore(
-        (state) => state.changePasswordForm.data?.newPassword || ""
-    )
-
-    const isLoading = useUserFormStore((state) => state.editForm.isLoading)
-    const isPasswordLoading = useUserFormStore((state) => state.changePasswordForm.isLoading)
-    const isDeactivateLoading = useUserFormStore((state) => state.deactivateForm.isLoading)
-    const isReactivateLoading = useUserFormStore((state) => state.reactivateForm.isLoading)
-    const isAnonymizeLoading = useUserFormStore((state) => state.anonymizeForm.isLoading)
-
-    const error = useUserFormStore((state) => state.editForm.error)
-    const passwordError = useUserFormStore((state) => state.changePasswordForm.error)
-    const deactivateError = useUserFormStore((state) => state.deactivateForm.error)
-    const reactivateError = useUserFormStore((state) => state.reactivateForm.error)
-    const anonymizeError = useUserFormStore((state) => state.anonymizeForm.error)
-
-    const setChangePasswordFormData = useUserFormStore((state) => state.setChangePasswordFormData)
-    const setEditLoading = useUserFormStore((state) => state.setEditLoading)
-    const setChangePasswordLoading = useUserFormStore((state) => state.setChangePasswordLoading)
-    const setDeactivateLoading = useUserFormStore((state) => state.setDeactivateLoading)
-    const setReactivateLoading = useUserFormStore((state) => state.setReactivateLoading)
-    const setAnonymizeLoading = useUserFormStore((state) => state.setAnonymizeLoading)
-    const setEditError = useUserFormStore((state) => state.setEditError)
-    const setChangePasswordError = useUserFormStore((state) => state.setChangePasswordError)
-    const setDeactivateError = useUserFormStore((state) => state.setDeactivateError)
-    const setReactivateError = useUserFormStore((state) => state.setReactivateError)
-    const setAnonymizeError = useUserFormStore((state) => state.setAnonymizeError)
-    const clearEditError = useUserFormStore((state) => state.clearEditError)
-    const clearChangePasswordError = useUserFormStore((state) => state.clearChangePasswordError)
-    const clearDeactivateError = useUserFormStore((state) => state.clearDeactivateError)
-    const clearReactivateError = useUserFormStore((state) => state.clearReactivateError)
-    const clearAnonymizeError = useUserFormStore((state) => state.clearAnonymizeError)
-    const initializePasswordForm = useUserFormStore((state) => state.initializeChangePasswordForm)
-
-    useEffect(() => {
-        initializePasswordForm(user.id)
-    }, [user.id, initializePasswordForm])
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        clearEditError()
-        setEditLoading(true)
-
-        const result = await updateUser({
-            id: user.id,
-            name,
-            role,
-        })
-
-        setEditLoading(false)
-
-        if (result.error) {
-            setEditError(result.error)
-        } else {
-            router.push("/admin/users")
-        }
-    }
-
-    const handleChangePassword = async (e: React.FormEvent) => {
-        e.preventDefault()
-        clearChangePasswordError()
-
-        if (newPassword !== confirmPassword) {
-            setChangePasswordError(t("passwordMismatch"))
-            return
-        }
-
-        setChangePasswordLoading(true)
-
-        const result = await changeUserPassword({
-            id: user.id,
-            newPassword,
-        })
-
-        setChangePasswordLoading(false)
-
-        if (result.error) {
-            setChangePasswordError(result.error)
-        } else {
-            setChangePasswordFormData({ newPassword: "" })
-            setConfirmPassword("")
-        }
-    }
-
-    const handleDeactivate = async () => {
-        if (!confirm(t("deactivateConfirm", { name: user.name || "this user" }))) return
-
-        clearDeactivateError()
-        setDeactivateLoading(true)
-
-        const result = await deactivateUser({ id: user.id })
-
-        setDeactivateLoading(false)
-
-        if (result.error) {
-            setDeactivateError(result.error)
-        } else {
-            router.refresh()
-        }
-    }
-
-    const handleReactivate = async () => {
-        if (!confirm(t("reactivateConfirm", { name: user.name || "this user" }))) return
-
-        clearReactivateError()
-        setReactivateLoading(true)
-
-        const result = await reactivateUser({ id: user.id })
-
-        setReactivateLoading(false)
-
-        if (result.error) {
-            setReactivateError(result.error)
-        } else {
-            router.refresh()
-        }
-    }
-
-    const handleAnonymize = async () => {
-        if (!confirm(t("anonymizeConfirm", { name: user.name || "this user" }))) return
-
-        clearAnonymizeError()
-        setAnonymizeLoading(true)
-
-        const result = await anonymizeUser({ id: user.id })
-
-        setAnonymizeLoading(false)
-
-        if (result.error) {
-            setAnonymizeError(result.error)
-        } else {
-            router.push("/admin/users")
-        }
-    }
+export function EditUserFormClient({
+    user,
+    currentUserIsDemo,
+    translations,
+}: EditUserFormClientProps) {
+    const {
+        name,
+        role,
+        newPassword,
+        showPassword,
+        confirmPassword,
+        isLoading,
+        isPasswordLoading,
+        isDeactivateLoading,
+        isReactivateLoading,
+        isAnonymizeLoading,
+        error,
+        passwordError,
+        deactivateError,
+        reactivateError,
+        anonymizeError,
+        setName,
+        setRole,
+        setNewPassword,
+        setShowPassword,
+        setConfirmPassword,
+        handleSubmit,
+        handleChangePassword,
+        handleDeactivate,
+        handleReactivate,
+        handleAnonymize,
+    } = useEditUserForm({ user, currentUserIsDemo, translations })
 
     return (
         <div className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="name">{t("name")}</Label>
+                    <Label htmlFor="name">{translations.nameLabel}</Label>
                     <Input
                         id="name"
                         value={name}
@@ -203,11 +109,11 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="email">{t("email")}</Label>
+                    <Label htmlFor="email">{translations.emailLabel}</Label>
                     <Input id="email" type="email" value={user.email} disabled />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="role">{t("role")}</Label>
+                    <Label htmlFor="role">{translations.roleLabel}</Label>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div>
@@ -222,22 +128,26 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue>
-                                            {tRoles(getUserRoleTranslationKey(role))}
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${USER_ROLE_COLORS[role]}`}
+                                            >
+                                                {translations.roleLabels[role]}
+                                            </span>
                                         </SelectValue>
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="USER">
-                                            {tRoles(getUserRoleTranslationKey("USER"))}
+                                            {translations.roleLabels["USER"]}
                                         </SelectItem>
                                         <SelectItem value="ADMIN" disabled={currentUserIsDemo}>
-                                            {tRoles(getUserRoleTranslationKey("ADMIN"))}
+                                            {translations.roleLabels["ADMIN"]}
                                         </SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </TooltipTrigger>
                         {(user.isDemo || currentUserIsDemo) && (
-                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                            <TooltipContent>{translations.demoRestriction}</TooltipContent>
                         )}
                     </Tooltip>
                 </div>
@@ -246,13 +156,13 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                     <Button
                         type="button"
                         variant="outline"
-                        onClick={() => router.push("/admin/users")}
+                        onClick={() => history.back()}
                         disabled={isLoading}
                     >
-                        {tCommon("cancel")}
+                        {translations.cancel}
                     </Button>
                     <Button type="submit" disabled={isLoading}>
-                        {isLoading ? t("saving") : t("saveChanges")}
+                        {isLoading ? translations.saving : translations.saveChanges}
                     </Button>
                 </div>
             </form>
@@ -260,18 +170,16 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
             <Separator />
             <form onSubmit={handleChangePassword} className="space-y-4">
                 <div className="space-y-2">
-                    <Label htmlFor="newPassword">{t("changePassword")}</Label>
+                    <Label htmlFor="newPassword">{translations.changePasswordLabel}</Label>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div className="relative">
                                 <Input
                                     id="newPassword"
                                     type={showPassword ? "text" : "password"}
-                                    placeholder={t("enterNewPassword")}
+                                    placeholder={translations.enterNewPasswordPlaceholder}
                                     value={newPassword}
-                                    onChange={(e) =>
-                                        setChangePasswordFormData({ newPassword: e.target.value })
-                                    }
+                                    onChange={(e) => setNewPassword(e.target.value)}
                                     disabled={isPasswordLoading || user.isDemo}
                                     className="pr-10"
                                 />
@@ -292,19 +200,19 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                             </div>
                         </TooltipTrigger>
                         {user.isDemo && (
-                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                            <TooltipContent>{translations.demoRestriction}</TooltipContent>
                         )}
                     </Tooltip>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">{t("confirmPassword")}</Label>
+                    <Label htmlFor="confirmPassword">{translations.confirmPasswordLabel}</Label>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <div className="relative">
                                 <Input
                                     id="confirmPassword"
                                     type={showPassword ? "text" : "password"}
-                                    placeholder={t("confirmNewPassword")}
+                                    placeholder={translations.confirmNewPasswordPlaceholder}
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     disabled={isPasswordLoading || user.isDemo}
@@ -327,7 +235,7 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                             </div>
                         </TooltipTrigger>
                         {user.isDemo && (
-                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                            <TooltipContent>{translations.demoRestriction}</TooltipContent>
                         )}
                     </Tooltip>
                 </div>
@@ -345,12 +253,14 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                         user.isDemo
                                     }
                                 >
-                                    {isPasswordLoading ? t("changing") : t("changePassword")}
+                                    {isPasswordLoading
+                                        ? translations.changing
+                                        : translations.changePasswordLabel}
                                 </Button>
                             </div>
                         </TooltipTrigger>
                         {user.isDemo && (
-                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                            <TooltipContent>{translations.demoRestriction}</TooltipContent>
                         )}
                     </Tooltip>
                 </div>
@@ -360,12 +270,14 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
             <div className="space-y-4">
                 <div>
                     <h3 className="text-lg font-medium">
-                        {user.isActive ? t("deactivateUser") : t("reactivateUser")}
+                        {user.isActive
+                            ? translations.deactivateUserLabel
+                            : translations.reactivateUserLabel}
                     </h3>
                     <p className="text-sm text-muted-foreground">
                         {user.isActive
-                            ? t("deactivateConfirm", { name: "" }).split("?")[0]
-                            : t("reactivateConfirm", { name: "" }).split("?")[0]}
+                            ? translations.deactivateDescription
+                            : translations.reactivateDescription}
                     </p>
                 </div>
                 {deactivateError && <p className="text-sm text-red-500">{deactivateError}</p>}
@@ -387,8 +299,8 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                         }
                                     >
                                         {isDeactivateLoading
-                                            ? t("deactivating")
-                                            : t("deactivateUser")}
+                                            ? translations.deactivating
+                                            : translations.deactivateUserLabel}
                                     </Button>
                                 ) : (
                                     <Button
@@ -402,14 +314,14 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                         }
                                     >
                                         {isReactivateLoading
-                                            ? t("reactivating")
-                                            : t("reactivateUser")}
+                                            ? translations.reactivating
+                                            : translations.reactivateUserLabel}
                                     </Button>
                                 )}
                             </div>
                         </TooltipTrigger>
                         {(user.isDemo || currentUserIsDemo) && (
-                            <TooltipContent>{tCommonMessages("demoRestriction")}</TooltipContent>
+                            <TooltipContent>{translations.demoRestriction}</TooltipContent>
                         )}
                     </Tooltip>
                 </div>
@@ -420,9 +332,11 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                     <Separator />
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-lg font-medium">{t("anonymizeUser")}</h3>
+                            <h3 className="text-lg font-medium">
+                                {translations.anonymizeUserLabel}
+                            </h3>
                             <p className="text-sm text-muted-foreground">
-                                {t("anonymizeConfirm", { name: "" }).split("?")[0]}
+                                {translations.anonymizeDescription}
                             </p>
                         </div>
                         {anonymizeError && <p className="text-sm text-red-500">{anonymizeError}</p>}
@@ -441,15 +355,13 @@ export function EditUserForm({ user, currentUserIsDemo }: EditUserFormProps) {
                                             }
                                         >
                                             {isAnonymizeLoading
-                                                ? t("anonymizing")
-                                                : t("anonymizeUser")}
+                                                ? translations.anonymizing
+                                                : translations.anonymizeUserLabel}
                                         </Button>
                                     </div>
                                 </TooltipTrigger>
                                 {(user.isDemo || currentUserIsDemo) && (
-                                    <TooltipContent>
-                                        {tCommonMessages("demoRestriction")}
-                                    </TooltipContent>
+                                    <TooltipContent>{translations.demoRestriction}</TooltipContent>
                                 )}
                             </Tooltip>
                         </div>

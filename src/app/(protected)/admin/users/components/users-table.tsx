@@ -1,10 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { useTranslations } from "next-intl"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
     Table,
     TableBody,
@@ -42,82 +38,66 @@ import { Checkbox } from "@/components/ui/checkbox"
 import type { UserTableItem } from "../schemas/user-table-schemas"
 import { USER_ROLE_COLORS } from "../constants/user-constants"
 import { getUserRoleTranslationKey } from "../utils/translation-helpers"
-import { createUser } from "../actions/user-actions"
-import { exportUsersData } from "../actions/export-actions"
-import { useUserFormStore } from "../stores/user-form-store"
 import { type UserRole } from "../schemas/user-action-schemas"
-import { downloadFile, base64ToBuffer, type ExportFormat } from "@/features/export"
+import { useUsersTable } from "../hooks/use-users-table"
 
-interface UsersTableProps {
-    users: UserTableItem[]
-    currentUserId: string
+interface UsersTableTranslations {
+    filterPlaceholder: string
+    showDeactivated: string
+    createUser: string
+    exportLabel: string
+    name: string
+    email: string
+    role: string
+    status: string
+    created: string
+    actions: string
+    you: string
+    roleLabels: Record<UserRole, string>
+    statusActive: string
+    statusInactive: string
+    statusAnonymized: string
+    noUsersMatch: string
+    noUsers: string
+    edit: string
+    fillDetails: string
+    nameLabel: string
+    namePlaceholder: string
+    emailLabel: string
+    emailPlaceholder: string
+    passwordLabel: string
+    passwordPlaceholder: string
+    roleLabel: string
+    selectRole: string
+    cancel: string
+    saving: string
+    save: string
+    errorMessage: string
 }
 
-export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
-    const router = useRouter()
-    const queryClient = useQueryClient()
-    const t = useTranslations("admin.users.table")
-    const tRoles = useTranslations("admin.users.roles")
-    const tUsers = useTranslations("admin.users")
-    const tForm = useTranslations("admin.users.form")
-    const tCommon = useTranslations("common.actions")
-    const [searchQuery, setSearchQuery] = useState("")
-    const [showDeactivated, setShowDeactivated] = useState(false)
-    const [isNewUserOpen, setIsNewUserOpen] = useState(false)
-    const [isExporting, setIsExporting] = useState(false)
+interface UsersTableClientProps {
+    users: UserTableItem[]
+    currentUserId: string
+    translations: UsersTableTranslations
+}
 
-    const { createForm, setCreateFormData, resetCreateForm, setCreateLoading, setCreateError } =
-        useUserFormStore()
-
-    const filteredUsers = users.filter((user) => {
-        const matchesSearch = user.name?.toLowerCase().includes(searchQuery.toLowerCase())
-        const matchesActiveFilter = showDeactivated || user.isActive
-        return matchesSearch && matchesActiveFilter
-    })
-
-    const handleRowDoubleClick = (userId: string) => {
-        router.push(`/admin/users/${userId}`)
-    }
-
-    const createUserMutation = useMutation({
-        mutationFn: createUser,
-        onMutate: () => {
-            setCreateLoading(true)
-            setCreateError("")
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["users"] })
-            setIsNewUserOpen(false)
-            resetCreateForm()
-            setCreateLoading(false)
-        },
-        onError: (error) => {
-            setCreateError(error instanceof Error ? error.message : tCommon("error"))
-            setCreateLoading(false)
-        },
-    })
-
-    const handleExportUsers = async (format: ExportFormat) => {
-        setIsExporting(true)
-        try {
-            const result = await exportUsersData({ format })
-            if (result.error) {
-                console.error("Export error:", result.error)
-            } else if (result.data) {
-                const extension = format === "excel" ? "xlsx" : format
-                const filename = `users-export.${extension}`
-                const fileData: string | Buffer =
-                    format === "excel" && typeof result.data === "string"
-                        ? base64ToBuffer(result.data)
-                        : (result.data as string)
-                downloadFile(fileData, filename, format)
-            }
-        } catch (error) {
-            console.error("Export failed:", error)
-        } finally {
-            setIsExporting(false)
-        }
-    }
+export function UsersTableClient({ users, currentUserId, translations }: UsersTableClientProps) {
+    const {
+        searchQuery,
+        showDeactivated,
+        isNewUserOpen,
+        isExporting,
+        createForm,
+        filteredUsers,
+        setSearchQuery,
+        setShowDeactivated,
+        setIsNewUserOpen,
+        resetCreateForm,
+        setCreateFormData,
+        handleRowDoubleClick,
+        submitCreateUser,
+        handleExportUsers,
+    } = useUsersTable({ users, errorMessage: translations.errorMessage })
 
     return (
         <>
@@ -126,7 +106,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                     <div className="relative max-w-sm flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
-                            placeholder={t("filterPlaceholder")}
+                            placeholder={translations.filterPlaceholder}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="pl-9"
@@ -142,7 +122,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                             htmlFor="showDeactivated"
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                         >
-                            {t("showDeactivated")}
+                            {translations.showDeactivated}
                         </label>
                     </div>
                 </div>
@@ -155,14 +135,14 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                     <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => setIsNewUserOpen(true)}>
                             <Plus className="h-4 w-4 mr-2" />
-                            {tUsers("createUser")}
+                            {translations.createUser}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => handleExportUsers("excel")}
                             disabled={isExporting}
                         >
                             <Download className="h-4 w-4 mr-2" />
-                            {tCommon("export")}
+                            {translations.exportLabel}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -172,14 +152,14 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                     <TableHeader className="sticky top-0 z-30 bg-background">
                         <TableRow>
                             <TableHead className="sticky top-0 left-0 z-40 bg-background min-w-[150px] max-w-[200px] border-r">
-                                {t("name")}
+                                {translations.name}
                             </TableHead>
-                            <TableHead className="min-w-[200px]">{t("email")}</TableHead>
-                            <TableHead className="min-w-[100px]">{t("role")}</TableHead>
-                            <TableHead className="min-w-[100px]">{t("status")}</TableHead>
-                            <TableHead className="min-w-[120px]">{t("created")}</TableHead>
+                            <TableHead className="min-w-[200px]">{translations.email}</TableHead>
+                            <TableHead className="min-w-[100px]">{translations.role}</TableHead>
+                            <TableHead className="min-w-[100px]">{translations.status}</TableHead>
+                            <TableHead className="min-w-[120px]">{translations.created}</TableHead>
                             <TableHead className="text-right min-w-[180px]">
-                                {t("actions")}
+                                {translations.actions}
                             </TableHead>
                         </TableRow>
                     </TableHeader>
@@ -190,7 +170,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                     colSpan={6}
                                     className="text-center text-muted-foreground"
                                 >
-                                    {searchQuery ? t("noUsersMatch") : t("noUsers")}
+                                    {searchQuery ? translations.noUsersMatch : translations.noUsers}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -207,7 +187,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                                     {user.name}
                                                     {user.id === currentUserId && (
                                                         <span className="ml-2 text-xs text-muted-foreground">
-                                                            ({t("you")})
+                                                            ({translations.you})
                                                         </span>
                                                     )}
                                                 </div>
@@ -217,7 +197,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                                     {user.name}
                                                     {user.id === currentUserId && (
                                                         <span className="ml-2 text-xs text-muted-foreground">
-                                                            ({t("you")})
+                                                            ({translations.you})
                                                         </span>
                                                     )}
                                                 </div>
@@ -229,7 +209,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                         <span
                                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold whitespace-nowrap ${USER_ROLE_COLORS[user.role]}`}
                                         >
-                                            {tRoles(getUserRoleTranslationKey(user.role))}
+                                            {translations.roleLabels[user.role]}
                                         </span>
                                     </TableCell>
                                     <TableCell>
@@ -243,10 +223,10 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                             }`}
                                         >
                                             {user.anonymizedAt
-                                                ? t("anonymized")
+                                                ? translations.statusAnonymized
                                                 : user.isActive
-                                                  ? t("active")
-                                                  : t("inactive")}
+                                                  ? translations.statusActive
+                                                  : translations.statusInactive}
                                         </span>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
@@ -260,7 +240,7 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                         <Button variant="outline" size="sm" asChild>
                                             <Link href={`/admin/users/${user.id}`}>
                                                 <Edit className="h-4 w-4 mr-2" />
-                                                {t("edit")}
+                                                {translations.edit}
                                             </Link>
                                         </Button>
                                     </TableCell>
@@ -274,54 +254,54 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
             <Dialog open={isNewUserOpen} onOpenChange={setIsNewUserOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{tUsers("createUser")}</DialogTitle>
-                        <DialogDescription>{tForm("fillDetails")}</DialogDescription>
+                        <DialogTitle>{translations.createUser}</DialogTitle>
+                        <DialogDescription>{translations.fillDetails}</DialogDescription>
                     </DialogHeader>
                     <form
                         onSubmit={(e) => {
                             e.preventDefault()
-                            createUserMutation.mutate(createForm.data)
+                            submitCreateUser()
                         }}
                         className="space-y-4"
                     >
                         <div className="space-y-2">
-                            <Label htmlFor="name">{tForm("name")}</Label>
+                            <Label htmlFor="name">{translations.nameLabel}</Label>
                             <Input
                                 id="name"
                                 value={createForm.data.name}
                                 onChange={(e) => setCreateFormData({ name: e.target.value })}
-                                placeholder={tForm("namePlaceholder")}
+                                placeholder={translations.namePlaceholder}
                                 required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="email">{tForm("email")}</Label>
+                            <Label htmlFor="email">{translations.emailLabel}</Label>
                             <Input
                                 id="email"
                                 type="email"
                                 value={createForm.data.email}
                                 onChange={(e) => setCreateFormData({ email: e.target.value })}
-                                placeholder={tForm("emailPlaceholder")}
+                                placeholder={translations.emailPlaceholder}
                                 required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password">{tForm("password")}</Label>
+                            <Label htmlFor="password">{translations.passwordLabel}</Label>
                             <Input
                                 id="password"
                                 type="password"
                                 value={createForm.data.password}
                                 onChange={(e) => setCreateFormData({ password: e.target.value })}
-                                placeholder={tForm("passwordPlaceholder")}
+                                placeholder={translations.passwordPlaceholder}
                                 required
                                 minLength={6}
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="role">{tForm("role")}</Label>
+                            <Label htmlFor="role">{translations.roleLabel}</Label>
                             <Select
                                 value={createForm.data.role}
                                 onValueChange={(value: UserRole) =>
@@ -329,14 +309,14 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                 }
                             >
                                 <SelectTrigger id="role">
-                                    <SelectValue placeholder={tForm("selectRole")} />
+                                    <SelectValue placeholder={translations.selectRole} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="USER">
-                                        {tRoles(getUserRoleTranslationKey("USER"))}
+                                        {translations.roleLabels["USER"]}
                                     </SelectItem>
                                     <SelectItem value="ADMIN">
-                                        {tRoles(getUserRoleTranslationKey("ADMIN"))}
+                                        {translations.roleLabels["ADMIN"]}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -355,10 +335,10 @@ export function UsersTableWrapper({ users, currentUserId }: UsersTableProps) {
                                     resetCreateForm()
                                 }}
                             >
-                                {tCommon("cancel")}
+                                {translations.cancel}
                             </Button>
                             <Button type="submit" disabled={createForm.isLoading}>
-                                {createForm.isLoading ? tCommon("saving") : tCommon("save")}
+                                {createForm.isLoading ? translations.saving : translations.save}
                             </Button>
                         </div>
                     </form>

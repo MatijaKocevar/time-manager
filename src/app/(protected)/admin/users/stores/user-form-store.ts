@@ -71,6 +71,12 @@ interface UserFormStoreState {
     deactivateForm: DeactivateFormState
     reactivateForm: ReactivateFormState
     anonymizeForm: AnonymizeFormState
+    searchQuery: string
+    showDeactivated: boolean
+    isNewUserOpen: boolean
+    isExporting: boolean
+    showPassword: boolean
+    confirmPassword: string
 }
 
 interface UserFormStoreActions {
@@ -129,6 +135,12 @@ interface UserFormStoreActions {
     setAnonymizeLoading: (isLoading: boolean) => void
     setAnonymizeError: (error: string) => void
     clearAnonymizeError: () => void
+    setSearchQuery: (searchQuery: string) => void
+    setShowDeactivated: (showDeactivated: boolean) => void
+    setIsNewUserOpen: (isNewUserOpen: boolean) => void
+    setIsExporting: (isExporting: boolean) => void
+    setShowPassword: (showPassword: boolean) => void
+    setConfirmPassword: (confirmPassword: string) => void
 }
 
 export const useUserFormStore = create<UserFormStoreState & UserFormStoreActions>((set) => ({
@@ -172,6 +184,12 @@ export const useUserFormStore = create<UserFormStoreState & UserFormStoreActions
         isLoading: false,
         error: "",
     },
+    searchQuery: "",
+    showDeactivated: false,
+    isNewUserOpen: false,
+    isExporting: false,
+    showPassword: false,
+    confirmPassword: "",
     setCreateFormData: (data) =>
         set((state) => ({
             createForm: {
@@ -383,4 +401,10 @@ export const useUserFormStore = create<UserFormStoreState & UserFormStoreActions
         set((state) => ({
             anonymizeForm: { ...state.anonymizeForm, error: "" },
         })),
+    setSearchQuery: (searchQuery) => set({ searchQuery }),
+    setShowDeactivated: (showDeactivated) => set({ showDeactivated }),
+    setIsNewUserOpen: (isNewUserOpen) => set({ isNewUserOpen }),
+    setIsExporting: (isExporting) => set({ isExporting }),
+    setShowPassword: (showPassword) => set({ showPassword }),
+    setConfirmPassword: (confirmPassword) => set({ confirmPassword }),
 }))
