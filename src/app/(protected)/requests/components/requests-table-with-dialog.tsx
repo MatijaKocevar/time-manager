@@ -9,12 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 interface RequestsTableWithDialogProps {
     requests: RequestDisplay[]
     showUser: boolean
+    showNewButton?: boolean
     hasUrnikCredentials?: boolean
 }
 
 export function RequestsTableWithDialog({
     requests,
     showUser,
+    showNewButton = true,
     hasUrnikCredentials = false,
 }: RequestsTableWithDialogProps) {
     const [selectedRequest, setSelectedRequest] = useState<RequestDisplay | null>(null)
@@ -25,6 +27,7 @@ export function RequestsTableWithDialog({
             <RequestsTable
                 requests={requests}
                 showUser={showUser}
+                showNewButton={showNewButton}
                 onRequestClick={setSelectedRequest}
                 onNewRequestClick={() => setIsNewRequestOpen(true)}
             />

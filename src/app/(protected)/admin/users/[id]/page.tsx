@@ -11,7 +11,7 @@ import {
 } from "@/app/(protected)/hours/actions/hour-actions"
 import { getHolidaysInRange } from "../../holidays/actions/holiday-actions"
 import { getUserRequestsForAdmin } from "@/app/(protected)/requests/actions/request-actions"
-import { RequestsTable } from "@/app/(protected)/requests/components/requests-table"
+import { RequestsTableWithDialog } from "@/app/(protected)/requests/components/requests-table-with-dialog"
 import { UserHoursSection } from "./components/user-hours-section"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
@@ -120,7 +120,7 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
                         <CardDescription>{t("requestsDescription")}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <RequestsTable
+                        <RequestsTableWithDialog
                             requests={userRequests}
                             showUser={false}
                             showNewButton={false}
