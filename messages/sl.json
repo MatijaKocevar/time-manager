@@ -167,10 +167,12 @@
             "title": "Časovnice"
         },
         "viewMode": {
+            "label": "Pogled",
             "week": "Teden",
             "month": "Mesec"
         },
         "taskFilter": {
+            "label": "Filter",
             "work": "Službenо",
             "private": "Zasebno"
         },

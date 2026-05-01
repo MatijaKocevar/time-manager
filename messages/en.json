@@ -167,10 +167,12 @@
             "title": "Time Sheets"
         },
         "viewMode": {
+            "label": "View",
             "week": "Week",
             "month": "Month"
         },
         "taskFilter": {
+            "label": "Filter",
             "work": "Work",
             "private": "Personal"
         },

@@ -109,8 +109,10 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
                 translations={{
                     week: t("viewMode.week"),
                     month: t("viewMode.month"),
+                    viewLabel: t("viewMode.label"),
                     filterWork: t("taskFilter.work"),
                     filterPrivate: t("taskFilter.private"),
+                    filterLabel: t("taskFilter.label"),
                     task: t("table.task"),
                     total: tSummary("total"),
                     dailyTotal: t("table.dailyTotal"),

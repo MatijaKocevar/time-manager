@@ -8,6 +8,10 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useTimeSheetsStore } from "../stores/time-sheets-store"
@@ -42,8 +46,10 @@ interface TimeSheetsClientProps {
     translations: {
         week: string
         month: string
+        viewLabel: string
         filterWork: string
         filterPrivate: string
+        filterLabel: string
         task: string
         total: string
         dailyTotal: string
@@ -216,7 +222,7 @@ export function TimeSheetsClient({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <div id="time-sheets-balance" className="text-sm hidden md:block">
+                        <div id="time-sheets-balance" className="text-sm">
                             <span className="font-semibold">
                                 {formatHoursMinutesLib(totalSeconds)}
                             </span>
@@ -229,92 +235,51 @@ export function TimeSheetsClient({
                                 </>
                             )}
                         </div>
-                        <div className="hidden md:flex gap-2">
-                            <Button
-                                variant={taskFilter === "work" ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setTaskFilter("work")}
-                            >
-                                {translations.filterWork}
-                            </Button>
-                            <Button
-                                variant={taskFilter === "private" ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setTaskFilter("private")}
-                            >
-                                {translations.filterPrivate}
-                            </Button>
-                            <Button
-                                variant={viewMode === "week" ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setViewMode("week")}
-                            >
-                                {translations.week}
-                            </Button>
-                            <Button
-                                variant={viewMode === "month" ? "default" : "outline"}
-                                size="sm"
-                                onClick={() => setViewMode("month")}
-                            >
-                                {translations.month}
-                            </Button>
-                            {taskFilter === "work" && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setIsExportDialogOpen(true)}
-                                >
-                                    <Download className="h-4 w-4 mr-1" />
-                                    {tCommon("actions.export")}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
                                 </Button>
-                            )}
-                        </div>
-                        <div className="md:hidden flex items-center gap-2">
-                            <div className="text-sm">
-                                <span className="font-semibold">
-                                    {formatHoursMinutesLib(totalSeconds)}
-                                </span>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>{translations.filterLabel}</DropdownMenuLabel>
+                                <DropdownMenuRadioGroup
+                                    value={taskFilter}
+                                    onValueChange={(v) => setTaskFilter(v as "work" | "private")}
+                                >
+                                    <DropdownMenuRadioItem value="work">
+                                        {translations.filterWork}
+                                    </DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="private">
+                                        {translations.filterPrivate}
+                                    </DropdownMenuRadioItem>
+                                </DropdownMenuRadioGroup>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>{translations.viewLabel}</DropdownMenuLabel>
+                                <DropdownMenuRadioGroup
+                                    value={viewMode}
+                                    onValueChange={(v) => setViewMode(v as ViewMode)}
+                                >
+                                    <DropdownMenuRadioItem value="week">
+                                        {translations.week}
+                                    </DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="month">
+                                        {translations.month}
+                                    </DropdownMenuRadioItem>
+                                </DropdownMenuRadioGroup>
                                 {taskFilter === "work" && (
                                     <>
-                                        <span className="text-muted-foreground"> | </span>
-                                        <span
-                                            className={`font-semibold ${getBalanceColor(balance)}`}
-                                        >
-                                            {formatBalance(balance)}
-                                        </span>
-                                    </>
-                                )}
-                            </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm">
-                                        <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => setTaskFilter("work")}>
-                                        {translations.filterWork}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setTaskFilter("private")}>
-                                        {translations.filterPrivate}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setViewMode("week")}>
-                                        {translations.week}
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setViewMode("month")}>
-                                        {translations.month}
-                                    </DropdownMenuItem>
-                                    {taskFilter === "work" && (
+                                        <DropdownMenuSeparator />
                                         <DropdownMenuItem
                                             onClick={() => setIsExportDialogOpen(true)}
                                         >
                                             <Download className="h-4 w-4 mr-2" />
                                             {tCommon("actions.export")}
                                         </DropdownMenuItem>
-                                    )}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
+                                    </>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
             </div>
