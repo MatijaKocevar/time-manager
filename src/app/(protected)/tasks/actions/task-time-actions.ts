@@ -7,8 +7,10 @@ import type { HourType } from "@/../../prisma/generated/client"
 import {
     UpdateTaskTimeEntrySchema,
     DeleteTaskTimeEntrySchema,
+    CreateTaskTimeEntrySchema,
     type UpdateTaskTimeEntryInput,
     type DeleteTaskTimeEntryInput,
+    type CreateTaskTimeEntryInput,
 } from "../schemas/task-time-entry-schemas"
 import { broadcastTimerEvent, refreshTimerData, type TimerBroadcastData } from "@/lib/timer-utils"
 
@@ -219,5 +221,61 @@ export async function deleteTaskTimeEntry(input: DeleteTaskTimeEntryInput) {
             return { error: error.message }
         }
         return { error: "Failed to delete time entry" }
+    }
+}
+
+export async function createTaskTimeEntry(input: CreateTaskTimeEntryInput) {
+    try {
+        const session = await requireAuth()
+
+        const validation = CreateTaskTimeEntrySchema.safeParse(input)
+        if (!validation.success) {
+            return { error: validation.error.issues[0].message }
+        }
+
+        const { taskId, startTime, endTime } = validation.data
+
+        const task = await prisma.task.findUnique({
+            where: { id: taskId },
+        })
+
+        if (!task || task.userId !== session.user.id) {
+            return { error: "Task not found" }
+        }
+
+        if (startTime >= endTime) {
+            return { error: "Start time must be before end time" }
+        }
+
+        if (startTime > new Date()) {
+            return { error: "Start time cannot be in the future" }
+        }
+
+        if (endTime > new Date()) {
+            return { error: "End time cannot be in the future" }
+        }
+
+        const duration = Math.floor((endTime.getTime() - startTime.getTime()) / 1000)
+
+        await prisma.$transaction(async (tx) => {
+            await tx.taskTimeEntry.create({
+                data: {
+                    taskId,
+                    userId: session.user.id,
+                    startTime,
+                    endTime,
+                    duration,
+                },
+            })
+        })
+
+        await refreshTimerData()
+
+        return { success: true }
+    } catch (error) {
+        if (error instanceof Error) {
+            return { error: error.message }
+        }
+        return { error: "Failed to create time entry" }
     }
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTranslations } from "next-intl"
-import { Trash2, Square } from "lucide-react"
+import { Trash2, Square, Plus, X } from "lucide-react"
 import {
     Dialog,
     DialogContent,
@@ -19,6 +19,7 @@ import {
     getTaskTimeEntries,
     updateTaskTimeEntry,
     deleteTaskTimeEntry,
+    createTaskTimeEntry,
 } from "../actions/task-time-actions"
 import { stopTimer } from "@/app/(protected)/shared/actions/timer-actions"
 import { taskKeys } from "../query-keys"
@@ -47,6 +48,9 @@ export function TimeEntriesDialog() {
     const [currentTime, setCurrentTime] = useState(new Date())
     const [editedEntries, setEditedEntries] = useState<Map<string, EditedEntry>>(new Map())
     const [isSaving, setIsSaving] = useState(false)
+    const [isAddingEntry, setIsAddingEntry] = useState(false)
+    const [newEntryStart, setNewEntryStart] = useState<Date | undefined>(undefined)
+    const [newEntryEnd, setNewEntryEnd] = useState<Date | undefined>(undefined)
 
     const { data, isLoading } = useQuery({
         queryKey: taskKeys.timeEntriesForTask(timeEntriesDialog.taskId ?? ""),
@@ -63,6 +67,9 @@ export function TimeEntriesDialog() {
     useEffect(() => {
         if (!timeEntriesDialog.isOpen) {
             setEditedEntries(new Map())
+            setIsAddingEntry(false)
+            setNewEntryStart(undefined)
+            setNewEntryEnd(undefined)
             return
         }
 
@@ -113,10 +120,20 @@ export function TimeEntriesDialog() {
     }
 
     const handleSaveAll = async () => {
-        if (editedEntries.size === 0) return
-
         setIsSaving(true)
         try {
+            if (isAddingEntry && newEntryStart && newEntryEnd && timeEntriesDialog.taskId) {
+                const createResult = await createTaskTimeEntry({
+                    taskId: timeEntriesDialog.taskId,
+                    startTime: newEntryStart,
+                    endTime: newEntryEnd,
+                })
+                if (!createResult.error) {
+                    setIsAddingEntry(false)
+                    setNewEntryStart(undefined)
+                    setNewEntryEnd(undefined)
+                }
+            }
             for (const [entryId, edited] of editedEntries) {
                 const entry = entries.find((e) => e.id === entryId)
                 if (!entry) continue
@@ -202,7 +219,10 @@ export function TimeEntriesDialog() {
                                 <LoadingSpinner />
                             </div>
                         )}
-                        {entries.length === 0 && !childAggregation && !isLoading ? (
+                        {entries.length === 0 &&
+                        !childAggregation &&
+                        !isLoading &&
+                        !isAddingEntry ? (
                             <div className="flex items-center justify-center min-h-[200px] py-12 text-muted-foreground">
                                 {t("noTimeEntries")}
                             </div>
@@ -225,6 +245,66 @@ export function TimeEntriesDialog() {
                                         </tr>
                                     </thead>
                                     <tbody className="[&_tr:last-child]:border-0">
+                                        {isAddingEntry && (
+                                            <tr className="border-b bg-muted/10">
+                                                <td className="p-2 sm:p-4 align-middle">
+                                                    <DateTimePicker
+                                                        value={newEntryStart}
+                                                        onChange={setNewEntryStart}
+                                                        modal={true}
+                                                        hideTime={false}
+                                                        timePicker={{
+                                                            hour: true,
+                                                            minute: true,
+                                                            second: false,
+                                                        }}
+                                                        timezone="Europe/Ljubljana"
+                                                    />
+                                                </td>
+                                                <td className="p-2 sm:p-4 align-middle">
+                                                    <DateTimePicker
+                                                        value={newEntryEnd}
+                                                        onChange={setNewEntryEnd}
+                                                        modal={true}
+                                                        hideTime={false}
+                                                        timePicker={{
+                                                            hour: true,
+                                                            minute: true,
+                                                            second: false,
+                                                        }}
+                                                        timezone="Europe/Ljubljana"
+                                                    />
+                                                </td>
+                                                <td className="p-2 sm:p-4 align-middle text-right font-mono text-xs sm:text-sm">
+                                                    {newEntryStart &&
+                                                    newEntryEnd &&
+                                                    newEntryEnd > newEntryStart
+                                                        ? formatDuration(
+                                                              Math.floor(
+                                                                  (newEntryEnd.getTime() -
+                                                                      newEntryStart.getTime()) /
+                                                                      1000
+                                                              )
+                                                          )
+                                                        : "—"}
+                                                </td>
+                                                <td className="p-2 sm:p-4 align-middle">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setIsAddingEntry(false)
+                                                            setNewEntryStart(undefined)
+                                                            setNewEntryEnd(undefined)
+                                                        }}
+                                                        className="h-8 w-8 p-0"
+                                                        aria-label="Cancel"
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        )}
                                         {childAggregation && (
                                             <tr className="border-b bg-muted/30">
                                                 <td
@@ -364,6 +444,77 @@ export function TimeEntriesDialog() {
 
                                 {/* Mobile card view */}
                                 <div className="sm:hidden space-y-3 p-3">
+                                    {isAddingEntry && (
+                                        <div className="rounded-lg border bg-muted/10 p-3 space-y-3">
+                                            <div className="space-y-2">
+                                                <div className="text-xs font-medium text-muted-foreground">
+                                                    {t("startedAt")}
+                                                </div>
+                                                <DateTimePicker
+                                                    value={newEntryStart}
+                                                    onChange={setNewEntryStart}
+                                                    modal={true}
+                                                    hideTime={false}
+                                                    timePicker={{
+                                                        hour: true,
+                                                        minute: true,
+                                                        second: false,
+                                                    }}
+                                                    timezone="Europe/Ljubljana"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="text-xs font-medium text-muted-foreground">
+                                                    {t("endedAt")}
+                                                </div>
+                                                <DateTimePicker
+                                                    value={newEntryEnd}
+                                                    onChange={setNewEntryEnd}
+                                                    modal={true}
+                                                    hideTime={false}
+                                                    timePicker={{
+                                                        hour: true,
+                                                        minute: true,
+                                                        second: false,
+                                                    }}
+                                                    timezone="Europe/Ljubljana"
+                                                />
+                                            </div>
+                                            <div className="flex items-center justify-between pt-2 border-t">
+                                                <div className="space-y-1">
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {t("duration")}
+                                                    </div>
+                                                    <div className="text-sm font-mono font-semibold">
+                                                        {newEntryStart &&
+                                                        newEntryEnd &&
+                                                        newEntryEnd > newEntryStart
+                                                            ? formatDuration(
+                                                                  Math.floor(
+                                                                      (newEntryEnd.getTime() -
+                                                                          newEntryStart.getTime()) /
+                                                                          1000
+                                                                  )
+                                                              )
+                                                            : "—"}
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setIsAddingEntry(false)
+                                                        setNewEntryStart(undefined)
+                                                        setNewEntryEnd(undefined)
+                                                    }}
+                                                    className="h-8 w-8 p-0"
+                                                    aria-label="Cancel"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
                                     {childAggregation && (
                                         <div className="rounded-lg border bg-muted/30 p-3">
                                             <div className="text-xs text-muted-foreground italic mb-1">
@@ -507,15 +658,29 @@ export function TimeEntriesDialog() {
                                 {formatDuration(totalDuration)}
                             </span>
                         </div>
-                        {editedEntries.size > 0 && (
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsAddingEntry(true)}
+                                disabled={isAddingEntry || isSaving || deleteMutation.isPending}
+                            >
+                                <Plus className="h-4 w-4 mr-1" />
+                                {t("addEntry")}
+                            </Button>
                             <Button
                                 onClick={handleSaveAll}
-                                disabled={isSaving || deleteMutation.isPending}
+                                disabled={
+                                    isSaving ||
+                                    deleteMutation.isPending ||
+                                    (editedEntries.size === 0 &&
+                                        (!isAddingEntry || !newEntryStart || !newEntryEnd))
+                                }
                             >
                                 {isSaving ? tStatus("saving") : tCommon("save")}{" "}
                                 {editedEntries.size > 1 && `(${editedEntries.size})`}
                             </Button>
-                        )}
+                        </div>
                     </div>
                 </div>
             </DialogContent>

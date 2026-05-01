@@ -44,6 +44,12 @@ export const DeleteTaskTimeEntrySchema = z.object({
     id: z.string(),
 })
 
+export const CreateTaskTimeEntrySchema = z.object({
+    taskId: z.string(),
+    startTime: z.date(),
+    endTime: z.date(),
+})
+
 export type TaskTimeEntryDisplay = z.infer<typeof TaskTimeEntryDisplaySchema>
 export type ChildTimeAggregation = z.infer<typeof ChildTimeAggregationSchema>
 export type TaskTimeEntryWithAggregation = z.infer<typeof TaskTimeEntryWithAggregationSchema>
@@ -51,3 +57,4 @@ export type StartTimerInput = z.infer<typeof StartTimerSchema>
 export type StopTimerInput = z.infer<typeof StopTimerSchema>
 export type UpdateTaskTimeEntryInput = z.infer<typeof UpdateTaskTimeEntrySchema>
 export type DeleteTaskTimeEntryInput = z.infer<typeof DeleteTaskTimeEntrySchema>
+export type CreateTaskTimeEntryInput = z.infer<typeof CreateTaskTimeEntrySchema>

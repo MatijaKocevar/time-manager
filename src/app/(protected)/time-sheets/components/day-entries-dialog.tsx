@@ -87,7 +87,7 @@ export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
                     <DialogTitle>{translations.title}</DialogTitle>
                     <DialogDescription>{translations.description}</DialogDescription>
                 </DialogHeader>
-                <div className="flex-1 min-h-0 border rounded-md relative mx-6 mb-6 sm:mx-0 sm:mb-0 overflow-y-auto">
+                <div className="flex-1 min-h-0 border rounded-md relative mx-6 sm:mx-0 overflow-y-auto">
                     {isLoading && (
                         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
                             <LoadingSpinner />
@@ -235,6 +235,7 @@ export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
                                         </div>
                                     )
                                 })}
+
                                 <div className="rounded-lg border-2 p-4 bg-muted/30">
                                     <div className="flex justify-between items-center font-semibold">
                                         <span>Total</span>

@@ -190,7 +190,11 @@
             "task": "Naloga",
             "active": "Aktivno",
             "noEntries": "Ni vnosov časa za ta dan",
-            "close": "Zapri"
+            "close": "Zapri",
+            "addEntry": "Dodaj vnos",
+            "selectTask": "Izberi nalogo",
+            "save": "Shrani",
+            "cancel": "Prekliči"
         },
         "messages": {
             "noData": "Ni najdenih vnosov časa za to obdobje",
@@ -318,7 +322,8 @@
             "deleteTimeEntryConfirm": "Ali si prepričan, da želiš izbrisati ta vnos časa?",
             "childTimeAggregation": "Čas iz podnalog",
             "subtasksInheritList": "Podnaloge podedujejo seznam starša",
-            "now": "Zdaj"
+            "now": "Zdaj",
+            "addEntry": "Dodaj vnos"
         },
         "table": {
             "list": "Seznam",
