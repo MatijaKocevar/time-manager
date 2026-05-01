@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { getTranslations } from "next-intl/server"
 import { STAT_CONFIGS } from "../constants"
 
 interface StatsCardsProps {
@@ -9,15 +10,17 @@ interface StatsCardsProps {
         upcomingHolidays: number
         lists: number
     }
-    translations: {
-        users: string
-        pendingRequests: string
-        upcomingHolidays: string
-        lists: string
-    }
 }
 
-export function StatsCards({ stats, translations }: StatsCardsProps) {
+export async function StatsCards({ stats }: StatsCardsProps) {
+    const t = await getTranslations("admin.overview")
+
+    const translations = {
+        users: t("totalUsers"),
+        pendingRequests: t("pendingRequests"),
+        upcomingHolidays: t("upcomingHolidays"),
+        lists: t("totalLists"),
+    }
     return (
         <div id="admin-stats" className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {STAT_CONFIGS.map(({ key, icon: Icon, color, href }) => (

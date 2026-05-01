@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { getTranslations } from "next-intl/server"
 import { REQUEST_STATUS_CONFIGS } from "../constants"
 
 interface RequestStatusBreakdownProps {
@@ -8,20 +9,22 @@ interface RequestStatusBreakdownProps {
         REJECTED: number
         CANCELLED: number
     }
-    translations: {
-        title: string
-        description: string
-        pending: string
-        approved: string
-        rejected: string
-        cancelled: string
-    }
 }
 
-export function RequestStatusBreakdown({
-    statusCounts,
-    translations,
-}: RequestStatusBreakdownProps) {
+export async function RequestStatusBreakdown({ statusCounts }: RequestStatusBreakdownProps) {
+    const [tAdmin, tRequests] = await Promise.all([
+        getTranslations("admin.overview"),
+        getTranslations("requests.statuses"),
+    ])
+
+    const translations = {
+        title: tAdmin("requestStatusBreakdown"),
+        description: tAdmin("requestStatusBreakdownDesc"),
+        pending: tRequests("pending"),
+        approved: tRequests("approved"),
+        rejected: tRequests("rejected"),
+        cancelled: tRequests("cancelled"),
+    }
     return (
         <Card id="admin-status-breakdown">
             <CardHeader>

@@ -2,20 +2,21 @@ import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { getTranslations } from "next-intl/server"
 import { QUICK_ACTIONS } from "../constants"
 
-interface QuickActionsProps {
-    translations: {
-        title: string
-        description: string
-        manageUsers: string
-        viewPendingRequests: string
-        manageShifts: string
-        viewRequestHistory: string
-    }
-}
+export async function QuickActions() {
+    const t = await getTranslations("admin.overview")
 
-export function QuickActions({ translations }: QuickActionsProps) {
+    const translations = {
+        title: t("quickActions"),
+        description: t("quickActionsDesc"),
+        manageUsers: t("manageUsers"),
+        viewPendingRequests: t("reviewPendingRequests"),
+        manageShifts: t("manageHolidays"),
+        viewRequestHistory: t("viewRequestHistory"),
+    }
+
     return (
         <Card id="admin-quick-actions">
             <CardHeader>

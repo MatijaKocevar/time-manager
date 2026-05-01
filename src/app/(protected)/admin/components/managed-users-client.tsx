@@ -1,17 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { updateAdminManagedUsers, toggleAutoAdmin } from "../actions/admin-settings-actions"
-import { useAdminSettingsStore } from "../stores/admin-settings-store"
-import { adminSettingsKeys } from "../query-keys"
+import { useManagedUsers } from "../hooks/use-managed-users"
 
 interface ManagedUser {
     id: string
@@ -45,56 +40,23 @@ export function ManagedUsersClient({
     users,
     translations,
 }: ManagedUsersClientProps) {
-    const [selectedUserIds, setSelectedUserIds] = useState<string[]>(initialManagedUserIds)
-    const [autoAdmin, setAutoAdmin] = useState(initialAutoAdmin)
-
-    const setLoading = useAdminSettingsStore((state) => state.setLoading)
-    const setError = useAdminSettingsStore((state) => state.setError)
-    const isLoading = useAdminSettingsStore((state) => state.isLoading)
-    const error = useAdminSettingsStore((state) => state.error)
-
-    const queryClient = useQueryClient()
-
-    const mutation = useMutation({
-        mutationFn: async () => {
-            const [usersResult, autoAdminResult] = await Promise.all([
-                updateAdminManagedUsers({ userIds: selectedUserIds }),
-                toggleAutoAdmin({ enabled: autoAdmin }),
-            ])
-            if ("error" in usersResult) throw new Error(usersResult.error)
-            if ("error" in autoAdminResult) throw new Error(autoAdminResult.error)
-        },
-        onMutate: () => {
-            setLoading(true)
-            setError(null)
-        },
-        onSuccess: () => {
-            setLoading(false)
-            toast.success(translations.saveSuccess)
-            queryClient.invalidateQueries({ queryKey: adminSettingsKeys.all })
-        },
-        onError: (err: Error) => {
-            setLoading(false)
-            toast.error(err.message || translations.saveError)
-            setError(err.message || translations.saveError)
-        },
+    const {
+        selectedUserIds,
+        autoAdmin,
+        isLoading,
+        error,
+        allSelected,
+        setAutoAdmin,
+        toggleUser,
+        toggleAll,
+        save,
+    } = useManagedUsers({
+        users,
+        initialManagedUserIds,
+        initialAutoAdmin,
+        saveSuccessMessage: translations.saveSuccess,
+        saveErrorMessage: translations.saveError,
     })
-
-    const allSelected = users.length > 0 && selectedUserIds.length === users.length
-
-    function toggleUser(userId: string) {
-        setSelectedUserIds((prev) =>
-            prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
-        )
-    }
-
-    function toggleAll() {
-        if (allSelected) {
-            setSelectedUserIds([])
-        } else {
-            setSelectedUserIds(users.map((u) => u.id))
-        }
-    }
 
     return (
         <Card>
@@ -173,7 +135,7 @@ export function ManagedUsersClient({
 
                 {error && <p className="text-destructive text-sm">{error}</p>}
 
-                <Button onClick={() => mutation.mutate()} disabled={isLoading} className="w-full">
+                <Button onClick={save} disabled={isLoading} className="w-full">
                     {isLoading ? translations.saving : translations.saveButton}
                 </Button>
             </CardContent>

@@ -1,20 +1,23 @@
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { getTranslations } from "next-intl/server"
 import type { Holiday } from "../schemas"
 import { formatHolidayDate } from "../utils"
 
 interface UpcomingHolidaysProps {
     holidays: Holiday[]
     locale: string
-    translations: {
-        title: string
-        description: string
-        viewAll: (params: { count: number }) => string
-    }
 }
 
-export function UpcomingHolidays({ holidays, locale, translations }: UpcomingHolidaysProps) {
+export async function UpcomingHolidays({ holidays, locale }: UpcomingHolidaysProps) {
+    const t = await getTranslations("admin.overview")
+
+    const translations = {
+        title: t("upcomingHolidaysSection"),
+        description: t("upcomingHolidaysSectionDesc"),
+        viewAll: (params: { count: number }) => t("viewAllHolidays", params),
+    }
     if (holidays.length === 0) {
         return null
     }

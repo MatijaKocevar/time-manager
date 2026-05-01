@@ -297,16 +297,185 @@ export function TaskCardClient({ title, saveLabel }: TaskCardClientProps) {
 - Prefer Server Actions for mutations over API routes
 - Use proper async/await patterns in Server Components
 
+### Server Component Data Layer Pattern (Loaders)
+
+**CRITICAL: Always separate data/translation logic from Server Component rendering using loaders**
+
+Page components should contain only: auth guards, a single `Promise.all` call, and JSX. All data fetching, transformation, and translation object building belongs in dedicated loader functions.
+
+**Folder structure:**
+
+```
+feature/
+├── loaders/
+│   └── overview-data.ts       # data fetching + transformation
+├── components/
+│   └── my-component.tsx       # async Server Component, fetches own translations
+└── page.tsx                   # auth + Promise.all + JSX only
+```
+
+**`loaders/overview-data.ts` — data loader:**
+
+```typescript
+// Plain async function, NOT a Server Action — no "use server" needed
+export async function loadOverviewData() {
+    const [users, requests] = await Promise.all([getUsers(), getAllRequests()])
+
+    return {
+        stats: { users: users.length },
+        recentRequests: requests.map((r) => ({ ...r, date: new Date(r.date) })),
+    }
+}
+```
+
+**`components/my-component.tsx` — self-contained Server Component:**
+
+```typescript
+// Each Server Component fetches its own translations internally
+// next-intl deduplicates repeated getTranslations() calls at the request level
+export async function MyComponent({ stats }: { stats: Stats }) {
+    const t = await getTranslations("feature.section")
+    return <div>{t("title")}: {stats.users}</div>
+}
+```
+
+**`page.tsx` — thin page component:**
+
+```typescript
+export default async function FeaturePage() {
+    const session = await getServerSession(authConfig)
+    if (!session?.user) redirect("/")
+
+    const [data, tutorialsSeen] = await Promise.all([
+        loadOverviewData(),
+        getTutorialsSeen(),
+    ])
+
+    return (
+        <div>
+            <MyComponent stats={data.stats} />
+            <OtherComponent requests={data.recentRequests} />
+        </div>
+    )
+}
+```
+
+**Rules:**
+
+- Data props (fetched from DB) flow from page → components via props
+- Translation props are **never** passed from page to components — each Server Component owns its translations
+- Client Components receive pre-resolved translation strings as props from their Server Component wrapper
+- Loaders are plain `async` functions in `loaders/` — not Server Actions
+- One loader file per page/feature section (e.g. `overview-data.ts`, `users-data.ts`)
+
 ### State Management
 
 - TanStack Query for server state management
-- Zustand for client-side UI state (including loading, error, and form data)
-- No custom hooks - use direct store access with selector pattern
+- Zustand for client-side UI state — acts as a **pure state holder** (state + raw setters only, no logic)
+- Custom hooks as the **logic layer** for Client Components — mutations, derived values, event handlers
 - Always access store state with selectors: `useStore((state) => state.property)`
 - Never destructure directly from store: `const { prop } = useStore()` ❌
 - All loading states (`isLoading`) must be in Zustand stores, not in component `useState`
 - All error states (`error`) must be in Zustand stores, not in component `useState`
+- All form/selection state must be in Zustand stores, not in component `useState`
 - Feature-based folder organization
+
+### Client Component Architecture Pattern
+
+**Separation of concerns for Client Components:**
+
+| Layer | Location                   | Responsibility                                    |
+| ----- | -------------------------- | ------------------------------------------------- |
+| State | `stores/my-store.ts`       | Raw state + setters only — no logic               |
+| Logic | `hooks/use-my-feature.ts`  | Mutations, derived values, handlers, store wiring |
+| View  | `components/my-client.tsx` | Pure JSX only — calls the hook                    |
+
+**`stores/my-feature-store.ts` — pure state holder:**
+
+```typescript
+interface MyFeatureState {
+    isLoading: boolean
+    error: string | null
+    selectedIds: string[]
+}
+
+interface MyFeatureActions {
+    setLoading: (loading: boolean) => void
+    setError: (error: string | null) => void
+    setSelectedIds: (ids: string[]) => void
+}
+
+export const useMyFeatureStore = create<MyFeatureState & MyFeatureActions>((set) => ({
+    isLoading: false,
+    error: null,
+    selectedIds: [],
+    setLoading: (loading) => set({ isLoading: loading }),
+    setError: (error) => set({ error }),
+    setSelectedIds: (ids) => set({ selectedIds: ids }),
+}))
+```
+
+**`hooks/use-my-feature.ts` — logic layer:**
+
+```typescript
+"use client"
+
+export function useMyFeature({ initialIds, successMessage }: UseMyFeatureParams) {
+    const selectedIds = useMyFeatureStore((s) => s.selectedIds)
+    const isLoading = useMyFeatureStore((s) => s.isLoading)
+    const setSelectedIds = useMyFeatureStore((s) => s.setSelectedIds)
+    const setLoading = useMyFeatureStore((s) => s.setLoading)
+
+    useEffect(() => {
+        setSelectedIds(initialIds)
+    }, [initialIds, setSelectedIds])
+
+    const allSelected = selectedIds.length === totalCount
+
+    function toggleItem(id: string) {
+        setSelectedIds(
+            selectedIds.includes(id) ? selectedIds.filter((i) => i !== id) : [...selectedIds, id]
+        )
+    }
+
+    const mutation = useMutation({
+        mutationFn: () => saveItems({ ids: selectedIds }),
+        onMutate: () => setLoading(true),
+        onSuccess: () => {
+            setLoading(false)
+            toast.success(successMessage)
+        },
+    })
+
+    return { selectedIds, isLoading, allSelected, toggleItem, save: () => mutation.mutate() }
+}
+```
+
+**`components/my-client.tsx` — pure JSX:**
+
+```typescript
+"use client"
+
+export function MyClient({ initialIds, translations }: MyClientProps) {
+    const { selectedIds, isLoading, allSelected, toggleItem, save } = useMyFeature({
+        initialIds,
+        successMessage: translations.saveSuccess,
+    })
+
+    return (
+        <Button onClick={save} disabled={isLoading}>
+            {translations.save}
+        </Button>
+    )
+}
+```
+
+**Rules:**
+
+- Stores contain **only** state and raw setters — no business logic, no mutations
+- Hooks contain **all** logic — mutations, derived values, event handlers, initialization effects
+- Components contain **only** JSX — destructure everything from the hook
+- Each feature's `hooks/` folder sits alongside `components/`, `stores/`, `actions/`
 
 ### Database and API
 
@@ -320,7 +489,7 @@ export function TaskCardClient({ title, saveLabel }: TaskCardClientProps) {
 ### Feature-Based Structure
 
 - Keep related files together in feature folders
-- Each feature should contain: components/, actions/, stores/, schemas/, query-keys.ts
+- Each feature should contain: components/, actions/, hooks/, stores/, schemas/, query-keys.ts
 - Avoid scattered files across different directories
 - Co-locate tests with their corresponding files
 
@@ -587,7 +756,9 @@ async function requireAuth() {
 
 ### Zustand Store Pattern
 
-**Store Location:** `src/stores/` (currently using minimal stores)
+**Store Location:** Feature-specific `stores/` folders (e.g. `feature/stores/my-store.ts`)
+
+**Role:** Pure state holder — state + raw setters only. No business logic, no mutations, no derived values.
 
 **Store Structure:**
 
@@ -601,7 +772,7 @@ interface StoreState {
 interface StoreActions {
     setLoading: (loading: boolean) => void
     setError: (error: string | null) => void
-    // ... actions
+    // ... raw setters
 }
 
 export const useStore = create<StoreState & StoreActions>((set) => ({
@@ -612,10 +783,10 @@ export const useStore = create<StoreState & StoreActions>((set) => ({
 }))
 ```
 
-**Usage with Selectors:**
+**Usage — always via selectors in hooks, never in components directly:**
 
 ```typescript
-// ✓ Correct - use selector
+// ✓ Correct - use selector inside a hook
 const isLoading = useStore((state) => state.isLoading)
 
 // ✗ Wrong - no destructuring

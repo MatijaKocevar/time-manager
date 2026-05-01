@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { WorkTypeBadge } from "@/components/work-type-badge"
+import { getTranslations } from "next-intl/server"
 import type { Request } from "../schemas"
 import { formatRequestDateRange } from "../utils"
 import type { WorkType } from "@/lib/work-type-styles"
@@ -10,23 +11,24 @@ interface RecentPendingRequestsProps {
     requests: Request[]
     locale: string
     totalPending: number
-    translations: {
-        title: string
-        description: string
-        viewAll: (params: { count: number }) => string
-        noPending: string
-        user: string
-        type: string
-        period: string
-    }
 }
 
-export function RecentPendingRequests({
+export async function RecentPendingRequests({
     requests,
     locale,
     totalPending,
-    translations,
 }: RecentPendingRequestsProps) {
+    const t = await getTranslations("admin.overview")
+
+    const translations = {
+        title: t("recentPendingRequests"),
+        description: t("recentPendingRequestsDesc"),
+        viewAll: (params: { count: number }) => t("viewAllPending", params),
+        noPending: t("noPendingRequests"),
+        user: t("user"),
+        type: t("type"),
+        period: t("period"),
+    }
     if (requests.length === 0) {
         return (
             <Card id="admin-recent-requests">
