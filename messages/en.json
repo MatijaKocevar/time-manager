@@ -433,7 +433,9 @@
             "unknown": "Unknown",
             "edit": "Edit",
             "view": "View",
-            "hours": "Hours"
+            "hours": "Hours",
+            "rowsPerPage": "Rows per page",
+            "pageOf": "Page {page} of {total}"
         },
         "messages": {
             "noRequestsMatch": "No requests match your search"

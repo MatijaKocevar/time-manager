@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Edit, Search, Plus } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Edit, Search, Plus, ChevronLeft, ChevronRight } from "lucide-react"
 import { WorkTypeBadge } from "@/components/work-type-badge"
 import type { RequestDisplay } from "../schemas/request-schemas"
 import { REQUEST_TYPE_LABELS, REQUEST_STATUS_COLORS, REQUEST_STATUS } from "../constants"
@@ -42,6 +43,8 @@ export function RequestsTable({
     const tTypes = useTranslations("requests.types")
     const tStatuses = useTranslations("requests.statuses")
     const [searchQuery, setSearchQuery] = useState("")
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pageSize, setPageSize] = useState(20)
 
     const formatDate = (date: Date) => {
         const d = new Date(date)
@@ -70,6 +73,10 @@ export function RequestsTable({
         )
     })
 
+    const totalPages = Math.max(1, Math.ceil(filteredRequests.length / pageSize))
+    const safePage = Math.min(currentPage, totalPages)
+    const paginatedRequests = filteredRequests.slice((safePage - 1) * pageSize, safePage * pageSize)
+
     const columnCount = showUser ? 9 : 8
 
     return (
@@ -80,7 +87,10 @@ export function RequestsTable({
                     <Input
                         placeholder={t("table.filterPlaceholder")}
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value)
+                            setCurrentPage(1)
+                        }}
                         className="pl-9"
                     />
                 </div>
@@ -121,7 +131,7 @@ export function RequestsTable({
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredRequests.length === 0 ? (
+                        {paginatedRequests.length === 0 ? (
                             <TableRow>
                                 <TableCell
                                     colSpan={columnCount}
@@ -133,7 +143,7 @@ export function RequestsTable({
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredRequests.map((request) => (
+                            paginatedRequests.map((request) => (
                                 <TableRow
                                     key={request.id}
                                     onDoubleClick={() => handleRowDoubleClick(request)}
@@ -249,6 +259,49 @@ export function RequestsTable({
                         )}
                     </TableBody>
                 </Table>
+            </div>
+            <div className="flex items-center justify-between px-2 py-2 border-t">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{t("table.rowsPerPage")}</span>
+                    <Select
+                        value={String(pageSize)}
+                        onValueChange={(v) => {
+                            setPageSize(Number(v))
+                            setCurrentPage(1)
+                        }}
+                    >
+                        <SelectTrigger className="h-8 w-[70px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="20">20</SelectItem>
+                            <SelectItem value="50">50</SelectItem>
+                            <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{t("table.pageOf", { page: safePage, total: totalPages })}</span>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={safePage <= 1}
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={safePage >= totalPages}
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
         </>
     )

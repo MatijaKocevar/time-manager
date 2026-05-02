@@ -433,7 +433,9 @@
             "unknown": "Neznano",
             "edit": "Uredi",
             "view": "Poglej",
-            "hours": "Ure"
+            "hours": "Ure",
+            "rowsPerPage": "Vrstic na stran",
+            "pageOf": "Stran {page} od {total}"
         },
         "messages": {
             "noRequestsMatch": "Noben zahtevek ne ustreza iskanju"
