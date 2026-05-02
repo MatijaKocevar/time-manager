@@ -82,44 +82,42 @@ export function PushNotificationManager({
                         <div className="rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-900/20 dark:text-green-400">
                             {t("subscribed")}
                         </div>
+                        <div className="flex justify-end">
+                            <Button
+                                onClick={async () => {
+                                    try {
+                                        await unsubscribeFromPush()
+                                        setHasSubscription(false)
+                                    } catch {
+                                        // Error handled by store
+                                    }
+                                }}
+                                disabled={isLoading}
+                                variant="outline"
+                            >
+                                <BellOff className="mr-2 h-4 w-4" />
+                                {isLoading ? t("unsubscribing") : t("disable")}
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex justify-end">
                         <Button
                             onClick={async () => {
                                 try {
-                                    await unsubscribeFromPush()
-                                    setHasSubscription(false)
+                                    await subscribeToPush(vapidPublicKey)
+                                    setHasSubscription(true)
                                 } catch {
                                     // Error handled by store
                                 }
                             }}
                             disabled={isLoading}
-                            variant="outline"
-                            className="w-full"
                         >
-                            <BellOff className="mr-2 h-4 w-4" />
-                            {isLoading ? t("unsubscribing") : t("disable")}
+                            <Bell className="mr-2 h-4 w-4" />
+                            {isLoading ? t("enabling") : t("enable")}
                         </Button>
                     </div>
-                ) : (
-                    <Button
-                        onClick={async () => {
-                            try {
-                                await subscribeToPush(vapidPublicKey)
-                                setHasSubscription(true)
-                            } catch {
-                                // Error handled by store
-                            }
-                        }}
-                        disabled={isLoading}
-                        className="w-full"
-                    >
-                        <Bell className="mr-2 h-4 w-4" />
-                        {isLoading ? t("enabling") : t("enable")}
-                    </Button>
                 )}
-
-                <p className="text-xs text-muted-foreground">
-                    {t("httpsNote")} <code>next dev --experimental-https</code>
-                </p>
             </CardContent>
         </Card>
     )

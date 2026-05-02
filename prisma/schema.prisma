@@ -86,6 +86,7 @@ model User {
   workTimeAdjustments       WorkTimeAdjustment[]
   tutorialsSeen             TutorialSeen[]
   autoClockState            AutoClockState?
+  workDays                  UserWorkDay[]
   autoAdmin                 Boolean                    @default(false)
   managedUsers              AdminUserAssignment[]      @relation("AdminAssignments")
   assignedAdmins            AdminUserAssignment[]      @relation("ManagedByAdmin")
@@ -457,6 +458,16 @@ model AutoCheckoutCancellation {
   @@unique([userId, date])
   @@index([userId])
   @@index([date])
+}
+
+model UserWorkDay {
+  id        String @id @default(cuid())
+  userId    String
+  dayOfWeek Int
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dayOfWeek])
+  @@index([userId])
 }
 
 model WorkTimeAdjustment {

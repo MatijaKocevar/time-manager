@@ -824,8 +824,7 @@
             "disableNotifications": "Onemogoči obvestila",
             "enableNotifications": "Omogoči obvestila",
             "enabling": "Omogočanje...",
-            "unsubscribing": "Odjavljanje...",
-            "httpsNote": "Opomba: Push obvestila zahtevajo HTTPS. Za testiranje lokalno uporabite"
+            "unsubscribing": "Odjavljanje..."
         },
         "messages": {
             "errorLoadingPreferences": "Napaka pri nalaganju nastavitev obvestil",
@@ -883,6 +882,15 @@
             "enableAutoCheckout": "Omogoči samodejni odhod",
             "reminderInfo": "Prejeli boste opomnik 15 minut pred začetkom/koncem delovnega časa. Če se ne odzovete, sistem vas bo samodejno prijavil/odjavil.",
             "autoDetectType": "Tip prihoda (Pisarna/Delo od doma) bo samodejno določen na podlagi vaših odobrenih zahtevkov za ta dan.",
+            "workDaysLabel": "Delovni dnevi",
+            "workDaysDescription": "Samodejni prihod/odhod bo aktiven samo na te dni. Prazniki ter odobreni dopusti ali bolniške odsotnosti so vedno izpuščeni.",
+            "mon": "Pon",
+            "tue": "Tor",
+            "wed": "Sre",
+            "thu": "Čet",
+            "fri": "Pet",
+            "sat": "Sob",
+            "sun": "Ned",
             "updateSuccess": "Nastavitve samodejnega prihoda so bile uspešno posodobljene",
             "validation": {
                 "fetchFailed": "Nalaganje nastavitev samodejnega prihoda ni uspelo",
@@ -1121,7 +1129,6 @@
             "unsubscribing": "Odjava...",
             "subscribed": "✓ Obvestila so omogočena. Prejemali boste potisna opozorila.",
             "permissionDenied": "Dovoljenje za obvestila zavrnjeno",
-            "httpsNote": "Opomba: Potisna obvestila zahtevajo HTTPS. Za lokalno testiranje uporabite",
             "errors": {
                 "registerFailed": "Registracija service workerja ni uspela",
                 "subscribeFailed": "Naročilo na obvestila ni uspelo",

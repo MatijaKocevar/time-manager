@@ -12,12 +12,14 @@ import { updateAutoCheckinPreferences } from "../actions/profile-actions"
 interface AutoCheckinPreferencesProps {
     initialEnabled: boolean
     initialCheckoutEnabled: boolean
+    initialWorkDays: number[]
     isDemo: boolean
 }
 
 export function AutoCheckinPreferences({
     initialEnabled,
     initialCheckoutEnabled,
+    initialWorkDays,
     isDemo,
 }: AutoCheckinPreferencesProps) {
     const t = useTranslations("profile.autoCheckin")
@@ -26,6 +28,21 @@ export function AutoCheckinPreferences({
     const [loading, setLoading] = useState(false)
     const [autoCheckInEnabled, setAutoCheckInEnabled] = useState(initialEnabled)
     const [autoCheckOutEnabled, setAutoCheckOutEnabled] = useState(initialCheckoutEnabled)
+    const [workDays, setWorkDays] = useState<number[]>(initialWorkDays)
+
+    const DAY_KEYS = [
+        { day: 1, labelKey: "mon" },
+        { day: 2, labelKey: "tue" },
+        { day: 3, labelKey: "wed" },
+        { day: 4, labelKey: "thu" },
+        { day: 5, labelKey: "fri" },
+        { day: 6, labelKey: "sat" },
+        { day: 0, labelKey: "sun" },
+    ] as const
+
+    function toggleDay(day: number) {
+        setWorkDays((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]))
+    }
 
     const handleSave = async () => {
         setLoading(true)
@@ -34,6 +51,7 @@ export function AutoCheckinPreferences({
             const result = await updateAutoCheckinPreferences({
                 autoCheckInEnabled,
                 autoCheckOutEnabled,
+                workDays,
             })
 
             if (result.error) {
@@ -91,6 +109,35 @@ export function AutoCheckinPreferences({
                     <div className="pt-2">
                         <p className="text-sm text-muted-foreground">{t("reminderInfo")}</p>
                         <p className="text-sm text-muted-foreground mt-2">{t("autoDetectType")}</p>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="text-sm font-medium">{t("workDaysLabel")}</Label>
+                        <p className="text-sm text-muted-foreground">{t("workDaysDescription")}</p>
+                        <div className="flex gap-1 flex-wrap">
+                            {DAY_KEYS.map(({ day, labelKey }) => {
+                                const selected = workDays.includes(day)
+                                return (
+                                    <button
+                                        key={day}
+                                        type="button"
+                                        onClick={() => toggleDay(day)}
+                                        disabled={isDemo}
+                                        className={[
+                                            "w-10 h-10 rounded-md text-sm font-medium border transition-colors",
+                                            selected
+                                                ? "bg-primary text-primary-foreground border-primary"
+                                                : "bg-background text-foreground border-border hover:bg-muted",
+                                            isDemo
+                                                ? "opacity-50 cursor-not-allowed"
+                                                : "cursor-pointer",
+                                        ].join(" ")}
+                                    >
+                                        {t(labelKey)}
+                                    </button>
+                                )
+                            })}
+                        </div>
                     </div>
                 </div>
 

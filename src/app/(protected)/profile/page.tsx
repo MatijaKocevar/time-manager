@@ -66,6 +66,7 @@ export default async function ProfilePage() {
             <AutoCheckinPreferences
                 initialEnabled={autoCheckinResult.preferences.autoCheckInEnabled}
                 initialCheckoutEnabled={autoCheckinResult.preferences.autoCheckOutEnabled}
+                initialWorkDays={autoCheckinResult.preferences.workDays}
                 isDemo={user.isDemo}
             />
             <PushNotificationManager

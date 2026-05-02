@@ -29,3 +29,11 @@ export const UpdateUrnikCredentialsSchema = z.object({
 })
 
 export type UpdateUrnikCredentialsInput = z.infer<typeof UpdateUrnikCredentialsSchema>
+
+export const AutoCheckinPreferencesSchema = z.object({
+    autoCheckInEnabled: z.boolean(),
+    autoCheckOutEnabled: z.boolean(),
+    workDays: z.array(z.number().int().min(0).max(6)).default([1, 2, 3, 4, 5]),
+})
+
+export type AutoCheckinPreferencesInput = z.infer<typeof AutoCheckinPreferencesSchema>

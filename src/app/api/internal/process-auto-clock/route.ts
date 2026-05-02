@@ -60,6 +60,14 @@ export async function POST(request: NextRequest) {
 
     const today = getTodayDate()
 
+    const todayHoliday = await prisma.holiday.findFirst({
+        where: { date: today },
+    })
+
+    if (todayHoliday) {
+        return NextResponse.json({ success: true, processed: 0, skippedReason: "holiday" })
+    }
+
     const users = await prisma.user.findMany({
         where: {
             OR: [
@@ -77,16 +85,42 @@ export async function POST(request: NextRequest) {
                     autoCheckOutEnabled: true,
                 },
             },
+            workDays: {
+                select: { dayOfWeek: true },
+            },
             workTimeAdjustments: {
                 where: { date: today },
+            },
+            requests: {
+                where: {
+                    startDate: { lte: today },
+                    endDate: { gte: today },
+                    status: "APPROVED",
+                    type: { in: ["VACATION", "SICK_LEAVE"] },
+                },
+                take: 1,
             },
         },
     })
 
     const errors: string[] = []
 
+    const nowInLjubljana = toZonedTime(new Date(), TIMEZONE)
+    const todayDayOfWeek = nowInLjubljana.getDay()
+
     for (const user of users) {
         await new Promise((resolve) => setTimeout(resolve, 500))
+
+        const workDays: number[] =
+            user.workDays.length > 0 ? user.workDays.map((r) => r.dayOfWeek) : [1, 2, 3, 4, 5]
+
+        if (!workDays.includes(todayDayOfWeek)) {
+            continue
+        }
+
+        if (user.requests.length > 0) {
+            continue
+        }
 
         const adjustment = user.workTimeAdjustments[0]
         const effectiveStartTime = adjustment?.adjustedStartTime ?? user.workStartTime

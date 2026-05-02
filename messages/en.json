@@ -824,8 +824,7 @@
             "disableNotifications": "Disable Notifications",
             "enableNotifications": "Enable Notifications",
             "enabling": "Enabling...",
-            "unsubscribing": "Unsubscribing...",
-            "httpsNote": "Note: Push notifications require HTTPS. To test locally, use"
+            "unsubscribing": "Unsubscribing..."
         },
         "messages": {
             "errorLoadingPreferences": "Error loading notification preferences",
@@ -883,6 +882,15 @@
             "enableAutoCheckout": "Enable Auto Check-Out",
             "reminderInfo": "You will receive a reminder 15 minutes before your work start/end time. If you don't respond, the system will automatically log you in/out.",
             "autoDetectType": "Check-in type (Office/Work From Home) will be automatically determined based on your approved requests for the day.",
+            "workDaysLabel": "Work Days",
+            "workDaysDescription": "Auto check-in/out will only run on these days. Holidays and approved vacation or sick leave are always skipped.",
+            "mon": "Mon",
+            "tue": "Tue",
+            "wed": "Wed",
+            "thu": "Thu",
+            "fri": "Fri",
+            "sat": "Sat",
+            "sun": "Sun",
             "updateSuccess": "Auto check-in preferences updated successfully",
             "validation": {
                 "fetchFailed": "Failed to load auto check-in preferences",
@@ -1121,7 +1129,6 @@
             "unsubscribing": "Unsubscribing...",
             "subscribed": "✓ Notifications are enabled. You will receive push alerts.",
             "permissionDenied": "Notification permission denied",
-            "httpsNote": "Note: Push notifications require HTTPS. To test locally, use",
             "errors": {
                 "registerFailed": "Failed to register service worker",
                 "subscribeFailed": "Failed to subscribe to notifications",

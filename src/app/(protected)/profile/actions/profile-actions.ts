@@ -14,6 +14,8 @@ import {
     type DeactivateAccountInput,
     UpdateUrnikCredentialsSchema,
     type UpdateUrnikCredentialsInput,
+    AutoCheckinPreferencesSchema,
+    type AutoCheckinPreferencesInput,
 } from "../schemas/profile-action-schemas"
 import { BCRYPT_SALT_ROUNDS, WORK_HOURS_VALIDATION } from "../constants/profile-constants"
 
@@ -290,16 +292,23 @@ export async function getAutoCheckinPreferences() {
     }
 
     try {
-        let preferences = await prisma.userPreferences.findUnique({
-            where: { userId: session.user.id },
-            select: {
-                autoCheckInEnabled: true,
-                autoCheckOutEnabled: true,
-            },
-        })
+        const [preferences, workDayRows] = await Promise.all([
+            prisma.userPreferences.findUnique({
+                where: { userId: session.user.id },
+                select: {
+                    autoCheckInEnabled: true,
+                    autoCheckOutEnabled: true,
+                },
+            }),
+            prisma.userWorkDay.findMany({
+                where: { userId: session.user.id },
+                select: { dayOfWeek: true },
+            }),
+        ])
 
-        if (!preferences) {
-            preferences = await prisma.userPreferences.create({
+        const resolvedPreferences =
+            preferences ??
+            (await prisma.userPreferences.create({
                 data: {
                     userId: session.user.id,
                     autoCheckInEnabled: false,
@@ -309,20 +318,19 @@ export async function getAutoCheckinPreferences() {
                     autoCheckInEnabled: true,
                     autoCheckOutEnabled: true,
                 },
-            })
-        }
+            }))
 
-        return { preferences, success: true }
+        const workDays =
+            workDayRows.length > 0 ? workDayRows.map((r) => r.dayOfWeek) : [1, 2, 3, 4, 5]
+
+        return { preferences: { ...resolvedPreferences, workDays }, success: true }
     } catch (error) {
         console.error("Failed to get auto check-in preferences:", error)
         return { error: "profile.autoCheckin.validation.fetchFailed" }
     }
 }
 
-export async function updateAutoCheckinPreferences(input: {
-    autoCheckInEnabled: boolean
-    autoCheckOutEnabled: boolean
-}) {
+export async function updateAutoCheckinPreferences(input: AutoCheckinPreferencesInput) {
     const session = await getServerSession(authConfig)
 
     if (!session?.user) {
@@ -331,19 +339,25 @@ export async function updateAutoCheckinPreferences(input: {
 
     await requireNotDemo(session.user.id)
 
+    const validation = AutoCheckinPreferencesSchema.safeParse(input)
+    if (!validation.success) {
+        return { error: validation.error.issues[0].message }
+    }
+
+    const { autoCheckInEnabled, autoCheckOutEnabled, workDays } = validation.data
+
     try {
-        await prisma.userPreferences.upsert({
-            where: { userId: session.user.id },
-            create: {
-                userId: session.user.id,
-                autoCheckInEnabled: input.autoCheckInEnabled,
-                autoCheckOutEnabled: input.autoCheckOutEnabled,
-            },
-            update: {
-                autoCheckInEnabled: input.autoCheckInEnabled,
-                autoCheckOutEnabled: input.autoCheckOutEnabled,
-            },
-        })
+        await prisma.$transaction([
+            prisma.userPreferences.upsert({
+                where: { userId: session.user.id },
+                create: { userId: session.user.id, autoCheckInEnabled, autoCheckOutEnabled },
+                update: { autoCheckInEnabled, autoCheckOutEnabled },
+            }),
+            prisma.userWorkDay.deleteMany({ where: { userId: session.user.id } }),
+            prisma.userWorkDay.createMany({
+                data: workDays.map((dayOfWeek) => ({ userId: session.user.id, dayOfWeek })),
+            }),
+        ])
 
         revalidatePath("/profile")
         return { success: true }
