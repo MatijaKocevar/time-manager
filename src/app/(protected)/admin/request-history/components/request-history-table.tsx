@@ -1,10 +1,7 @@
 "use client"
 
-import { Fragment, useMemo, useState, useEffect } from "react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useSearchParams, useRouter } from "next/navigation"
+import { Fragment } from "react"
 import {
-    ColumnFiltersState,
     flexRender,
     getCoreRowModel,
     getFacetedRowModel,
@@ -12,7 +9,6 @@ import {
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
-    SortingState,
     useReactTable,
 } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
@@ -25,86 +21,44 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { cancelApprovedRequest } from "../../../requests/actions/request-actions"
-import { requestKeys } from "../../../requests/query-keys"
-import { hourKeys } from "../../../hours/query-keys"
 import { ColumnFilter } from "./column-filter"
 import { CancelDialog } from "./cancel-dialog"
-import { createColumns } from "../utils/columns"
-import { useRequestHistoryStore } from "../stores/request-history-store"
+import { useRequestHistoryTable } from "../hooks/use-request-history-table"
 import type { RequestDisplay, RequestHistoryTranslations } from "../types"
 
-interface RequestHistoryTableProps {
+interface RequestHistoryTableClientProps {
     requests: RequestDisplay[]
     holidays: Array<{ date: Date; name: string }>
     translations: RequestHistoryTranslations
     locale: string
 }
 
-export function RequestHistoryTable({
+export function RequestHistoryTableClient({
     requests,
     holidays,
     translations,
     locale,
-}: RequestHistoryTableProps) {
-    const queryClient = useQueryClient()
-    const searchParams = useSearchParams()
-    const router = useRouter()
-    const [sorting, setSorting] = useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() => {
-        const filters: ColumnFiltersState = []
-        searchParams.forEach((value, key) => {
-            if (key.startsWith("filter_")) {
-                const columnId = key.replace("filter_", "")
-                filters.push({ id: columnId, value })
-            }
-        })
-        return filters
-    })
-
-    const cancelDialogOpen = useRequestHistoryStore((state) => state.cancelDialogOpen)
-    const selectedRequestId = useRequestHistoryStore((state) => state.selectedRequestId)
-    const selectedRequestData = useRequestHistoryStore((state) => state.selectedRequestData)
-    const cancellationReason = useRequestHistoryStore((state) => state.cancellationReason)
-    const setCancellationReason = useRequestHistoryStore((state) => state.setCancellationReason)
-    const openCancelDialog = useRequestHistoryStore((state) => state.openCancelDialog)
-    const setCancelDialogOpen = useRequestHistoryStore((state) => state.setCancelDialogOpen)
-    const resetCancelDialog = useRequestHistoryStore((state) => state.resetCancelDialog)
-
-    const cancelMutation = useMutation({
-        mutationFn: (data: { id: string; cancellationReason: string }) =>
-            cancelApprovedRequest(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: requestKeys.all })
-            queryClient.invalidateQueries({ queryKey: hourKeys.all })
-            resetCancelDialog()
-        },
-    })
-
-    const handleCancel = () => {
-        if (!cancellationReason.trim() || !selectedRequestId) return
-        cancelMutation.mutate({
-            id: selectedRequestId,
-            cancellationReason: cancellationReason.trim(),
-        })
-    }
-
-    const columns = useMemo(
-        () =>
-            createColumns({
-                translations,
-                holidays,
-                locale,
-                onCancel: openCancelDialog,
-            }),
-        [holidays, translations, locale, openCancelDialog]
-    )
+}: RequestHistoryTableClientProps) {
+    const {
+        columns,
+        sorting,
+        columnFilters,
+        onSortingChange,
+        onColumnFiltersChange,
+        cancelDialogOpen,
+        cancellationReason,
+        isCancelPending,
+        setCancelDialogOpen,
+        setCancellationReason,
+        handleCancel,
+        selectedRequestData,
+    } = useRequestHistoryTable({ requests, holidays, translations, locale })
 
     const table = useReactTable({
         data: requests,
         columns,
-        onSortingChange: setSorting,
-        onColumnFiltersChange: setColumnFilters,
+        onSortingChange,
+        onColumnFiltersChange,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
@@ -116,29 +70,6 @@ export function RequestHistoryTable({
             columnFilters,
         },
     })
-
-    useEffect(() => {
-        const params = new URLSearchParams(searchParams.toString())
-
-        Array.from(params.keys()).forEach((key) => {
-            if (key.startsWith("filter_")) {
-                params.delete(key)
-            }
-        })
-
-        columnFilters.forEach((filter) => {
-            if (filter.value) {
-                params.set(`filter_${filter.id}`, String(filter.value))
-            }
-        })
-
-        const newSearch = params.toString()
-        const currentSearch = searchParams.toString()
-
-        if (newSearch !== currentSearch) {
-            router.replace(`?${newSearch}`, { scroll: false })
-        }
-    }, [columnFilters, router, searchParams])
 
     return (
         <>
@@ -257,7 +188,7 @@ export function RequestHistoryTable({
                 cancellationReason={cancellationReason}
                 onReasonChange={setCancellationReason}
                 onConfirm={handleCancel}
-                isPending={cancelMutation.isPending}
+                isPending={isCancelPending}
                 translations={translations.cancel}
                 selectedRequestData={selectedRequestData}
                 locale={locale}

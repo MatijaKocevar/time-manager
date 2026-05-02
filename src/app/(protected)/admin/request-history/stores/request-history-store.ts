@@ -1,6 +1,9 @@
 import { create } from "zustand"
+import type { SortingState, ColumnFiltersState } from "@tanstack/react-table"
 
 interface RequestHistoryState {
+    sorting: SortingState
+    columnFilters: ColumnFiltersState
     cancelDialogOpen: boolean
     selectedRequestId: string
     selectedRequestData: {
@@ -13,6 +16,8 @@ interface RequestHistoryState {
 }
 
 interface RequestHistoryActions {
+    setSorting: (sorting: SortingState) => void
+    setColumnFilters: (filters: ColumnFiltersState) => void
     setCancelDialogOpen: (open: boolean) => void
     setSelectedRequestId: (id: string) => void
     setSelectedRequestData: (
@@ -37,11 +42,15 @@ interface RequestHistoryActions {
 
 export const useRequestHistoryStore = create<RequestHistoryState & RequestHistoryActions>(
     (set) => ({
+        sorting: [],
+        columnFilters: [],
         cancelDialogOpen: false,
         selectedRequestId: "",
         selectedRequestData: null,
         cancellationReason: "",
         setCancelDialogOpen: (open) => set({ cancelDialogOpen: open }),
+        setSorting: (sorting) => set({ sorting }),
+        setColumnFilters: (filters) => set({ columnFilters: filters }),
         setSelectedRequestId: (id) => set({ selectedRequestId: id }),
         setSelectedRequestData: (data) => set({ selectedRequestData: data }),
         setCancellationReason: (reason) => set({ cancellationReason: reason }),

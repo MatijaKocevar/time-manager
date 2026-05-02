@@ -50,6 +50,8 @@ export interface RequestHistoryTranslations {
         actions: string
         noHistory: string
         searchPlaceholder: string
+        cancelSuccess: string
+        cancelError: string
     }
     cancel: {
         title: string

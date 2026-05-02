@@ -740,7 +740,9 @@
                 "actions": "Dejanja",
                 "noHistory": "Ni zgodovine zahtevkov.",
                 "searchPlaceholder": "Iskanje...",
-                "days": "d"
+                "days": "d",
+                "cancelSuccess": "Zahtevek uspešno preklican",
+                "cancelError": "Napaka pri preklicu zahtevka"
             },
             "filter": {
                 "title": "Filtriraj stolpec",

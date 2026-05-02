@@ -740,7 +740,9 @@
                 "actions": "Actions",
                 "noHistory": "No request history found.",
                 "searchPlaceholder": "Search...",
-                "days": "d"
+                "days": "d",
+                "cancelSuccess": "Request cancelled successfully",
+                "cancelError": "Failed to cancel request"
             },
             "filter": {
                 "title": "Filter Column",
