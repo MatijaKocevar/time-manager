@@ -5,9 +5,20 @@ import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertTriangle, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
+import { AlertTriangle, Loader2, ChevronLeft, ChevronRight, MoreVertical } from "lucide-react"
 import { toast } from "sonner"
 import { Table, TableBody } from "@/components/ui/table"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import type { PendingUrnikNetRequest } from "../schemas/urnik-net-requests-schemas"
 import { submitPendingUrnikNetRequestToUrnik } from "../actions/urnik-net-requests-actions"
 import { buildExistingRequestDates, mergeAndSortRows } from "../utils/request-row-helpers"
@@ -16,7 +27,9 @@ import {
     getPreviousMonth,
     getNextMonth,
 } from "../../utils/month-navigation-helpers"
-import { CreateRequestButton } from "./create-request-button"
+import { useCreateRequestStore } from "../stores/create-request-store"
+import type { UrnikNetRequestType } from "../schemas/create-urnik-net-request-schema"
+import type { UrnikDayRequestType } from "../schemas/create-urnik-net-day-request-schema"
 import { RequestsTableHeader } from "./requests-table-header"
 import { PendingRequestRow } from "./pending-request-row"
 import { SubmittedRequestRow } from "./submitted-request-row"
@@ -32,6 +45,22 @@ export function UrnikNetRequestsView({
     const router = useRouter()
     const [submittingIds, setSubmittingIds] = useState<Set<string>>(new Set())
     const [isPending, startTransition] = useTransition()
+
+    const openDialog = useCreateRequestStore((state) => state.openDialog)
+    const setSelectedType = useCreateRequestStore((state) => state.setSelectedType)
+    const setRequestCategory = useCreateRequestStore((state) => state.setRequestCategory)
+
+    const handleSelectHourType = (type: UrnikNetRequestType) => {
+        setRequestCategory("HOUR")
+        setSelectedType(type)
+        openDialog()
+    }
+
+    const handleSelectDayType = (type: UrnikDayRequestType) => {
+        setRequestCategory("DAY")
+        setSelectedType(type)
+        openDialog()
+    }
 
     const isConnected = !!user.lastUrnikTestAt
     const lastTestedText = user.lastUrnikTestAt
@@ -114,32 +143,56 @@ export function UrnikNetRequestsView({
                     </Button>
                 </div>
                 <div className="flex items-center gap-2">
-                    <CreateRequestButton
-                        label={t.createRequestButton}
-                        hoursLabel={t.hoursLabel}
-                        daysLabel={t.daysLabel}
-                        typeWork={t.typeWork}
-                        typeWorkFromHome={t.typeWorkFromHome}
-                        typeVacation={t.typeVacation}
-                        typeSickLeave={t.typeSickLeave}
-                        typeDayWorkFromHome={t.typeDayWorkFromHome}
-                    />
-                    <div className="flex items-center gap-1 sm:gap-2">
-                        <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline">
-                            {t.connectionStatus}:
-                        </span>
-                        <Badge
-                            variant={isConnected ? "default" : "destructive"}
-                            className="text-xs py-0 h-5"
-                        >
-                            {isConnected ? t.connected : t.notConnected}
-                        </Badge>
-                        {lastTestedText && (
-                            <span className="text-xs text-muted-foreground hidden lg:inline">
-                                ({t.lastTested}: {lastTestedText})
-                            </span>
-                        )}
-                    </div>
+                    <Badge
+                        variant={isConnected ? "default" : "destructive"}
+                        className="text-xs py-0 h-5"
+                    >
+                        {isConnected ? t.connected : t.notConnected}
+                    </Badge>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>{t.createRequestButton}</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>{t.hoursLabel}</DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuItem onClick={() => handleSelectHourType("WORK")}>
+                                        {t.typeWork}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => handleSelectHourType("WORK_FROM_HOME")}
+                                    >
+                                        {t.typeWorkFromHome}
+                                    </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>{t.daysLabel}</DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuItem
+                                        onClick={() => handleSelectDayType("VACATION")}
+                                    >
+                                        {t.typeVacation}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => handleSelectDayType("SICK_LEAVE")}
+                                    >
+                                        {t.typeSickLeave}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => handleSelectDayType("WORK_FROM_HOME")}
+                                    >
+                                        {t.typeDayWorkFromHome}
+                                    </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
