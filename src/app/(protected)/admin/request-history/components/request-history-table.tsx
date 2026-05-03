@@ -1,6 +1,6 @@
 "use client"
 
-import { Fragment } from "react"
+import { Fragment, useState } from "react"
 import {
     flexRender,
     getCoreRowModel,
@@ -12,6 +12,14 @@ import {
     useReactTable,
 } from "@tanstack/react-table"
 import { Button } from "@/components/ui/button"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import {
     Table,
     TableBody,
@@ -39,6 +47,8 @@ export function RequestHistoryTableClient({
     translations,
     locale,
 }: RequestHistoryTableClientProps) {
+    const [pageSize, setPageSize] = useState(20)
+
     const {
         columns,
         sorting,
@@ -68,7 +78,9 @@ export function RequestHistoryTableClient({
         state: {
             sorting,
             columnFilters,
+            pagination: { pageIndex: 0, pageSize },
         },
+        autoResetPageIndex: true,
     })
 
     return (
@@ -162,23 +174,55 @@ export function RequestHistoryTableClient({
                         </TableBody>
                     </Table>
                 </div>
-                <div className="flex items-center justify-end space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        {translations.pagination.previous}
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        {translations.pagination.next}
-                    </Button>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>{translations.pagination.rowsPerPage}</span>
+                        <Select
+                            value={String(pageSize)}
+                            onValueChange={(v) => {
+                                setPageSize(Number(v))
+                                table.setPageIndex(0)
+                            }}
+                        >
+                            <SelectTrigger className="h-8 w-[70px]">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="10">10</SelectItem>
+                                <SelectItem value="20">20</SelectItem>
+                                <SelectItem value="50">50</SelectItem>
+                                <SelectItem value="100">100</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>
+                            {translations.pagination.pageOf
+                                .replace(
+                                    "{page}",
+                                    String(table.getState().pagination.pageIndex + 1)
+                                )
+                                .replace("{total}", String(table.getPageCount()))}
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => table.previousPage()}
+                            disabled={!table.getCanPreviousPage()}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => table.nextPage()}
+                            disabled={!table.getCanNextPage()}
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
             </div>
 

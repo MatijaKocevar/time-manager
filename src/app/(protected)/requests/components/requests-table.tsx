@@ -12,7 +12,13 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { Edit, Search, Plus, ChevronLeft, ChevronRight } from "lucide-react"
 import { WorkTypeBadge } from "@/components/work-type-badge"
 import type { RequestDisplay } from "../schemas/request-schemas"

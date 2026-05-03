@@ -72,6 +72,8 @@ export interface RequestHistoryTranslations {
     pagination: {
         previous: string
         next: string
+        rowsPerPage: string
+        pageOf: string
     }
     filter: {
         title: string

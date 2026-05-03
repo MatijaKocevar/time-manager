@@ -58,6 +58,8 @@ export async function RequestHistoryTable({
         pagination: {
             previous: tPagination("previous"),
             next: tPagination("next"),
+            rowsPerPage: tPagination("rowsPerPage"),
+            pageOf: tPagination.raw("pageOf") as string,
         },
         filter: {
             title: tFilter("title"),

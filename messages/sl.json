@@ -770,7 +770,9 @@
             },
             "pagination": {
                 "previous": "Prejšnje",
-                "next": "Naprej"
+                "next": "Naprej",
+                "rowsPerPage": "Vrstic na stran",
+                "pageOf": "Stran {page} od {total}"
             }
         }
     },
