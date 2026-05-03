@@ -801,6 +801,39 @@ const { isLoading } = useStore()
 npx prisma migrate dev --name descriptive_name
 ```
 
+**CRITICAL: How Prisma migrations work across databases (Neon, fresh servers, etc.)**
+
+The baseline migration (`prisma/migrations/*/migration.sql`) must contain the **full schema** — every `CREATE TABLE`, enum, and index. If the baseline is hollow (created when tables already existed locally), fresh databases will be missing tables even though `migrate deploy` reports "no pending migrations".
+
+**Never create a baseline migration while the local database already has tables.** If this happens, regenerate it:
+
+```bash
+# 1. Generate full SQL from current schema
+npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > /tmp/baseline.sql
+
+# 2. Delete old migrations and create a single clean one
+rm -rf prisma/migrations/*
+mkdir -p prisma/migrations/YYYYMMDD000000_initial_setup
+cp /tmp/baseline.sql prisma/migrations/YYYYMMDD000000_initial_setup/migration.sql
+
+# 3. Mark as applied on local DB (tables already exist, don't re-run)
+npx prisma migrate resolve --applied YYYYMMDD000000_initial_setup
+
+# 4. For each other database (Neon, staging, etc.) — push schema then mark applied
+DATABASE_URL="<other-db-url>" npx prisma db push --skip-generate
+DATABASE_URL="<other-db-url>" npx prisma migrate resolve --applied YYYYMMDD000000_initial_setup
+```
+
+**From this point on**, use `npx prisma migrate dev --name describe_change` for all schema changes. Each migration will be a proper diff and `migrate deploy` will work correctly on any fresh database.
+
+**Applying migrations to Neon/Vercel database:**
+
+```bash
+bash scripts/migrate-neon.sh
+```
+
+Requires `.env.vercel` file with `DATABASE_URL` pointing to the Neon database.
+
 **Syncing Existing Data:**
 
 - Create sync script in `src/app/(protected)/[feature]/scripts/`
