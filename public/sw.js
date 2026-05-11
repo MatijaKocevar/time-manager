@@ -40,7 +40,14 @@ self.addEventListener("notificationclick", function (event) {
                 }),
                 credentials: "include",
             })
-                .then(() => {
+                .then((response) => {
+                    if (!response.ok) {
+                        return self.registration.showNotification("Delay Failed", {
+                            body: "Could not delay work time. Please open the app and try again.",
+                            icon: "/logo.svg",
+                            badge: "/pwa/icon-192x192.png",
+                        })
+                    }
                     return self.registration.showNotification("Time Adjusted", {
                         body: `Work time delayed by ${minutes} minutes`,
                         icon: "/logo.svg",
@@ -49,6 +56,11 @@ self.addEventListener("notificationclick", function (event) {
                 })
                 .catch((error) => {
                     console.error("Failed to adjust time:", error)
+                    return self.registration.showNotification("Delay Failed", {
+                        body: "Could not delay work time. Please open the app and try again.",
+                        icon: "/logo.svg",
+                        badge: "/pwa/icon-192x192.png",
+                    })
                 })
         )
         return
@@ -70,7 +82,14 @@ self.addEventListener("notificationclick", function (event) {
                     credentials: "include",
                 }
             )
-                .then(() => {
+                .then((response) => {
+                    if (!response.ok) {
+                        return self.registration.showNotification("Cancellation Failed", {
+                            body: "Could not cancel auto clock. Please open the app and try again.",
+                            icon: "/logo.svg",
+                            badge: "/pwa/icon-192x192.png",
+                        })
+                    }
                     return self.registration.showNotification("Cancelled", {
                         body:
                             cancelType === "checkout"
@@ -82,6 +101,11 @@ self.addEventListener("notificationclick", function (event) {
                 })
                 .catch((error) => {
                     console.error("Failed to cancel:", error)
+                    return self.registration.showNotification("Cancellation Failed", {
+                        body: "Could not cancel auto clock. Please open the app and try again.",
+                        icon: "/logo.svg",
+                        badge: "/pwa/icon-192x192.png",
+                    })
                 })
         )
         return
