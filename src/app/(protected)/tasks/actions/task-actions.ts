@@ -228,6 +228,7 @@ export async function updateTask(input: UpdateTaskInput) {
         })
 
         revalidatePath("/tasks")
+        revalidatePath("/time-sheets")
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {

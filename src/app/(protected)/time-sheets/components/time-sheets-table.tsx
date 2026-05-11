@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useCallback } from "react"
+import { useRouter } from "next/navigation"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Play, Square } from "lucide-react"
 import { useTranslations } from "next-intl"
@@ -71,7 +72,13 @@ export function TimeSheetsTable({
     const openDayEntriesDialog = useTimeSheetsStore((state) => state.openDayEntriesDialog)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
+    const router = useRouter()
     const [loadingTask, setLoadingTask] = useState<string | null>(null)
+
+    const handleTaskStatusSuccess = useCallback(async () => {
+        await queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
+        router.refresh()
+    }, [queryClient, router])
 
     const { tasks, dates } = aggregatedData
 
@@ -273,6 +280,7 @@ export function TimeSheetsTable({
                                                                     }
                                                                 >
                                                                     <TaskStatusSelect
+                                                                        onSuccess={handleTaskStatusSuccess}
                                                                         task={{
                                                                             id: task.taskId,
                                                                             userId: "",

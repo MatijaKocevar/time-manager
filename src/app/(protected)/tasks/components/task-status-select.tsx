@@ -19,9 +19,10 @@ import type { TaskStatus } from "../schemas/task-action-schemas"
 
 interface TaskStatusSelectProps {
     task: TaskTreeNode
+    onSuccess?: () => void
 }
 
-export function TaskStatusSelect({ task }: TaskStatusSelectProps) {
+export function TaskStatusSelect({ task, onSuccess }: TaskStatusSelectProps) {
     const queryClient = useQueryClient()
     const tStatus = useTranslations("tasks.statuses")
     const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
@@ -43,6 +44,7 @@ export function TaskStatusSelect({ task }: TaskStatusSelectProps) {
 
             if (result.success) {
                 await queryClient.invalidateQueries({ queryKey: taskKeys.all })
+                onSuccess?.()
             } else {
                 console.error("Failed to update task status:", result.error)
             }
