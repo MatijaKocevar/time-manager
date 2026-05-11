@@ -11,6 +11,16 @@ import {
 import { getUrnikCookieForUser } from "@/lib/urnik-session"
 import { requireAuth } from "@/lib/auth-helpers"
 import { sendPushNotification } from "@/features/notifications/actions/notification-actions"
+import { toZonedTime } from "date-fns-tz"
+
+const TIMEZONE = "Europe/Ljubljana"
+
+function getTodayUtc(): Date {
+    const nowInLjubljana = toZonedTime(new Date(), TIMEZONE)
+    return new Date(
+        Date.UTC(nowInLjubljana.getFullYear(), nowInLjubljana.getMonth(), nowInLjubljana.getDate())
+    )
+}
 
 interface ActionResult {
     success: boolean
@@ -20,6 +30,8 @@ interface ActionResult {
 
 export async function sendCheckinReminder(userId: string): Promise<ActionResult> {
     try {
+        const today = getTodayUtc()
+
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
@@ -29,6 +41,10 @@ export async function sendCheckinReminder(userId: string): Promise<ActionResult>
                     select: {
                         autoCheckInEnabled: true,
                     },
+                },
+                workTimeAdjustments: {
+                    where: { date: today },
+                    take: 1,
                 },
             },
         })
@@ -41,10 +57,13 @@ export async function sendCheckinReminder(userId: string): Promise<ActionResult>
             return { success: false, error: "Work start time not configured" }
         }
 
+        const effectiveStartTime =
+            user.workTimeAdjustments[0]?.adjustedStartTime ?? user.workStartTime
+
         await notifyAutoCheckinReminder({
             userId,
             userName: user.name || "User",
-            workStartTime: user.workStartTime,
+            workStartTime: effectiveStartTime,
         })
 
         return { success: true, message: "Check-in reminder sent" }
@@ -59,6 +78,8 @@ export async function sendCheckinReminder(userId: string): Promise<ActionResult>
 
 export async function sendCheckoutReminder(userId: string): Promise<ActionResult> {
     try {
+        const today = getTodayUtc()
+
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
@@ -68,6 +89,10 @@ export async function sendCheckoutReminder(userId: string): Promise<ActionResult
                     select: {
                         autoCheckOutEnabled: true,
                     },
+                },
+                workTimeAdjustments: {
+                    where: { date: today },
+                    take: 1,
                 },
             },
         })
@@ -80,10 +105,12 @@ export async function sendCheckoutReminder(userId: string): Promise<ActionResult
             return { success: false, error: "Work end time not configured" }
         }
 
+        const effectiveEndTime = user.workTimeAdjustments[0]?.adjustedEndTime ?? user.workEndTime
+
         await notifyAutoCheckoutReminder({
             userId,
             userName: user.name || "User",
-            workEndTime: user.workEndTime,
+            workEndTime: effectiveEndTime,
         })
 
         return { success: true, message: "Check-out reminder sent" }
