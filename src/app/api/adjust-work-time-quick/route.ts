@@ -74,10 +74,6 @@ export async function POST(request: NextRequest) {
                     { status: 400 }
                 )
             }
-            const adjustedStartTime = addMinutes(user.workStartTime, delayMinutes)
-            const adjustedEndTime = user.workEndTime
-                ? addMinutes(user.workEndTime, delayMinutes)
-                : undefined
 
             const existing = await prisma.workTimeAdjustment.findUnique({
                 where: { userId_date: { userId: session.user.id, date: today } },
@@ -136,9 +132,7 @@ export async function POST(request: NextRequest) {
             update: { adjustedEndTime: newEnd },
         })
 
-        const newCheckoutReminderTime = new Date(
-            parseTimeToDate(newEnd).getTime() - 15 * 60 * 1000
-        )
+        const newCheckoutReminderTime = new Date(parseTimeToDate(newEnd).getTime() - 15 * 60 * 1000)
         await prisma.autoClockState.upsert({
             where: { userId: session.user.id },
             update: { checkoutReminderFiredAt: newCheckoutReminderTime },
