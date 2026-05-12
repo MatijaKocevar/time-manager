@@ -3,6 +3,24 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { z } from "zod"
+import { fromZonedTime } from "date-fns-tz"
+
+const TIMEZONE = "Europe/Ljubljana"
+
+function parseTimeToDate(timeString: string): Date {
+    const [hours, minutes] = timeString.split(":").map(Number)
+    const nowUtc = new Date()
+    const ljubljanaDate = new Date(
+        nowUtc.getUTCFullYear(),
+        nowUtc.getUTCMonth(),
+        nowUtc.getUTCDate(),
+        hours,
+        minutes,
+        0,
+        0
+    )
+    return fromZonedTime(ljubljanaDate, TIMEZONE)
+}
 
 const QuickAdjustSchema = z.object({
     delayMinutes: z.number().int().min(1).max(120),
@@ -56,10 +74,6 @@ export async function POST(request: NextRequest) {
                     { status: 400 }
                 )
             }
-            const adjustedStartTime = addMinutes(user.workStartTime, delayMinutes)
-            const adjustedEndTime = user.workEndTime
-                ? addMinutes(user.workEndTime, delayMinutes)
-                : undefined
 
             const existing = await prisma.workTimeAdjustment.findUnique({
                 where: { userId_date: { userId: session.user.id, date: today } },
@@ -85,6 +99,15 @@ export async function POST(request: NextRequest) {
                 },
             })
 
+            const newCheckinReminderTime = new Date(
+                parseTimeToDate(newStart).getTime() - 15 * 60 * 1000
+            )
+            await prisma.autoClockState.upsert({
+                where: { userId: session.user.id },
+                update: { checkinReminderFiredAt: newCheckinReminderTime },
+                create: { userId: session.user.id, checkinReminderFiredAt: newCheckinReminderTime },
+            })
+
             return NextResponse.json({
                 success: true,
                 message: `Work times delayed by ${delayMinutes} minutes`,
@@ -107,6 +130,16 @@ export async function POST(request: NextRequest) {
             where: { userId_date: { userId: session.user.id, date: today } },
             create: { userId: session.user.id, date: today, adjustedEndTime: newEnd },
             update: { adjustedEndTime: newEnd },
+        })
+
+        const newCheckoutReminderTime = new Date(parseTimeToDate(newEnd).getTime() - 15 * 60 * 1000)
+        await prisma.autoClockState.upsert({
+            where: { userId: session.user.id },
+            update: { checkoutReminderFiredAt: newCheckoutReminderTime },
+            create: {
+                userId: session.user.id,
+                checkoutReminderFiredAt: newCheckoutReminderTime,
+            },
         })
 
         return NextResponse.json({
