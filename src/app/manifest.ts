@@ -1,9 +1,12 @@
 import type { MetadataRoute } from "next"
 
+const isDev = process.env.NODE_ENV === "development"
+const appName = isDev ? "Dev Time Manager" : "Time Manager"
+
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: "Time Manager",
-        short_name: "Time Manager",
+        name: appName,
+        short_name: appName,
         description: "Manage your time, tasks, and hours efficiently",
         start_url: "/",
         display: "standalone",
