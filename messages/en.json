@@ -471,7 +471,8 @@
         "views": {
             "weekOf": "Week of {date}",
             "weekView": "Week",
-            "monthView": "Month"
+            "monthView": "Month",
+            "viewLabel": "View"
         },
         "messages": {
             "failedToLoad": "Failed to load shifts: {error}"

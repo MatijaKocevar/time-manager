@@ -1,7 +1,17 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, MoreVertical } from "lucide-react"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuRadioGroup,
+    DropdownMenuRadioItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface ShiftsCalendarHeaderProps {
     viewMode: "week" | "month"
@@ -16,6 +26,7 @@ interface ShiftsCalendarHeaderProps {
         today: string
         weekView: string
         monthView: string
+        viewLabel: string
         weekOf: (params: { date: string }) => string
     }
 }
@@ -31,68 +42,53 @@ export function ShiftsCalendarHeader({
     onViewModeChange,
     translations,
 }: ShiftsCalendarHeaderProps) {
+    const title =
+        viewMode === "week"
+            ? (() => {
+                  const weekEnd = new Date(startDate)
+                  weekEnd.setDate(weekEnd.getDate() + 6)
+                  const startStr = `${startDate.toLocaleDateString(dateLocale, { month: "short" })} ${startDate.getDate()}`
+                  const endStr = `${weekEnd.toLocaleDateString(dateLocale, { month: "short" })} ${weekEnd.getDate()}`
+                  return `${startStr} - ${endStr}`
+              })()
+            : currentDate.toLocaleDateString(dateLocale, { month: "long", year: "numeric" })
+
     return (
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 shrink-0">
-            <div className="flex items-center justify-between lg:justify-start gap-2">
-                <div id="shifts-nav-controls" className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={onPrevious}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={onNext}>
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={onToday}>
-                        {translations.today}
-                    </Button>
-                </div>
-                <div className="flex gap-2 lg:hidden">
-                    <Button
-                        variant={viewMode === "week" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => onViewModeChange("week")}
-                    >
-                        {translations.weekView}
-                    </Button>
-                    <Button
-                        variant={viewMode === "month" ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => onViewModeChange("month")}
-                    >
-                        {translations.monthView}
-                    </Button>
-                </div>
-            </div>
-            <h2 className="text-xl font-semibold text-center lg:text-left lg:ml-4">
-                {viewMode === "week"
-                    ? (() => {
-                          const weekStart = startDate
-                          const weekEnd = new Date(startDate)
-                          weekEnd.setDate(weekEnd.getDate() + 6)
-                          const startStr = `${weekStart.toLocaleDateString(dateLocale, { month: "short" })} ${weekStart.getDate()}`
-                          const endStr = `${weekEnd.toLocaleDateString(dateLocale, { month: "short" })} ${weekEnd.getDate()}`
-                          return `${startStr} - ${endStr}`
-                      })()
-                    : currentDate.toLocaleDateString(dateLocale, {
-                          month: "long",
-                          year: "numeric",
-                      })}
-            </h2>
-            <div id="shifts-view-toggle" className="hidden lg:flex gap-2">
-                <Button
-                    variant={viewMode === "week" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => onViewModeChange("week")}
-                >
-                    {translations.weekView}
+        <div className="flex items-center justify-between shrink-0">
+            <div id="shifts-nav-controls" className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={onPrevious}>
+                    <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <Button
-                    variant={viewMode === "month" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => onViewModeChange("month")}
-                >
-                    {translations.monthView}
+                <div className="font-semibold whitespace-nowrap">{title}</div>
+                <Button variant="outline" size="icon" onClick={onNext}>
+                    <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" className="text-xs px-2" onClick={onToday}>
+                    {translations.today}
                 </Button>
             </div>
+
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                        <MoreVertical className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>{translations.viewLabel}</DropdownMenuLabel>
+                    <DropdownMenuRadioGroup
+                        value={viewMode}
+                        onValueChange={(v) => onViewModeChange(v as "week" | "month")}
+                    >
+                        <DropdownMenuRadioItem value="week">
+                            {translations.weekView}
+                        </DropdownMenuRadioItem>
+                        <DropdownMenuRadioItem value="month">
+                            {translations.monthView}
+                        </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     )
 }

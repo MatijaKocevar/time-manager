@@ -67,8 +67,14 @@ export function HoursView({
     const [isFormOpen, setIsFormOpen] = useState(false)
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
 
-    const { viewMode, currentDate, handleViewModeChange, handleNavigate, getCurrentMonth } =
-        useHoursNavigation(initialViewMode, initialSelectedDate)
+    const {
+        viewMode,
+        currentDate,
+        handleViewModeChange,
+        handleNavigate,
+        handleToday,
+        getCurrentMonth,
+    } = useHoursNavigation(initialViewMode, initialSelectedDate)
 
     const { entries, isLoading, weeklyEntries, monthlyEntries, dateRange, monthRange } =
         useHoursData(
@@ -114,17 +120,6 @@ export function HoursView({
 
     return (
         <>
-            <HoursSummary
-                entries={entries}
-                isLoading={isLoading}
-                viewMode={viewMode}
-                weeklyEntries={weeklyEntries}
-                monthlyEntries={monthlyEntries}
-                dateRange={monthRange}
-                holidays={holidays}
-                initialAttendanceData={initialAttendanceData}
-            />
-
             <div className="space-y-2 pt-2">
                 <div className="flex items-center justify-between gap-2">
                     <div id="hours-nav" className="flex items-center gap-2">
@@ -146,6 +141,15 @@ export function HoursView({
                             disabled={isLoading}
                         >
                             <ChevronRight className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-2"
+                            onClick={handleToday}
+                            disabled={isLoading}
+                        >
+                            {tCommon("time.today")}
                         </Button>
                     </div>
                     <div className="flex items-center gap-2">
@@ -226,6 +230,19 @@ export function HoursView({
                         holidays={holidays}
                     />
                 </div>
+            </div>
+
+            <div className="pt-4">
+                <HoursSummary
+                    entries={entries}
+                    isLoading={isLoading}
+                    viewMode={viewMode}
+                    weeklyEntries={weeklyEntries}
+                    monthlyEntries={monthlyEntries}
+                    dateRange={monthRange}
+                    holidays={holidays}
+                    initialAttendanceData={initialAttendanceData}
+                />
             </div>
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

@@ -1,7 +1,5 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Clock } from "lucide-react"
 import { useDailySummary } from "../hooks/use-daily-summary"
 import { formatHoursMinutes } from "@/app/(protected)/hours/utils/time-helpers"
 import { useTimeSheetsStore } from "@/app/(protected)/time-sheets/stores/time-sheets-store"
@@ -35,14 +33,9 @@ export function DailySummaryCard({ initialData, translations }: DailySummaryCard
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                    <Clock className="h-5 w-5" />
-                    {translations.title}
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
+        <div>
+            <label className="text-sm font-medium mb-2 block">{translations.title}</label>
+            <div className="bg-muted rounded-lg p-4">
                 <div className="grid grid-cols-3 gap-4">
                     <div
                         className="flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors"
@@ -78,7 +71,7 @@ export function DailySummaryCard({ initialData, translations }: DailySummaryCard
                         </span>
                     </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     )
 }
