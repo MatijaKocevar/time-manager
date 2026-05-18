@@ -265,6 +265,7 @@ export function ShiftsCalendar({
                     today: tCommon("time.today"),
                     weekView: t("views.weekView"),
                     monthView: t("views.monthView"),
+                    viewLabel: t("views.viewLabel"),
                     weekOf: (params: { date: string }) => t("views.weekOf", params),
                 }}
             />

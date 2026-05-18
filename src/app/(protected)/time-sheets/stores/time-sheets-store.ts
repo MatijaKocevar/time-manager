@@ -22,6 +22,7 @@ interface TimeSheetsActions {
     setTaskFilter: (filter: "work" | "private") => void
     goToPreviousPeriod: () => void
     goToNextPeriod: () => void
+    goToToday: () => void
     openDayEntriesDialog: (date: string, type?: string) => void
     closeDayEntriesDialog: () => void
 }
@@ -87,4 +88,6 @@ export const useTimeSheetsStore = create<TimeSheetsState & TimeSheetsActions>((s
 
         set({ selectedDate: newDate })
     },
+
+    goToToday: () => set({ selectedDate: new Date() }),
 }))

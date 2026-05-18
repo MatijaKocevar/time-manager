@@ -471,7 +471,8 @@
         "views": {
             "weekOf": "Teden {date}",
             "weekView": "Teden",
-            "monthView": "Mesec"
+            "monthView": "Mesec",
+            "viewLabel": "Pogled"
         },
         "messages": {
             "failedToLoad": "Napaka pri nalaganju izmen: {error}"

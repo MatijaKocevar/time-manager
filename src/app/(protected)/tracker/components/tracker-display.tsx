@@ -128,7 +128,7 @@ export function TrackerDisplay({
         <Card className="h-full">
             <CardContent className="pt-4 h-full overflow-auto xl:overflow-visible flex flex-col">
                 <div className="space-y-4 flex-1 min-h-0 flex flex-col">
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 xl:grid-cols-[200px_1fr_auto] gap-4 items-end">
                         <div>
                             <label className="text-sm font-medium mb-2 block">
                                 {translations.trackingType}
@@ -153,78 +153,72 @@ export function TrackerDisplay({
                             </Select>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4">
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">
-                                    {translations.selectTask}
-                                </label>
-                                <Select
-                                    value={selectedTaskId ?? ""}
-                                    onValueChange={handleTaskChange}
-                                    disabled={selectedType !== "WORK" || isLoading}
+                        <div>
+                            <label className="text-sm font-medium mb-2 block">
+                                {translations.selectTask}
+                            </label>
+                            <Select
+                                value={selectedTaskId ?? ""}
+                                onValueChange={handleTaskChange}
+                                disabled={selectedType !== "WORK" || isLoading}
+                            >
+                                <SelectTrigger
+                                    id="tracker-task-select"
+                                    className="w-full"
+                                    suppressHydrationWarning
                                 >
-                                    <SelectTrigger
-                                        id="tracker-task-select"
-                                        className="w-full"
-                                        suppressHydrationWarning
-                                    >
-                                        <SelectValue>{getSelectedTaskLabel()}</SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent className="max-h-[300px]">
-                                        {generalWorkTask && (
-                                            <SelectItem value={generalWorkTask.id}>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="truncate">
-                                                        {translations.generalWork}
-                                                    </span>
-                                                </div>
-                                            </SelectItem>
-                                        )}
-                                        {inProgressTasks.map((task) => (
-                                            <SelectItem key={task.id} value={task.id}>
-                                                <div className="flex items-center gap-2">
-                                                    {task.listColor && (
-                                                        <span
-                                                            className="h-2 w-2 rounded-full flex-shrink-0"
-                                                            style={{
-                                                                backgroundColor: task.listColor,
-                                                            }}
-                                                        />
-                                                    )}
+                                    <SelectValue>{getSelectedTaskLabel()}</SelectValue>
+                                </SelectTrigger>
+                                <SelectContent className="max-h-[300px]">
+                                    {generalWorkTask && (
+                                        <SelectItem value={generalWorkTask.id}>
+                                            <div className="flex items-center gap-2">
+                                                <span className="truncate">
+                                                    {translations.generalWork}
+                                                </span>
+                                            </div>
+                                        </SelectItem>
+                                    )}
+                                    {inProgressTasks.map((task) => (
+                                        <SelectItem key={task.id} value={task.id}>
+                                            <div className="flex items-center gap-2">
+                                                {task.listColor && (
                                                     <span
-                                                        className={`truncate ${task.parentId ? "pl-4" : ""}`}
-                                                    >
-                                                        {task.parentId && "↳ "}
-                                                        {task.title}
-                                                    </span>
-                                                    {task.listIsPrivate && (
-                                                        <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                                    )}
-                                                </div>
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium mb-2 hidden sm:block opacity-0">
-                                    -
-                                </label>
-                                <Button
-                                    id="tracker-time-entries"
-                                    variant="outline"
-                                    className="w-full sm:w-auto"
-                                    onClick={handleViewEntries}
-                                    disabled={taskEntries.length === 0}
-                                >
-                                    <Clock className="mr-2 h-4 w-4" />
-                                    {translations.todayEntries} ({taskEntries.length})
-                                </Button>
-                            </div>
+                                                        className="h-2 w-2 rounded-full flex-shrink-0"
+                                                        style={{
+                                                            backgroundColor: task.listColor,
+                                                        }}
+                                                    />
+                                                )}
+                                                <span
+                                                    className={`truncate ${task.parentId ? "pl-4" : ""}`}
+                                                >
+                                                    {task.parentId && "↳ "}
+                                                    {task.title}
+                                                </span>
+                                                {task.listIsPrivate && (
+                                                    <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                                )}
+                                            </div>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
+
+                        <Button
+                            id="tracker-time-entries"
+                            variant="outline"
+                            className="w-full xl:w-auto"
+                            onClick={handleViewEntries}
+                            disabled={taskEntries.length === 0}
+                        >
+                            <Clock className="mr-2 h-4 w-4" />
+                            {translations.todayEntries} ({taskEntries.length})
+                        </Button>
                     </div>
 
-                    <div className="space-y-2 p-4 bg-muted rounded-lg min-h-[60px] flex items-center">
+                    <div className="p-3 bg-muted rounded-lg flex items-center min-h-[44px]">
                         {isTimerRunning && activeTimerData ? (
                             <div className="flex items-center justify-between w-full">
                                 <Badge variant="secondary">
@@ -241,49 +235,47 @@ export function TrackerDisplay({
                         )}
                     </div>
 
-                    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-center flex-1 xl:min-h-0">
-                        <div className="flex flex-col items-center justify-center gap-6 py-8">
-                            <div
-                                className="text-6xl font-mono font-bold tabular-nums"
-                                suppressHydrationWarning
-                            >
-                                {formatDuration(isTrackingCurrentSelection ? elapsedSeconds : 0)}
-                            </div>
-
-                            <Button
-                                id="tracker-timer-button"
-                                size="lg"
-                                onClick={handlePlayStop}
-                                disabled={isLoading || (!isTrackingCurrentSelection && !canStart)}
-                                className={`w-28 h-28 rounded-full text-white shadow-lg transition-all ${
-                                    isTrackingCurrentSelection
-                                        ? "bg-red-600 hover:bg-red-700"
-                                        : "bg-green-600 hover:bg-green-700"
-                                }`}
-                            >
-                                {isTrackingCurrentSelection ? (
-                                    <Square className="h-10 w-10" fill="currentColor" />
-                                ) : (
-                                    <Play className="h-10 w-10" fill="currentColor" />
-                                )}
-                            </Button>
+                    <div className="flex flex-col items-center justify-center gap-4 flex-1 xl:min-h-0 py-4">
+                        <div
+                            className="text-6xl font-mono font-bold tabular-nums"
+                            suppressHydrationWarning
+                        >
+                            {formatDuration(isTrackingCurrentSelection ? elapsedSeconds : 0)}
                         </div>
 
-                        <div id="tracker-daily-summary" className="xl:col-span-2">
-                            <DailySummaryCard
-                                initialData={initialDailySummary}
-                                translations={{
-                                    title: translations.dailySummaryTitle,
-                                    work: translations.work,
-                                    break: translations.break,
-                                    private: translations.private,
-                                }}
-                            />
-                        </div>
+                        <Button
+                            id="tracker-timer-button"
+                            size="lg"
+                            onClick={handlePlayStop}
+                            disabled={isLoading || (!isTrackingCurrentSelection && !canStart)}
+                            className={`w-28 h-28 xl:w-40 xl:h-40 rounded-full text-white shadow-lg transition-all ${
+                                isTrackingCurrentSelection
+                                    ? "bg-red-600 hover:bg-red-700"
+                                    : "bg-green-600 hover:bg-green-700"
+                            }`}
+                        >
+                            {isTrackingCurrentSelection ? (
+                                <Square className="h-10 w-10 xl:h-14 xl:w-14" fill="currentColor" />
+                            ) : (
+                                <Play className="h-10 w-10 xl:h-14 xl:w-14" fill="currentColor" />
+                            )}
+                        </Button>
                     </div>
 
                     <div className="min-h-[20px] text-sm text-destructive text-center">
                         {trackerError || ""}
+                    </div>
+
+                    <div id="tracker-daily-summary">
+                        <DailySummaryCard
+                            initialData={initialDailySummary}
+                            translations={{
+                                title: translations.dailySummaryTitle,
+                                work: translations.work,
+                                break: translations.break,
+                                private: translations.private,
+                            }}
+                        />
                     </div>
                 </div>
             </CardContent>

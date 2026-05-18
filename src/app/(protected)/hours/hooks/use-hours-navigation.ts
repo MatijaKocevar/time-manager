@@ -58,11 +58,16 @@ export function useHoursNavigation(initialViewMode: ViewMode, initialDate: Date)
         return `${year}-${month}`
     }
 
+    const handleToday = () => {
+        setCurrentDate(new Date())
+    }
+
     return {
         viewMode,
         currentDate,
         handleViewModeChange,
         handleNavigate,
+        handleToday,
         getCurrentMonth,
     }
 }

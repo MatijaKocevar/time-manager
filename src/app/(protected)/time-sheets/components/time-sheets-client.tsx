@@ -84,6 +84,7 @@ export function TimeSheetsClient({
     const setTaskFilter = useTimeSheetsStore((state) => state.setTaskFilter)
     const goToPreviousPeriod = useTimeSheetsStore((state) => state.goToPreviousPeriod)
     const goToNextPeriod = useTimeSheetsStore((state) => state.goToNextPeriod)
+    const goToToday = useTimeSheetsStore((state) => state.goToToday)
 
     const activeTimer = useTasksStore((state) => state.activeTimer)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
@@ -219,16 +220,27 @@ export function TimeSheetsClient({
                         <Button variant="outline" size="icon" onClick={goToNextPeriod}>
                             <ChevronRight className="h-4 w-4" />
                         </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-2"
+                            onClick={goToToday}
+                        >
+                            {tCommon("time.today")}
+                        </Button>
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <div id="time-sheets-balance" className="text-sm">
+                        <div
+                            id="time-sheets-balance"
+                            className="text-sm flex flex-col sm:flex-row sm:items-center sm:gap-1 items-end"
+                        >
                             <span className="font-semibold">
                                 {formatHoursMinutesLib(totalSeconds)}
                             </span>
                             {taskFilter === "work" && (
                                 <>
-                                    <span className="text-muted-foreground"> | </span>
+                                    <span className="text-muted-foreground max-sm:hidden"> | </span>
                                     <span className={`font-semibold ${getBalanceColor(balance)}`}>
                                         {formatBalance(balance)}
                                     </span>
