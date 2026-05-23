@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server"
 import { TimeSheetsClient } from "./time-sheets-client"
 import { TimeEntriesDialog } from "../../tasks/components/time-entries-dialog"
 import { DayEntriesDialog } from "./day-entries-dialog"
+import { TaskDescriptionDialog } from "../../tasks/components/task-description-dialog"
 import { getTimeSheetEntries } from "../actions/time-sheet-actions"
 import { getDateRangeForView, type ViewMode } from "../utils/date-helpers"
 import { getCurrentUser } from "../../profile/actions/profile-actions"
@@ -124,6 +125,7 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
                 }}
             />
             <TimeEntriesDialog />
+            <TaskDescriptionDialog />
             <DayEntriesDialog
                 translations={{
                     title: tDialog("title"),

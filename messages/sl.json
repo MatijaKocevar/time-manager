@@ -367,6 +367,17 @@
             "noEntriesForType": "Ni vnosov časa za ta tip danes",
             "dailySummaryTitle": "Današnji čas"
         },
+        "description": {
+            "dialogTitle": "Opis naloge",
+            "placeholder": "Napiši opis, dodaj slike...",
+            "save": "Shrani",
+            "saving": "Shranjevanje...",
+            "uploadImage": "Vstavi sliko",
+            "editTitle": "Uredi naslov",
+            "hasDescription": "Ima opis",
+            "uploadError": "Nalaganje slike ni uspelo",
+            "saveError": "Shranjevanje opisa ni uspelo"
+        },
         "editTimeEntry": {
             "title": "Uredi vnos časa",
             "description": "Uredi čas začetka in konca za ta vnos časa",

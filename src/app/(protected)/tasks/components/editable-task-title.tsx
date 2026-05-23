@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Pencil } from "lucide-react"
 import { updateTask } from "../actions/task-actions"
 import { useQueryClient } from "@tanstack/react-query"
 import { taskKeys } from "../query-keys"
@@ -13,6 +15,7 @@ interface EditableTaskTitleProps {
 }
 
 export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
+    const [isEditing, setIsEditing] = useState(false)
     const [value, setValue] = useState(task.title)
     const queryClient = useQueryClient()
     const inputRef = useRef<HTMLInputElement>(null)
@@ -20,13 +23,22 @@ export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
     const isLoading = useTasksStore(
         (state) => state.taskOperations.get(task.id)?.isLoading ?? false
     )
+    const openDescriptionDialog = useTasksStore((state) => state.openDescriptionDialog)
 
     useEffect(() => {
         setValue(task.title)
     }, [task.title])
 
+    useEffect(() => {
+        if (isEditing) {
+            inputRef.current?.focus()
+            inputRef.current?.select()
+        }
+    }, [isEditing])
+
     const handleSave = async () => {
         const trimmedValue = value.trim()
+        setIsEditing(false)
 
         if (!trimmedValue || trimmedValue === task.title) {
             setValue(task.title)
@@ -35,49 +47,70 @@ export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
 
         setTaskOperationLoading(task.id, true)
         try {
-            const result = await updateTask({
-                id: task.id,
-                title: trimmedValue,
-            })
+            const result = await updateTask({ id: task.id, title: trimmedValue })
 
             if (result.success) {
                 await queryClient.invalidateQueries({ queryKey: taskKeys.all })
             } else {
-                console.error("Failed to update task:", result.error)
                 setValue(task.title)
             }
-        } catch (error) {
-            console.error("Failed to update task:", error)
+        } catch {
             setValue(task.title)
         } finally {
             setTaskOperationLoading(task.id, false)
         }
     }
 
-    const handleBlur = () => {
-        void handleSave()
-    }
-
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
             e.preventDefault()
-            inputRef.current?.blur()
+            void handleSave()
         } else if (e.key === "Escape") {
             setValue(task.title)
-            inputRef.current?.blur()
+            setIsEditing(false)
         }
     }
 
+    if (isEditing) {
+        return (
+            <Input
+                ref={inputRef}
+                type="text"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onBlur={() => void handleSave()}
+                onKeyDown={handleKeyDown}
+                disabled={isLoading}
+                className="h-8 font-medium"
+            />
+        )
+    }
+
     return (
-        <Input
-            ref={inputRef}
-            type="text"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onBlur={handleBlur}
-            onKeyDown={handleKeyDown}
-            disabled={isLoading}
-            className="h-8 font-medium"
-        />
+        <div className="flex items-center gap-1 group">
+            <button
+                type="button"
+                className="text-sm font-medium text-left hover:underline underline-offset-2 cursor-pointer truncate"
+                onClick={() => openDescriptionDialog(task.id, task.title)}
+            >
+                {task.title}
+            </button>
+            {task.description && (
+                <span
+                    className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"
+                    title="Has description"
+                />
+            )}
+            <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 flex-shrink-0"
+                onClick={() => setIsEditing(true)}
+                aria-label="Edit title"
+                tabIndex={-1}
+            >
+                <Pencil className="h-3 w-3" />
+            </Button>
+        </div>
     )
 }

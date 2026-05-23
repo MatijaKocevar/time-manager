@@ -12,6 +12,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { formatDuration } from "@/app/(protected)/tasks/utils/time-helpers"
 import { useDayEntries } from "../hooks/use-day-entries"
 import { useTimeSheetsStore } from "../stores/time-sheets-store"
+import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
 import type { HourType } from "@/../../prisma/generated/client"
 
 interface DayEntry {
@@ -50,6 +51,7 @@ function formatTime(date: Date): string {
 export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
     const dayEntriesDialog = useTimeSheetsStore((state) => state.dayEntriesDialog)
     const closeDayEntriesDialog = useTimeSheetsStore((state) => state.closeDayEntriesDialog)
+    const openDescriptionDialog = useTasksStore((state) => state.openDescriptionDialog)
     const [currentTime, setCurrentTime] = useState(new Date())
 
     const { data, isLoading } = useDayEntries({
@@ -153,7 +155,18 @@ export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
                                                     {formatDuration(duration)}
                                                 </td>
                                                 <td className="p-2 sm:p-4 align-middle text-xs sm:text-sm">
-                                                    {entry.task.title}
+                                                    <button
+                                                        type="button"
+                                                        className="text-left hover:underline underline-offset-2 cursor-pointer"
+                                                        onClick={() =>
+                                                            openDescriptionDialog(
+                                                                entry.taskId,
+                                                                entry.task.title
+                                                            )
+                                                        }
+                                                    >
+                                                        {entry.task.title}
+                                                    </button>
                                                 </td>
                                             </tr>
                                         )
@@ -196,7 +209,18 @@ export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
                                             <div className="flex justify-between items-start gap-4">
                                                 <div className="flex-1">
                                                     <div className="text-sm font-medium mb-2">
-                                                        {entry.task.title}
+                                                        <button
+                                                            type="button"
+                                                            className="text-left hover:underline underline-offset-2 cursor-pointer"
+                                                            onClick={() =>
+                                                                openDescriptionDialog(
+                                                                    entry.taskId,
+                                                                    entry.task.title
+                                                                )
+                                                            }
+                                                        >
+                                                            {entry.task.title}
+                                                        </button>
                                                     </div>
                                                     <div className="space-y-1 text-xs">
                                                         <div className="flex justify-between">

@@ -367,6 +367,17 @@
             "noEntriesForType": "No time entries for this type today",
             "dailySummaryTitle": "Today's Time"
         },
+        "description": {
+            "dialogTitle": "Task Description",
+            "placeholder": "Write a description, add images...",
+            "save": "Save",
+            "saving": "Saving...",
+            "uploadImage": "Insert Image",
+            "editTitle": "Edit title",
+            "hasDescription": "Has description",
+            "uploadError": "Failed to upload image",
+            "saveError": "Failed to save description"
+        },
         "editTimeEntry": {
             "title": "Edit Time Entry",
             "description": "Edit the start and end times for this time entry",

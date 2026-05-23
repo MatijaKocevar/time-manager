@@ -9,6 +9,7 @@ export const taskKeys = {
     activeTimer: () => [...taskKeys.all, "activeTimer"] as const,
     inProgressByLists: () => [...taskKeys.all, "in-progress-overview"] as const,
     recent: () => [...taskKeys.all, "recent"] as const,
+    description: (taskId: string) => [...taskKeys.all, "description", taskId] as const,
 }
 
 export const listKeys = {

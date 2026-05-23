@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "../features/tutorial/tour.css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -111,6 +112,26 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* Tiptap editor */
+.tiptap p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: var(--muted-foreground);
+    pointer-events: none;
+    height: 0;
+}
+
+[data-active="true"] {
+    background-color: var(--accent);
+    color: var(--accent-foreground);
+}
+
+.tiptap img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.375rem;
 }
 
 @layer base {
