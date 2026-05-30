@@ -1,4 +1,6 @@
 import { PrismaClient } from "../generated/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
 import { SeededRandom, addDays } from "./utils"
 import { seedHolidays } from "./holidays"
 import { seedUsers } from "./users"
@@ -8,7 +10,9 @@ import { seedHourEntriesForUser, recalculateSummariesForUser } from "./hours"
 import { seedRequestsForUser } from "./requests"
 import * as readline from "readline/promises"
 
-const prisma = new PrismaClient()
+const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
 const random = new SeededRandom(42)
 
 async function getSeederOptions(): Promise<{

@@ -1,4 +1,6 @@
 import { PrismaClient } from "../prisma/generated/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
 import bcrypt from "bcryptjs"
 import { SeededRandom } from "../prisma/seed/utils"
 import { seedHolidays } from "../prisma/seed/holidays"
@@ -8,7 +10,9 @@ import { seedHourEntriesForUser, recalculateSummariesForUser } from "../prisma/s
 import { seedRequestsForUser } from "../prisma/seed/requests"
 import { seedShiftsForUser } from "../prisma/seed/shifts"
 
-const prisma = new PrismaClient()
+const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
 const random = new SeededRandom(99)
 
 function getArgs(): { email: string; name: string; year: number } {
