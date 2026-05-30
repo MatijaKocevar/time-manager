@@ -1,6 +1,6 @@
 import { getStorageAdapter } from "@/lib/storage/factory"
 
-const UPLOAD_URL_PATTERN = /<img[^>]+src="(\/uploads\/[^"]+)"/g
+const UPLOAD_URL_PATTERN = /<img[^>]+src="(\/api\/uploads\/[^"]+)"/g
 
 function extractUploadUrls(html: string | null): string[] {
     if (!html) return []
