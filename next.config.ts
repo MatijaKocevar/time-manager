@@ -6,6 +6,7 @@ const withNextIntl = createNextIntlPlugin("./src/features/locale/request.ts")
 const nextConfig: NextConfig = {
     reactCompiler: true,
     output: "standalone",
+    allowedDevOrigins: ["time-manager.home"],
     serverExternalPackages: ["@prisma/client", "bcryptjs"],
     async headers() {
         return [
