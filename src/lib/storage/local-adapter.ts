@@ -7,7 +7,7 @@ function getBasePath(): string {
 }
 
 function getBaseUrl(): string {
-    return process.env.UPLOAD_BASE_URL ?? "/uploads"
+    return process.env.UPLOAD_BASE_URL ?? "/api/uploads"
 }
 
 export const localAdapter: StorageAdapter = {

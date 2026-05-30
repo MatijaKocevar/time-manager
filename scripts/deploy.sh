@@ -79,10 +79,13 @@ echo "📝 Copying production environment file..."
 cp .env.production .next/standalone/.env
 cp .env.production .env
 
-# Ensure uploads directory exists on NAS
-UPLOAD_PATH=$(grep '^UPLOAD_BASE_PATH=' .env.production | cut -d'=' -f2- | tr -d '"')
-if [ -n "$UPLOAD_PATH" ]; then
-    mkdir -p "$UPLOAD_PATH"
+# Ensure uploads directory exists
+UPLOAD_BASE_PATH=$(grep '^UPLOAD_BASE_PATH=' .env.production | cut -d'=' -f2- | tr -d '"')
+if [ -n "$UPLOAD_BASE_PATH" ]; then
+    echo "📁 Creating uploads directory: $UPLOAD_BASE_PATH"
+    mkdir -p "$UPLOAD_BASE_PATH"
+else
+    echo "⚠️  UPLOAD_BASE_PATH not set in .env.production — uploaded images may not persist across deploys"
 fi
 
 # Run migrations if needed
