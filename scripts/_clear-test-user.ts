@@ -1,7 +1,11 @@
 import { PrismaClient } from "../prisma/generated/client"
+import { PrismaPg } from "@prisma/adapter-pg"
+import { Pool } from "pg"
 import { refreshDailyHourSummary } from "../src/lib/materialized-views"
 
-const prisma = new PrismaClient()
+const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
 const email = process.argv[2] ?? "testuser@example.com"
 
 async function main() {

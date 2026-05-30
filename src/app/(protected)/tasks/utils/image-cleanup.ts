@@ -29,9 +29,7 @@ export async function deleteOrphanedImages(
 
     const adapter = getStorageAdapter()
 
-    await Promise.allSettled(
-        orphanedUrls.map((url) => adapter.delete(url).catch(() => undefined))
-    )
+    await Promise.allSettled(orphanedUrls.map((url) => adapter.delete(url).catch(() => undefined)))
 }
 
 export async function deleteAllTaskImages(html: string | null): Promise<void> {
