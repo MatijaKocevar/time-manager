@@ -113,8 +113,8 @@ export function TaskRow({ task, lists }: TaskRowProps) {
                     <div style={{ paddingLeft: `${task.depth * 24}px` }}>
                         <EditableTaskTitle task={task} />
                         {task.description && (
-                            <div className="text-sm text-muted-foreground mt-1">
-                                {task.description}
+                            <div className="text-sm text-muted-foreground mt-1 truncate">
+                                {task.description.replace(/<[^>]*>/g, "")}
                             </div>
                         )}
                     </div>

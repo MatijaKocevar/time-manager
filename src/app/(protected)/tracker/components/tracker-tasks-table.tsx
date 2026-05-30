@@ -18,7 +18,6 @@ import { useQueryClient } from "@tanstack/react-query"
 import { taskKeys } from "@/app/(protected)/tasks/query-keys"
 import { TaskTimeTracker } from "@/app/(protected)/tasks/components/task-time-tracker"
 import { getTaskStatusLabel } from "@/app/(protected)/tasks/utils/task-status-labels"
-import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
 import type { TaskDisplay, TaskTreeNode } from "@/app/(protected)/tasks/schemas/task-schemas"
 
 interface TrackerTasksTableProps {
@@ -28,7 +27,6 @@ interface TrackerTasksTableProps {
 function TaskTreeRow({ task }: { task: TaskTreeNode }) {
     const queryClient = useQueryClient()
     const tStatus = useTranslations("tasks.statuses")
-    const openDescriptionDialog = useTasksStore((s) => s.openDescriptionDialog)
     const isExpanded = task.isExpanded
     const hasSubtasks = task.subtasks.length > 0
 
@@ -74,13 +72,7 @@ function TaskTreeRow({ task }: { task: TaskTreeNode }) {
                                 style={{ backgroundColor: task.listColor }}
                             />
                         )}
-                        <button
-                            type="button"
-                            className="font-medium text-left hover:underline underline-offset-2 cursor-pointer"
-                            onClick={() => openDescriptionDialog(task.id, task.title)}
-                        >
-                            {task.title}
-                        </button>
+                        <span className="font-medium text-left">{task.title}</span>
                         {task.description && (
                             <span className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
                         )}

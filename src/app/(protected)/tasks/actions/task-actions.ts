@@ -15,6 +15,7 @@ import {
 } from "../schemas/task-action-schemas"
 import type { TaskDisplay, TasksFilter } from "../schemas/task-schemas"
 import { TASK_STATUS } from "../constants/task-statuses"
+import { deleteOrphanedImages, deleteAllTaskImages } from "../utils/image-cleanup"
 
 export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
     try {
@@ -217,6 +218,8 @@ export async function updateTask(input: UpdateTaskInput) {
             return { error: "Task not found" }
         }
 
+        const oldDescription = description !== undefined ? existing.description : null
+
         await prisma.task.update({
             where: { id },
             data: {
@@ -226,6 +229,10 @@ export async function updateTask(input: UpdateTaskInput) {
                 ...(order !== undefined && { order }),
             },
         })
+
+        if (oldDescription !== null) {
+            void deleteOrphanedImages(oldDescription, description ?? null)
+        }
 
         revalidatePath("/tasks")
         revalidatePath("/time-sheets")
@@ -261,9 +268,13 @@ export async function deleteTask(input: DeleteTaskInput) {
             return { error: "Cannot delete system-generated tasks" }
         }
 
+        const taskDescription = existing.description
+
         await prisma.task.delete({
             where: { id },
         })
+
+        void deleteAllTaskImages(taskDescription)
 
         revalidatePath("/tasks")
         return { success: true }

@@ -30,11 +30,12 @@ npm run build:cron
 echo "🔧 Generating Prisma client..."
 npx prisma generate
 
-# Create deployment archive (only standalone build + static files + public)
+# Create deployment archive (only standalone build + static files + public, excluding uploads)
 echo "📦 Creating deployment archive..."
 tar -czf deploy.tar.gz \
     .next/standalone \
     .next/static \
+    --exclude='public/uploads' \
     public \
     .env.production \
     prisma/schema.prisma \

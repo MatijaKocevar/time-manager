@@ -37,6 +37,12 @@ export function TaskDescriptionDialogClient({ translations }: TaskDescriptionDia
     const { description, isFetching, isLoading, handleSave, handleImageUpload } =
         useTaskDescription()
 
+    const handleImageUploadRef = useRef(handleImageUpload)
+    handleImageUploadRef.current = handleImageUpload
+
+    const taskIdRef = useRef(taskId)
+    taskIdRef.current = taskId
+
     const editor = useEditor({
         extensions: [
             StarterKit,
@@ -46,7 +52,36 @@ export function TaskDescriptionDialogClient({ translations }: TaskDescriptionDia
         ],
         editorProps: {
             attributes: {
-                class: "prose prose-sm max-w-none focus:outline-none min-h-[300px] p-4",
+                class: "prose prose-sm max-w-none focus:outline-none min-h-[300px] p-4 text-foreground",
+            },
+            handlePaste: (view, event) => {
+                const items = event.clipboardData?.items
+                if (!items) return false
+
+                for (const item of Array.from(items)) {
+                    if (item.type.startsWith("image/")) {
+                        const file = item.getAsFile()
+                        const currentTaskId = taskIdRef.current
+                        if (!file || !currentTaskId) continue
+
+                        event.preventDefault()
+
+                        handleImageUploadRef
+                            .current(file, currentTaskId)
+                            .then((url) => {
+                                editor?.chain().focus().setImage({ src: url }).run()
+                            })
+                            .catch((err) => {
+                                const message =
+                                    err instanceof Error ? err.message : translations.uploadError
+                                toast.error(message)
+                            })
+
+                        return true
+                    }
+                }
+
+                return false
             },
         },
     })
