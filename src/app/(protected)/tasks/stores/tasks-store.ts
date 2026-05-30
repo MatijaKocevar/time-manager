@@ -47,6 +47,15 @@ interface TasksStoreState {
         isOpen: boolean
         taskId: string | null
     }
+    descriptionDialog: {
+        isOpen: boolean
+        taskId: string | null
+        taskTitle: string | null
+    }
+    descriptionForm: {
+        isLoading: boolean
+        error: string
+    }
     createForm: {
         data: CreateFormData
         isLoading: boolean
@@ -101,6 +110,10 @@ interface TasksStoreActions {
     closeListDialog: () => void
     openMoveTaskDialog: (taskId: string) => void
     closeMoveTaskDialog: () => void
+    openDescriptionDialog: (taskId: string, taskTitle: string) => void
+    closeDescriptionDialog: () => void
+    setDescriptionLoading: (isLoading: boolean) => void
+    setDescriptionError: (error: string) => void
     setCreateFormData: (data: Partial<CreateFormData>) => void
     resetCreateForm: () => void
     setCreateLoading: (isLoading: boolean) => void
@@ -294,6 +307,15 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
         isOpen: false,
         taskId: null,
     },
+    descriptionDialog: {
+        isOpen: false,
+        taskId: null,
+        taskTitle: null,
+    },
+    descriptionForm: {
+        isLoading: false,
+        error: "",
+    },
 
     createForm: {
         data: initialFormData,
@@ -379,6 +401,24 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
     closeMoveTaskDialog: () =>
         set(() => ({
             moveTaskDialog: { isOpen: false, taskId: null },
+        })),
+
+    openDescriptionDialog: (taskId, taskTitle) =>
+        set(() => ({
+            descriptionDialog: { isOpen: true, taskId, taskTitle },
+            descriptionForm: { isLoading: false, error: "" },
+        })),
+    closeDescriptionDialog: () =>
+        set(() => ({
+            descriptionDialog: { isOpen: false, taskId: null, taskTitle: null },
+        })),
+    setDescriptionLoading: (isLoading) =>
+        set((state) => ({
+            descriptionForm: { ...state.descriptionForm, isLoading },
+        })),
+    setDescriptionError: (error) =>
+        set((state) => ({
+            descriptionForm: { ...state.descriptionForm, error },
         })),
 
     setCreateFormData: (data) =>

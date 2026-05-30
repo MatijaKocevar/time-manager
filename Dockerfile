@@ -55,6 +55,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy necessary files from builder
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+RUN mkdir -p public/uploads && chown nextjs:nodejs public/uploads
 COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
 
 # Copy Prisma schema and migrations

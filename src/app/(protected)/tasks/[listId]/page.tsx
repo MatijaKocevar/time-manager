@@ -3,6 +3,7 @@ import { getTasks } from "../actions/task-actions"
 import { getListById, getLists } from "../actions/list-actions"
 import { TasksTable } from "../components/tasks-table"
 import { TasksViewClient } from "../components/tasks-view-client"
+import { TaskDescriptionDialog } from "../components/task-description-dialog"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 interface ListPageProps {
@@ -65,6 +66,7 @@ export default async function ListPage({ params }: ListPageProps) {
             <div className="flex-1 min-h-0 overflow-auto">
                 <TasksTable tasks={tasks} listId={actualListId} lists={lists} />
             </div>
+            <TaskDescriptionDialog />
         </div>
     )
 }

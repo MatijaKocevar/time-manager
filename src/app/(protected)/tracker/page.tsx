@@ -1,4 +1,5 @@
 import { getActiveTimer } from "@/app/(protected)/shared/actions/timer-actions"
+import { TaskDescriptionDialog } from "@/app/(protected)/tasks/components/task-description-dialog"
 import {
     getGeneralWorkTask,
     getTrackerPreferences,
@@ -139,6 +140,7 @@ export default async function TrackerPage() {
                 }}
             />
             <TimeEntriesDialog />
+            <TaskDescriptionDialog />
         </div>
     )
 }

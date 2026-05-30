@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server"
 import { getInProgressTasksByLists } from "./actions/task-actions"
 import { getLists } from "./actions/list-actions"
 import { TasksOverview } from "./components/tasks-overview"
+import { TaskDescriptionDialog } from "./components/task-description-dialog"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function TasksPage() {
@@ -68,6 +69,7 @@ export default async function TasksPage() {
                 ]}
             />
             <TasksOverview groups={allGroups} lists={lists} />
+            <TaskDescriptionDialog />
         </div>
     )
 }

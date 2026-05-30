@@ -68,6 +68,7 @@ export function TimeSheetsTable({
     const tClock = useTranslations("clock")
     const tCommon = useTranslations("common")
     const openTimeEntriesDialog = useTasksStore((state) => state.openTimeEntriesDialog)
+    const openDescriptionDialog = useTasksStore((state) => state.openDescriptionDialog)
     const activeTimer = useTasksStore((state) => state.activeTimer)
     const openDayEntriesDialog = useTimeSheetsStore((state) => state.openDayEntriesDialog)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
@@ -269,9 +270,18 @@ export function TimeSheetsTable({
                                                             className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`}
                                                         />
                                                         <div className="flex flex-col gap-0.5 min-w-0">
-                                                            <span className="font-medium text-sm leading-tight truncate">
+                                                            <button
+                                                                type="button"
+                                                                className="font-medium text-sm text-left hover:underline underline-offset-2 cursor-pointer truncate"
+                                                                onClick={() =>
+                                                                    openDescriptionDialog(
+                                                                        task.taskId,
+                                                                        task.taskTitle
+                                                                    )
+                                                                }
+                                                            >
                                                                 {task.taskTitle}
-                                                            </span>
+                                                            </button>
                                                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                                                 <div
                                                                     className="inline-flex [&_button]:!h-auto [&_button]:!p-0 [&_button]:!m-0 [&_button]:!text-xs [&_button]:!font-normal [&_button]:!border-0 [&_button]:!shadow-none [&_button]:!bg-transparent [&_button]:hover:!bg-transparent [&_button]:hover:underline [&_button]:!text-muted-foreground [&_svg]:!hidden [&_button]:!w-auto [&_button]:!min-h-0 [&_button]:!gap-0 [&_div]:!border-0 [&_div]:!bg-transparent [&_div]:!p-0 [&_div]:!m-0 [&_div]:!text-xs [&_div]:!font-normal [&_div]:!h-auto [&_div]:!rounded-none [&_div]:!shadow-none [&_div]:!gap-0 [&_*]:!border-0 [&_*]:!bg-transparent [&_*]:!shadow-none"
@@ -280,7 +290,9 @@ export function TimeSheetsTable({
                                                                     }
                                                                 >
                                                                     <TaskStatusSelect
-                                                                        onSuccess={handleTaskStatusSuccess}
+                                                                        onSuccess={
+                                                                            handleTaskStatusSuccess
+                                                                        }
                                                                         task={{
                                                                             id: task.taskId,
                                                                             userId: "",

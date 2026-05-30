@@ -72,7 +72,10 @@ function TaskTreeRow({ task }: { task: TaskTreeNode }) {
                                 style={{ backgroundColor: task.listColor }}
                             />
                         )}
-                        <span className="font-medium">{task.title}</span>
+                        <span className="font-medium text-left">{task.title}</span>
+                        {task.description && (
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
+                        )}
                         {task.listIsPrivate && (
                             <Lock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                         )}

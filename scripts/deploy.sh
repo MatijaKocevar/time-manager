@@ -30,11 +30,12 @@ npm run build:cron
 echo "🔧 Generating Prisma client..."
 npx prisma generate
 
-# Create deployment archive (only standalone build + static files + public)
+# Create deployment archive (only standalone build + static files + public, excluding uploads)
 echo "📦 Creating deployment archive..."
 tar -czf deploy.tar.gz \
     .next/standalone \
     .next/static \
+    --exclude='public/uploads' \
     public \
     .env.production \
     prisma/schema.prisma \
@@ -77,6 +78,12 @@ cp -r public .next/standalone/
 echo "📝 Copying production environment file..."
 cp .env.production .next/standalone/.env
 cp .env.production .env
+
+# Ensure uploads directory exists on NAS
+UPLOAD_PATH=$(grep '^UPLOAD_BASE_PATH=' .env.production | cut -d'=' -f2- | tr -d '"')
+if [ -n "$UPLOAD_PATH" ]; then
+    mkdir -p "$UPLOAD_PATH"
+fi
 
 # Run migrations if needed
 if [ "$RUN_MIGRATE" = true ]; then
