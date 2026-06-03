@@ -29,6 +29,7 @@ export async function getInProgressTasksForTracker(): Promise<TaskDisplay[]> {
                     parentId: true,
                     order: true,
                     isExpanded: true,
+                    isSystemTask: true,
                     createdAt: true,
                     updatedAt: true,
                     list: {

@@ -95,12 +95,6 @@ export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
             >
                 {task.title}
             </button>
-            {task.description && (
-                <span
-                    className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0"
-                    title="Has description"
-                />
-            )}
             <Button
                 variant="ghost"
                 size="sm"

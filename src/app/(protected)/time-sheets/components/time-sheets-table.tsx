@@ -303,6 +303,7 @@ export function TimeSheetsTable({
                                                                             parentId: null,
                                                                             order: 0,
                                                                             isExpanded: false,
+                                                                            isSystemTask: false,
                                                                             createdAt: new Date(),
                                                                             updatedAt: new Date(),
                                                                             subtasks: [],

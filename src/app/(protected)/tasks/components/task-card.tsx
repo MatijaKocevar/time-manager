@@ -250,15 +250,17 @@ export function TaskCard({ task, lists, parentColor, parentTitle }: TaskCardProp
                         <Plus className="h-4 w-4 mr-1" />
                         {tActions("addSubtask")}
                     </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleDelete}
-                        className="h-9 px-3 text-destructive"
-                    >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        {tActions("delete")}
-                    </Button>
+                    {!task.isSystemTask && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleDelete}
+                            className="h-9 px-3 text-destructive"
+                        >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            {tActions("delete")}
+                        </Button>
+                    )}
                 </div>
             </div>
 
