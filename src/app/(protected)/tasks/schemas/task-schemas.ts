@@ -22,6 +22,7 @@ export const TaskDisplaySchema = z.object({
     parentId: z.string().nullable(),
     order: z.number(),
     isExpanded: z.boolean(),
+    isSystemTask: z.boolean(),
     createdAt: z.date(),
     updatedAt: z.date(),
 })

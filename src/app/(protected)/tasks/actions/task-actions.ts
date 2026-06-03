@@ -53,6 +53,7 @@ export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
                     parentId: true,
                     order: true,
                     isExpanded: true,
+                    isSystemTask: true,
                     createdAt: true,
                     updatedAt: true,
                     list: {
@@ -353,6 +354,7 @@ export async function getInProgressTasksByLists(): Promise<TasksByList[]> {
                     parentId: true,
                     order: true,
                     isExpanded: true,
+                    isSystemTask: true,
                     createdAt: true,
                     updatedAt: true,
                     list: {
@@ -507,6 +509,7 @@ export async function getRecentTasks(): Promise<TaskDisplay[]> {
             parentId: task.parentId,
             order: task.order,
             isExpanded: task.isExpanded,
+            isSystemTask: task.isSystemTask,
             createdAt: task.createdAt,
             updatedAt: task.updatedAt,
         }))
