@@ -9,18 +9,21 @@ echo "==============================================="
 wait_for_postgres() {
     echo "Waiting for PostgreSQL to be ready..."
     
-    max_attempts=30
+    max_attempts=60
     attempt=0
     
     while [ $attempt -lt $max_attempts ]; do
         if node -e "
-            const { PrismaClient } = require('./prisma/generated/client');
-            const prisma = new PrismaClient();
-            prisma.\$connect()
-                .then(() => { console.log('Connected'); process.exit(0); })
-                .catch(() => { process.exit(1); });
+            const net = require('net');
+            const socket = net.createConnection({ host: 'db', port: 5432 }, () => {
+                socket.end();
+                process.exit(0);
+            });
+            socket.on('error', () => process.exit(1));
+            setTimeout(() => process.exit(1), 3000);
         " 2>/dev/null; then
             echo "PostgreSQL is ready!"
+            sleep 2
             return 0
         fi
         
@@ -33,20 +36,6 @@ wait_for_postgres() {
     exit 1
 }
 
-# Function to check if database is empty (no users)
-is_database_empty() {
-    node -e "
-        const { PrismaClient } = require('./prisma/generated/client');
-        const prisma = new PrismaClient();
-        prisma.user.count()
-            .then(count => {
-                process.exit(count === 0 ? 0 : 1);
-            })
-            .catch(() => process.exit(1))
-            .finally(() => prisma.\$disconnect());
-    " 2>/dev/null
-}
-
 # Wait for PostgreSQL to be accessible
 wait_for_postgres
 
@@ -55,18 +44,13 @@ echo "Running database migrations..."
 npx prisma migrate deploy
 
 echo ""
-echo "Checking if database needs seeding..."
-if is_database_empty; then
-    echo "Database is empty - running minimal seed..."
-    echo "Creating demo admin user (demo@example.com / password123)"
-    if npx tsx prisma/seed/index.ts --minimal; then
-        echo "Database seeded successfully!"
-    else
-        echo "⚠️  Warning: Seeding encountered errors but continuing..."
-        echo "   App will start but some features (like holidays) may be incomplete"
-    fi
+echo "Running database seed..."
+echo "Creating admin user (admin@example.com / password123)"
+if npx tsx prisma/seed/index.ts --minimal; then
+    echo "Database seeded successfully!"
 else
-    echo "Database already contains data - skipping seed"
+    echo "Warning: Seeding encountered errors but continuing..."
+    echo "App will start but some features (like holidays) may be incomplete"
 fi
 
 echo ""
@@ -75,5 +59,44 @@ echo "Starting Next.js server on port ${PORT:-3000}..."
 echo "==============================================="
 echo ""
 
-# Start the Next.js server
-exec node server.js
+node server.js &
+SERVER_PID=$!
+
+echo "Waiting for server to be ready..."
+for i in $(seq 1 30); do
+    if node -e "
+        require('http').get('http://localhost:${PORT:-3000}', (res) => process.exit(res.statusCode < 400 ? 0 : 1));
+    " 2>/dev/null; then
+        echo "Server is ready!"
+        break
+    fi
+    sleep 1
+done
+
+echo ""
+echo "==============================================="
+echo "Starting background cron jobs..."
+echo "==============================================="
+
+if [ -f scripts/build/auto-checkin-checkout-cron.js ]; then
+    echo "  Starting auto-checkin-checkout cron..."
+    node scripts/build/auto-checkin-checkout-cron.js &
+    echo "  ✓ Started (PID $!)"
+else
+    echo "  ⚠ auto-checkin-checkout-cron.js not found, skipping"
+fi
+
+if [ -f scripts/build/sync-urnik-cron.js ]; then
+    echo "  Starting sync-urnik cron..."
+    node scripts/build/sync-urnik-cron.js &
+    echo "  ✓ Started (PID $!)"
+else
+    echo "  ⚠ sync-urnik-cron.js not found, skipping"
+fi
+
+echo ""
+echo "==============================================="
+echo "All services started!"
+echo "==============================================="
+
+wait $SERVER_PID

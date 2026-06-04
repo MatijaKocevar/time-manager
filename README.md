@@ -64,7 +64,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) and log in with:
 
-- Email: `demo@example.com`
+- Email: `admin@example.com`
 - Password: `password123`
 
 ## Docker Deployment
@@ -86,7 +86,7 @@ Run the complete application stack with Docker (includes Next.js app, PostgreSQL
 
 - Main app: http://localhost:6280
 - pgAdmin: http://localhost:8888
-- Default credentials: `demo@example.com` / `password123`
+- Default credentials: `admin@example.com` / `password123`
 
 **For HTTPS/SSL:**
 This setup uses HTTP only for simplicity. If you need HTTPS:
