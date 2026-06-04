@@ -113,7 +113,33 @@ async function main() {
             console.error("   Continuing with user creation...")
         }
 
-        await seedUsers(prisma, random, 0, 0, true)
+        const users = await seedUsers(prisma, random, 0, 0, true)
+        const admin = users[0]
+
+        const systemTaskTitles = [
+            "System: General Work",
+            "System: BREAK",
+            "System: PRIVATE",
+            "System: VACATION",
+            "System: SICK_LEAVE",
+            "System: WORK_FROM_HOME",
+        ]
+
+        for (const title of systemTaskTitles) {
+            const existing = await prisma.task.findFirst({
+                where: { userId: admin.id, title, isSystemTask: true },
+            })
+            if (!existing) {
+                await prisma.task.create({
+                    data: {
+                        userId: admin.id,
+                        title,
+                        isSystemTask: true,
+                        status: "IN_PROGRESS",
+                    },
+                })
+            }
+        }
 
         console.log("\n" + "=".repeat(60))
         console.log("MINIMAL SEEDING COMPLETED!")

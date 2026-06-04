@@ -44,7 +44,6 @@ CREATE TABLE "Account" (
     "session_state" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
 );
 
@@ -56,7 +55,6 @@ CREATE TABLE "Session" (
     "expires" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
 );
 
@@ -89,7 +87,6 @@ CREATE TABLE "User" (
     "urnikUserId" TEXT,
     "lastUrnikTestAt" TIMESTAMP(3),
     "autoAdmin" BOOLEAN NOT NULL DEFAULT false,
-
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
@@ -99,7 +96,6 @@ CREATE TABLE "AdminUserAssignment" (
     "adminId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
     CONSTRAINT "AdminUserAssignment_pkey" PRIMARY KEY ("id")
 );
 
@@ -114,7 +110,6 @@ CREATE TABLE "HourEntry" (
     "taskId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "HourEntry_pkey" PRIMARY KEY ("id")
 );
 
@@ -132,7 +127,6 @@ CREATE TABLE "Task" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "listId" TEXT,
-
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
 );
 
@@ -147,7 +141,6 @@ CREATE TABLE "TaskTimeEntry" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "type" "HourType" NOT NULL DEFAULT 'WORK',
-
     CONSTRAINT "TaskTimeEntry_pkey" PRIMARY KEY ("id")
 );
 
@@ -178,7 +171,7 @@ CREATE TABLE "Request" (
     "isFullDay" BOOLEAN NOT NULL DEFAULT true,
     "originalEndDate" TIMESTAMP(3),
     "originalStartDate" TIMESTAMP(3),
-    "requestedHours" DECIMAL(65,30),
+    "requestedHours" DECIMAL(65, 30),
     "splitFrom" TEXT,
     "startTime" TEXT,
     "supersededBy" TEXT,
@@ -188,7 +181,6 @@ CREATE TABLE "Request" (
     "urnikNetSyncedAt" TIMESTAMP(3),
     "urnikNetRequestNo" TEXT,
     "urnikNetError" TEXT,
-
     CONSTRAINT "Request_pkey" PRIMARY KEY ("id")
 );
 
@@ -203,7 +195,6 @@ CREATE TABLE "Shift" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "endDateTime" TIMESTAMP(3),
     "startDateTime" TIMESTAMP(3),
-
     CONSTRAINT "Shift_pkey" PRIMARY KEY ("id")
 );
 
@@ -220,7 +211,6 @@ CREATE TABLE "List" (
     "isPrivate" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "List_pkey" PRIMARY KEY ("id")
 );
 
@@ -233,7 +223,6 @@ CREATE TABLE "Holiday" (
     "isRecurring" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "Holiday_pkey" PRIMARY KEY ("id")
 );
 
@@ -245,7 +234,6 @@ CREATE TABLE "PushSubscription" (
     "p256dh" TEXT NOT NULL,
     "auth" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
     CONSTRAINT "PushSubscription_pkey" PRIMARY KEY ("id")
 );
 
@@ -274,7 +262,6 @@ CREATE TABLE "NotificationPreference" (
     "pushAutoCheckout" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "NotificationPreference_pkey" PRIMARY KEY ("id")
 );
 
@@ -290,7 +277,6 @@ CREATE TABLE "Notification" (
     "metadata" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
 );
 
@@ -306,7 +292,6 @@ CREATE TABLE "UserPreferences" (
     "cookieConsent" BOOLEAN,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "UserPreferences_pkey" PRIMARY KEY ("id")
 );
 
@@ -316,7 +301,6 @@ CREATE TABLE "TutorialSeen" (
     "userId" TEXT NOT NULL,
     "pageKey" TEXT NOT NULL,
     "seenAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
     CONSTRAINT "TutorialSeen_pkey" PRIMARY KEY ("id")
 );
 
@@ -326,7 +310,6 @@ CREATE TABLE "AutoCheckoutCancellation" (
     "userId" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
     CONSTRAINT "AutoCheckoutCancellation_pkey" PRIMARY KEY ("id")
 );
 
@@ -335,7 +318,6 @@ CREATE TABLE "UserWorkDay" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "dayOfWeek" INTEGER NOT NULL,
-
     CONSTRAINT "UserWorkDay_pkey" PRIMARY KEY ("id")
 );
 
@@ -348,7 +330,6 @@ CREATE TABLE "WorkTimeAdjustment" (
     "adjustedEndTime" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "WorkTimeAdjustment_pkey" PRIMARY KEY ("id")
 );
 
@@ -363,7 +344,6 @@ CREATE TABLE "AutoClockState" (
     "checkoutReminderFiredAt" TIMESTAMP(3),
     "checkoutFiredAt" TIMESTAMP(3),
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "AutoClockState_pkey" PRIMARY KEY ("id")
 );
 
@@ -386,292 +366,414 @@ CREATE TABLE "UrnikRequest" (
     "urnikRequestNo" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "UrnikRequest_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account"("provider", "providerAccountId");
+CREATE UNIQUE INDEX "Account_provider_providerAccountId_key" ON "Account" (
+    "provider",
+    "providerAccountId"
+);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
+CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session" ("sessionToken");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "User_email_key" ON "User" ("email");
 
 -- CreateIndex
-CREATE INDEX "AdminUserAssignment_adminId_idx" ON "AdminUserAssignment"("adminId");
+CREATE INDEX "AdminUserAssignment_adminId_idx" ON "AdminUserAssignment" ("adminId");
 
 -- CreateIndex
-CREATE INDEX "AdminUserAssignment_userId_idx" ON "AdminUserAssignment"("userId");
+CREATE INDEX "AdminUserAssignment_userId_idx" ON "AdminUserAssignment" ("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "AdminUserAssignment_adminId_userId_key" ON "AdminUserAssignment"("adminId", "userId");
+CREATE UNIQUE INDEX "AdminUserAssignment_adminId_userId_key" ON "AdminUserAssignment" ("adminId", "userId");
 
 -- CreateIndex
-CREATE INDEX "HourEntry_userId_idx" ON "HourEntry"("userId");
+CREATE INDEX "HourEntry_userId_idx" ON "HourEntry" ("userId");
 
 -- CreateIndex
-CREATE INDEX "HourEntry_date_idx" ON "HourEntry"("date");
+CREATE INDEX "HourEntry_date_idx" ON "HourEntry" ("date");
 
 -- CreateIndex
-CREATE INDEX "HourEntry_taskId_idx" ON "HourEntry"("taskId");
+CREATE INDEX "HourEntry_taskId_idx" ON "HourEntry" ("taskId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "HourEntry_userId_date_type_taskId_key" ON "HourEntry"("userId", "date", "type", "taskId");
+CREATE UNIQUE INDEX "HourEntry_userId_date_type_taskId_key" ON "HourEntry" (
+    "userId",
+    "date",
+    "type",
+    "taskId"
+);
 
 -- CreateIndex
-CREATE INDEX "Task_userId_idx" ON "Task"("userId");
+CREATE INDEX "Task_userId_idx" ON "Task" ("userId");
 
 -- CreateIndex
-CREATE INDEX "Task_listId_idx" ON "Task"("listId");
+CREATE INDEX "Task_listId_idx" ON "Task" ("listId");
 
 -- CreateIndex
-CREATE INDEX "Task_parentId_idx" ON "Task"("parentId");
+CREATE INDEX "Task_parentId_idx" ON "Task" ("parentId");
 
 -- CreateIndex
-CREATE INDEX "Task_userId_status_idx" ON "Task"("userId", "status");
+CREATE INDEX "Task_userId_status_idx" ON "Task" ("userId", "status");
 
 -- CreateIndex
-CREATE INDEX "Task_userId_listId_idx" ON "Task"("userId", "listId");
+CREATE INDEX "Task_userId_listId_idx" ON "Task" ("userId", "listId");
 
 -- CreateIndex
-CREATE INDEX "Task_userId_status_listId_idx" ON "Task"("userId", "status", "listId");
+CREATE INDEX "Task_userId_status_listId_idx" ON "Task" ("userId", "status", "listId");
 
 -- CreateIndex
-CREATE INDEX "Task_userId_listId_status_idx" ON "Task"("userId", "listId", "status");
+CREATE INDEX "Task_userId_listId_status_idx" ON "Task" ("userId", "listId", "status");
 
 -- CreateIndex
-CREATE INDEX "Task_id_title_status_listId_idx" ON "Task"("id", "title", "status", "listId");
+CREATE INDEX "Task_id_title_status_listId_idx" ON "Task" (
+    "id",
+    "title",
+    "status",
+    "listId"
+);
 
 -- CreateIndex
-CREATE INDEX "TaskTimeEntry_taskId_idx" ON "TaskTimeEntry"("taskId");
+CREATE INDEX "TaskTimeEntry_taskId_idx" ON "TaskTimeEntry" ("taskId");
 
 -- CreateIndex
-CREATE INDEX "TaskTimeEntry_userId_idx" ON "TaskTimeEntry"("userId");
+CREATE INDEX "TaskTimeEntry_userId_idx" ON "TaskTimeEntry" ("userId");
 
 -- CreateIndex
-CREATE INDEX "TaskTimeEntry_startTime_idx" ON "TaskTimeEntry"("startTime");
+CREATE INDEX "TaskTimeEntry_startTime_idx" ON "TaskTimeEntry" ("startTime");
 
 -- CreateIndex
-CREATE INDEX "TaskTimeEntry_userId_startTime_idx" ON "TaskTimeEntry"("userId", "startTime");
+CREATE INDEX "TaskTimeEntry_userId_startTime_idx" ON "TaskTimeEntry" ("userId", "startTime");
 
 -- CreateIndex
-CREATE INDEX "TaskTimeEntry_userId_endTime_idx" ON "TaskTimeEntry"("userId", "endTime");
+CREATE INDEX "TaskTimeEntry_userId_endTime_idx" ON "TaskTimeEntry" ("userId", "endTime");
 
 -- CreateIndex
-CREATE INDEX "TaskTimeEntry_taskId_startTime_idx" ON "TaskTimeEntry"("taskId", "startTime");
+CREATE INDEX "TaskTimeEntry_taskId_startTime_idx" ON "TaskTimeEntry" ("taskId", "startTime");
 
 -- CreateIndex
-CREATE INDEX "TaskTimeEntry_userId_startTime_type_idx" ON "TaskTimeEntry"("userId", "startTime", "type");
+CREATE INDEX "TaskTimeEntry_userId_startTime_type_idx" ON "TaskTimeEntry" ("userId", "startTime", "type");
 
 -- CreateIndex
-CREATE INDEX "Request_userId_idx" ON "Request"("userId");
+CREATE INDEX "Request_userId_idx" ON "Request" ("userId");
 
 -- CreateIndex
-CREATE INDEX "Request_status_idx" ON "Request"("status");
+CREATE INDEX "Request_status_idx" ON "Request" ("status");
 
 -- CreateIndex
-CREATE INDEX "Request_startDate_idx" ON "Request"("startDate");
+CREATE INDEX "Request_startDate_idx" ON "Request" ("startDate");
 
 -- CreateIndex
-CREATE INDEX "Request_userId_status_idx" ON "Request"("userId", "status");
+CREATE INDEX "Request_userId_status_idx" ON "Request" ("userId", "status");
 
 -- CreateIndex
-CREATE INDEX "Request_userId_createdAt_idx" ON "Request"("userId", "createdAt");
+CREATE INDEX "Request_userId_createdAt_idx" ON "Request" ("userId", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "Shift_userId_idx" ON "Shift"("userId");
+CREATE INDEX "Shift_userId_idx" ON "Shift" ("userId");
 
 -- CreateIndex
-CREATE INDEX "Shift_date_idx" ON "Shift"("date");
+CREATE INDEX "Shift_date_idx" ON "Shift" ("date");
 
 -- CreateIndex
-CREATE INDEX "Shift_userId_date_idx" ON "Shift"("userId", "date");
+CREATE INDEX "Shift_userId_date_idx" ON "Shift" ("userId", "date");
 
 -- CreateIndex
-CREATE INDEX "Shift_userId_startDateTime_idx" ON "Shift"("userId", "startDateTime");
+CREATE INDEX "Shift_userId_startDateTime_idx" ON "Shift" ("userId", "startDateTime");
 
 -- CreateIndex
-CREATE INDEX "List_userId_idx" ON "List"("userId");
+CREATE INDEX "List_userId_idx" ON "List" ("userId");
 
 -- CreateIndex
-CREATE INDEX "List_userId_order_idx" ON "List"("userId", "order");
+CREATE INDEX "List_userId_order_idx" ON "List" ("userId", "order");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "List_userId_name_key" ON "List"("userId", "name");
+CREATE UNIQUE INDEX "List_userId_name_key" ON "List" ("userId", "name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Holiday_date_key" ON "Holiday"("date");
+CREATE UNIQUE INDEX "Holiday_date_key" ON "Holiday" ("date");
 
 -- CreateIndex
-CREATE INDEX "Holiday_date_idx" ON "Holiday"("date");
+CREATE INDEX "Holiday_date_idx" ON "Holiday" ("date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "PushSubscription_endpoint_key" ON "PushSubscription"("endpoint");
+CREATE UNIQUE INDEX "PushSubscription_endpoint_key" ON "PushSubscription" ("endpoint");
 
 -- CreateIndex
-CREATE INDEX "PushSubscription_userId_idx" ON "PushSubscription"("userId");
+CREATE INDEX "PushSubscription_userId_idx" ON "PushSubscription" ("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken"("token");
+CREATE UNIQUE INDEX "VerificationToken_token_key" ON "VerificationToken" ("token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken"("identifier", "token");
+CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationToken" ("identifier", "token");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "NotificationPreference_userId_key" ON "NotificationPreference"("userId");
+CREATE UNIQUE INDEX "NotificationPreference_userId_key" ON "NotificationPreference" ("userId");
 
 -- CreateIndex
-CREATE INDEX "NotificationPreference_userId_idx" ON "NotificationPreference"("userId");
+CREATE INDEX "NotificationPreference_userId_idx" ON "NotificationPreference" ("userId");
 
 -- CreateIndex
-CREATE INDEX "Notification_userId_idx" ON "Notification"("userId");
+CREATE INDEX "Notification_userId_idx" ON "Notification" ("userId");
 
 -- CreateIndex
-CREATE INDEX "Notification_userId_read_idx" ON "Notification"("userId", "read");
+CREATE INDEX "Notification_userId_read_idx" ON "Notification" ("userId", "read");
 
 -- CreateIndex
-CREATE INDEX "Notification_createdAt_idx" ON "Notification"("createdAt");
+CREATE INDEX "Notification_createdAt_idx" ON "Notification" ("createdAt");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserPreferences_userId_key" ON "UserPreferences"("userId");
+CREATE UNIQUE INDEX "UserPreferences_userId_key" ON "UserPreferences" ("userId");
 
 -- CreateIndex
-CREATE INDEX "UserPreferences_userId_idx" ON "UserPreferences"("userId");
+CREATE INDEX "UserPreferences_userId_idx" ON "UserPreferences" ("userId");
 
 -- CreateIndex
-CREATE INDEX "TutorialSeen_userId_idx" ON "TutorialSeen"("userId");
+CREATE INDEX "TutorialSeen_userId_idx" ON "TutorialSeen" ("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TutorialSeen_userId_pageKey_key" ON "TutorialSeen"("userId", "pageKey");
+CREATE UNIQUE INDEX "TutorialSeen_userId_pageKey_key" ON "TutorialSeen" ("userId", "pageKey");
 
 -- CreateIndex
-CREATE INDEX "AutoCheckoutCancellation_userId_idx" ON "AutoCheckoutCancellation"("userId");
+CREATE INDEX "AutoCheckoutCancellation_userId_idx" ON "AutoCheckoutCancellation" ("userId");
 
 -- CreateIndex
-CREATE INDEX "AutoCheckoutCancellation_date_idx" ON "AutoCheckoutCancellation"("date");
+CREATE INDEX "AutoCheckoutCancellation_date_idx" ON "AutoCheckoutCancellation" ("date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "AutoCheckoutCancellation_userId_date_key" ON "AutoCheckoutCancellation"("userId", "date");
+CREATE UNIQUE INDEX "AutoCheckoutCancellation_userId_date_key" ON "AutoCheckoutCancellation" ("userId", "date");
 
 -- CreateIndex
-CREATE INDEX "UserWorkDay_userId_idx" ON "UserWorkDay"("userId");
+CREATE INDEX "UserWorkDay_userId_idx" ON "UserWorkDay" ("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserWorkDay_userId_dayOfWeek_key" ON "UserWorkDay"("userId", "dayOfWeek");
+CREATE UNIQUE INDEX "UserWorkDay_userId_dayOfWeek_key" ON "UserWorkDay" ("userId", "dayOfWeek");
 
 -- CreateIndex
-CREATE INDEX "WorkTimeAdjustment_userId_idx" ON "WorkTimeAdjustment"("userId");
+CREATE INDEX "WorkTimeAdjustment_userId_idx" ON "WorkTimeAdjustment" ("userId");
 
 -- CreateIndex
-CREATE INDEX "WorkTimeAdjustment_date_idx" ON "WorkTimeAdjustment"("date");
+CREATE INDEX "WorkTimeAdjustment_date_idx" ON "WorkTimeAdjustment" ("date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "WorkTimeAdjustment_userId_date_key" ON "WorkTimeAdjustment"("userId", "date");
+CREATE UNIQUE INDEX "WorkTimeAdjustment_userId_date_key" ON "WorkTimeAdjustment" ("userId", "date");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "AutoClockState_userId_key" ON "AutoClockState"("userId");
+CREATE UNIQUE INDEX "AutoClockState_userId_key" ON "AutoClockState" ("userId");
 
 -- CreateIndex
-CREATE INDEX "UrnikRequest_userId_idx" ON "UrnikRequest"("userId");
+CREATE INDEX "UrnikRequest_userId_idx" ON "UrnikRequest" ("userId");
 
 -- CreateIndex
-CREATE INDEX "UrnikRequest_status_idx" ON "UrnikRequest"("status");
+CREATE INDEX "UrnikRequest_status_idx" ON "UrnikRequest" ("status");
 
 -- CreateIndex
-CREATE INDEX "UrnikRequest_date_idx" ON "UrnikRequest"("date");
+CREATE INDEX "UrnikRequest_date_idx" ON "UrnikRequest" ("date");
 
 -- CreateIndex
-CREATE INDEX "UrnikRequest_category_idx" ON "UrnikRequest"("category");
+CREATE INDEX "UrnikRequest_category_idx" ON "UrnikRequest" ("category");
 
 -- AddForeignKey
-ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Account"
+ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Session"
+ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AdminUserAssignment" ADD CONSTRAINT "AdminUserAssignment_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AdminUserAssignment"
+ADD CONSTRAINT "AdminUserAssignment_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AdminUserAssignment" ADD CONSTRAINT "AdminUserAssignment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AdminUserAssignment"
+ADD CONSTRAINT "AdminUserAssignment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "HourEntry" ADD CONSTRAINT "HourEntry_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "HourEntry"
+ADD CONSTRAINT "HourEntry_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "HourEntry" ADD CONSTRAINT "HourEntry_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "HourEntry"
+ADD CONSTRAINT "HourEntry_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_listId_fkey" FOREIGN KEY ("listId") REFERENCES "List"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Task"
+ADD CONSTRAINT "Task_listId_fkey" FOREIGN KEY ("listId") REFERENCES "List" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Task"
+ADD CONSTRAINT "Task_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "Task" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Task"
+ADD CONSTRAINT "Task_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TaskTimeEntry" ADD CONSTRAINT "TaskTimeEntry_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "TaskTimeEntry"
+ADD CONSTRAINT "TaskTimeEntry_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TaskTimeEntry" ADD CONSTRAINT "TaskTimeEntry_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "TaskTimeEntry"
+ADD CONSTRAINT "TaskTimeEntry_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Request" ADD CONSTRAINT "Request_approvedBy_fkey" FOREIGN KEY ("approvedBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Request"
+ADD CONSTRAINT "Request_approvedBy_fkey" FOREIGN KEY ("approvedBy") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Request" ADD CONSTRAINT "Request_cancelledBy_fkey" FOREIGN KEY ("cancelledBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Request"
+ADD CONSTRAINT "Request_cancelledBy_fkey" FOREIGN KEY ("cancelledBy") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Request" ADD CONSTRAINT "Request_rejectedBy_fkey" FOREIGN KEY ("rejectedBy") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Request"
+ADD CONSTRAINT "Request_rejectedBy_fkey" FOREIGN KEY ("rejectedBy") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Request" ADD CONSTRAINT "Request_splitFrom_fkey" FOREIGN KEY ("splitFrom") REFERENCES "Request"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Request"
+ADD CONSTRAINT "Request_splitFrom_fkey" FOREIGN KEY ("splitFrom") REFERENCES "Request" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Request" ADD CONSTRAINT "Request_supersededBy_fkey" FOREIGN KEY ("supersededBy") REFERENCES "Request"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Request"
+ADD CONSTRAINT "Request_supersededBy_fkey" FOREIGN KEY ("supersededBy") REFERENCES "Request" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Request" ADD CONSTRAINT "Request_trimmedBy_fkey" FOREIGN KEY ("trimmedBy") REFERENCES "Request"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Request"
+ADD CONSTRAINT "Request_trimmedBy_fkey" FOREIGN KEY ("trimmedBy") REFERENCES "Request" ("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Request" ADD CONSTRAINT "Request_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Request"
+ADD CONSTRAINT "Request_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Shift" ADD CONSTRAINT "Shift_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Shift"
+ADD CONSTRAINT "Shift_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "List" ADD CONSTRAINT "List_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "List"
+ADD CONSTRAINT "List_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PushSubscription" ADD CONSTRAINT "PushSubscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "PushSubscription"
+ADD CONSTRAINT "PushSubscription_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "NotificationPreference" ADD CONSTRAINT "NotificationPreference_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "NotificationPreference"
+ADD CONSTRAINT "NotificationPreference_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Notification"
+ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserPreferences" ADD CONSTRAINT "UserPreferences_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UserPreferences"
+ADD CONSTRAINT "UserPreferences_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TutorialSeen" ADD CONSTRAINT "TutorialSeen_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "TutorialSeen"
+ADD CONSTRAINT "TutorialSeen_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AutoCheckoutCancellation" ADD CONSTRAINT "AutoCheckoutCancellation_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AutoCheckoutCancellation"
+ADD CONSTRAINT "AutoCheckoutCancellation_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UserWorkDay" ADD CONSTRAINT "UserWorkDay_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UserWorkDay"
+ADD CONSTRAINT "UserWorkDay_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "WorkTimeAdjustment" ADD CONSTRAINT "WorkTimeAdjustment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "WorkTimeAdjustment"
+ADD CONSTRAINT "WorkTimeAdjustment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AutoClockState" ADD CONSTRAINT "AutoClockState_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AutoClockState"
+ADD CONSTRAINT "AutoClockState_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "UrnikRequest" ADD CONSTRAINT "UrnikRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "UrnikRequest"
+ADD CONSTRAINT "UrnikRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- CreateMaterializedView
+CREATE MATERIALIZED VIEW IF NOT EXISTS daily_hour_summary AS
+ WITH date_range AS (
+         SELECT DISTINCT "HourEntry"."userId" AS user_id,
+            date(("HourEntry".date AT TIME ZONE 'UTC'::text)) AS normalized_date,
+            "HourEntry".type
+           FROM public."HourEntry"
+          WHERE ("HourEntry"."taskId" IS NULL)
+        UNION
+         SELECT DISTINCT "TaskTimeEntry"."userId" AS user_id,
+            date(("TaskTimeEntry"."startTime" AT TIME ZONE 'UTC'::text)) AS normalized_date,
+            "TaskTimeEntry".type
+           FROM public."TaskTimeEntry"
+          WHERE (("TaskTimeEntry"."endTime" IS NOT NULL) AND ("TaskTimeEntry".duration IS NOT NULL))
+        UNION
+         SELECT DISTINCT "Request"."userId" AS user_id,
+            date((date_in_range.date_in_range AT TIME ZONE 'UTC'::text)) AS normalized_date,
+                CASE "Request".type
+                    WHEN 'VACATION'::public."RequestType" THEN 'VACATION'::public."HourType"
+                    WHEN 'SICK_LEAVE'::public."RequestType" THEN 'SICK_LEAVE'::public."HourType"
+                    WHEN 'WORK_FROM_HOME'::public."RequestType" THEN 'WORK_FROM_HOME'::public."HourType"
+                    ELSE 'WORK'::public."HourType"
+                END AS type
+           FROM public."Request",
+            LATERAL generate_series("Request"."startDate", "Request"."endDate", '1 day'::interval) date_in_range(date_in_range)
+          WHERE (("Request".status = 'APPROVED'::public."RequestStatus") AND ("Request"."affectsHourType" = true) AND ("Request"."cancelledAt" IS NULL) AND (EXTRACT(dow FROM date_in_range.date_in_range) <> ALL (ARRAY[(0)::numeric, (6)::numeric])))
+        ), manual_hours AS (
+         SELECT "HourEntry"."userId" AS user_id,
+            date(("HourEntry".date AT TIME ZONE 'UTC'::text)) AS normalized_date,
+            "HourEntry".type,
+            COALESCE(sum("HourEntry".hours), (0)::double precision) AS manual_hours
+           FROM public."HourEntry"
+          WHERE ("HourEntry"."taskId" IS NULL)
+          GROUP BY "HourEntry"."userId", (date(("HourEntry".date AT TIME ZONE 'UTC'::text))), "HourEntry".type
+        ), tracked_hours_base AS (
+         SELECT "TaskTimeEntry"."userId" AS user_id,
+            date(("TaskTimeEntry"."startTime" AT TIME ZONE 'UTC'::text)) AS normalized_date,
+            "TaskTimeEntry".type,
+            ((COALESCE(sum("TaskTimeEntry".duration), (0)::bigint))::numeric / 3600.0) AS tracked_hours_seconds
+           FROM public."TaskTimeEntry"
+          WHERE (("TaskTimeEntry"."endTime" IS NOT NULL) AND ("TaskTimeEntry".duration IS NOT NULL))
+          GROUP BY "TaskTimeEntry"."userId", (date(("TaskTimeEntry"."startTime" AT TIME ZONE 'UTC'::text))), "TaskTimeEntry".type
+        ), request_hour_types AS (
+         SELECT DISTINCT ON ("Request"."userId", (date((date_in_range.date_in_range AT TIME ZONE 'UTC'::text)))) "Request"."userId" AS user_id,
+            date((date_in_range.date_in_range AT TIME ZONE 'UTC'::text)) AS normalized_date,
+                CASE "Request".type
+                    WHEN 'VACATION'::public."RequestType" THEN 'VACATION'::public."HourType"
+                    WHEN 'SICK_LEAVE'::public."RequestType" THEN 'SICK_LEAVE'::public."HourType"
+                    WHEN 'WORK_FROM_HOME'::public."RequestType" THEN 'WORK_FROM_HOME'::public."HourType"
+                    ELSE 'WORK'::public."HourType"
+                END AS hour_type
+           FROM public."Request",
+            LATERAL generate_series("Request"."startDate", "Request"."endDate", '1 day'::interval) date_in_range(date_in_range)
+          WHERE (("Request".status = 'APPROVED'::public."RequestStatus") AND ("Request"."affectsHourType" = true) AND ("Request"."cancelledAt" IS NULL))
+          ORDER BY "Request"."userId", (date((date_in_range.date_in_range AT TIME ZONE 'UTC'::text))), "Request"."approvedAt" DESC
+        ), all_combinations AS (
+         SELECT DISTINCT COALESCE(dr.user_id, mh_1.user_id, th_1.user_id) AS user_id,
+            COALESCE(dr.normalized_date, mh_1.normalized_date, th_1.normalized_date) AS normalized_date,
+            dr.type
+           FROM ((date_range dr
+             FULL JOIN manual_hours mh_1 ON (((dr.user_id = mh_1.user_id) AND (dr.normalized_date = mh_1.normalized_date) AND (dr.type = mh_1.type))))
+             FULL JOIN tracked_hours_base th_1 ON (((COALESCE(dr.user_id, mh_1.user_id) = th_1.user_id) AND (COALESCE(dr.normalized_date, mh_1.normalized_date) = th_1.normalized_date) AND (dr.type = th_1.type))))
+        )
+ SELECT gen_random_uuid() AS id,
+    ac.user_id AS "userId",
+    ac.normalized_date AS date,
+    ac.type,
+    COALESCE(mh.manual_hours, (0)::double precision) AS "manualHours",
+    COALESCE(th.tracked_hours_seconds, (0)::numeric) AS "trackedHours",
+    (COALESCE(mh.manual_hours, (0)::double precision) + (COALESCE(th.tracked_hours_seconds, (0)::numeric))::double precision) AS "totalHours",
+    now() AS "createdAt",
+    now() AS "updatedAt"
+   FROM (((all_combinations ac
+     LEFT JOIN manual_hours mh ON (((ac.user_id = mh.user_id) AND (ac.normalized_date = mh.normalized_date) AND (ac.type = mh.type))))
+     LEFT JOIN tracked_hours_base th ON (((ac.user_id = th.user_id) AND (ac.normalized_date = th.normalized_date) AND (ac.type = th.type))))
+     LEFT JOIN request_hour_types rht ON (((ac.user_id = rht.user_id) AND (ac.normalized_date = rht.normalized_date))))
+  WHERE ((COALESCE(mh.manual_hours, (0)::double precision) > (0)::double precision) OR (COALESCE(th.tracked_hours_seconds, (0)::numeric) > (0)::numeric))
+  WITH NO DATA;
+
+CREATE UNIQUE INDEX IF NOT EXISTS daily_hour_summary_unique ON daily_hour_summary ("userId", "date", "type");

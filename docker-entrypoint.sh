@@ -54,6 +54,13 @@ else
 fi
 
 echo ""
+echo "Initializing materialized views..."
+npx prisma db execute --stdin <<SQL
+REFRESH MATERIALIZED VIEW daily_hour_summary;
+SQL
+echo "  Materialized views refreshed"
+
+echo ""
 echo "==============================================="
 echo "Starting Next.js server on port ${PORT:-3000}..."
 echo "==============================================="
