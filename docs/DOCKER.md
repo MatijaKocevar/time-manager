@@ -124,80 +124,29 @@ This single command handles everything. On first run, it will:
 5. Seed the admin account (`admin@example.com` / `password123`)
 6. Start background cron jobs
 
-```bash
-# Use convenience script
-chmod +x scripts/docker-generate-secrets.sh
-./scripts/docker-generate-secrets.sh
-
-# This generates:
-# - NEXTAUTH_SECRET
-# - ENCRYPTION_KEY
-# And updates .env file automatically
-```
-
-### Step 3: SSL Certificate
-
-**For Development/Testing:**
-
-```bash
-mkdir -p nginx/ssl
-openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-  -keyout nginx/ssl/key.pem \
-  -out nginx/ssl/cert.pem \
-  -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
-```
-
-**For Production:**
-
-See [SSL/HTTPS Setup](#sslhttps-setup) section below.
-
-### Step 4: Build and Start
-
-```bash
-# Build images and start services
-docker compose up -d
-
-# Watch startup logs
-docker compose logs -f app
-
-# Wait for "Starting Next.js server" message
-```
-
-### Step 5: Verify Installation
-
-```bash
-# Check all services are running
-docker compose ps
-
-# Should show all services as "Up (healthy)"
-```
-
-### Step 6: Access Application
-
-1. Open https://localhost in browser
-2. Accept self-signed certificate warning (development only)
-3. Login with default credentials:
-    - Email: `admin@example.com`
-    - Password: `Admin123!`
-
-**Important**: Change the admin password immediately after first login!
+Access at http://localhost:6280 and log in with `admin@example.com` / `password123`.
 
 ## Managing the Application
 
-### Start Services
-
 ```bash
-# Start all services
-docker compose up -d
+# View logs
+docker compose logs -f app
 
-# Start specific service
-docker compose up -d app
+# Update to latest version
+./scripts/docker-update.sh
 
-# Start with logs visible
-docker compose up
+# Backup database
+./scripts/docker-backup-db.sh
+
+# Restore from backup
+./scripts/docker-restore-db.sh backups/timeapp-20260211.sql
+
+# Stop everything (preserves data)
+docker compose down
+
+# Stop and remove all data
+docker compose down -v
 ```
-
-### Stop Services
 
 ```bash
 # Stop all services (keeps data)
@@ -255,8 +204,8 @@ docker compose exec app npm run generate:encryption-key
 
 ### Using pgAdmin
 
-1. Access pgAdmin: http://localhost:5050
-2. Login with credentials from `docker-compose.env`
+1. Access pgAdmin: http://localhost:8888
+2. Login with admin@admin.com / admin
 3. Add server connection:
     - Name: timeapp
     - Host: db
@@ -301,7 +250,7 @@ docker compose exec app npx prisma migrate reset
 Database auto-seeds on first start if empty. Manual seeding:
 
 ```bash
-# Minimal seed (demo admin only)
+# Minimal seed (admin account only)
 docker compose exec app npx tsx prisma/seed/index.ts --minimal
 
 # Full seed (test data)
@@ -370,18 +319,11 @@ Many providers offer SSL termination at the edge (Cloudflare, AWS CloudFront, et
 This will:
 1. Create a database backup
 2. Pull latest code from git
-3. Rebuild and restart containers
-4. Preserve all your data (database, uploads)
+3. Update `.env.docker` with any new variables
+4. Rebuild and restart containers
+5. Preserve all your data (database, uploads)
 
-After pulling code with new migrations:
-
-```bash
-# Migrations run automatically on container restart
-docker compose restart app
-
-# Or manually trigger
-docker compose exec app npx prisma migrate deploy
-```
+Migrations and seeding run automatically on container start.
 
 ## Backup & Restore
 
