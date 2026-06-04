@@ -1,4 +1,3 @@
-[dotenv@17.2.4] injecting env (14) from .env.development.local,.env.local,.env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
 -- CreateSchema
 CREATE SCHEMA IF NOT EXISTS "public";
 

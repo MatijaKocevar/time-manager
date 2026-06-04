@@ -47,6 +47,7 @@ echo ""
 
 NEXTAUTH_SECRET=$(grep "^NEXTAUTH_SECRET=" .env.docker | cut -d '=' -f2- | tr -d '"' | tr -d "'")
 ENCRYPTION_KEY=$(grep "^ENCRYPTION_KEY=" .env.docker | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+CRON_SECRET=$(grep "^CRON_SECRET=" .env.docker | cut -d '=' -f2- | tr -d '"' | tr -d "'")
 
 NEEDS_UPDATE=false
 
@@ -76,6 +77,20 @@ if [ -z "$ENCRYPTION_KEY" ] || [ "$ENCRYPTION_KEY" = "your-encryption-key-here" 
     NEEDS_UPDATE=true
 else
     echo "  ✓ ENCRYPTION_KEY already configured"
+fi
+
+if [ -z "$CRON_SECRET" ] || [ "$CRON_SECRET" = "your-cron-secret-here" ]; then
+    echo "  Generating CRON_SECRET..."
+    NEW_CRON_SECRET=$(openssl rand -base64 32)
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s|^CRON_SECRET=.*|CRON_SECRET=\"$NEW_CRON_SECRET\"|" .env.docker
+    else
+        sed -i "s|^CRON_SECRET=.*|CRON_SECRET=\"$NEW_CRON_SECRET\"|" .env.docker
+    fi
+    echo "  ✓ Generated CRON_SECRET"
+    NEEDS_UPDATE=true
+else
+    echo "  ✓ CRON_SECRET already configured"
 fi
 
 if [ "$NEEDS_UPDATE" = false ]; then
@@ -109,7 +124,7 @@ echo "  • pgAdmin:   http://localhost:8888"
 echo "  • Database:  localhost:54320"
 echo ""
 echo "Default login credentials:"
-echo "  • Email:     demo@example.com"
+echo "  • Email:     admin@example.com"
 echo "  • Password:  password123"
 echo ""
 echo "Useful commands:"

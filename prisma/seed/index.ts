@@ -100,8 +100,8 @@ async function main() {
         console.log("\n" + "=".repeat(60))
         console.log("MINIMAL SEEDING MODE")
         console.log("=".repeat(60))
-        console.log(`  Creating Demo Admin account only`)
-        console.log(`  Email:               demo@example.com`)
+        console.log(`  Creating Admin account`)
+        console.log(`  Email:               admin@example.com`)
         console.log(`  Password:            password123`)
         console.log(`  Role:                ADMIN`)
         console.log("=".repeat(60) + "\n")
@@ -120,7 +120,7 @@ async function main() {
         console.log("=".repeat(60))
         console.log("\nCreated Accounts:")
         console.log(`   Users:               1`)
-        console.log(`   Demo Admin:          demo@example.com`)
+        console.log(`   Admin:               admin@example.com`)
         console.log(`   Password:            password123`)
         console.log("=".repeat(60) + "\n")
         return
@@ -142,7 +142,8 @@ async function main() {
     console.log(
         `  Date range:          ${startDate.toISOString().split("T")[0]} to ${endDate.toISOString().split("T")[0]}`
     )
-    console.log(`  Demo account:        demo@example.com (always created)`)
+    console.log(`  Admin account:       admin@example.com (always created)`)
+    console.log(`  Demo account:        demo@example.com (full mode only)`)
     console.log("=".repeat(60) + "\n")
 
     console.log("Starting comprehensive database seeding...")

@@ -19,20 +19,29 @@ export async function seedUsers(
         isDemo?: boolean
     }> = []
 
-    users.push({
-        email: "demo@example.com",
-        name: "Demo Admin",
-        password: hashedPassword,
-        role: "ADMIN",
-        isDemo: true,
-    })
+    if (minimal) {
+        users.push({
+            email: "admin@example.com",
+            name: "Admin",
+            password: hashedPassword,
+            role: "ADMIN",
+        })
+    } else {
+        users.push({
+            email: "demo@example.com",
+            name: "Demo Admin",
+            password: hashedPassword,
+            role: "ADMIN",
+            isDemo: true,
+        })
 
-    users.push({
-        email: "admin@example.com",
-        name: "Admin Admin",
-        password: hashedPassword,
-        role: "ADMIN",
-    })
+        users.push({
+            email: "admin@example.com",
+            name: "Admin Admin",
+            password: hashedPassword,
+            role: "ADMIN",
+        })
+    }
 
     if (!minimal) {
         for (let i = 0; i < count; i++) {

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Stage 1: Install dependencies
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 RUN apk add --no-cache libc6-compat openssl
 
 WORKDIR /app
@@ -18,7 +18,7 @@ RUN npm ci
 RUN npx prisma generate
 
 # Stage 2: Build application
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 RUN apk add --no-cache libc6-compat openssl
 
 WORKDIR /app
@@ -37,8 +37,11 @@ ENV NODE_ENV=production
 # Build Next.js application (standalone mode)
 RUN npm run build
 
+# Build cron scripts
+RUN npm run build:cron
+
 # Stage 3: Production runtime
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 RUN apk add --no-cache libc6-compat openssl
 
 WORKDIR /app
@@ -64,6 +67,9 @@ COPY --chown=nextjs:nodejs prisma/migrations ./prisma/migrations/
 
 # Copy seed scripts (changes here won't invalidate Next.js build cache)
 COPY --chown=nextjs:nodejs prisma/seed ./prisma/seed/
+
+# Copy compiled cron scripts
+COPY --from=builder --chown=nextjs:nodejs /app/scripts/build ./scripts/build/
 
 # Copy standalone build
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
