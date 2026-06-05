@@ -114,7 +114,13 @@ This setup uses HTTP only for simplicity. If you need HTTPS:
 # View logs
 docker compose logs -f app
 
-# Update to latest version
+# Deploy (Docker) — run from any PC via SSH
+./scripts/deploy-docker.sh
+
+# Deploy (PM2) — run from any PC via SSH
+./scripts/deploy.sh
+
+# Update to latest version (interactive, run on server)
 ./scripts/docker-update.sh
 
 # Backup database
