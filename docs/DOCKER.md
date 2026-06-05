@@ -87,6 +87,35 @@ UPLOAD_BASE_URL="/api/uploads"
 UPLOAD_MAX_SIZE_MB=10
 ```
 
+### Email Notifications (Resend)
+
+1. Sign up for a free account at [resend.com](https://resend.com)
+2. Go to **API Keys** in the dashboard and create a new key
+3. Add it to `.env.docker`:
+   ```bash
+   RESEND_API_KEY="re_..."
+   ```
+
+### Push Notifications (Web Push)
+
+1. Generate VAPID keys:
+   ```bash
+   npx web-push generate-vapid-keys
+   ```
+2. Add both keys to `.env.docker`:
+   ```bash
+   NEXT_PUBLIC_VAPID_PUBLIC_KEY="<Public Key from output>"
+   VAPID_PRIVATE_KEY="<Private Key from output>"
+   ```
+
+### Applying Optional Config Changes
+
+After adding any optional variables, restart the containers:
+
+```bash
+docker compose down && docker compose up -d
+```
+
 ## Services Overview
 
 ### app (Next.js Application)

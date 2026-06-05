@@ -53,6 +53,11 @@ DATABASE_URL="postgresql://user:password@localhost:5432/time_management"
 NEXTAUTH_SECRET="your-secret-here"  # Generate with: openssl rand -base64 32
 NEXTAUTH_URL="http://localhost:3000"
 
+# Optional: email and push notifications
+RESEND_API_KEY="re_..."           # Sign up at resend.com
+NEXT_PUBLIC_VAPID_PUBLIC_KEY="..." # npx web-push generate-vapid-keys
+VAPID_PRIVATE_KEY="..."
+
 # Database setup
 npm run db:generate    # Generate Prisma client
 npm run db:migrate     # Run migrations
@@ -66,6 +71,14 @@ Open [http://localhost:3000](http://localhost:3000) and log in with:
 
 - Email: `admin@example.com`
 - Password: `password123`
+
+### Optional Services
+
+**Email notifications** — sign up at [resend.com](https://resend.com), create an API key, and set `RESEND_API_KEY` in your `.env`. Used for email verification and request approval/rejection emails.
+
+**Push notifications** — generate VAPID keys with `npx web-push generate-vapid-keys` and set both `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` in your `.env`. Enables browser push notifications in the user profile settings.
+
+**Real-time updates** — SSE (Server-Sent Events) is used by default and requires no configuration.
 
 ## Docker Deployment
 
