@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Deployment Script
+# Docker Deployment Script
 # Deploys the time-management-app Docker stack to the server at 192.168.0.10.
 # Run from any PC with SSH access to the server.
 #
 # Usage:
-#   ./scripts/deploy.sh            # git pull + rebuild + restart
-#   ./scripts/deploy.sh --backup    # also backup database first
-#   ./scripts/deploy.sh --no-build  # skip rebuild (restart only)
+#   ./scripts/deploy-docker.sh            # git pull + rebuild + restart
+#   ./scripts/deploy-docker.sh --backup    # also backup database first
+#   ./scripts/deploy-docker.sh --no-build  # skip rebuild (restart only)
 
 set -e
 
@@ -69,13 +69,12 @@ else
     exit 1
 fi
 ENDSSH
-echo "🌐 Access your app at:"
-echo "   HTTP:  http://192.168.0.10:3000"
-echo "   HTTPS: https://192.168.0.10:8443"
-echo "   Domain: https://time.manager:8443"
 echo ""
-echo "📝 Useful commands:"
-echo "  View logs:    ssh $SERVER_USER@$SERVER_HOST 'pm2 logs time-management-app'"
-echo "  Check status: ssh $SERVER_USER@$SERVER_HOST 'pm2 status'"
-echo "  Restart app:  ssh $SERVER_USER@$SERVER_HOST 'pm2 restart time-management-app'"
-echo "  Redeploy:     ./scripts/deploy.sh"
+echo "Deploy complete!"
+echo "Access: http://192.168.0.10:6280"
+echo ""
+echo "Useful commands:"
+echo "  View logs:    ssh $SERVER_USER@$SERVER_HOST 'cd /home/server/Documents/time-manager && docker compose logs -f app'"
+echo "  Check status: ssh $SERVER_USER@$SERVER_HOST 'cd /home/server/Documents/time-manager && docker compose ps'"
+echo "  Restart:      ssh $SERVER_USER@$SERVER_HOST 'cd /home/server/Documents/time-manager && docker compose restart'"
+echo "  Redeploy:     ./scripts/deploy-docker.sh"

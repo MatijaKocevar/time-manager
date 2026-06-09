@@ -162,7 +162,7 @@ Access at http://localhost:6280 and log in with `admin@example.com` / `password1
 docker compose logs -f app
 
 # Update to latest version
-./scripts/docker-update.sh
+./scripts/deploy-docker.sh
 
 # Backup database
 ./scripts/docker-backup-db.sh

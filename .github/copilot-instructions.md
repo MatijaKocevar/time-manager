@@ -829,10 +829,8 @@ DATABASE_URL="<other-db-url>" npx prisma migrate resolve --applied YYYYMMDD00000
 **Applying migrations to Neon/Vercel database:**
 
 ```bash
-bash scripts/migrate-neon.sh
+DATABASE_URL="<neon-url>" npx prisma migrate deploy
 ```
-
-Requires `.env.vercel` file with `DATABASE_URL` pointing to the Neon database.
 
 **Syncing Existing Data:**
 
