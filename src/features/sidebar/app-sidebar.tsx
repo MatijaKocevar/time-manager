@@ -36,6 +36,7 @@ import { Badge } from "@/components/ui/badge"
 import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
 import { updateSidebarExpandedItems } from "./actions/sidebar-actions"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { SettingsMenu } from "./settings-menu"
 
 interface AppSidebarProps {
     userRole?: UserRole
@@ -45,6 +46,14 @@ interface AppSidebarProps {
     initialExpandedItems?: string[]
     pendingRequestsCount?: number
     hasUrnikCredentials?: boolean
+    settingsMenuTranslations?: {
+        settings: string
+        language: string
+        theme: string
+        profile: string
+        logout: string
+        restartTutorial: string
+    }
 }
 
 export function AppSidebar({
@@ -55,6 +64,7 @@ export function AppSidebar({
     initialExpandedItems = [],
     pendingRequestsCount = 0,
     hasUrnikCredentials = false,
+    settingsMenuTranslations,
 }: AppSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
@@ -340,16 +350,21 @@ export function AppSidebar({
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton
-                            size="lg"
-                            className="cursor-default hover:bg-transparent"
-                        >
-                            <UserAvatar role={userRole} className="h-8 w-8" />
-                            <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-semibold">{userName}</span>
-                                <span className="truncate text-xs">{userEmail}</span>
-                            </div>
-                        </SidebarMenuButton>
+                        <div className="flex items-center gap-1">
+                            <SidebarMenuButton
+                                size="lg"
+                                className="cursor-default hover:bg-transparent flex-1 min-w-0"
+                            >
+                                <UserAvatar role={userRole} className="h-8 w-8" />
+                                <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
+                                    <span className="truncate font-semibold">{userName}</span>
+                                    <span className="truncate text-xs">{userEmail}</span>
+                                </div>
+                            </SidebarMenuButton>
+                            {settingsMenuTranslations && (
+                                <SettingsMenu translations={settingsMenuTranslations} />
+                            )}
+                        </div>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>

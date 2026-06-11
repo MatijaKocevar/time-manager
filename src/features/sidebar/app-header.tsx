@@ -1,7 +1,6 @@
 import { getTranslations } from "next-intl/server"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Breadcrumbs } from "@/features/breadcrumbs"
-import { SettingsMenu } from "./settings-menu"
 import { NotificationsDropdownClient } from "@/features/notifications/components/notifications-dropdown-client"
 import { getNotifications } from "@/features/notifications/actions/notification-actions"
 import { getActiveTimer } from "@/app/(protected)/shared/actions/timer-actions"
@@ -16,7 +15,6 @@ interface AppHeaderProps {
 export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
     const t = await getTranslations("header")
     const tRequests = await getTranslations("requests.types")
-    const tNav = await getTranslations("navigation")
     const tCommon = await getTranslations("common.actions")
     const tClock = await getTranslations("clock.arrivalDialog")
 
@@ -25,15 +23,6 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
         getActiveTimer(),
         getTasks({ status: TASK_STATUS.IN_PROGRESS }),
     ])
-
-    const menuTranslations = {
-        settings: t("menu.settings"),
-        language: t("menu.language"),
-        theme: t("menu.theme"),
-        restartTutorial: t("menu.restartTutorial"),
-        profile: tNav("profile"),
-        logout: tCommon("logOut"),
-    }
 
     const notificationsTranslations = {
         title: t("notifications.title"),
@@ -86,7 +75,6 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
                     initialNotifications={notifications}
                     translations={notificationsTranslations}
                 />
-                <SettingsMenu translations={menuTranslations} />
             </div>
         </header>
     )
