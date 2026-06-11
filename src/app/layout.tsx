@@ -79,6 +79,8 @@ export default async function RootLayout({
     const themeColor = userTheme === "dark" ? "#000000" : "#ffffff"
 
     const t = await getTranslations("navigation")
+    const tHeader = await getTranslations("header")
+    const tCommon = await getTranslations("common.actions")
     const tCookie = await getTranslations("cookieConsent")
     let cookieConsent: boolean | null = null
     if (session) {
@@ -99,6 +101,16 @@ export default async function RootLayout({
         "/admin/holidays": t("holidays"),
         "/profile": t("profile"),
     }
+    const settingsMenuTranslations = session
+        ? {
+              settings: tHeader("menu.settings"),
+              language: tHeader("menu.language"),
+              theme: tHeader("menu.theme"),
+              restartTutorial: tHeader("menu.restartTutorial"),
+              profile: t("profile"),
+              logout: tCommon("logOut"),
+          }
+        : undefined
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
@@ -166,6 +178,7 @@ export default async function RootLayout({
                                         lists={lists}
                                         pendingRequestsCount={pendingRequestsCount}
                                         hasUrnikCredentials={hasUrnikCredentials}
+                                        settingsMenuTranslations={settingsMenuTranslations}
                                         header={
                                             session ? (
                                                 <AppHeader

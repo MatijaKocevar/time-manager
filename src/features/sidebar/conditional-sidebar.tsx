@@ -21,6 +21,14 @@ interface ConditionalSidebarProps {
     header?: React.ReactNode
     pendingRequestsCount?: number
     hasUrnikCredentials?: boolean
+    settingsMenuTranslations?: {
+        settings: string
+        language: string
+        theme: string
+        profile: string
+        logout: string
+        restartTutorial: string
+    }
 }
 
 function SidebarStateSync() {
@@ -45,6 +53,7 @@ export function ConditionalSidebar({
     header,
     pendingRequestsCount = 0,
     hasUrnikCredentials = false,
+    settingsMenuTranslations,
 }: ConditionalSidebarProps) {
     if (hasSession) {
         return (
@@ -59,6 +68,7 @@ export function ConditionalSidebar({
                         initialExpandedItems={sidebarExpandedItems}
                         pendingRequestsCount={pendingRequestsCount}
                         hasUrnikCredentials={hasUrnikCredentials}
+                        settingsMenuTranslations={settingsMenuTranslations}
                     />
                     <main className="flex flex-1 flex-col min-w-0 w-full h-full overflow-hidden">
                         {header}
