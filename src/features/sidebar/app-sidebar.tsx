@@ -362,7 +362,10 @@ export function AppSidebar({
                                 </div>
                             </SidebarMenuButton>
                             {settingsMenuTranslations && (
-                                <SettingsMenu translations={settingsMenuTranslations} />
+                                <SettingsMenu
+                                    translations={settingsMenuTranslations}
+                                    onNavigate={handleNavigationClick}
+                                />
                             )}
                         </div>
                     </SidebarMenuItem>

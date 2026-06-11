@@ -62,9 +62,10 @@ interface SettingsMenuProps {
         logout: string
         restartTutorial: string
     }
+    onNavigate?: () => void
 }
 
-export function SettingsMenu({ translations }: SettingsMenuProps) {
+export function SettingsMenu({ translations, onNavigate }: SettingsMenuProps) {
     const locale = useLocale() as Locale
     const router = useRouter()
     const pathname = usePathname()
@@ -142,7 +143,12 @@ export function SettingsMenu({ translations }: SettingsMenuProps) {
                         ))}
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem onClick={() => router.push("/profile")}>
+                <DropdownMenuItem
+                    onClick={() => {
+                        onNavigate?.()
+                        router.push("/profile")
+                    }}
+                >
                     <UserCircle className="mr-2 h-4 w-4" />
                     <span>{translations.profile}</span>
                 </DropdownMenuItem>
