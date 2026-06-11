@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { fromZonedTime, toZonedTime } from "date-fns-tz"
+import { getTodayDate, APP_TIMEZONE } from "@/lib/utils"
 import {
     sendCheckinReminder,
     sendCheckoutReminder,
     processAutoCheckin,
     processAutoCheckout,
 } from "@/app/(protected)/urnik-net-overview/actions/auto-clock-actions"
-
-const TIMEZONE = "Europe/Ljubljana"
 
 function parseTimeToDate(timeString: string): Date {
     const [hours, minutes] = timeString.split(":").map(Number)
@@ -17,7 +16,7 @@ function parseTimeToDate(timeString: string): Date {
     const month = nowUtc.getUTCMonth()
     const day = nowUtc.getUTCDate()
     const ljubljanaDate = new Date(year, month, day, hours, minutes, 0, 0)
-    return fromZonedTime(ljubljanaDate, TIMEZONE)
+    return fromZonedTime(ljubljanaDate, APP_TIMEZONE)
 }
 
 function shouldTrigger(triggerTime: Date | null, lastFired: Date | null): boolean {
@@ -31,19 +30,12 @@ function shouldTrigger(triggerTime: Date | null, lastFired: Date | null): boolea
 }
 
 function isTodayInLjubljana(date: Date): boolean {
-    const nowInLjubljana = toZonedTime(new Date(), TIMEZONE)
-    const dateInLjubljana = toZonedTime(date, TIMEZONE)
+    const nowInLjubljana = toZonedTime(new Date(), APP_TIMEZONE)
+    const dateInLjubljana = toZonedTime(date, APP_TIMEZONE)
     return (
         dateInLjubljana.getFullYear() === nowInLjubljana.getFullYear() &&
         dateInLjubljana.getMonth() === nowInLjubljana.getMonth() &&
         dateInLjubljana.getDate() === nowInLjubljana.getDate()
-    )
-}
-
-function getTodayDate(): Date {
-    const nowInLjubljana = toZonedTime(new Date(), TIMEZONE)
-    return new Date(
-        Date.UTC(nowInLjubljana.getFullYear(), nowInLjubljana.getMonth(), nowInLjubljana.getDate())
     )
 }
 
@@ -105,7 +97,7 @@ export async function POST(request: NextRequest) {
 
     const errors: string[] = []
 
-    const nowInLjubljana = toZonedTime(new Date(), TIMEZONE)
+    const nowInLjubljana = toZonedTime(new Date(), APP_TIMEZONE)
     const todayDayOfWeek = nowInLjubljana.getDay()
 
     for (const user of users) {

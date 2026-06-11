@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { z } from "zod"
+import { getTodayDate } from "@/lib/utils"
 
 const AdjustTimeSchema = z.object({
     adjustedStartTime: z
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const targetDate = dateStr ? new Date(dateStr) : new Date()
+        const targetDate = dateStr ? new Date(dateStr) : getTodayDate()
         targetDate.setHours(0, 0, 0, 0)
 
         await prisma.workTimeAdjustment.upsert({
@@ -86,8 +87,7 @@ export async function DELETE() {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const today = getTodayDate()
 
         await prisma.workTimeAdjustment.deleteMany({
             where: {

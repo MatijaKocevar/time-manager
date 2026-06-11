@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
+import { getTodayDate } from "@/lib/utils"
 import { requireNotDemo } from "@/lib/auth-helpers"
 import { attemptUrnikNetLogin } from "@/app/(protected)/urnik-net-overview/requests/actions/urnik-net-requests-actions"
 import {
@@ -26,8 +27,7 @@ export async function getCurrentUser() {
         return null
     }
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const today = getTodayDate()
 
     const user = await prisma.user.findUnique({
         where: { id: session.user.id },
@@ -125,8 +125,7 @@ export async function updateProfile(input: UpdateProfileInput) {
         })
 
         if (workStartTime !== undefined || workEndTime !== undefined) {
-            const today = new Date()
-            today.setHours(0, 0, 0, 0)
+            const today = getTodayDate()
             await prisma.workTimeAdjustment.deleteMany({
                 where: { userId: session.user.id, date: today },
             })

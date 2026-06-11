@@ -4,8 +4,7 @@ import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { z } from "zod"
 import { fromZonedTime } from "date-fns-tz"
-
-const TIMEZONE = "Europe/Ljubljana"
+import { getTodayDate, APP_TIMEZONE } from "@/lib/utils"
 
 function parseTimeToDate(timeString: string): Date {
     const [hours, minutes] = timeString.split(":").map(Number)
@@ -19,7 +18,7 @@ function parseTimeToDate(timeString: string): Date {
         0,
         0
     )
-    return fromZonedTime(ljubljanaDate, TIMEZONE)
+    return fromZonedTime(ljubljanaDate, APP_TIMEZONE)
 }
 
 const QuickAdjustSchema = z.object({
@@ -58,8 +57,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "User not found" }, { status: 404 })
         }
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const today = getTodayDate()
 
         const addMinutes = (time: string, minutes: number): string => {
             const [h, m] = time.split(":").map(Number)

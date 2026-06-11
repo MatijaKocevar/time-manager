@@ -1,6 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
+import { getTodayDate } from "@/lib/utils"
 import { performClockInWithCookie, performClockOutWithCookie } from "./clock-actions"
 import {
     notifyAutoCheckinReminder,
@@ -11,16 +12,6 @@ import {
 import { getUrnikCookieForUser } from "@/lib/urnik-session"
 import { requireAuth } from "@/lib/auth-helpers"
 import { sendPushNotification } from "@/features/notifications/actions/notification-actions"
-import { toZonedTime } from "date-fns-tz"
-
-const TIMEZONE = "Europe/Ljubljana"
-
-function getTodayUtc(): Date {
-    const nowInLjubljana = toZonedTime(new Date(), TIMEZONE)
-    return new Date(
-        Date.UTC(nowInLjubljana.getFullYear(), nowInLjubljana.getMonth(), nowInLjubljana.getDate())
-    )
-}
 
 interface ActionResult {
     success: boolean
@@ -30,7 +21,7 @@ interface ActionResult {
 
 export async function sendCheckinReminder(userId: string): Promise<ActionResult> {
     try {
-        const today = getTodayUtc()
+        const today = getTodayDate()
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
@@ -78,7 +69,7 @@ export async function sendCheckinReminder(userId: string): Promise<ActionResult>
 
 export async function sendCheckoutReminder(userId: string): Promise<ActionResult> {
     try {
-        const today = getTodayUtc()
+        const today = getTodayDate()
 
         const user = await prisma.user.findUnique({
             where: { id: userId },

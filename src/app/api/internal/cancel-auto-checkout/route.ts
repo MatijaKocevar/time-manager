@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
+import { getTodayDate } from "@/lib/utils"
 
 export async function POST(request: NextRequest) {
     try {
@@ -25,8 +26,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "User ID required" }, { status: 400 })
         }
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const today = getTodayDate()
 
         await prisma.autoCheckoutCancellation.upsert({
             where: {
