@@ -13,10 +13,13 @@ self.addEventListener("push", function (event) {
                 ...data.data,
             },
             actions: data.actions || [],
+            tag: data.tag || "default",
         }
         event.waitUntil(self.registration.showNotification(data.title, options))
     }
 })
+
+let activeDelayRequest = false
 
 self.addEventListener("notificationclick", function (event) {
     event.notification.close()
@@ -25,6 +28,11 @@ self.addEventListener("notificationclick", function (event) {
     const notificationData = event.notification.data
 
     if (action && action.startsWith("delay-")) {
+        if (activeDelayRequest) {
+            return
+        }
+        activeDelayRequest = true
+
         const minutes = parseInt(action.replace("delay-", ""), 10)
         const adjustmentType = notificationData.adjustmentType
 
@@ -61,6 +69,9 @@ self.addEventListener("notificationclick", function (event) {
                         icon: "/logo.svg",
                         badge: "/pwa/icon-192x192.png",
                     })
+                })
+                .finally(() => {
+                    activeDelayRequest = false
                 })
         )
         return
