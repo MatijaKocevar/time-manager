@@ -33,6 +33,9 @@ services:
         environment:
             HOSTNAME: 0.0.0.0
             PORT: 3000
+        dns:
+            - 8.8.8.8
+            - 1.1.1.1
         volumes:
             - uploads_data:/app/public/uploads
         depends_on:
