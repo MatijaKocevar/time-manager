@@ -27,6 +27,11 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = session.user.id
+
+    if (isDuplicateTap(userId)) {
+        return homeRedirect(base, {})
+    }
+
     const activeTimer = await getActiveTimer()
 
     if (activeTimer) {
@@ -52,6 +57,17 @@ export async function GET(request: NextRequest) {
     notifyTapEvent(userId, "tapIn")
 
     return homeRedirect(base, { tapStarted: "1" })
+}
+
+const recentTaps = new Map<string, number>()
+
+function isDuplicateTap(userId: string): boolean {
+    const lastTap = recentTaps.get(userId)
+    if (lastTap && Date.now() - lastTap < 3000) {
+        return true
+    }
+    recentTaps.set(userId, Date.now())
+    return false
 }
 
 function homeRedirect(baseUrl: string, params: Record<string, string>): NextResponse {
