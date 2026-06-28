@@ -29,25 +29,33 @@ export async function GET(request: NextRequest) {
         const stopResult = await stopTimer({ id: activeTimer.id })
 
         if (stopResult.error) {
-            return NextResponse.json({ success: false, error: stopResult.error }, { status: 400 })
+            const homeUrl = new URL("/", request.url)
+            homeUrl.searchParams.set("tapError", stopResult.error)
+            return NextResponse.redirect(homeUrl)
         }
 
         await logoutOfUrnikNet()
 
         notifyTapEvent(userId, "tapOut")
 
-        return NextResponse.json({ success: true, action: "stopped" })
+        const homeUrl = new URL("/", request.url)
+        homeUrl.searchParams.set("tapStopped", "1")
+        return NextResponse.redirect(homeUrl)
     }
 
     const result = await startTimer({ type: "WORK" })
 
     if (result.error) {
-        return NextResponse.json({ success: false, error: result.error }, { status: 400 })
+        const homeUrl = new URL("/", request.url)
+        homeUrl.searchParams.set("tapError", result.error)
+        return NextResponse.redirect(homeUrl)
     }
 
     notifyTapEvent(userId, "tapIn")
 
-    return NextResponse.json({ success: true, action: "started" })
+    const homeUrl = new URL("/", request.url)
+    homeUrl.searchParams.set("tapStarted", "1")
+    return NextResponse.redirect(homeUrl)
 }
 
 async function notifyTapEvent(userId: string, event: "tapIn" | "tapOut") {
