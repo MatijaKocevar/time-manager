@@ -11,8 +11,8 @@ COPY package*.json ./
 # Copy only schema for Prisma generation (migrations not needed for build)
 COPY prisma/schema.prisma ./prisma/
 
-# Install all dependencies (including dev for Prisma generation)
-RUN npm ci
+# Install all dependencies (skip postinstall to avoid stale prisma generate)
+RUN npm ci --ignore-scripts
 
 # Generate Prisma client
 RUN npx prisma generate
