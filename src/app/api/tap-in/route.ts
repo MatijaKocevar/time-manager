@@ -30,11 +30,6 @@ export async function GET(request: NextRequest) {
     const activeTimer = await getActiveTimer()
 
     if (activeTimer) {
-        const ageMs = Date.now() - new Date(activeTimer.startTime).getTime()
-        if (ageMs < 3000) {
-            return homeRedirect(base, { tapStarted: "1" })
-        }
-
         const stopResult = await stopTimer({ id: activeTimer.id })
 
         if (stopResult.error) {
