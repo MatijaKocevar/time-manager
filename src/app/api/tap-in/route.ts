@@ -29,33 +29,36 @@ export async function GET(request: NextRequest) {
         const stopResult = await stopTimer({ id: activeTimer.id })
 
         if (stopResult.error) {
-            const homeUrl = new URL("/", request.url)
-            homeUrl.searchParams.set("tapError", stopResult.error)
-            return NextResponse.redirect(homeUrl)
+            return homeRedirect(request, { tapError: stopResult.error })
         }
 
         await logoutOfUrnikNet()
 
         notifyTapEvent(userId, "tapOut")
 
-        const homeUrl = new URL("/", request.url)
-        homeUrl.searchParams.set("tapStopped", "1")
-        return NextResponse.redirect(homeUrl)
+        return homeRedirect(request, { tapStopped: "1" })
     }
 
     const result = await startTimer({ type: "WORK" })
 
     if (result.error) {
-        const homeUrl = new URL("/", request.url)
-        homeUrl.searchParams.set("tapError", result.error)
-        return NextResponse.redirect(homeUrl)
+        return homeRedirect(request, { tapError: result.error })
     }
 
     notifyTapEvent(userId, "tapIn")
 
-    const homeUrl = new URL("/", request.url)
-    homeUrl.searchParams.set("tapStarted", "1")
-    return NextResponse.redirect(homeUrl)
+    return homeRedirect(request, { tapStarted: "1" })
+}
+
+function homeRedirect(request: NextRequest, params: Record<string, string>): NextResponse {
+    const proto = request.headers.get("x-forwarded-proto") || "https"
+    const host =
+        request.headers.get("x-forwarded-host") || request.headers.get("host") || "time.manager"
+    const url = new URL("/", `${proto}://${host}`)
+    for (const [key, value] of Object.entries(params)) {
+        url.searchParams.set(key, value)
+    }
+    return NextResponse.redirect(url)
 }
 
 async function notifyTapEvent(userId: string, event: "tapIn" | "tapOut") {
