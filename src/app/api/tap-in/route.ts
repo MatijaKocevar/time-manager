@@ -14,7 +14,7 @@ import { sendEmail } from "@/features/notifications/lib/email"
 export async function GET(request: NextRequest) {
     const session = await getServerSession(authConfig)
     const token = request.nextUrl.searchParams.get("token")
-    const proto = request.headers.get("x-forwarded-proto") || "https"
+    const proto = "https"
     const host =
         request.headers.get("x-forwarded-host") || request.headers.get("host") || "time.manager"
     const base = `${proto}://${host}`
