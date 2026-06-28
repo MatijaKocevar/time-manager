@@ -71,6 +71,7 @@ tsconfig.tsbuildinfo
 # Database
 prisma/database/*.db
 prisma/database/*.db-journal
+prisma/generated
 
 # Deployment scripts
 scripts/deploy.sh
