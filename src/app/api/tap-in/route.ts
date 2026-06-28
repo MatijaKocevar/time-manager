@@ -14,10 +14,14 @@ import { sendEmail } from "@/features/notifications/lib/email"
 export async function GET(request: NextRequest) {
     const session = await getServerSession(authConfig)
     const token = request.nextUrl.searchParams.get("token")
+    const proto = request.headers.get("x-forwarded-proto") || "https"
+    const host =
+        request.headers.get("x-forwarded-host") || request.headers.get("host") || "time.manager"
+    const base = `${proto}://${host}`
     const tapUrl = `/api/tap-in${token ? `?token=${token}` : ""}`
 
     if (!session?.user) {
-        const loginUrl = new URL("/login", request.url)
+        const loginUrl = new URL("/login", base)
         loginUrl.searchParams.set("callbackUrl", tapUrl)
         return NextResponse.redirect(loginUrl)
     }
@@ -29,32 +33,29 @@ export async function GET(request: NextRequest) {
         const stopResult = await stopTimer({ id: activeTimer.id })
 
         if (stopResult.error) {
-            return homeRedirect(request, { tapError: stopResult.error })
+            return homeRedirect(base, { tapError: stopResult.error })
         }
 
         await logoutOfUrnikNet()
 
         notifyTapEvent(userId, "tapOut")
 
-        return homeRedirect(request, { tapStopped: "1" })
+        return homeRedirect(base, { tapStopped: "1" })
     }
 
     const result = await startTimer({ type: "WORK" })
 
     if (result.error) {
-        return homeRedirect(request, { tapError: result.error })
+        return homeRedirect(base, { tapError: result.error })
     }
 
     notifyTapEvent(userId, "tapIn")
 
-    return homeRedirect(request, { tapStarted: "1" })
+    return homeRedirect(base, { tapStarted: "1" })
 }
 
-function homeRedirect(request: NextRequest, params: Record<string, string>): NextResponse {
-    const proto = request.headers.get("x-forwarded-proto") || "https"
-    const host =
-        request.headers.get("x-forwarded-host") || request.headers.get("host") || "time.manager"
-    const url = new URL("/", `${proto}://${host}`)
+function homeRedirect(baseUrl: string, params: Record<string, string>): NextResponse {
+    const url = new URL("/", baseUrl)
     for (const [key, value] of Object.entries(params)) {
         url.searchParams.set(key, value)
     }
