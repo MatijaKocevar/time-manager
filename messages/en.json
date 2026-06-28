@@ -834,6 +834,10 @@
             "autoCheckinDescription": "Receive notifications about automatic check-in reminders and confirmations",
             "autoCheckoutTitle": "Auto Check-Out Notifications",
             "autoCheckoutDescription": "Receive notifications about automatic check-out reminders and confirmations",
+            "tapInTitle": "NFC Tap-In Notifications",
+            "tapInDescription": "Receive notifications when you clock in via NFC tap",
+            "tapOutTitle": "NFC Tap-Out Notifications",
+            "tapOutDescription": "Receive notifications when you clock out via NFC tap",
             "enabled": "✓ Notifications are enabled. You will receive push alerts.",
             "subscribed": "You are subscribed to push notifications. You will receive alerts for request updates.",
             "notSubscribed": "Enable push notifications to receive instant alerts about request approvals and new pending requests.",
@@ -1533,5 +1537,9 @@
         "title": "We use cookies",
         "description": "This app uses strictly necessary cookies for authentication and functional cookies to remember your preferences (language, theme, sidebar state). No tracking or advertising cookies are used.",
         "acknowledge": "OK, I understand"
+    },
+    "tapIn": {
+        "success": "Clocked in successfully",
+        "error": "Failed to clock in"
     }
 }

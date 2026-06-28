@@ -175,3 +175,44 @@ export async function attemptUrnikNetLogin() {
 
     return result
 }
+
+export async function logoutOfUrnikNet() {
+    if (process.env.DEBUG_SKIP_URNIK_LOGIN === "true") {
+        return { success: true }
+    }
+
+    try {
+        const session = await getServerSession(authConfig)
+
+        if (!session?.user) {
+            return { success: true }
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { urnikUsername: true, urnikPassword: true },
+        })
+
+        if (!user?.urnikUsername || !user?.urnikPassword) {
+            return { success: true }
+        }
+
+        const loginResult = await loginToUrnikNet(user.urnikUsername, user.urnikPassword)
+
+        if (!loginResult.success || !loginResult.cookie) {
+            return { success: true }
+        }
+
+        await fetch("https://urnik.net/Account/Logout", {
+            method: "POST",
+            headers: {
+                "User-Agent": URNIK_USER_AGENT,
+                Cookie: loginResult.cookie,
+            },
+        })
+
+        return { success: true }
+    } catch {
+        return { success: true }
+    }
+}

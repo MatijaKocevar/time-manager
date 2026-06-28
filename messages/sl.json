@@ -834,6 +834,10 @@
             "autoCheckinDescription": "Prejemajte obvestila o opomnikih in potrditvah samodejnega prihoda",
             "autoCheckoutTitle": "Obvestila o samodejnem odhodu",
             "autoCheckoutDescription": "Prejemajte obvestila o opomnikih in potrditvah samodejnega odhoda",
+            "tapInTitle": "Obvestila o NFC prihodu",
+            "tapInDescription": "Prejemajte obvestila, ko se prijavite preko NFC dotika",
+            "tapOutTitle": "Obvestila o NFC odhodu",
+            "tapOutDescription": "Prejemajte obvestila, ko se odjavite preko NFC dotika",
             "enabled": "✓ Obvestila so omogočena. Prejemali boste push opozorila.",
             "subscribed": "Naročeni ste na push obvestila. Prejemali boste opozorila o posodobitvah zahtevkov.",
             "notSubscribed": "Omogočite push obvestila za takojšnja opozorila o odobritvah zahtevkov in novih čakajočih zahtevkih.",
@@ -1533,5 +1537,9 @@
         "title": "Uporabljamo piškotke",
         "description": "Ta aplikacija uporablja nujno potrebne piškotke za avtentikacijo in funkcionalne piškotke za shranjevanje vaših nastavitev (jezik, tema, stanje stranske vrstice). Piškotki za sledenje ali oglaševanje niso uporabljeni.",
         "acknowledge": "V redu, razumem"
+    },
+    "tapIn": {
+        "success": "Uspešno ste se vpisali",
+        "error": "Vpis ni uspel"
     }
 }

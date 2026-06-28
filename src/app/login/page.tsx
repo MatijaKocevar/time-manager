@@ -32,6 +32,8 @@ export default function LoginPage() {
     const t = useTranslations("auth")
     const tCommon = useTranslations("common")
 
+    const callbackUrl = searchParams.get("callbackUrl") || "/"
+
     useEffect(() => {
         const errorParam = searchParams.get("error")
         if (errorParam) {
@@ -45,9 +47,9 @@ export default function LoginPage() {
 
     useEffect(() => {
         if (status === "authenticated") {
-            router.push("/")
+            router.push(callbackUrl)
         }
-    }, [status, router])
+    }, [status, router, callbackUrl])
 
     if (status === "loading" || status === "authenticated") {
         return null
@@ -61,7 +63,7 @@ export default function LoginPage() {
         const result = await signIn("credentials", {
             email,
             password,
-            callbackUrl: "/",
+            callbackUrl,
         })
 
         if (result?.error) {

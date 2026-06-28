@@ -329,6 +329,10 @@ model NotificationPreference {
   pushAutoCheckin       Boolean  @default(true)
   emailAutoCheckout     Boolean  @default(true)
   pushAutoCheckout      Boolean  @default(true)
+  emailTapIn            Boolean  @default(true)
+  pushTapIn             Boolean  @default(true)
+  emailTapOut           Boolean  @default(true)
+  pushTapOut            Boolean  @default(true)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
