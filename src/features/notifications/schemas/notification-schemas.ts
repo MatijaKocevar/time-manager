@@ -13,6 +13,10 @@ export const UpdateNotificationPreferencesSchema = z.object({
     pushAutoCheckin: z.boolean().optional(),
     emailAutoCheckout: z.boolean().optional(),
     pushAutoCheckout: z.boolean().optional(),
+    emailTapIn: z.boolean().optional(),
+    pushTapIn: z.boolean().optional(),
+    emailTapOut: z.boolean().optional(),
+    pushTapOut: z.boolean().optional(),
 })
 
 export type UpdateNotificationPreferencesInput = z.infer<typeof UpdateNotificationPreferencesSchema>

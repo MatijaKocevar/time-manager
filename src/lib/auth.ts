@@ -106,6 +106,9 @@ export const authConfig = {
                         select: { urnikUsername: true, urnikPassword: true },
                     })
                     .then(async (urnikUser) => {
+                        if (process.env.DEBUG_SKIP_URNIK_LOGIN === "true") {
+                            return
+                        }
                         if (urnikUser?.urnikUsername && urnikUser?.urnikPassword) {
                             const { loginToUrnikNet } =
                                 await import("@/app/(protected)/urnik-net-overview/requests/actions/urnik-net-requests-actions")

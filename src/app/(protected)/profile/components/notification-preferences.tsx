@@ -48,6 +48,10 @@ export function NotificationPreferences({
                 pushAutoCheckin: preferences.pushAutoCheckin,
                 emailAutoCheckout: preferences.emailAutoCheckout,
                 pushAutoCheckout: preferences.pushAutoCheckout,
+                emailTapIn: preferences.emailTapIn,
+                pushTapIn: preferences.pushTapIn,
+                emailTapOut: preferences.emailTapOut,
+                pushTapOut: preferences.pushTapOut,
             })
 
             if (result.error) {
@@ -307,6 +311,80 @@ export function NotificationPreferences({
                                     className="h-4 w-4 rounded border-gray-300"
                                 />
                                 <Label htmlFor="pushAutoCheckout" className="cursor-pointer">
+                                    {t("pushLabel")}
+                                </Label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                    <div>
+                        <h3 className="text-sm font-medium mb-3">{t("tapInTitle")}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            {t("tapInDescription")}
+                        </p>
+                        <div className="space-y-3 ml-4">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="emailTapIn"
+                                    checked={preferences.emailTapIn}
+                                    onChange={(e) => handleToggle("emailTapIn", e.target.checked)}
+                                    className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="emailTapIn" className="cursor-pointer">
+                                    {t("emailLabel")}
+                                </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="pushTapIn"
+                                    checked={preferences.pushTapIn}
+                                    onChange={(e) => handleToggle("pushTapIn", e.target.checked)}
+                                    className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="pushTapIn" className="cursor-pointer">
+                                    {t("pushLabel")}
+                                </Label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                    <div>
+                        <h3 className="text-sm font-medium mb-3">{t("tapOutTitle")}</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                            {t("tapOutDescription")}
+                        </p>
+                        <div className="space-y-3 ml-4">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="emailTapOut"
+                                    checked={preferences.emailTapOut}
+                                    onChange={(e) => handleToggle("emailTapOut", e.target.checked)}
+                                    className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="emailTapOut" className="cursor-pointer">
+                                    {t("emailLabel")}
+                                </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="pushTapOut"
+                                    checked={preferences.pushTapOut}
+                                    onChange={(e) => handleToggle("pushTapOut", e.target.checked)}
+                                    className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="pushTapOut" className="cursor-pointer">
                                     {t("pushLabel")}
                                 </Label>
                             </div>
