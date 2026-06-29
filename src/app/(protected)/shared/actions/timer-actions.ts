@@ -96,6 +96,13 @@ export async function startTimer(input: StartTimerInput) {
                     "GENERAL_WORK"
                 )
                 finalTaskId = generalWorkTask.id
+            } else if (type === "WORK_FROM_HOME" && !taskId) {
+                const generalWorkTask = await getOrCreateSystemTask(
+                    tx,
+                    session.user.id,
+                    "GENERAL_WORK"
+                )
+                finalTaskId = generalWorkTask.id
             }
 
             if (!finalTaskId) {

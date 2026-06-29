@@ -134,3 +134,44 @@ docker compose restart
 ```
 
 **Full documentation:** [docs/DOCKER.md](docs/DOCKER.md)
+
+## NFC Tap-In / Tap-Out
+
+Quick clock-in and clock-out by tapping an NFC tag or card on your phone. No app interaction needed — just tap and you get a push notification or email confirming the action.
+
+### How It Works
+
+The endpoint `GET /api/tap-in` toggles your work timer:
+
+- **Not tracking → starts tracking** on "System: General Work", with urnik.net login
+- **Tracking → stops tracking** and logs out of urnik.net
+- **Not logged in → redirects to login**, then auto-executes the tap after sign-in
+
+Notifications are sent via push and/or email, configurable in **Profile → Notification Preferences** under "NFC Tap-In" and "NFC Tap-Out".
+
+### Programming NFC Tags
+
+Use any NFC writer app (NFC Tools on Android is free):
+
+1. Open **NFC Tools** → **Write** → **Add a record** → **URL / URI**
+2. Enter: `https://yourdomain.com/api/tap-in`
+3. **Write** to the tag
+4. Test by tapping the tag with your phone locked
+
+**Multiple stands** (office, home) — add a token to determine the hour type:
+
+| Stand | URL | Hour Type |
+|---|---|---|
+| Office | `https://yourdomain.com/api/tap-in?token=office` | WORK |
+| Home | `https://yourdomain.com/api/tap-in?token=home` | WORK_FROM_HOME |
+| No token | `https://yourdomain.com/api/tap-in` | WORK (default) |
+
+**Compatible tags**: NTAG213, NTAG215, NTAG216 (any NDEF-compatible NFC sticker or card).
+
+### Debug Mode
+
+Skip urnik.net integration during testing by setting in your `.env`:
+
+```
+DEBUG_SKIP_URNIK_LOGIN=true
+```

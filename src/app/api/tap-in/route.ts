@@ -8,6 +8,7 @@ import {
     stopTimer,
 } from "@/app/(protected)/shared/actions/timer-actions"
 import { logoutOfUrnikNet } from "@/app/(protected)/urnik-net-overview/requests/actions/urnik-net-auth"
+import { clockInToUrnik } from "@/app/(protected)/urnik-net-overview/actions/clock-actions"
 import { sendPushNotification } from "@/features/notifications/actions/notification-actions"
 import { sendEmail } from "@/features/notifications/lib/email"
 
@@ -48,13 +49,18 @@ export async function GET(request: NextRequest) {
         return homeRedirect(base, { tapStopped: "1" })
     }
 
-    const result = await startTimer({ type: "WORK" })
+    const hourType = token === "home" ? "WORK_FROM_HOME" : "WORK"
+    const result = await startTimer({ type: hourType })
 
     if (result.error) {
         return homeRedirect(base, { tapError: result.error })
     }
 
     notifyTapEvent(userId, "tapIn")
+
+    if (result.shouldShowArrivalDialog) {
+        clockInToUrnik(token === "home")
+    }
 
     return homeRedirect(base, { tapStarted: "1" })
 }
