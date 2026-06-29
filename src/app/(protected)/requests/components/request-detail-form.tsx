@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { cancelRequest, updateRequest, createRequest } from "../actions/request-actions"
 import { requestKeys } from "../query-keys"
+import { hourKeys } from "../../hours/query-keys"
 import { REQUEST_TYPES, REQUEST_STATUS_COLORS, REQUEST_STATUS, REQUEST_TYPE } from "../constants"
 import { useRequestStore } from "../stores/request-store"
 import { type RequestType, type RequestDisplay } from "../schemas/request-schemas"
@@ -68,6 +69,7 @@ export function RequestDetailForm({
         onSuccess: (result) => {
             if (result.success) {
                 queryClient.invalidateQueries({ queryKey: requestKeys.all })
+                queryClient.invalidateQueries({ queryKey: hourKeys.all })
                 onSuccess?.()
             }
         },
@@ -78,6 +80,7 @@ export function RequestDetailForm({
         onSuccess: (result) => {
             if (result.success) {
                 queryClient.invalidateQueries({ queryKey: requestKeys.all })
+                queryClient.invalidateQueries({ queryKey: hourKeys.all })
                 onSuccess?.()
             }
         },

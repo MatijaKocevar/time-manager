@@ -199,6 +199,7 @@ export async function createRequest(input: CreateRequestInput) {
         }
 
         revalidatePath("/requests")
+        revalidatePath("/hours")
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {
