@@ -153,6 +153,7 @@
         "urnikNetOverview": "Urnik.net Overview",
         "urnikNetRequests": "Requests",
         "urnikNetHours": "Hours",
+        "urnikNetAttendance": "Attendance",
         "admin": "Admin",
         "profile": "Profile",
         "management": "Management",
@@ -1052,6 +1053,16 @@
             "balanceMonth": "Month Balance",
             "balanceYear": "Year Balance"
         }
+    },
+    "urnikNetAttendance": {
+        "pageTitle": "Team Status",
+        "present": "Present",
+        "absent": "Absent",
+        "unreachable": "Unreachable",
+        "noData": "No users found",
+        "errorTitle": "Error",
+        "structureChangedWarning": "HTML Structure Changed",
+        "structureChangedDescription": "The urnik.net page structure may have changed. The team status data might not be displayed correctly. Please report this issue."
     },
     "auth": {
         "signIn": "Sign in",

@@ -37,6 +37,7 @@ const TUTORIAL_PAGES = new Set([
     "/urnik-net-overview",
     "/urnik-net-overview/requests",
     "/urnik-net-overview/hours",
+    "/urnik-net-overview/attendance",
     "/admin",
     "/admin/users",
     "/admin/holidays",

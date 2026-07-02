@@ -15,6 +15,7 @@ import {
     CalendarRange,
     RefreshCw,
     LogIn,
+    UserCheck,
 } from "lucide-react"
 import { UserRole } from "@/types"
 
@@ -87,6 +88,12 @@ export const navigationItems: NavigationItem[] = [
                 title: "navigation.urnikNetHours",
                 url: "/urnik-net-overview/hours",
                 icon: FileSpreadsheet,
+                roles: ["USER", "ADMIN"],
+            },
+            {
+                title: "navigation.urnikNetAttendance",
+                url: "/urnik-net-overview/attendance",
+                icon: UserCheck,
                 roles: ["USER", "ADMIN"],
             },
         ],

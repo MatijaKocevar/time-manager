@@ -153,6 +153,7 @@
         "urnikNetOverview": "Urnik.net pregled",
         "urnikNetRequests": "Zahtevki",
         "urnikNetHours": "Ure",
+        "urnikNetAttendance": "Prisotnost",
         "admin": "Administracija",
         "profile": "Profil",
         "management": "Upravljanje",
@@ -1052,6 +1053,16 @@
             "balanceMonth": "Saldo meseca",
             "balanceYear": "Saldo leta"
         }
+    },
+    "urnikNetAttendance": {
+        "pageTitle": "Prisotnost ekipe",
+        "present": "Prisotni",
+        "absent": "Odsotni",
+        "unreachable": "Nedosegljiv",
+        "noData": "Ni uporabnikov",
+        "errorTitle": "Napaka",
+        "structureChangedWarning": "HTML struktura spremenjena",
+        "structureChangedDescription": "Struktura strani urnik.net se je morda spremenila. Podatki o prisotnosti ekipe morda ne bodo prikazani pravilno. Prosimo, sporočite to težavo."
     },
     "auth": {
         "signIn": "Prijava",

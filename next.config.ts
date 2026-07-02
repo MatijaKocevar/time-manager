@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
     reactCompiler: true,
     output: "standalone",
     allowedDevOrigins: ["time-manager.home"],
+    images: {
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "urnik.net",
+            },
+        ],
+    },
     serverExternalPackages: ["@prisma/client", "bcryptjs"],
     async headers() {
         return [
