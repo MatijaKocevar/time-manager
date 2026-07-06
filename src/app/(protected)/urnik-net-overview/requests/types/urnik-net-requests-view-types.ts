@@ -1,5 +1,4 @@
 import type { UrnikNetRequest } from "../utils/request-row-helpers"
-import type { PendingUrnikNetRequest } from "../schemas/urnik-net-requests-schemas"
 
 export interface UrnikNetRequestsViewUser {
     id: string
@@ -34,11 +33,6 @@ export interface UrnikNetRequestsViewTranslations {
     connected: string
     notConnected: string
     lastTested: string
-    pendingRequest: string
-    submitButton: string
-    calculatedFrom: string
-    inOffice: string
-    remote: string
     previousMonth: string
     nextMonth: string
     createRequestButton: string
@@ -62,7 +56,6 @@ export interface UrnikNetRequestsViewTranslations {
         confirmedBy: string
         notes: string
         action: string
-        autoCalculated: string
     }
     structureChanged: string
     structureChangedDescription: string
@@ -76,11 +69,6 @@ export interface UrnikNetRequestsViewProps {
         data?: UrnikNetRequest[]
         error?: string
         structureChanged?: boolean
-    } | null
-    pendingRequestsResult: {
-        success: boolean
-        data?: PendingUrnikNetRequest[]
-        error?: string
     } | null
     submittedRequests: SubmittedUrnikNetRequest[]
     currentMonth: string

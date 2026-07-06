@@ -988,11 +988,6 @@
             "connected": "Connected",
             "notConnected": "Not Connected",
             "lastTested": "Last tested",
-            "pendingRequest": "PENDING",
-            "submitButton": "Submit",
-            "calculatedFrom": "Calculated",
-            "inOffice": "In Office",
-            "remote": "Work from Home",
             "previousMonth": "Previous Month",
             "nextMonth": "Next Month",
             "table": {
@@ -1007,8 +1002,7 @@
                 "status": "Status",
                 "confirmedBy": "Confirmed by",
                 "notes": "Notes",
-                "action": "Action",
-                "autoCalculated": "Auto-calculated from tracker"
+                "action": "Action"
             },
             "structureChanged": "HTML Structure Changed",
             "structureChangedDescription": "The urnik.net page structure has changed. The parser needs to be updated to match the new format. Please contact the developer."

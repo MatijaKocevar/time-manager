@@ -58,10 +58,6 @@ export async function getUrnikCookie(): Promise<string | null> {
             return null
         }
 
-        if (process.env.DEBUG_SKIP_URNIK_LOGIN === "true") {
-            return null
-        }
-
         const result = await loginToUrnikNet(user.urnikUsername, user.urnikPassword)
 
         if (result.success && result.cookie) {
@@ -99,10 +95,6 @@ export async function getUrnikCookieForUser(userId: string): Promise<string | nu
         })
 
         if (!user?.urnikUsername || !user?.urnikPassword) {
-            return null
-        }
-
-        if (process.env.DEBUG_SKIP_URNIK_LOGIN === "true") {
             return null
         }
 
