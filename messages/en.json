@@ -1053,7 +1053,10 @@
         "present": "Present",
         "absent": "Absent",
         "unreachable": "Unreachable",
+        "workFromHome": "Work from Home",
         "noData": "No users found",
+        "search": "Search by name...",
+        "showing": "Showing [[filtered]] of [[total]] users",
         "errorTitle": "Error",
         "structureChangedWarning": "HTML Structure Changed",
         "structureChangedDescription": "The urnik.net page structure may have changed. The team status data might not be displayed correctly. Please report this issue."

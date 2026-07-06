@@ -1053,7 +1053,10 @@
         "present": "Prisotni",
         "absent": "Odsotni",
         "unreachable": "Nedosegljiv",
+        "workFromHome": "Delo od doma",
         "noData": "Ni uporabnikov",
+        "search": "Išči po imenu...",
+        "showing": "Prikazanih [[filtered]] od [[total]] uporabnikov",
         "errorTitle": "Napaka",
         "structureChangedWarning": "HTML struktura spremenjena",
         "structureChangedDescription": "Struktura strani urnik.net se je morda spremenila. Podatki o prisotnosti ekipe morda ne bodo prikazani pravilno. Prosimo, sporočite to težavo."

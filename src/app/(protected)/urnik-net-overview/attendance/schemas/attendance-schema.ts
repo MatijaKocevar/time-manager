@@ -2,7 +2,7 @@ import { z } from "zod"
 
 export const UserStatusSchema = z.object({
     name: z.string(),
-    status: z.enum(["Present", "Absent", "Unreachable"]),
+    status: z.enum(["Present", "Absent", "Unreachable", "Work From Home"]),
     colorClass: z.string(),
     imageUrl: z.string().nullable(),
 })

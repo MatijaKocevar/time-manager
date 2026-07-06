@@ -1,10 +1,10 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, AlertTriangle, Users } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { AlertCircle, AlertTriangle, Search } from "lucide-react"
 import type { ParsedAttendanceResult, UserStatus } from "../schemas/attendance-schema"
 
 interface AttendanceViewProps {
@@ -14,41 +14,56 @@ interface AttendanceViewProps {
         present: string
         absent: string
         unreachable: string
+        workFromHome: string
         noData: string
+        search: string
+        showing: string
         errorTitle: string
         structureChangedWarning: string
         structureChangedDescription: string
     }
 }
 
-function getStatusColor(colorClass: string): string {
-    if (colorClass === "BC-0") return "bg-emerald-500"
-    return "bg-gray-400"
+const statusConfig: Record<string, { bg: string; ring: string }> = {
+    Present: { bg: "bg-emerald-500", ring: "ring-emerald-500" },
+    "Work From Home": { bg: "bg-blue-500", ring: "ring-blue-500" },
+    Unreachable: { bg: "bg-amber-500", ring: "ring-amber-500" },
+    Absent: { bg: "bg-zinc-400", ring: "ring-zinc-400" },
 }
 
-function getStatusVariant(status: UserStatus["status"]): "default" | "secondary" | "outline" {
+function statusLabel(status: string, t: AttendanceViewProps["translations"]): string {
     switch (status) {
         case "Present":
-            return "default"
+            return t.present
+        case "Work From Home":
+            return t.workFromHome
         case "Unreachable":
-            return "secondary"
-        case "Absent":
-            return "outline"
+            return t.unreachable
+        default:
+            return t.absent
     }
 }
 
-function UserCard({ user }: { user: UserStatus }) {
+function UserCard({
+    user,
+    translations,
+}: {
+    user: UserStatus
+    translations: AttendanceViewProps["translations"]
+}) {
+    const config = statusConfig[user.status] ?? statusConfig.Absent
+
     return (
-        <div className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+        <div className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-card/50 hover:bg-card hover:shadow-sm transition-all">
             <div
-                className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${getStatusColor(user.colorClass)}`}
+                className={`h-11 w-11 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-muted ring-[3px] ${config.ring}`}
             >
                 {user.imageUrl ? (
                     <Image
                         src={user.imageUrl}
                         alt={user.name}
-                        width={34}
-                        height={34}
+                        width={44}
+                        height={44}
                         className="rounded-full object-cover"
                     />
                 ) : (
@@ -64,50 +79,23 @@ function UserCard({ user }: { user: UserStatus }) {
             </div>
             <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">{user.name}</p>
+                <p className="text-xs text-muted-foreground">
+                    {statusLabel(user.status, translations)}
+                </p>
             </div>
-            <Badge variant={getStatusVariant(user.status)} className="shrink-0">
-                {user.status}
-            </Badge>
         </div>
     )
 }
 
-function StatusColumn({
-    title,
-    users,
-    emptyMessage,
-}: {
-    title: string
-    users: UserStatus[]
-    emptyMessage: string
-}) {
-    return (
-        <Card>
-            <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center gap-2">
-                    <Users className="h-5 w-5" />
-                    {title}
-                    <Badge variant="secondary" className="ml-1">
-                        {users.length}
-                    </Badge>
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                {users.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">{emptyMessage}</p>
-                ) : (
-                    <div className="space-y-2">
-                        {users.map((user) => (
-                            <UserCard key={user.name} user={user} />
-                        ))}
-                    </div>
-                )}
-            </CardContent>
-        </Card>
-    )
-}
-
 export function AttendanceView({ result, translations }: AttendanceViewProps) {
+    const [query, setQuery] = useState("")
+    const [debouncedQuery, setDebouncedQuery] = useState("")
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedQuery(query), 200)
+        return () => clearTimeout(timer)
+    }, [query])
+
     if (!result.success) {
         return (
             <div className="space-y-4">
@@ -134,20 +122,52 @@ export function AttendanceView({ result, translations }: AttendanceViewProps) {
         return <p className="text-muted-foreground">{translations.noData}</p>
     }
 
-    const { present, absent } = result.data
+    const allUsers = [...result.data.present, ...result.data.absent]
+
+    const filtered = debouncedQuery.trim()
+        ? allUsers.filter((u) => u.name.toLowerCase().includes(debouncedQuery.toLowerCase()))
+        : allUsers
 
     return (
-        <div className="grid gap-6 md:grid-cols-2">
-            <StatusColumn
-                title={translations.present}
-                users={present}
-                emptyMessage={translations.noData}
-            />
-            <StatusColumn
-                title={translations.absent}
-                users={absent}
-                emptyMessage={translations.noData}
-            />
+        <div className="flex flex-col gap-4">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder={translations.search}
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="pl-9"
+                />
+            </div>
+
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+                {Object.entries(statusConfig).map(([status, config]) => (
+                    <div key={status} className="flex items-center gap-1.5">
+                        <div className={`h-3 w-3 rounded-full ${config.bg}`} />
+                        <span className="text-xs text-muted-foreground">
+                            {statusLabel(status, translations)}
+                        </span>
+                    </div>
+                ))}
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+                {translations.showing
+                    .replace("[[filtered]]", String(filtered.length))
+                    .replace("[[total]]", String(allUsers.length))}
+            </p>
+
+            {filtered.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                    {translations.noData}
+                </p>
+            ) : (
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {filtered.map((user) => (
+                        <UserCard key={user.name} user={user} translations={translations} />
+                    ))}
+                </div>
+            )}
         </div>
     )
 }
