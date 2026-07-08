@@ -7,8 +7,10 @@ import {
     startTimer,
     stopTimer,
 } from "@/app/(protected)/shared/actions/timer-actions"
-import { logoutOfUrnikNet } from "@/app/(protected)/urnik-net-overview/requests/actions/urnik-net-auth"
-import { clockInToUrnik } from "@/app/(protected)/urnik-net-overview/actions/clock-actions"
+import {
+    clockInToUrnik,
+    clockOutAndStopTimer,
+} from "@/app/(protected)/urnik-net-overview/actions/clock-actions"
 import { sendPushNotification } from "@/features/notifications/actions/notification-actions"
 import { sendEmail } from "@/features/notifications/lib/email"
 
@@ -36,13 +38,21 @@ export async function GET(request: NextRequest) {
     const activeTimer = await getActiveTimer()
 
     if (activeTimer) {
-        const stopResult = await stopTimer({ id: activeTimer.id })
+        const skipUrnik = process.env.DEBUG_SKIP_URNIK_LOGIN === "true"
 
-        if (stopResult.error) {
-            return homeRedirect(base, { tapError: stopResult.error })
+        if (skipUrnik) {
+            const stopResult = await stopTimer({ id: activeTimer.id })
+
+            if (stopResult.error) {
+                return homeRedirect(base, { tapError: stopResult.error })
+            }
+        } else {
+            const clockOutResult = await clockOutAndStopTimer()
+
+            if (clockOutResult.error) {
+                return homeRedirect(base, { tapError: clockOutResult.error })
+            }
         }
-
-        await logoutOfUrnikNet()
 
         notifyTapEvent(userId, "tapOut")
 
@@ -58,7 +68,7 @@ export async function GET(request: NextRequest) {
 
     notifyTapEvent(userId, "tapIn")
 
-    if (result.shouldShowArrivalDialog) {
+    if (result.shouldShowArrivalDialog && process.env.DEBUG_SKIP_URNIK_LOGIN !== "true") {
         clockInToUrnik(token === "home")
     }
 

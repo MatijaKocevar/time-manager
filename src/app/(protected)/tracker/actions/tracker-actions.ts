@@ -87,6 +87,31 @@ export async function getInProgressTasksForTracker(): Promise<TaskDisplay[]> {
     }
 }
 
+export async function getLastTimeEntryToday(): Promise<{
+    type: HourType
+    taskId: string
+} | null> {
+    try {
+        const session = await requireAuth()
+
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+
+        const lastEntry = await prisma.taskTimeEntry.findFirst({
+            where: {
+                userId: session.user.id,
+                startTime: { gte: today },
+            },
+            orderBy: { startTime: "desc" },
+            select: { type: true, taskId: true },
+        })
+
+        return lastEntry ?? null
+    } catch {
+        return null
+    }
+}
+
 export async function getTrackerPreferences() {
     try {
         const session = await requireAuth()

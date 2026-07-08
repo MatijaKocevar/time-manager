@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { HourType } from "@/../../prisma/generated/client"
 import { useTrackerStore } from "../stores/tracker-store"
 import { saveTrackerPreferences, getSystemTaskByType } from "../actions/tracker-actions"
@@ -17,24 +17,34 @@ export function useTrackerSelection({
     initialSelectedTaskId,
     activeTimerData,
 }: UseTrackerSelectionProps) {
-    // Use useState with server values to prevent flash
     const [selectedType, setSelectedTypeLocal] = useState(initialSelectedType)
     const [selectedTaskId, setSelectedTaskIdLocal] = useState(initialSelectedTaskId)
 
     const setSelectedTypeStore = useTrackerStore((state) => state.setSelectedType)
     const setSelectedTaskIdStore = useTrackerStore((state) => state.setSelectedTaskId)
 
-    // Sync with active timer on mount/update
+    const isFirstMount = useRef(true)
+
+    const isWorkType = (t: HourType) => t === "WORK" || t === "WORK_FROM_HOME"
+
+    const lastWorkTaskRef = useRef<string | null>(
+        isWorkType(initialSelectedType) ? initialSelectedTaskId : null
+    )
+
     useEffect(() => {
         if (activeTimerData) {
             setSelectedTypeLocal(activeTimerData.type)
             setSelectedTaskIdLocal(activeTimerData.taskId)
             setSelectedTypeStore(activeTimerData.type)
             setSelectedTaskIdStore(activeTimerData.taskId)
-        } else {
+        } else if (isFirstMount.current) {
+            setSelectedTypeLocal(initialSelectedType)
+            setSelectedTaskIdLocal(initialSelectedTaskId)
             setSelectedTypeStore(initialSelectedType)
             setSelectedTaskIdStore(initialSelectedTaskId)
         }
+
+        isFirstMount.current = false
     }, [
         activeTimerData,
         initialSelectedType,
@@ -50,19 +60,23 @@ export function useTrackerSelection({
 
         // For BREAK and PRIVATE, fetch the system task ID
         if (newType === "BREAK" || newType === "PRIVATE") {
+            lastWorkTaskRef.current = selectedTaskId
+
             const systemTask = await getSystemTaskByType(newType)
             const taskId = systemTask?.id ?? null
             setSelectedTaskIdLocal(taskId)
             setSelectedTaskIdStore(taskId)
             saveTrackerPreferences(newType, taskId)
         } else {
-            setSelectedTaskIdLocal(null)
-            setSelectedTaskIdStore(null)
-            saveTrackerPreferences(newType, null)
+            const restoredTaskId = lastWorkTaskRef.current
+            setSelectedTaskIdLocal(restoredTaskId)
+            setSelectedTaskIdStore(restoredTaskId)
+            saveTrackerPreferences(newType, restoredTaskId)
         }
     }
 
     const handleTaskChange = (taskId: string) => {
+        lastWorkTaskRef.current = taskId
         setSelectedTaskIdLocal(taskId)
         setSelectedTaskIdStore(taskId)
         saveTrackerPreferences(selectedType, taskId)

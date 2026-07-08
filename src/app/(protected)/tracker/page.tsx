@@ -1,4 +1,5 @@
 import { getActiveTimer } from "@/app/(protected)/shared/actions/timer-actions"
+import type { HourType } from "@/../../prisma/generated/client"
 import { TaskDescriptionDialog } from "@/app/(protected)/tasks/components/task-description-dialog"
 import {
     getGeneralWorkTask,
@@ -7,6 +8,7 @@ import {
     getSystemTaskByType,
     getTodayTimeSummary,
     getInProgressTasksForTracker,
+    getLastTimeEntryToday,
 } from "./actions/tracker-actions"
 import { TrackerDisplay } from "./components/tracker-display"
 import { TimeEntriesDialog } from "@/app/(protected)/tasks/components/time-entries-dialog"
@@ -30,6 +32,7 @@ export default async function TrackerPage() {
         trackerPreferences,
         dailySummary,
         tutorialsSeen,
+        lastEntry,
     ] = await Promise.all([
         getInProgressTasksForTracker(),
         getActiveTimer(),
@@ -37,13 +40,21 @@ export default async function TrackerPage() {
         getTrackerPreferences(),
         getTodayTimeSummary(),
         getTutorialsSeen(),
+        getLastTimeEntryToday(),
     ])
 
-    let finalSelectedTaskId = trackerPreferences.selectedTaskId
+    const useLastEntry = !activeTimer && lastEntry !== null
+
+    const initialSelectedType: HourType = useLastEntry
+        ? lastEntry.type
+        : trackerPreferences.selectedType
+
+    let finalSelectedTaskId = useLastEntry ? lastEntry.taskId : trackerPreferences.selectedTaskId
 
     if (
-        trackerPreferences.selectedType === "BREAK" ||
-        trackerPreferences.selectedType === "PRIVATE"
+        !useLastEntry &&
+        (trackerPreferences.selectedType === "BREAK" ||
+            trackerPreferences.selectedType === "PRIVATE")
     ) {
         const systemTask = await getSystemTaskByType(trackerPreferences.selectedType)
         finalSelectedTaskId = systemTask?.id ?? null
@@ -118,7 +129,7 @@ export default async function TrackerPage() {
                 <TrackerDisplay
                     inProgressTasks={inProgressTasks}
                     generalWorkTask={generalWorkTask}
-                    initialSelectedType={trackerPreferences.selectedType}
+                    initialSelectedType={initialSelectedType}
                     initialSelectedTaskId={finalSelectedTaskId}
                     initialActiveTimer={activeTimer}
                     initialTodayEntries={initialTaskEntries}

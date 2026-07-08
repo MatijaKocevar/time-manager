@@ -136,13 +136,15 @@ export async function startTimer(input: StartTimerInput) {
 
         await broadcastTimerEvent(session.user.id, "timer-started", broadcastData)
 
+        const skipUrnik = process.env.DEBUG_SKIP_URNIK_LOGIN === "true"
+
         const userWithCredentials = await prisma.user.findUnique({
             where: { id: session.user.id },
             select: { urnikUsername: true },
         })
 
         const shouldShowArrivalDialog =
-            !!userWithCredentials?.urnikUsername && !(await hasLoggedArrivalToday())
+            !skipUrnik && !!userWithCredentials?.urnikUsername && !(await hasLoggedArrivalToday())
         const wfhStatus = shouldShowArrivalDialog
             ? await getTodayWorkFromHomeStatus()
             : { hasApprovedWFH: false, location: null }

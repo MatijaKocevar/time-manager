@@ -78,7 +78,10 @@ export function TrackerDisplay({
         activeTimerData.taskId === selectedTaskId
 
     const canStart =
-        selectedType === "BREAK" || selectedType === "PRIVATE" || selectedType === "WORK"
+        selectedType === "BREAK" ||
+        selectedType === "PRIVATE" ||
+        selectedType === "WORK" ||
+        selectedType === "WORK_FROM_HOME"
 
     const handlePlayStop = () => {
         if (isTrackingCurrentSelection && activeTimerData) {
@@ -86,7 +89,10 @@ export function TrackerDisplay({
         } else if (canStart) {
             startMutation.mutate({
                 type: selectedType,
-                taskId: selectedType === "WORK" ? (selectedTaskId ?? undefined) : undefined,
+                taskId:
+                    selectedType === "WORK" || selectedType === "WORK_FROM_HOME"
+                        ? (selectedTaskId ?? undefined)
+                        : undefined,
             })
         }
     }
@@ -134,7 +140,7 @@ export function TrackerDisplay({
                                 {translations.trackingType}
                             </label>
                             <Select
-                                value={selectedType === "WORK_FROM_HOME" ? "WORK" : selectedType}
+                                value={selectedType}
                                 onValueChange={handleTypeChange}
                                 disabled={isLoading}
                             >
@@ -147,6 +153,9 @@ export function TrackerDisplay({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="WORK">{translations.work}</SelectItem>
+                                    <SelectItem value="WORK_FROM_HOME">
+                                        {translations.workFromHome}
+                                    </SelectItem>
                                     <SelectItem value="BREAK">{translations.break}</SelectItem>
                                     <SelectItem value="PRIVATE">{translations.private}</SelectItem>
                                 </SelectContent>
@@ -160,7 +169,11 @@ export function TrackerDisplay({
                             <Select
                                 value={selectedTaskId ?? ""}
                                 onValueChange={handleTaskChange}
-                                disabled={selectedType !== "WORK" || isLoading}
+                                disabled={
+                                    (selectedType !== "WORK" &&
+                                        selectedType !== "WORK_FROM_HOME") ||
+                                    isLoading
+                                }
                             >
                                 <SelectTrigger
                                     id="tracker-task-select"
