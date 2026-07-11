@@ -5,8 +5,8 @@ import { requireAuth } from "@/lib/auth-helpers"
 import { URNIK_USER_AGENT } from "../../lib/constants"
 import { getErrorMessage } from "../../utils/helpers"
 import { prisma } from "@/lib/prisma"
-import type { ParsedHoursResult } from "../schemas/hours-schema"
-import { parseHoursHtml } from "../utils/parse-hours"
+import type { ParsedHoursResult, DayDetailResult } from "../schemas/hours-schema"
+import { parseHoursHtml, parseDayDetailHtml } from "../utils/parse-hours"
 
 export async function fetchMonthlyHours(year: number, month: number): Promise<ParsedHoursResult> {
     try {
@@ -111,6 +111,79 @@ export async function fetchMonthlyHours(year: number, month: number): Promise<Pa
         return {
             success: false,
             error: getErrorMessage(error, "Failed to fetch hours data"),
+        }
+    }
+}
+
+export async function fetchDayDetail(
+    year: number,
+    month: number,
+    day: number
+): Promise<DayDetailResult> {
+    try {
+        const session = await requireAuth()
+
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { urnikUserId: true, isDemo: true },
+        })
+
+        if (user?.isDemo) {
+            return {
+                success: true,
+                data: {
+                    title: `Day overview ${day}.${month}.${year}`,
+                    name: "Demo User",
+                    entries: [],
+                    workWithoutBreak: null,
+                    lunchBreak: null,
+                    withBreak: null,
+                },
+            }
+        }
+
+        if (!user?.urnikUserId) {
+            return {
+                success: false,
+                error: "No urnik.net user ID found.",
+            }
+        }
+
+        const cookie = await getUrnikCookie()
+        if (!cookie) {
+            return {
+                success: false,
+                error: "Failed to authenticate with urnik.net.",
+            }
+        }
+
+        const url = `https://urnik.net/App/Tabels/Calendar?handler=LoadDayInfoOnlyView&UserID=${user.urnikUserId}&year=${year}&month=${month}&day=${day}`
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "User-Agent": URNIK_USER_AGENT,
+                Cookie: cookie,
+                "X-Requested-With": "XMLHttpRequest",
+                Accept: "*/*",
+                "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
+                Referer: "https://urnik.net/App/Main",
+            },
+        })
+
+        if (!response.ok) {
+            return {
+                success: false,
+                error: `Failed to fetch day detail: ${response.status}`,
+            }
+        }
+
+        const html = await response.text()
+        return parseDayDetailHtml(html)
+    } catch (error) {
+        return {
+            success: false,
+            error: getErrorMessage(error, "Failed to fetch day detail"),
         }
     }
 }

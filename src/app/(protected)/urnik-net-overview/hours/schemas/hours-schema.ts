@@ -5,6 +5,7 @@ export const DayEntrySchema = z.object({
     date: z.string(),
     dayOfWeek: z.string(),
     status: z.string(),
+    graphColors: z.array(z.string()).nullable(),
     clockIn: z.string().nullable(),
     clockOut: z.string().nullable(),
     attendance: z.string().nullable(),
@@ -62,4 +63,29 @@ export interface ParsedHoursResult {
     data?: ParsedHoursData
     error?: string
     validationWarnings?: ValidationWarning[]
+}
+
+export const TimeLogEntrySchema = z.object({
+    start: z.string(),
+    end: z.string(),
+    duration: z.string(),
+    type: z.string(),
+})
+
+export const DayDetailDataSchema = z.object({
+    title: z.string(),
+    name: z.string(),
+    entries: z.array(TimeLogEntrySchema),
+    workWithoutBreak: z.string().nullable(),
+    lunchBreak: z.string().nullable(),
+    withBreak: z.string().nullable(),
+})
+
+export type TimeLogEntry = z.infer<typeof TimeLogEntrySchema>
+export type DayDetailData = z.infer<typeof DayDetailDataSchema>
+
+export interface DayDetailResult {
+    success: boolean
+    data?: DayDetailData
+    error?: string
 }

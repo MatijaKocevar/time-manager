@@ -1,6 +1,6 @@
 "use client"
 
-import { useTransition } from "react"
+import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, AlertTriangle, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
@@ -12,7 +12,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import type { ParsedHoursResult } from "../schemas/hours-schema"
+import type { ParsedHoursResult, DayEntry } from "../schemas/hours-schema"
 import type { HoursViewTranslations } from "../types"
 import { getPreviousMonthInt, getNextMonthInt } from "../../utils/date-helpers"
 import {
@@ -23,6 +23,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
+import { DayInfoDialog } from "./day-info-dialog"
 
 interface HoursViewProps {
     result: ParsedHoursResult
@@ -41,6 +42,7 @@ export function HoursView({
 }: HoursViewProps) {
     const router = useRouter()
     const [isPending, startTransition] = useTransition()
+    const [selectedDay, setSelectedDay] = useState<DayEntry | null>(null)
 
     const { year: prevYear, month: prevMonth } = getPreviousMonthInt(currentYear, currentMonth)
     const { year: nextYear, month: nextMonth } = getNextMonthInt(currentYear, currentMonth)
@@ -249,6 +251,9 @@ export function HoursView({
                                     <TableHead className="min-w-[120px]">
                                         {translations.table.status}
                                     </TableHead>
+                                    <TableHead className="min-w-[60px]">
+                                        {translations.table.graph}
+                                    </TableHead>
                                     <TableHead className="text-right min-w-[80px]">
                                         {translations.table.clockIn}
                                     </TableHead>
@@ -279,6 +284,29 @@ export function HoursView({
                                         <TableCell>{day.date}</TableCell>
                                         <TableCell>{day.dayOfWeek}</TableCell>
                                         <TableCell>{day.status}</TableCell>
+                                        <TableCell>
+                                            {day.graphColors ? (
+                                                <div
+                                                    className="cursor-pointer inline-flex items-center gap-[1px]"
+                                                    onClick={() => setSelectedDay(day)}
+                                                >
+                                                    {day.graphColors.map((color, i) => {
+                                                        const isWhite =
+                                                            /^#(fff|ffffff)$/i.test(color) ||
+                                                            color === "white"
+                                                        return (
+                                                            <span
+                                                                key={i}
+                                                                className={`inline-block h-2 w-[5px] ${isWhite ? "border border-gray-300 dark:border-gray-500" : ""}`}
+                                                                style={{ backgroundColor: color }}
+                                                            />
+                                                        )
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                "—"
+                                            )}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             {day.clockIn || "—"}
                                         </TableCell>
@@ -312,6 +340,20 @@ export function HoursView({
                     )}
                 </div>
             )}
+            <DayInfoDialog
+                open={selectedDay !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setSelectedDay(null)
+                    }
+                }}
+                date={selectedDay?.date ?? ""}
+                dayOfWeek={selectedDay?.dayOfWeek ?? ""}
+                year={currentYear}
+                month={currentMonth}
+                graphColors={selectedDay?.graphColors ?? null}
+                translations={translations.dayInfoDialog}
+            />
         </div>
     )
 }

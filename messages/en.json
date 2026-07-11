@@ -1039,6 +1039,7 @@
             "date": "Date",
             "day": "Day",
             "status": "Status",
+            "graph": "Graph",
             "clockIn": "Clock In",
             "clockOut": "Clock Out",
             "attendance": "Attendance",
@@ -1046,6 +1047,18 @@
             "dayBalance": "Day Balance",
             "balanceMonth": "Month Balance",
             "balanceYear": "Year Balance"
+        },
+        "dayInfoDialog": {
+            "title": "Day Overview",
+            "start": "Start",
+            "end": "End",
+            "duration": "Duration",
+            "type": "Type",
+            "workWithoutBreak": "Work without break",
+            "lunchBreak": "Lunch break",
+            "withBreak": "With break",
+            "loading": "Loading...",
+            "error": "Failed to load day details."
         }
     },
     "urnikNetAttendance": {
