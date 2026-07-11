@@ -101,7 +101,15 @@ export default async function UrnikNetHoursPage({
                         },
                         dayInfoDialog: {
                             title: t("dayInfoDialog.title"),
-                            comingSoon: t("dayInfoDialog.comingSoon"),
+                            start: t("dayInfoDialog.start"),
+                            end: t("dayInfoDialog.end"),
+                            duration: t("dayInfoDialog.duration"),
+                            type: t("dayInfoDialog.type"),
+                            workWithoutBreak: t("dayInfoDialog.workWithoutBreak"),
+                            lunchBreak: t("dayInfoDialog.lunchBreak"),
+                            withBreak: t("dayInfoDialog.withBreak"),
+                            loading: t("dayInfoDialog.loading"),
+                            error: t("dayInfoDialog.error"),
                         },
                     }}
                 />

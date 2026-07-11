@@ -1050,7 +1050,15 @@
         },
         "dayInfoDialog": {
             "title": "Pregled dneva",
-            "comingSoon": "Podrobnosti dneva bodo na voljo kmalu."
+            "start": "Začetek",
+            "end": "Konec",
+            "duration": "Trajanje",
+            "type": "Tip",
+            "workWithoutBreak": "Delo brez malice",
+            "lunchBreak": "Malica",
+            "withBreak": "Z malico",
+            "loading": "Nalaganje...",
+            "error": "Podatkov o dnevu ni bilo mogoče naložiti."
         }
     },
     "urnikNetAttendance": {

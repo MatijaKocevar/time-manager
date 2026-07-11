@@ -349,6 +349,8 @@ export function HoursView({
                 }}
                 date={selectedDay?.date ?? ""}
                 dayOfWeek={selectedDay?.dayOfWeek ?? ""}
+                year={currentYear}
+                month={currentMonth}
                 graphColors={selectedDay?.graphColors ?? null}
                 translations={translations.dayInfoDialog}
             />

@@ -64,3 +64,28 @@ export interface ParsedHoursResult {
     error?: string
     validationWarnings?: ValidationWarning[]
 }
+
+export const TimeLogEntrySchema = z.object({
+    start: z.string(),
+    end: z.string(),
+    duration: z.string(),
+    type: z.string(),
+})
+
+export const DayDetailDataSchema = z.object({
+    title: z.string(),
+    name: z.string(),
+    entries: z.array(TimeLogEntrySchema),
+    workWithoutBreak: z.string().nullable(),
+    lunchBreak: z.string().nullable(),
+    withBreak: z.string().nullable(),
+})
+
+export type TimeLogEntry = z.infer<typeof TimeLogEntrySchema>
+export type DayDetailData = z.infer<typeof DayDetailDataSchema>
+
+export interface DayDetailResult {
+    success: boolean
+    data?: DayDetailData
+    error?: string
+}

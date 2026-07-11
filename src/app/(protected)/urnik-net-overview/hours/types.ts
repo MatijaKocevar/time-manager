@@ -33,6 +33,14 @@ export interface HoursViewTranslations {
     }
     dayInfoDialog: {
         title: string
-        comingSoon: string
+        start: string
+        end: string
+        duration: string
+        type: string
+        workWithoutBreak: string
+        lunchBreak: string
+        withBreak: string
+        loading: string
+        error: string
     }
 }

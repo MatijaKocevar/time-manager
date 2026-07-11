@@ -1050,7 +1050,15 @@
         },
         "dayInfoDialog": {
             "title": "Day Overview",
-            "comingSoon": "Day details will be available soon."
+            "start": "Start",
+            "end": "End",
+            "duration": "Duration",
+            "type": "Type",
+            "workWithoutBreak": "Work without break",
+            "lunchBreak": "Lunch break",
+            "withBreak": "With break",
+            "loading": "Loading...",
+            "error": "Failed to load day details."
         }
     },
     "urnikNetAttendance": {

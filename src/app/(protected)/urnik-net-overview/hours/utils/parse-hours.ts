@@ -3,6 +3,7 @@ import type {
     DayEntry,
     MonthSummary,
     ValidationWarning,
+    DayDetailResult,
 } from "../schemas/hours-schema"
 import { getErrorMessage } from "../../utils/helpers"
 
@@ -235,6 +236,81 @@ export function parseHoursHtml(html: string): ParsedHoursResult {
         return {
             success: false,
             error: getErrorMessage(error, "Failed to parse HTML"),
+        }
+    }
+}
+
+function extractSummaryValue(html: string, label: string): string | null {
+    const regex = new RegExp(
+        `<b>${label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}<\\/b>\\s*([\\d:]+)`,
+        "i"
+    )
+    const match = html.match(regex)
+    return match ? match[1].trim() : null
+}
+
+const CHILD_DIV_RE =
+    /<div class="TimeLogDiv(?:Time|Text)[^"]*"(?:\s+style="[^"]*")?\s*>([\s\S]*?)<\/div>/g
+
+export function parseDayDetailHtml(html: string): DayDetailResult {
+    try {
+        const titleMatch = html.match(/<p class="small_title"[^>]*>([\s\S]*?)<\/p>/)
+        const nameMatch = html.match(/<p class="smaller_title">([\s\S]*?)<\/p>/)
+        const title = titleMatch ? cleanText(titleMatch[1]) : ""
+        const name = nameMatch ? cleanText(nameMatch[1]) : ""
+
+        const headerEnd = html.indexOf(
+            "</div>",
+            html.indexOf('<div class="row" style=" padding: 10px;">')
+        )
+        const bodyHtml = headerEnd !== -1 ? html.substring(headerEnd + 6) : html
+
+        const rowBlocks = bodyHtml.split(/<div\s+class="TimeLogDiv row /)
+        const entries: Array<{ start: string; end: string; duration: string; type: string }> = []
+
+        for (let i = 1; i < rowBlocks.length; i++) {
+            const block = rowBlocks[i]
+            const typeMatch = block.match(/^(\w+)/)
+            const entryTypeClass = typeMatch ? typeMatch[1] : ""
+
+            CHILD_DIV_RE.lastIndex = 0
+            const childDivs = [...block.matchAll(CHILD_DIV_RE)]
+
+            const childContent = (index: number): string => childDivs[index]?.[1] ?? ""
+
+            const startRaw = cleanText(childContent(0))
+            const start = startRaw || ""
+
+            const endRaw = cleanText(childContent(1))
+            const end = endRaw || "No end"
+
+            const duration = cleanText(childContent(2))
+
+            const typeRaw = cleanText(childContent(3))
+            const type = typeRaw || entryTypeClass
+
+            entries.push({ start, end, duration, type })
+        }
+
+        const workWithoutBreak = extractSummaryValue(html, "Work without break:")
+        const lunchBreak = extractSummaryValue(html, "Lunch break:")
+        const withBreak = extractSummaryValue(html, "With break:")
+
+        return {
+            success: true,
+            data: {
+                title,
+                name,
+                entries,
+                workWithoutBreak,
+                lunchBreak,
+                withBreak,
+            },
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error: getErrorMessage(error, "Failed to parse day detail HTML"),
         }
     }
 }
