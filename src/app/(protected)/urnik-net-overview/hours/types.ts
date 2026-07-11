@@ -22,6 +22,7 @@ export interface HoursViewTranslations {
         date: string
         day: string
         status: string
+        graph: string
         clockIn: string
         clockOut: string
         attendance: string
@@ -29,5 +30,9 @@ export interface HoursViewTranslations {
         dayBalance: string
         balanceMonth: string
         balanceYear: string
+    }
+    dayInfoDialog: {
+        title: string
+        comingSoon: string
     }
 }

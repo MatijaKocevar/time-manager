@@ -1039,6 +1039,7 @@
             "date": "Date",
             "day": "Day",
             "status": "Status",
+            "graph": "Graph",
             "clockIn": "Clock In",
             "clockOut": "Clock Out",
             "attendance": "Attendance",
@@ -1046,6 +1047,10 @@
             "dayBalance": "Day Balance",
             "balanceMonth": "Month Balance",
             "balanceYear": "Year Balance"
+        },
+        "dayInfoDialog": {
+            "title": "Day Overview",
+            "comingSoon": "Day details will be available soon."
         }
     },
     "urnikNetAttendance": {

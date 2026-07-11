@@ -90,6 +90,7 @@ export default async function UrnikNetHoursPage({
                             date: t("table.date"),
                             day: t("table.day"),
                             status: t("table.status"),
+                            graph: t("table.graph"),
                             clockIn: t("table.clockIn"),
                             clockOut: t("table.clockOut"),
                             attendance: t("table.attendance"),
@@ -97,6 +98,10 @@ export default async function UrnikNetHoursPage({
                             dayBalance: t("table.dayBalance"),
                             balanceMonth: t("table.balanceMonth"),
                             balanceYear: t("table.balanceYear"),
+                        },
+                        dayInfoDialog: {
+                            title: t("dayInfoDialog.title"),
+                            comingSoon: t("dayInfoDialog.comingSoon"),
                         },
                     }}
                 />

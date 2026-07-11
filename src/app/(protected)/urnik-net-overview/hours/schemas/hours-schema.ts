@@ -5,6 +5,7 @@ export const DayEntrySchema = z.object({
     date: z.string(),
     dayOfWeek: z.string(),
     status: z.string(),
+    graphColors: z.array(z.string()).nullable(),
     clockIn: z.string().nullable(),
     clockOut: z.string().nullable(),
     attendance: z.string().nullable(),

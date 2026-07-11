@@ -162,6 +162,15 @@ function parseDayEntries(html: string): DayEntry[] {
             return text === "" || text === "Ni podatka" ? null : text
         }
 
+        const getGraphColors = (): string[] | null => {
+            const cell = cellMatches[4]?.[1]
+            if (!cell) {
+                return null
+            }
+            const colors = [...cell.matchAll(/background-color:\s*([#\w]+)/g)].map((m) => m[1])
+            return colors.length > 0 ? colors : null
+        }
+
         const numberText = getCellText(0)
         const number = numberText ? parseInt(numberText.replace(".", "")) : 0
 
@@ -170,6 +179,7 @@ function parseDayEntries(html: string): DayEntry[] {
             date: getCellText(1) || "",
             dayOfWeek: getCellText(2) || "",
             status: getCellText(3) || "",
+            graphColors: getGraphColors(),
             clockIn: getCellText(5),
             clockOut: getCellText(6),
             attendance: getCellText(10),

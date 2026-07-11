@@ -1039,6 +1039,7 @@
             "date": "Datum",
             "day": "Dan",
             "status": "Status",
+            "graph": "Graf",
             "clockIn": "Prihod",
             "clockOut": "Odhod",
             "attendance": "Prisotnost",
@@ -1046,6 +1047,10 @@
             "dayBalance": "Dnevni saldo",
             "balanceMonth": "Saldo meseca",
             "balanceYear": "Saldo leta"
+        },
+        "dayInfoDialog": {
+            "title": "Pregled dneva",
+            "comingSoon": "Podrobnosti dneva bodo na voljo kmalu."
         }
     },
     "urnikNetAttendance": {
