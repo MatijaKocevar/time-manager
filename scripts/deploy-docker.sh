@@ -51,7 +51,7 @@ docker compose down
 if [ "$NO_BUILD" = true ]; then
     docker compose up -d
 else
-    docker compose build --no-cache
+    docker compose build
     docker compose up -d
 fi
 
