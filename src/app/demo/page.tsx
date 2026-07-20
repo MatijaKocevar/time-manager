@@ -18,7 +18,7 @@ export default function DemoPage() {
 
         if (status === "unauthenticated") {
             signIn("credentials", {
-                email: "admin@example.com",
+                email: "demo@example.com",
                 password: "password123",
                 callbackUrl: "/tracker",
             }).catch(() => {
