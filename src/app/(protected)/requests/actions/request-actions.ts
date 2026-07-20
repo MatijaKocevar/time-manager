@@ -6,7 +6,6 @@ import { requireAuth, requireAdmin } from "@/lib/auth-helpers"
 import type { HourType, RequestType } from "@/../../prisma/generated/client"
 import {
     mapRequestTypeToShiftLocation,
-    mapShiftLocationToHourType,
     mapRequestTypeToHourType,
 } from "../../shifts/utils/request-shift-mapping"
 import {
@@ -350,149 +349,15 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
             return { error: "Can only cancel approved requests" }
         }
 
-        await prisma.$transaction(async (tx) => {
-            await tx.request.update({
-                where: { id },
-                data: {
-                    status: "CANCELLED",
-                    cancelledBy: session.user.id,
-                    cancelledAt: new Date(),
-                    cancellationReason,
-                },
-            })
-
-            if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
-                const hourType = request.type === "VACATION" ? "VACATION" : "SICK_LEAVE"
-                const startDay = new Date(request.startDate)
-                startDay.setUTCHours(0, 0, 0, 0)
-                const endDay = new Date(request.endDate)
-                endDay.setUTCHours(23, 59, 59, 999)
-
-                const systemTask = await tx.task.findFirst({
-                    where: {
-                        userId: request.userId,
-                        title: `System: ${request.type}`,
-                    },
-                })
-
-                if (systemTask) {
-                    await tx.taskTimeEntry.deleteMany({
-                        where: {
-                            userId: request.userId,
-                            taskId: systemTask.id,
-                            startTime: {
-                                gte: startDay,
-                                lte: endDay,
-                            },
-                            type: hourType,
-                        },
-                    })
-                }
-
-                await tx.hourEntry.deleteMany({
-                    where: {
-                        userId: request.userId,
-                        date: {
-                            gte: startDay,
-                            lte: endDay,
-                        },
-                        type: hourType,
-                        description: {
-                            startsWith: "Auto-generated from",
-                        },
-                        taskId: null,
-                    },
-                })
-            }
-
-            const startDay = new Date(request.startDate)
-            startDay.setUTCHours(0, 0, 0, 0)
-            const endDay = new Date(request.endDate)
-            endDay.setUTCHours(0, 0, 0, 0)
-
-            const daysDiff = Math.round(
-                (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
-            )
-
-            for (let i = 0; i <= daysDiff; i++) {
-                const currentDay = new Date(startDay)
-                currentDay.setUTCDate(startDay.getUTCDate() + i)
-
-                await tx.shift.findMany({
-                    where: {
-                        userId: request.userId,
-                        date: currentDay,
-                    },
-                })
-
-                await tx.shift.deleteMany({
-                    where: {
-                        userId: request.userId,
-                        date: currentDay,
-                        notes: {
-                            contains: "Auto-generated from",
-                        },
-                    },
-                })
-            }
-
-            if (
-                request.affectsHourType &&
-                request.type !== "VACATION" &&
-                request.type !== "SICK_LEAVE"
-            ) {
-                const shiftLocation = mapRequestTypeToShiftLocation(request.type)
-                const originalHourType = mapShiftLocationToHourType(shiftLocation)
-                const revertStartDate = new Date(request.startDate)
-                revertStartDate.setHours(0, 0, 0, 0)
-                const revertEndDate = new Date(request.endDate)
-                revertEndDate.setHours(23, 59, 59, 999)
-
-                await tx.hourEntry.updateMany({
-                    where: {
-                        userId: request.userId,
-                        date: {
-                            gte: revertStartDate,
-                            lte: revertEndDate,
-                        },
-                        type: originalHourType,
-                        taskId: null,
-                    },
-                    data: {
-                        type: "WORK",
-                    },
-                })
-
-                await tx.taskTimeEntry.updateMany({
-                    where: {
-                        userId: request.userId,
-                        startTime: {
-                            gte: revertStartDate,
-                            lte: revertEndDate,
-                        },
-                        type: originalHourType,
-                    },
-                    data: {
-                        type: "WORK",
-                    },
-                })
-            }
+        await prisma.request.update({
+            where: { id },
+            data: {
+                status: "CANCELLED",
+                cancelledBy: session.user.id,
+                cancelledAt: new Date(),
+                cancellationReason,
+            },
         })
-
-        if (
-            request.affectsHourType &&
-            request.type !== "VACATION" &&
-            request.type !== "SICK_LEAVE"
-        ) {
-            const recalcDate = new Date(request.startDate)
-            const recalcEndDate = new Date(request.endDate)
-
-            while (recalcDate <= recalcEndDate) {
-                recalcDate.setDate(recalcDate.getDate() + 1)
-            }
-        }
-
-        await refreshDailyHourSummary()
 
         const requestWithUser = await prisma.request.findUnique({
             where: { id },
@@ -1075,21 +940,12 @@ async function executeApproval(request: ApproveableRequest, approvedById?: strin
                     }
                 }
             } else {
-                const { startDateTime: reqStartDateTime, endDateTime: reqEndDateTime } =
-                    getRequestDateTimeRange(request)
-
                 const typesToRemap = ["WORK", "WORK_FROM_HOME"]
 
-                const systemTasks = await tx.task.findMany({
-                    where: {
-                        userId: request.userId,
-                        title: {
-                            in: ["System: VACATION", "System: SICK_LEAVE"],
-                        },
-                    },
-                    select: { id: true },
-                })
-                const systemTaskIds = systemTasks.map((t) => t.id)
+                const hourEntryStartDate = new Date(request.startDate)
+                hourEntryStartDate.setUTCHours(0, 0, 0, 0)
+                const hourEntryEndDate = new Date(request.endDate)
+                hourEntryEndDate.setUTCHours(23, 59, 59, 999)
 
                 for (const oldType of typesToRemap) {
                     if (oldType !== targetHourType) {
@@ -1097,39 +953,202 @@ async function executeApproval(request: ApproveableRequest, approvedById?: strin
                             where: {
                                 userId: request.userId,
                                 date: {
-                                    gte: reqStartDateTime,
-                                    lte: reqEndDateTime,
+                                    gte: hourEntryStartDate,
+                                    lte: hourEntryEndDate,
                                 },
                                 type: oldType as HourType,
                                 taskId: null,
                             },
                             data: { type: targetHourType },
                         })
+                    }
+                }
 
-                        await tx.taskTimeEntry.updateMany({
-                            where: {
-                                userId: request.userId,
-                                startTime: { lt: reqEndDateTime },
-                                endTime: { gt: reqStartDateTime },
-                                type: oldType as HourType,
-                                NOT: { taskId: { in: systemTaskIds } },
+                if (request.isFullDay || !request.startTime || !request.endTime) {
+                    const fullDayStart = new Date(request.startDate)
+                    fullDayStart.setUTCHours(0, 0, 0, 0)
+                    const fullDayEnd = new Date(request.endDate)
+                    fullDayEnd.setUTCHours(23, 59, 59, 999)
+
+                    const systemTasks = await tx.task.findMany({
+                        where: {
+                            userId: request.userId,
+                            title: {
+                                in: ["System: VACATION", "System: SICK_LEAVE"],
                             },
-                            data: { type: targetHourType },
-                        })
+                        },
+                        select: { id: true },
+                    })
+                    const systemTaskIds = systemTasks.map((t) => t.id)
 
-                        await tx.taskTimeEntry.updateMany({
-                            where: {
-                                userId: request.userId,
-                                startTime: {
-                                    gte: reqStartDateTime,
-                                    lt: reqEndDateTime,
+                    for (const oldType of typesToRemap) {
+                        if (oldType !== targetHourType) {
+                            await tx.taskTimeEntry.updateMany({
+                                where: {
+                                    userId: request.userId,
+                                    startTime: { gte: fullDayStart, lte: fullDayEnd },
+                                    type: oldType as HourType,
+                                    NOT: { taskId: { in: systemTaskIds } },
                                 },
-                                endTime: null,
+                                data: { type: targetHourType },
+                            })
+                        }
+                    }
+                } else {
+                    const { startDateTime: reqStart, endDateTime: reqEnd } =
+                        getRequestDateTimeRange(request)
+
+                    const calendarStart = new Date(request.startDate)
+                    calendarStart.setUTCHours(0, 0, 0, 0)
+                    const calendarEnd = new Date(request.endDate)
+                    calendarEnd.setUTCHours(23, 59, 59, 999)
+
+                    const systemTasks = await tx.task.findMany({
+                        where: {
+                            userId: request.userId,
+                            title: {
+                                in: ["System: VACATION", "System: SICK_LEAVE"],
+                            },
+                        },
+                        select: { id: true },
+                    })
+                    const systemTaskIds = systemTasks.map((t) => t.id)
+
+                    for (const oldType of typesToRemap) {
+                        if (oldType === targetHourType) continue
+
+                        const entries = await tx.taskTimeEntry.findMany({
+                            where: {
+                                userId: request.userId,
+                                startTime: { gte: calendarStart, lte: calendarEnd },
                                 type: oldType as HourType,
                                 NOT: { taskId: { in: systemTaskIds } },
                             },
-                            data: { type: targetHourType },
                         })
+
+                        for (const entry of entries) {
+                            if (!entry.endTime) {
+                                if (entry.startTime >= reqStart && entry.startTime < reqEnd) {
+                                    await tx.taskTimeEntry.update({
+                                        where: { id: entry.id },
+                                        data: { type: targetHourType },
+                                    })
+                                }
+                                continue
+                            }
+
+                            const entryStart = entry.startTime
+                            const entryEnd = entry.endTime
+
+                            if (entryEnd <= reqStart || entryStart >= reqEnd) continue
+
+                            const fullyContained = entryStart >= reqStart && entryEnd <= reqEnd
+                            const straddles = entryStart < reqStart && entryEnd > reqEnd
+                            const leftOverlap =
+                                entryStart < reqStart && entryEnd > reqStart && entryEnd <= reqEnd
+                            const rightOverlap =
+                                entryStart >= reqStart && entryStart < reqEnd && entryEnd > reqEnd
+
+                            if (fullyContained) {
+                                await tx.taskTimeEntry.update({
+                                    where: { id: entry.id },
+                                    data: { type: targetHourType },
+                                })
+                            } else if (straddles) {
+                                const leftDuration = Math.round(
+                                    (reqStart.getTime() - entryStart.getTime()) / 1000
+                                )
+                                const middleDuration = Math.round(
+                                    (reqEnd.getTime() - reqStart.getTime()) / 1000
+                                )
+                                const rightDuration = Math.round(
+                                    (entryEnd.getTime() - reqEnd.getTime()) / 1000
+                                )
+
+                                await tx.taskTimeEntry.update({
+                                    where: { id: entry.id },
+                                    data: {
+                                        endTime: reqStart,
+                                        duration: leftDuration,
+                                    },
+                                })
+
+                                await tx.taskTimeEntry.create({
+                                    data: {
+                                        taskId: entry.taskId,
+                                        userId: request.userId,
+                                        startTime: reqStart,
+                                        endTime: reqEnd,
+                                        duration: middleDuration,
+                                        type: targetHourType,
+                                    },
+                                })
+
+                                await tx.taskTimeEntry.create({
+                                    data: {
+                                        taskId: entry.taskId,
+                                        userId: request.userId,
+                                        startTime: reqEnd,
+                                        endTime: entryEnd,
+                                        duration: rightDuration,
+                                        type: oldType as HourType,
+                                    },
+                                })
+                            } else if (leftOverlap) {
+                                const leftDuration = Math.round(
+                                    (reqStart.getTime() - entryStart.getTime()) / 1000
+                                )
+                                const rightDuration = Math.round(
+                                    (entryEnd.getTime() - reqStart.getTime()) / 1000
+                                )
+
+                                await tx.taskTimeEntry.update({
+                                    where: { id: entry.id },
+                                    data: {
+                                        endTime: reqStart,
+                                        duration: leftDuration,
+                                    },
+                                })
+
+                                await tx.taskTimeEntry.create({
+                                    data: {
+                                        taskId: entry.taskId,
+                                        userId: request.userId,
+                                        startTime: reqStart,
+                                        endTime: entryEnd,
+                                        duration: rightDuration,
+                                        type: targetHourType,
+                                    },
+                                })
+                            } else if (rightOverlap) {
+                                const leftDuration = Math.round(
+                                    (reqEnd.getTime() - entryStart.getTime()) / 1000
+                                )
+                                const rightDuration = Math.round(
+                                    (entryEnd.getTime() - reqEnd.getTime()) / 1000
+                                )
+
+                                await tx.taskTimeEntry.update({
+                                    where: { id: entry.id },
+                                    data: {
+                                        endTime: reqEnd,
+                                        duration: leftDuration,
+                                        type: targetHourType,
+                                    },
+                                })
+
+                                await tx.taskTimeEntry.create({
+                                    data: {
+                                        taskId: entry.taskId,
+                                        userId: request.userId,
+                                        startTime: reqEnd,
+                                        endTime: entryEnd,
+                                        duration: rightDuration,
+                                        type: oldType as HourType,
+                                    },
+                                })
+                            }
+                        }
                     }
                 }
             }
