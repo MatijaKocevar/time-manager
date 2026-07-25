@@ -328,7 +328,12 @@
             "childTimeAggregation": "Čas iz podnalog",
             "subtasksInheritList": "Podnaloge podedujejo seznam starša",
             "now": "Zdaj",
-            "addEntry": "Dodaj vnos"
+            "addEntry": "Dodaj vnos",
+            "moveEntry": "Premakni na nalogo",
+            "searchTasks": "Išči naloge...",
+            "noTasksFound": "Ni najdenih nalog",
+            "moveSuccess": "Vnos premaknjen",
+            "moveError": "Premik vnosa ni uspel"
         },
         "table": {
             "list": "Seznam",
