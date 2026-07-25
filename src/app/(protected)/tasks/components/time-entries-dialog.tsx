@@ -27,6 +27,7 @@ import { hourKeys } from "@/app/(protected)/hours/query-keys"
 import { timeSheetKeys } from "@/app/(protected)/time-sheets/query-keys"
 import { sharedKeys } from "@/app/(protected)/shared/query-keys"
 import { formatDuration } from "../utils/time-helpers"
+import { MoveEntryPopover } from "@/app/(protected)/time-sheets/components/move-entry-popover"
 import type { TaskTimeEntryDisplay } from "../schemas/task-time-entry-schemas"
 
 interface EditedEntry {
@@ -238,6 +239,7 @@ export function TimeEntriesDialog() {
                                             <th className="h-12 px-2 sm:px-4 text-left align-middle font-medium text-muted-foreground bg-background">
                                                 {t("endedAt")}
                                             </th>
+                                            <th className="h-12 px-2 sm:px-4 align-middle font-medium text-muted-foreground bg-background w-10"></th>
                                             <th className="h-12 px-2 sm:px-4 align-middle font-medium text-muted-foreground text-right bg-background">
                                                 {t("duration")}
                                             </th>
@@ -275,6 +277,7 @@ export function TimeEntriesDialog() {
                                                         timezone="Europe/Ljubljana"
                                                     />
                                                 </td>
+                                                <td className="p-2 sm:p-4 align-middle"></td>
                                                 <td className="p-2 sm:p-4 align-middle text-right font-mono text-xs sm:text-sm">
                                                     {newEntryStart &&
                                                     newEntryEnd &&
@@ -308,7 +311,7 @@ export function TimeEntriesDialog() {
                                         {childAggregation && (
                                             <tr className="border-b bg-muted/30">
                                                 <td
-                                                    colSpan={2}
+                                                    colSpan={3}
                                                     className="p-2 sm:p-4 align-middle text-muted-foreground italic text-xs sm:text-sm"
                                                 >
                                                     {t("childTimeAggregation")}
@@ -398,6 +401,19 @@ export function TimeEntriesDialog() {
                                                                 timezone="Europe/Ljubljana"
                                                             />
                                                         )}
+                                                    </td>
+                                                    <td className="p-2 sm:p-4 align-middle">
+                                                        <MoveEntryPopover
+                                                            entryId={entry.id}
+                                                            currentTaskId={entry.taskId}
+                                                            translations={{
+                                                                moveEntry: t("moveEntry"),
+                                                                searchTasks: t("searchTasks"),
+                                                                noTasksFound: t("noTasksFound"),
+                                                                moveSuccess: t("moveSuccess"),
+                                                                moveError: t("moveError"),
+                                                            }}
+                                                        />
                                                     </td>
                                                     <td className="p-2 sm:p-4 align-middle text-right font-mono text-xs sm:text-sm">
                                                         {formatDuration(duration)}
@@ -614,35 +630,51 @@ export function TimeEntriesDialog() {
                                                             {formatDuration(duration)}
                                                         </div>
                                                     </div>
-                                                    {isActive ? (
-                                                        <Button
-                                                            variant="destructive"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                stopMutation.mutate({
-                                                                    id: entry.id,
-                                                                })
+                                                    <div className="flex items-center gap-1">
+                                                        <MoveEntryPopover
+                                                            entryId={entry.id}
+                                                            currentTaskId={entry.taskId}
+                                                            translations={{
+                                                                moveEntry: t("moveEntry"),
+                                                                searchTasks: t("searchTasks"),
+                                                                noTasksFound: t("noTasksFound"),
+                                                                moveSuccess: t("moveSuccess"),
+                                                                moveError: t("moveError"),
                                                             }}
-                                                            disabled={stopMutation.isPending}
-                                                            className="h-8 w-8 p-0"
-                                                            aria-label="Stop"
-                                                        >
-                                                            <Square className="h-4 w-4" />
-                                                        </Button>
-                                                    ) : (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() => handleDelete(entry.id)}
-                                                            disabled={
-                                                                isSaving || deleteMutation.isPending
-                                                            }
-                                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                                            aria-label="Delete"
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    )}
+                                                        />
+                                                        {isActive ? (
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    stopMutation.mutate({
+                                                                        id: entry.id,
+                                                                    })
+                                                                }}
+                                                                disabled={stopMutation.isPending}
+                                                                className="h-8 w-8 p-0"
+                                                                aria-label="Stop"
+                                                            >
+                                                                <Square className="h-4 w-4" />
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    handleDelete(entry.id)
+                                                                }
+                                                                disabled={
+                                                                    isSaving ||
+                                                                    deleteMutation.isPending
+                                                                }
+                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                                aria-label="Delete"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         )

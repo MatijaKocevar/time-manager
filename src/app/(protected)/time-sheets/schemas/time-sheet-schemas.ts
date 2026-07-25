@@ -43,3 +43,10 @@ export const TimeEntryDisplaySchema = z.object({
 })
 
 export type TimeEntryDisplay = z.infer<typeof TimeEntryDisplaySchema>
+
+export const MoveTimeEntrySchema = z.object({
+    entryId: z.string().min(1),
+    targetTaskId: z.string().min(1),
+})
+
+export type MoveTimeEntryInput = z.infer<typeof MoveTimeEntrySchema>

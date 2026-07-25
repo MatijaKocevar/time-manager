@@ -328,7 +328,12 @@
             "childTimeAggregation": "Time from subtasks",
             "subtasksInheritList": "Subtasks inherit parent's list",
             "now": "Now",
-            "addEntry": "Add Entry"
+            "addEntry": "Add Entry",
+            "moveEntry": "Move to task",
+            "searchTasks": "Search tasks...",
+            "noTasksFound": "No tasks found",
+            "moveSuccess": "Entry moved",
+            "moveError": "Failed to move entry"
         },
         "table": {
             "list": "List",

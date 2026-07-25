@@ -3,12 +3,16 @@
 import { unstable_cache } from "next/cache"
 import { requireAuth } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
+import { revalidatePath } from "next/cache"
 import {
     GetTimeSheetEntriesSchema,
     type GetTimeSheetEntriesInput,
     GetDayEntriesSchema,
     type GetDayEntriesInput,
+    MoveTimeEntrySchema,
+    type MoveTimeEntryInput,
 } from "../schemas/time-sheet-schemas"
+import { refreshDailyHourSummary } from "@/lib/materialized-views"
 
 async function fetchTimeSheetEntriesFromDb(
     userId: string,
@@ -156,5 +160,52 @@ export async function getDayEntries(input: GetDayEntriesInput) {
     } catch (error) {
         console.error("Error fetching day entries:", error)
         return { error: "Failed to fetch day entries" }
+    }
+}
+
+export async function moveTimeEntryToTask(input: MoveTimeEntryInput) {
+    const session = await requireAuth()
+
+    const validation = MoveTimeEntrySchema.safeParse(input)
+    if (!validation.success) {
+        return { error: validation.error.message }
+    }
+
+    const { entryId, targetTaskId } = validation.data
+
+    try {
+        const entry = await prisma.taskTimeEntry.findUnique({
+            where: { id: entryId },
+            select: { userId: true, taskId: true },
+        })
+
+        if (!entry || entry.userId !== session.user.id) {
+            return { error: "Entry not found" }
+        }
+
+        const targetTask = await prisma.task.findUnique({
+            where: { id: targetTaskId },
+            select: { userId: true },
+        })
+
+        if (!targetTask || targetTask.userId !== session.user.id) {
+            return { error: "Target task not found" }
+        }
+
+        await prisma.taskTimeEntry.update({
+            where: { id: entryId },
+            data: { taskId: targetTaskId },
+        })
+
+        await refreshDailyHourSummary()
+
+        revalidatePath("/time-sheets")
+        revalidatePath("/tasks")
+        revalidatePath("/tracker")
+
+        return { success: true }
+    } catch (error) {
+        console.error("Error moving time entry:", error)
+        return { error: "Failed to move time entry" }
     }
 }
