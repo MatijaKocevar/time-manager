@@ -35,6 +35,7 @@ export function useTimeSheetsPusher() {
 
         channel.bind("timer-started", handleTimerEvent)
         channel.bind("timer-stopped", handleTimerEvent)
+        channel.bind("time-entry-updated", handleTimerEvent)
 
         return () => {
             channel.unbind_all()

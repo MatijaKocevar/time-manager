@@ -3,7 +3,6 @@
 import { unstable_cache } from "next/cache"
 import { requireAuth } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
-import { revalidatePath } from "next/cache"
 import {
     GetTimeSheetEntriesSchema,
     type GetTimeSheetEntriesInput,
@@ -12,7 +11,7 @@ import {
     MoveTimeEntrySchema,
     type MoveTimeEntryInput,
 } from "../schemas/time-sheet-schemas"
-import { refreshDailyHourSummary } from "@/lib/materialized-views"
+import { broadcastTimerEvent, refreshTimerData, type TimerBroadcastData } from "@/lib/timer-utils"
 
 async function fetchTimeSheetEntriesFromDb(
     userId: string,
@@ -95,6 +94,7 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
             [`time-sheets-${session.user.id}-${startDate}-${endDate}-${taskFilter}`],
             {
                 revalidate: 300,
+                tags: ["time-sheets-data"],
             }
         )
 
@@ -192,16 +192,21 @@ export async function moveTimeEntryToTask(input: MoveTimeEntryInput) {
             return { error: "Target task not found" }
         }
 
-        await prisma.taskTimeEntry.update({
-            where: { id: entryId },
-            data: { taskId: targetTaskId },
+        await prisma.$transaction(async (tx) => {
+            await tx.taskTimeEntry.update({
+                where: { id: entryId },
+                data: { taskId: targetTaskId },
+            })
         })
 
-        await refreshDailyHourSummary()
+        await refreshTimerData()
 
-        revalidatePath("/time-sheets")
-        revalidatePath("/tasks")
-        revalidatePath("/tracker")
+        const broadcastData: TimerBroadcastData = {
+            entryId,
+            taskId: targetTaskId,
+        }
+
+        await broadcastTimerEvent(session.user.id, "timer-stopped", broadcastData)
 
         return { success: true }
     } catch (error) {

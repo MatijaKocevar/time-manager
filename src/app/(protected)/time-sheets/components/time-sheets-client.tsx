@@ -117,7 +117,7 @@ export function TimeSheetsClient({
         router.replace(`?${params.toString()}`, { scroll: false })
     }, [viewMode, selectedDate, taskFilter, router])
 
-    const dateRange = getDateRangeForView(selectedDate, viewMode)
+    const dateRange = getDateRangeForView(initialSelectedDate, initialViewMode)
 
     const formatHoursMinutes = (seconds: number): string => {
         const totalHours = seconds / 3600

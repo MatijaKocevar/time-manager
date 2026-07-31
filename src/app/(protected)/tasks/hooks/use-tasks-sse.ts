@@ -35,12 +35,14 @@ export function useTasksSSE() {
 
         eventSource.addEventListener("timer-started", handleTimerStarted)
         eventSource.addEventListener("timer-stopped", handleTimerStopped)
+        eventSource.addEventListener("time-entry-updated", handleTimerStopped)
 
         eventSource.onerror = () => {}
 
         return () => {
             eventSource.removeEventListener("timer-started", handleTimerStarted)
             eventSource.removeEventListener("timer-stopped", handleTimerStopped)
+            eventSource.removeEventListener("time-entry-updated", handleTimerStopped)
             eventSource.close()
         }
     }, [queryClient])

@@ -35,12 +35,14 @@ export function useTimeSheetsSSE() {
 
         eventSource.addEventListener("timer-started", handleTimerEvent)
         eventSource.addEventListener("timer-stopped", handleTimerEvent)
+        eventSource.addEventListener("time-entry-updated", handleTimerEvent)
 
         eventSource.onerror = () => {}
 
         return () => {
             eventSource.removeEventListener("timer-started", handleTimerEvent)
             eventSource.removeEventListener("timer-stopped", handleTimerEvent)
+            eventSource.removeEventListener("time-entry-updated", handleTimerEvent)
             eventSource.close()
         }
     }, [router, session?.user?.id])

@@ -1,5 +1,5 @@
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { sseManager } from "@/lib/sse-manager"
 import { getPusherServer } from "@/lib/pusher-server"
 import type { HourType, Prisma } from "@/../../prisma/generated/client"
@@ -125,4 +125,5 @@ export async function revalidateTimerPaths() {
 export async function refreshTimerData() {
     await refreshDailyHourSummary()
     await revalidateTimerPaths()
+    revalidateTag("time-sheets-data", { expire: 0 })
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
 import { ArrowRightLeft } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -37,6 +38,7 @@ interface MoveEntryPopoverProps {
 export function MoveEntryPopover({ entryId, currentTaskId, translations }: MoveEntryPopoverProps) {
     const [open, setOpen] = useState(false)
     const queryClient = useQueryClient()
+    const router = useRouter()
 
     const { data: tasks = [], isLoading } = useQuery({
         queryKey: taskKeys.list({}),
@@ -54,6 +56,7 @@ export function MoveEntryPopover({ entryId, currentTaskId, translations }: MoveE
                 queryClient.invalidateQueries({ queryKey: taskKeys.all })
                 queryClient.invalidateQueries({ queryKey: hourKeys.all })
                 queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
+                router.refresh()
             } else {
                 toast.error(result.error ?? translations.moveError)
             }
