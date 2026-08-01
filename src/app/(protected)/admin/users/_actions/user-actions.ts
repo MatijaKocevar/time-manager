@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
+import { validateInput } from "@/lib/validation"
 import { requireAdmin, requireNotDemo } from "@/lib/auth-helpers"
 import {
     CreateUserSchema,
@@ -72,10 +73,10 @@ export async function getUserById(id: string) {
 export async function createUser(input: CreateUserInput) {
     const session = await requireAdmin()
 
-    const validation = CreateUserSchema.safeParse(input)
+    const validation = validateInput(CreateUserSchema, input)
 
     if (!validation.success) {
-        return { error: validation.error.issues[0].message }
+        return { error: validation.error }
     }
 
     const { name, email, password, role } = validation.data
@@ -115,10 +116,10 @@ export async function createUser(input: CreateUserInput) {
 export async function updateUser(input: UpdateUserInput) {
     const session = await requireAdmin()
 
-    const validation = UpdateUserSchema.safeParse(input)
+    const validation = validateInput(UpdateUserSchema, input)
 
     if (!validation.success) {
-        return { error: validation.error.issues[0].message }
+        return { error: validation.error }
     }
 
     const { id, name, role } = validation.data
@@ -149,10 +150,10 @@ export async function updateUser(input: UpdateUserInput) {
 export async function deleteUser(input: DeleteUserInput) {
     const session = await requireAdmin()
 
-    const validation = DeleteUserSchema.safeParse(input)
+    const validation = validateInput(DeleteUserSchema, input)
 
     if (!validation.success) {
-        return { error: validation.error.issues[0].message }
+        return { error: validation.error }
     }
 
     const { id } = validation.data
@@ -197,10 +198,10 @@ export async function deleteUser(input: DeleteUserInput) {
 export async function changeUserPassword(input: ChangeUserPasswordInput) {
     const session = await requireAdmin()
 
-    const validation = ChangeUserPasswordSchema.safeParse(input)
+    const validation = validateInput(ChangeUserPasswordSchema, input)
 
     if (!validation.success) {
-        return { error: validation.error.issues[0].message }
+        return { error: validation.error }
     }
 
     const { id, newPassword } = validation.data
@@ -226,10 +227,10 @@ export async function changeUserPassword(input: ChangeUserPasswordInput) {
 export async function deactivateUser(input: DeactivateUserInput) {
     const session = await requireAdmin()
 
-    const validation = DeactivateUserSchema.safeParse(input)
+    const validation = validateInput(DeactivateUserSchema, input)
 
     if (!validation.success) {
-        return { error: validation.error.issues[0].message }
+        return { error: validation.error }
     }
 
     const { id } = validation.data
@@ -282,10 +283,10 @@ export async function deactivateUser(input: DeactivateUserInput) {
 export async function reactivateUser(input: ReactivateUserInput) {
     await requireAdmin()
 
-    const validation = ReactivateUserSchema.safeParse(input)
+    const validation = validateInput(ReactivateUserSchema, input)
 
     if (!validation.success) {
-        return { error: validation.error.issues[0].message }
+        return { error: validation.error }
     }
 
     const { id } = validation.data
@@ -325,10 +326,10 @@ export async function reactivateUser(input: ReactivateUserInput) {
 export async function anonymizeUser(input: AnonymizeUserInput) {
     const session = await requireAdmin()
 
-    const validation = AnonymizeUserSchema.safeParse(input)
+    const validation = validateInput(AnonymizeUserSchema, input)
 
     if (!validation.success) {
-        return { error: validation.error.issues[0].message }
+        return { error: validation.error }
     }
 
     const { id } = validation.data

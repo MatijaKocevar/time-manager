@@ -3,8 +3,8 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useSession } from "next-auth/react"
 import type { Channel } from "pusher-js"
 import { getPusherClient } from "@/lib/pusher-client"
-import { taskKeys } from "../query-keys"
-import { sharedKeys } from "@/app/(protected)/shared/query-keys"
+import { taskKeys } from "../_constants/query-keys"
+import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
 
 export function useTasksPusher() {
     const queryClient = useQueryClient()

@@ -1,3 +1,15 @@
+export {
+    formatDateKey,
+    isToday,
+    isWeekend,
+    generateDateRange,
+    buildHolidayMap,
+    getHolidayForDate,
+} from "@/lib/date-utils"
+import { generateDateRange } from "@/lib/date-utils"
+
+import { startOfDay, endOfDay } from "@/lib/date-utils"
+
 export type ViewMode = "week" | "month"
 
 export interface DateRangeInfo {
@@ -19,13 +31,11 @@ export function getWeekRange(date: Date): DateRangeInfo {
     const dayOfWeek = current.getDay()
     const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
 
-    const monday = new Date(current)
+    const monday = startOfDay(new Date(current))
     monday.setDate(current.getDate() + diff)
-    monday.setHours(0, 0, 0, 0)
 
-    const sunday = new Date(monday)
+    const sunday = endOfDay(new Date(monday))
     sunday.setDate(monday.getDate() + 6)
-    sunday.setHours(23, 59, 59, 999)
 
     const dates = generateDateRange(monday, sunday)
 
@@ -63,39 +73,6 @@ export function getMonthRange(date: Date): DateRangeInfo {
     }
 }
 
-function generateDateRange(start: Date, end: Date): Date[] {
-    const dates: Date[] = []
-    const current = new Date(start)
-
-    while (current <= end) {
-        dates.push(new Date(current))
-        current.setDate(current.getDate() + 1)
-    }
-
-    return dates
-}
-
-export function isWeekend(date: Date): boolean {
-    const day = date.getDay()
-    return day === 0 || day === 6
-}
-
-export function isToday(date: Date): boolean {
-    const today = new Date()
-    return (
-        date.getDate() === today.getDate() &&
-        date.getMonth() === today.getMonth() &&
-        date.getFullYear() === today.getFullYear()
-    )
-}
-
-export function formatDateKey(date: Date): string {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, "0")
-    const day = String(date.getDate()).padStart(2, "0")
-    return `${year}-${month}-${day}`
-}
-
 export function formatDateHeader(date: Date): string {
     const day = date.getDate()
     const weekday = date.toLocaleDateString("en-US", { weekday: "short" })
@@ -107,25 +84,4 @@ export function countWorkingDays(dates: Date[]): number {
         const day = date.getDay()
         return day !== 0 && day !== 6
     }).length
-}
-
-export function buildHolidayMap(
-    holidays: Array<{ date: Date; name: string }> | undefined
-): Map<string, { name: string }> {
-    const map = new Map<string, { name: string }>()
-    if (!holidays) return map
-    holidays.forEach((holiday) => {
-        const holidayDate = new Date(holiday.date)
-        const key = formatDateKey(holidayDate)
-        map.set(key, { name: holiday.name })
-    })
-    return map
-}
-
-export function getHolidayForDate(
-    date: Date,
-    holidaysByDate: Map<string, { name: string }>
-): { name: string } | undefined {
-    const key = formatDateKey(date)
-    return holidaysByDate.get(key)
 }

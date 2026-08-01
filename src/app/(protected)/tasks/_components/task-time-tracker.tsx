@@ -8,7 +8,8 @@ import { ArrivalDialog } from "@/components/arrival-dialog"
 import { useQueryClient } from "@tanstack/react-query"
 import { startTimer, stopTimer } from "@/app/(protected)/shared/_actions/timer-actions"
 import { useTasksStore } from "../_stores/tasks-store"
-import { taskKeys } from "../query-keys"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
+import { taskKeys } from "../_constants/query-keys"
 import { formatDuration } from "../_utils/time-helpers"
 import type { TaskTreeNode } from "../_schemas"
 
@@ -28,7 +29,7 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
     const elapsedSeconds = useTasksStore((state) => state.elapsedSeconds)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
-    const openTimeEntriesDialog = useTasksStore((state) => state.openTimeEntriesDialog)
+    const openTimeEntriesDialog = useTaskDialogStore((state) => state.openTimeEntriesDialog)
     const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
     const isLoading = useTasksStore(
         (state) => state.taskOperations.get(task.id)?.isLoading ?? false

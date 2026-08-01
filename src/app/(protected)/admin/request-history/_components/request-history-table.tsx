@@ -32,18 +32,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ColumnFilter } from "./column-filter"
 import { CancelDialog } from "./cancel-dialog"
 import { useRequestHistoryTable } from "../_hooks/use-request-history-table"
-import type { RequestDisplay, RequestHistoryTranslations } from "../types"
+import type { RequestDisplay, RequestHistoryTranslations } from "../_types/types"
 
 interface RequestHistoryTableClientProps {
     requests: RequestDisplay[]
-    holidays: Array<{ date: Date; name: string }>
     translations: RequestHistoryTranslations
     locale: string
 }
 
 export function RequestHistoryTableClient({
     requests,
-    holidays,
     translations,
     locale,
 }: RequestHistoryTableClientProps) {
@@ -62,7 +60,7 @@ export function RequestHistoryTableClient({
         setCancellationReason,
         handleCancel,
         selectedRequestData,
-    } = useRequestHistoryTable({ requests, holidays, translations, locale })
+    } = useRequestHistoryTable({ requests, translations, locale })
 
     const table = useReactTable({
         data: requests,

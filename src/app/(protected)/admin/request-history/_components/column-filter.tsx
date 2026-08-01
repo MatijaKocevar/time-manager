@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { RequestDisplay, RequestHistoryTranslations } from "../types"
+import type { RequestDisplay, RequestHistoryTranslations } from "../_types/types"
 
 interface ColumnFilterProps {
     column: Column<RequestDisplay, unknown>

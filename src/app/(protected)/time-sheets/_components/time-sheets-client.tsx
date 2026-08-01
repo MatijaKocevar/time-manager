@@ -15,7 +15,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useTimeSheetsStore } from "../_stores/time-sheets-store"
-import { useTasksStore } from "../../tasks/_stores/tasks-store"
+import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
 import { getDateRangeForView, type ViewMode } from "../_utils/date-helpers"
 import { aggregateTimeEntriesByTaskAndDate } from "../_utils/aggregation-helpers"
 import { exportTimeSheetData } from "../_actions/export-actions"
@@ -25,7 +25,7 @@ import type { TimeEntryDisplay } from "../_schemas/time-sheet-schemas"
 import { useTranslations } from "next-intl"
 import { useTimeSheetsSSE } from "../_hooks/use-time-sheets-sse"
 import { useTimeSheetsPusher } from "../_hooks/use-time-sheets-pusher"
-import { formatHoursMinutes as formatHoursMinutesFromHours } from "../../hours/_utils/time-helpers"
+import { formatHoursMinutes as formatHoursMinutesFromHours } from "@/app/(protected)/hours/_utils/time-helpers"
 import {
     calculateExpectedHoursToDate,
     calculateBalance,

@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { getUrnikCookie } from "@/lib/urnik-session"
+import { getUrnikCookie } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
 import {
     CreateUrnikNetDayRequestSchema,
     type CreateUrnikNetDayRequestInput,
@@ -46,7 +46,6 @@ export async function createUrnikNetDayRequest(
         }
 
         const cookie = await getUrnikCookie()
-        console.log("[WFH] Cookie obtained:", !!cookie)
         if (!cookie) {
             return { success: false, error: "Authentication failed" }
         }
@@ -87,7 +86,6 @@ export async function createUrnikNetDayRequest(
             )
         } else {
             const csrf = await extractCsrfToken(cookie)
-            console.log("[WFH] CSRF token obtained:", !!csrf)
             if (!csrf) {
                 await prisma.urnikRequest.update({
                     where: { id: record.id },
@@ -119,7 +117,6 @@ export async function createUrnikNetDayRequest(
             }
         }
 
-        console.log("[WFH] Submit result:", result)
         if (!result.success) {
             await prisma.urnikRequest.update({
                 where: { id: record.id },

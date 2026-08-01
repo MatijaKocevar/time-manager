@@ -1010,7 +1010,8 @@
                 "action": "Dejanje"
             },
             "structureChanged": "HTML struktura se je spremenila",
-            "structureChangedDescription": "Struktura strani urnik.net se je spremenila. Analizator mora biti posodobljen glede na novo obliko. Prosimo, stopite v stik z razvijalcem."
+            "structureChangedDescription": "Struktura strani urnik.net se je spremenila. Analizator mora biti posodobljen glede na novo obliko. Prosimo, stopite v stik z razvijalcem.",
+            "noRequestsThisMonth": "Ni zahtevkov za ta mesec"
         }
     },
     "urnikNetHours": {

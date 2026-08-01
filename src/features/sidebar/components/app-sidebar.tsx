@@ -34,7 +34,8 @@ import { NewListButton } from "./new-list-button"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
-import { updateSidebarExpandedItems } from "./actions/sidebar-actions"
+import { useTaskDialogStore } from "@/app/(protected)/tasks/_stores/task-dialog-stores"
+import { updateSidebarExpandedItems } from "../actions/sidebar-actions"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { SettingsMenu } from "./settings-menu"
 
@@ -70,7 +71,7 @@ export function AppSidebar({
     const router = useRouter()
     const { setOpenMobile } = useSidebar()
     const isMobile = useIsMobile()
-    const openListDialog = useTasksStore((state) => state.openListDialog)
+    const openListDialog = useTaskDialogStore((state) => state.openListDialog)
     const deletingListId = useTasksStore((state) => state.deletingListId)
     const deleteList = useTasksStore((state) => state.deleteList)
     const [expandedItemsSet, setExpandedItemsSet] = useState(() => new Set(initialExpandedItems))

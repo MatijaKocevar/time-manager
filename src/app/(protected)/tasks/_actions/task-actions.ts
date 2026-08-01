@@ -1,5 +1,6 @@
 "use server"
 
+import { validateInput } from "@/lib/validation"
 import { requireAuth } from "@/lib/auth-helpers"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
@@ -146,9 +147,9 @@ export async function createTask(input: CreateTaskInput) {
     try {
         const session = await requireAuth()
 
-        const validation = CreateTaskSchema.safeParse(input)
+        const validation = validateInput(CreateTaskSchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { title, description, status, parentId, listId } = validation.data
@@ -204,9 +205,9 @@ export async function updateTask(input: UpdateTaskInput) {
     try {
         const session = await requireAuth()
 
-        const validation = UpdateTaskSchema.safeParse(input)
+        const validation = validateInput(UpdateTaskSchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { id, title, description, status, order } = validation.data
@@ -250,9 +251,9 @@ export async function deleteTask(input: DeleteTaskInput) {
     try {
         const session = await requireAuth()
 
-        const validation = DeleteTaskSchema.safeParse(input)
+        const validation = validateInput(DeleteTaskSchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { id } = validation.data
@@ -291,9 +292,9 @@ export async function toggleTaskExpanded(input: ToggleExpandedInput) {
     try {
         const session = await requireAuth()
 
-        const validation = ToggleExpandedSchema.safeParse(input)
+        const validation = validateInput(ToggleExpandedSchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { id, isExpanded } = validation.data

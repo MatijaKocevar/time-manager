@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { PendingRequestTranslations } from "../types"
+import type { PendingRequestTranslations } from "../_types/types"
 
 interface RejectDialogProps {
     open: boolean

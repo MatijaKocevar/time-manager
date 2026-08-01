@@ -39,11 +39,7 @@ export default async function RequestHistoryPage() {
             />
             <div className="flex flex-col gap-4 h-full">
                 <div className="flex-1 min-h-0">
-                    <RequestHistoryTable
-                        requests={data.requests}
-                        holidays={data.holidays}
-                        locale={data.locale}
-                    />
+                    <RequestHistoryTable requests={data.requests} locale={data.locale} />
                 </div>
             </div>
         </>

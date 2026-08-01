@@ -9,7 +9,8 @@ import { getTasks } from "../_actions/task-actions"
 import { getActiveTimer } from "@/app/(protected)/shared/_actions/timer-actions"
 import { getLists } from "../_actions/list-actions"
 import { useTasksStore } from "../_stores/tasks-store"
-import { taskKeys, listKeys } from "../query-keys"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
+import { taskKeys, listKeys } from "../_constants/query-keys"
 import { TasksTable } from "./tasks-table"
 import { CreateTaskDialog } from "./create-task-dialog"
 import { DeleteTaskDialog } from "./delete-task-dialog"
@@ -26,7 +27,7 @@ interface TasksViewProps {
 
 export function TasksView({ initialTasks, listId }: TasksViewProps) {
     const t = useTranslations("tasks.form")
-    const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
+    const openCreateDialog = useTaskDialogStore((state) => state.openCreateDialog)
     const selectedListId = useTasksStore((state) => state.selectedListId)
     const setSelectedListId = useTasksStore((state) => state.setSelectedListId)
     const activeTimer = useTasksStore((state) => state.activeTimer)

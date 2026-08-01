@@ -16,12 +16,12 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { getTasks } from "../../tasks/_actions/task-actions"
+import { getTasks } from "@/app/(protected)/tasks/_actions/task-actions"
 import { moveTimeEntryToTask } from "../_actions/time-sheet-actions"
-import { taskKeys } from "../../tasks/query-keys"
-import { hourKeys } from "../../hours/query-keys"
-import { timeSheetKeys } from "../query-keys"
-import type { TaskDisplay } from "../../tasks/_schemas/task-schemas"
+import { taskKeys } from "@/app/(protected)/tasks/_constants/query-keys"
+import { hourKeys } from "@/app/(protected)/hours/_constants/query-keys"
+import { timeSheetKeys } from "../_constants/query-keys"
+import type { TaskDisplay } from "@/app/(protected)/tasks/_schemas/task-schemas"
 
 interface MoveEntryPopoverProps {
     entryId: string

@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { z } from "zod"
 import { getTodayDate } from "@/lib/utils"
+import { startOfDay } from "@/lib/date-utils"
 
 const AdjustTimeSchema = z.object({
     adjustedStartTime: z
@@ -43,8 +44,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const targetDate = dateStr ? new Date(dateStr) : getTodayDate()
-        targetDate.setHours(0, 0, 0, 0)
+        const targetDate = startOfDay(dateStr ? new Date(dateStr) : getTodayDate())
 
         await prisma.workTimeAdjustment.upsert({
             where: {

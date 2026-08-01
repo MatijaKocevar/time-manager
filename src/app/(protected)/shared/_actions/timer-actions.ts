@@ -1,5 +1,6 @@
 "use server"
 
+import { validateInput } from "@/lib/validation"
 import { requireAuth } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
 import {
@@ -20,7 +21,10 @@ import {
     type StopTimerInput,
     type TimerDisplay,
 } from "../_schemas/timer-schemas"
-import { hasLoggedArrivalToday, getTodayWorkFromHomeStatus } from "@/lib/clock-status"
+import {
+    hasLoggedArrivalToday,
+    getTodayWorkFromHomeStatus,
+} from "@/app/(protected)/urnik-net-overview/_utils/clock-status"
 
 export async function getActiveTimer(): Promise<TimerDisplay | null> {
     try {
@@ -56,9 +60,9 @@ export async function startTimer(input: StartTimerInput) {
     try {
         const session = await requireAuth()
 
-        const validation = StartTimerSchema.safeParse(input)
+        const validation = validateInput(StartTimerSchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { type = "WORK", taskId } = validation.data
@@ -168,9 +172,9 @@ export async function stopTimer(input: StopTimerInput) {
     try {
         const session = await requireAuth()
 
-        const validation = StopTimerSchema.safeParse(input)
+        const validation = validateInput(StopTimerSchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { id: entryId } = validation.data

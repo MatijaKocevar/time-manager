@@ -2,13 +2,13 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import { getUrnikCookie } from "@/lib/urnik-session"
+import { getUrnikCookie } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
 import {
     CreateUrnikNetRequestSchema,
     type CreateUrnikNetRequestInput,
 } from "../_schemas/create-urnik-net-request-schema"
 import { requireAuth } from "@/lib/auth-helpers"
-import { URNIK_USER_AGENT } from "../../_lib/constants"
+import { URNIK_USER_AGENT } from "../../_utils/constants"
 import { getErrorMessage } from "../../_utils/helpers"
 import { formatDateYYYYSlashMMDD } from "../../_utils/date-helpers"
 

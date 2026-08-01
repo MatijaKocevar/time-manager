@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { URNIK_USER_AGENT } from "@/app/(protected)/urnik-net-overview/_lib/constants"
+import { URNIK_USER_AGENT } from "@/app/(protected)/urnik-net-overview/_utils/constants"
 import { loginToUrnikNet } from "@/app/(protected)/urnik-net-overview/requests/_actions/urnik-net-auth"
 import {
     systemApproveRequest,

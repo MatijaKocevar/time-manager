@@ -1,18 +1,13 @@
 import { getTranslations } from "next-intl/server"
 import { PendingRequestsTableClient } from "./pending-requests-table"
-import type { RequestDisplay } from "../types"
+import type { RequestDisplay } from "../_types/types"
 
 interface PendingRequestsTableProps {
     requests: RequestDisplay[]
-    holidays: Array<{ date: Date; name: string }>
     locale: string
 }
 
-export async function PendingRequestsTable({
-    requests,
-    holidays,
-    locale,
-}: PendingRequestsTableProps) {
+export async function PendingRequestsTable({ requests, locale }: PendingRequestsTableProps) {
     const [tTable, tReject, tPagination, tFilter, tTypes] = await Promise.all([
         getTranslations("admin.pendingRequests.table"),
         getTranslations("admin.pendingRequests.reject"),
@@ -75,7 +70,6 @@ export async function PendingRequestsTable({
     return (
         <PendingRequestsTableClient
             requests={requests}
-            holidays={holidays}
             locale={locale}
             translations={translations}
         />

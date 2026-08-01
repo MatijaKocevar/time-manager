@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import type { HourType } from "@/../../prisma/generated/client"
 import { getActiveTimer } from "@/app/(protected)/shared/_actions/timer-actions"
 import { getElapsedSeconds } from "@/app/(protected)/tasks/_utils/time-helpers"
 import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
-import { sharedKeys } from "@/app/(protected)/shared/query-keys"
+import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
 
 interface UseTimerStateProps {
     initialActiveTimer: {
@@ -26,7 +26,6 @@ interface UseTimerStateProps {
 }
 
 export function useTimerState({ initialActiveTimer }: UseTimerStateProps) {
-    const queryClient = useQueryClient()
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const [elapsedSeconds, setElapsedSeconds] = useState(0)
 

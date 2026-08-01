@@ -22,8 +22,9 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { useTasksStore } from "../_stores/tasks-store"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import { createTask } from "../_actions/task-actions"
-import { taskKeys } from "../query-keys"
+import { taskKeys } from "../_constants/query-keys"
 import { TASK_STATUSES } from "../_constants/task-statuses"
 import { getTaskStatusLabel } from "../_utils/task-status-labels"
 
@@ -32,14 +33,14 @@ export function CreateTaskDialog() {
     const t = useTranslations("tasks.form")
     const tCommon = useTranslations("common")
     const tStatus = useTranslations("tasks.statuses")
-    const createDialog = useTasksStore((state) => state.createDialog)
+    const createDialog = useTaskDialogStore((state) => state.createDialog)
     const selectedListId = useTasksStore((state) => state.selectedListId)
-    const createForm = useTasksStore((state) => state.createForm)
-    const closeCreateDialog = useTasksStore((state) => state.closeCreateDialog)
-    const setCreateFormData = useTasksStore((state) => state.setCreateFormData)
-    const setCreateFormLoading = useTasksStore((state) => state.setCreateLoading)
-    const setCreateFormError = useTasksStore((state) => state.setCreateError)
-    const resetCreateForm = useTasksStore((state) => state.resetCreateForm)
+    const createForm = useTaskDialogStore((state) => state.createForm)
+    const closeCreateDialog = useTaskDialogStore((state) => state.closeCreateDialog)
+    const setCreateFormData = useTaskDialogStore((state) => state.setCreateFormData)
+    const setCreateFormLoading = useTaskDialogStore((state) => state.setCreateLoading)
+    const setCreateFormError = useTaskDialogStore((state) => state.setCreateError)
+    const resetCreateForm = useTaskDialogStore((state) => state.resetCreateForm)
 
     useEffect(() => {
         if (!createDialog.isOpen) {

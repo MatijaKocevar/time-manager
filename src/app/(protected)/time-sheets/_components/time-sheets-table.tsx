@@ -16,13 +16,14 @@ import {
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { ArrivalDialog } from "@/components/arrival-dialog"
-import { formatDuration } from "../../tasks/_utils/time-helpers"
-import { useTasksStore } from "../../tasks/_stores/tasks-store"
+import { formatDuration } from "@/app/(protected)/tasks/_utils/time-helpers"
+import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
+import { useTaskDialogStore } from "@/app/(protected)/tasks/_stores/task-dialog-stores"
 import { useTimeSheetsStore } from "../_stores/time-sheets-store"
 import { startTimer, stopTimer } from "@/app/(protected)/shared/_actions/timer-actions"
-import { taskKeys } from "../../tasks/query-keys"
-import { timeSheetKeys } from "../query-keys"
-import { TaskStatusSelect } from "../../tasks/_components/task-status-select"
+import { taskKeys } from "@/app/(protected)/tasks/_constants/query-keys"
+import { timeSheetKeys } from "../_constants/query-keys"
+import { TaskStatusSelect } from "@/app/(protected)/tasks/_components/task-status-select"
 import {
     isWeekend,
     isToday,
@@ -67,8 +68,8 @@ export function TimeSheetsTable({
     const queryClient = useQueryClient()
     const tClock = useTranslations("clock")
     const tCommon = useTranslations("common")
-    const openTimeEntriesDialog = useTasksStore((state) => state.openTimeEntriesDialog)
-    const openDescriptionDialog = useTasksStore((state) => state.openDescriptionDialog)
+    const openTimeEntriesDialog = useTaskDialogStore((state) => state.openTimeEntriesDialog)
+    const openDescriptionDialog = useTaskDialogStore((state) => state.openDescriptionDialog)
     const activeTimer = useTasksStore((state) => state.activeTimer)
     const openDayEntriesDialog = useTimeSheetsStore((state) => state.openDayEntriesDialog)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)

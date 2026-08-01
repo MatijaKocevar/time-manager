@@ -18,7 +18,7 @@ export async function updateThemePreference(theme: "light" | "dark") {
         })
 
         return { success: true }
-    } catch (error) {
+    } catch (_error) {
         return { success: false }
     }
 }

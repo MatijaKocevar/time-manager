@@ -4,15 +4,17 @@ import { Button } from "@/components/ui/button"
 import {
     getRequestTypeTranslationKey,
     getRequestStatusTranslationKey,
-} from "../../../requests/_utils/translation-helpers"
-import type { RequestType, RequestStatus } from "../../../requests/_schemas/request-schemas"
-import type { RequestDisplay, RequestHistoryTranslations } from "../types"
+} from "@/app/(protected)/requests/_utils/translation-helpers"
+import type {
+    RequestType,
+    RequestStatus,
+} from "@/app/(protected)/requests/_schemas/request-schemas"
+import type { RequestDisplay, RequestHistoryTranslations } from "../_types/types"
 import { TYPE_COLORS, STATUS_COLORS } from "../_constants"
-import { calculateWorkdays, formatDate } from "./helpers"
+import { formatDate } from "./helpers"
 
 interface CreateColumnsParams {
     translations: RequestHistoryTranslations
-    holidays: Array<{ date: Date; name: string }>
     locale: string
     onCancel: (
         requestId: string,
@@ -25,7 +27,6 @@ interface CreateColumnsParams {
 
 export function createColumns({
     translations,
-    holidays,
     locale,
     onCancel,
 }: CreateColumnsParams): ColumnDef<RequestDisplay>[] {

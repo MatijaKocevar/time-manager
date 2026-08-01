@@ -5,26 +5,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useSearchParams, useRouter } from "next/navigation"
 import type { OnChangeFn, SortingState, ColumnFiltersState } from "@tanstack/react-table"
 import { toast } from "sonner"
-import { cancelApprovedRequest } from "../../../requests/_actions/request-actions"
-import { requestKeys } from "../../../requests/query-keys"
-import { hourKeys } from "../../../hours/query-keys"
+import { cancelApprovedRequest } from "@/app/(protected)/requests/_actions/request-actions"
+import { requestKeys } from "@/app/(protected)/requests/_constants/query-keys"
+import { hourKeys } from "@/app/(protected)/hours/_constants/query-keys"
 import { createColumns } from "../_utils/columns"
 import { useRequestHistoryStore } from "../_stores/request-history-store"
-import type { RequestDisplay, RequestHistoryTranslations } from "../types"
+import type { RequestDisplay, RequestHistoryTranslations } from "../_types/types"
 
 interface UseRequestHistoryTableParams {
     requests: RequestDisplay[]
-    holidays: Array<{ date: Date; name: string }>
     locale: string
     translations: RequestHistoryTranslations
 }
 
-export function useRequestHistoryTable({
-    requests,
-    holidays,
-    locale,
-    translations,
-}: UseRequestHistoryTableParams) {
+export function useRequestHistoryTable({ locale, translations }: UseRequestHistoryTableParams) {
     const queryClient = useQueryClient()
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -114,11 +108,10 @@ export function useRequestHistoryTable({
         () =>
             createColumns({
                 translations,
-                holidays,
                 locale,
                 onCancel: openCancelDialog,
             }),
-        [holidays, translations, locale, openCancelDialog]
+        [translations, locale, openCancelDialog]
     )
 
     return {

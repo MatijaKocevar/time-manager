@@ -1,6 +1,6 @@
 import { getLocale } from "next-intl/server"
 import { getUsers } from "../users/_actions/user-actions"
-import { getAllRequests } from "../../requests/_actions/request-actions"
+import { getAllRequests } from "@/app/(protected)/requests/_actions/request-actions"
 import { getHolidays } from "../holidays/_actions/holiday-actions"
 import { prisma } from "@/lib/prisma"
 import { getUpcomingHolidays } from "../_utils"

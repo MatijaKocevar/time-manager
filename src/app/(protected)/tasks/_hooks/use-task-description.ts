@@ -2,21 +2,24 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { useTasksStore } from "../_stores/tasks-store"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import { getTaskDescription } from "../_actions/description-actions"
 import { updateTask } from "../_actions/task-actions"
-import { taskKeys } from "../query-keys"
+import { taskKeys } from "../_constants/query-keys"
 
 export function useTaskDescription() {
     const queryClient = useQueryClient()
-    const taskId = useTasksStore((s) => s.descriptionDialog.taskId)
-    const isLoading = useTasksStore((s) => s.descriptionForm.isLoading)
-    const setDescriptionLoading = useTasksStore((s) => s.setDescriptionLoading)
-    const closeDescriptionDialog = useTasksStore((s) => s.closeDescriptionDialog)
+    const taskId = useTaskDialogStore((s) => s.descriptionDialog.taskId)
+    const isLoading = useTaskDialogStore((s) => s.descriptionForm.isLoading)
+    const setDescriptionLoading = useTaskDialogStore((s) => s.setDescriptionLoading)
+    const closeDescriptionDialog = useTaskDialogStore((s) => s.closeDescriptionDialog)
 
     const { data, isLoading: isFetching } = useQuery({
         queryKey: taskKeys.description(taskId ?? ""),
-        queryFn: () => getTaskDescription(taskId!),
+        queryFn: () => {
+            if (!taskId) throw new Error("Task ID is required")
+            return getTaskDescription(taskId)
+        },
         enabled: !!taskId,
         staleTime: 30000,
     })

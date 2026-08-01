@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTrackerStore } from "../_stores/tracker-store"
-import { sharedKeys } from "@/app/(protected)/shared/query-keys"
+import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
 
 export function useTrackerSSE() {
     const queryClient = useQueryClient()

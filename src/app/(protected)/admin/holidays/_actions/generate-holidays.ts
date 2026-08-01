@@ -1,5 +1,6 @@
 "use server"
 
+import { startOfDay } from "@/lib/date-utils"
 import { prisma } from "@/lib/prisma"
 
 interface PublicHoliday {
@@ -43,8 +44,7 @@ export async function importHolidaysFromAPI(year: number, countryCode: string = 
         let created = 0
 
         for (const holiday of holidays) {
-            const date = new Date(holiday.date + "T00:00:00")
-            date.setHours(0, 0, 0, 0)
+            const date = startOfDay(new Date(holiday.date + "T00:00:00"))
 
             const existing = await prisma.holiday.findUnique({
                 where: { date },

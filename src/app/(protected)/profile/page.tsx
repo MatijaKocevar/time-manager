@@ -24,7 +24,7 @@ export default async function ProfilePage() {
     const { hasSubscription } = await hasUserSubscription()
     const { preferences, error } = await getNotificationPreferences()
     const autoCheckinResult = await getAutoCheckinPreferences()
-    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
+    const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""
 
     if (error || !preferences) {
         return <div>{t("errorLoadingPreferences")}</div>

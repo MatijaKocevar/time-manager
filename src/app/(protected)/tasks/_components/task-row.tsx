@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/select"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTasksStore } from "../_stores/tasks-store"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import { toggleTaskExpanded } from "../_actions/task-actions"
 import { moveTaskToList } from "../_actions/list-actions"
-import { taskKeys, listKeys } from "../query-keys"
+import { taskKeys, listKeys } from "../_constants/query-keys"
 import { EditableTaskTitle } from "./editable-task-title"
 import { TaskStatusSelect } from "./task-status-select"
 import { TaskTimeTracker } from "./task-time-tracker"
@@ -33,8 +34,8 @@ export function TaskRow({ task, lists }: TaskRowProps) {
     const t = useTranslations("tasks.form")
     const tList = useTranslations("tasks.list")
     const tActions = useTranslations("tasks.actions")
-    const openDeleteDialog = useTasksStore((state) => state.openDeleteDialog)
-    const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
+    const openDeleteDialog = useTaskDialogStore((state) => state.openDeleteDialog)
+    const openCreateDialog = useTaskDialogStore((state) => state.openCreateDialog)
     const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
     const isOperationLoading = useTasksStore(
         (state) => state.taskOperations.get(task.id)?.isLoading ?? false

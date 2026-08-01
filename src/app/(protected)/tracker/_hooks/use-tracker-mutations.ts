@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { startTimer, stopTimer } from "@/app/(protected)/shared/_actions/timer-actions"
 import { useTrackerStore } from "../_stores/tracker-store"
 import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
-import { taskKeys } from "@/app/(protected)/tasks/query-keys"
-import { sharedKeys } from "@/app/(protected)/shared/query-keys"
+import { taskKeys } from "@/app/(protected)/tasks/_constants/query-keys"
+import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
 
 export function useTrackerMutations(
     onArrivalNeeded?: (hasApprovedWFH: boolean, wfhLocation: string | null) => void

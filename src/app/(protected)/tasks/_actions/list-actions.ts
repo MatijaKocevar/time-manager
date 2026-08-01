@@ -1,5 +1,6 @@
 "use server"
 
+import { validateInput } from "@/lib/validation"
 import { requireAuth } from "@/lib/auth-helpers"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
@@ -110,9 +111,9 @@ export async function createList(input: CreateListInput) {
     try {
         const session = await requireAuth()
 
-        const validation = CreateListSchema.safeParse(input)
+        const validation = validateInput(CreateListSchema, input)
         if (!validation.success) {
-            return { success: false, error: validation.error.issues[0].message }
+            return { success: false, error: validation.error }
         }
 
         const data = validation.data
@@ -155,9 +156,9 @@ export async function updateList(input: UpdateListInput) {
     try {
         const session = await requireAuth()
 
-        const validation = UpdateListSchema.safeParse(input)
+        const validation = validateInput(UpdateListSchema, input)
         if (!validation.success) {
-            return { success: false, error: validation.error.issues[0].message }
+            return { success: false, error: validation.error }
         }
 
         const { id, ...data } = validation.data
@@ -207,9 +208,9 @@ export async function deleteList(
     try {
         const session = await requireAuth()
 
-        const validation = DeleteListSchema.safeParse(input)
+        const validation = validateInput(DeleteListSchema, input)
         if (!validation.success) {
-            return { success: false, error: validation.error.issues[0].message }
+            return { success: false, error: validation.error }
         }
 
         const { id } = validation.data
@@ -298,9 +299,9 @@ export async function moveTaskToList(input: MoveTaskToListInput) {
     try {
         const session = await requireAuth()
 
-        const validation = MoveTaskToListSchema.safeParse(input)
+        const validation = validateInput(MoveTaskToListSchema, input)
         if (!validation.success) {
-            return { success: false, error: validation.error.issues[0].message }
+            return { success: false, error: validation.error }
         }
 
         const { taskId, listId } = validation.data

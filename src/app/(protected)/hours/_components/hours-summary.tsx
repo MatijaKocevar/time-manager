@@ -10,12 +10,12 @@ import { HOUR_TYPES, HOUR_TYPE_COLORS, TASK_ID_VALUES } from "../_constants/hour
 import { VIEW_MODE_VALUES } from "../_schemas/hour-filter-schemas"
 import { getHourTypeTranslationKey } from "../_utils/translation-helpers"
 import { formatHoursMinutes } from "../_utils/time-helpers"
-import { calculateWorkingDaysSync, calculateOvertime } from "../_utils/calculation-helpers"
+import { calculateWorkingDaysSync } from "../_utils/calculation-helpers"
 import {
     calculateExpectedHoursToDate,
     formatBalance as formatBalanceLib,
 } from "@/lib/balance-helpers"
-import { getCurrentUser } from "../../profile/_actions/profile-actions"
+import { getCurrentUser } from "@/app/(protected)/profile/_actions/profile-actions"
 
 interface HoursSummaryProps {
     entries: HourEntryDisplay[]
@@ -95,28 +95,22 @@ export function HoursSummary({
     }
 
     const weeklyTypeTotals = weeklyEntries.filter((entry) => entry.taskId === TASK_ID_VALUES.TOTAL)
-    const weeklyHoursByType = HOUR_TYPES.reduce(
-        (acc, hourType) => {
-            acc[hourType.value] = weeklyTypeTotals
-                .filter((entry) => entry.type === hourType.value)
-                .reduce((sum, entry) => sum + entry.hours, 0)
-            return acc
-        },
-        {} as Record<string, number>
-    )
+    const weeklyHoursByType = HOUR_TYPES.reduce<Record<string, number>>((acc, hourType) => {
+        acc[hourType.value] = weeklyTypeTotals
+            .filter((entry) => entry.type === hourType.value)
+            .reduce((sum, entry) => sum + entry.hours, 0)
+        return acc
+    }, {})
 
     const monthlyTypeTotals = monthlyEntries.filter(
         (entry) => entry.taskId === TASK_ID_VALUES.TOTAL
     )
-    const monthlyHoursByType = HOUR_TYPES.reduce(
-        (acc, hourType) => {
-            acc[hourType.value] = monthlyTypeTotals
-                .filter((entry) => entry.type === hourType.value)
-                .reduce((sum, entry) => sum + entry.hours, 0)
-            return acc
-        },
-        {} as Record<string, number>
-    )
+    const monthlyHoursByType = HOUR_TYPES.reduce<Record<string, number>>((acc, hourType) => {
+        acc[hourType.value] = monthlyTypeTotals
+            .filter((entry) => entry.type === hourType.value)
+            .reduce((sum, entry) => sum + entry.hours, 0)
+        return acc
+    }, {})
 
     const showWeekly = viewMode === VIEW_MODE_VALUES.WEEKLY
     const showBalance = dateRange && workingDays > 0

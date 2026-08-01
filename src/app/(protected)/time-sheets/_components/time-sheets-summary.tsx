@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardHeader } from "@/components/ui/card"
-import { formatHoursMinutes } from "../../hours/_utils/time-helpers"
+import { formatHoursMinutes } from "@/app/(protected)/hours/_utils/time-helpers"
 
 interface TimeSheetsSummaryProps {
     totalSeconds: number

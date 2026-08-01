@@ -2,6 +2,7 @@
 
 import { requireAdmin } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
+import { validateInput } from "@/lib/validation"
 import ExcelJS from "exceljs"
 import {
     generateCSV,
@@ -96,9 +97,9 @@ export async function exportUserDetailsWithHours(input: ExportOptions) {
     try {
         const session = await requireAdmin()
 
-        const validation = ExportOptionsSchema.safeParse(input)
+        const validation = validateInput(ExportOptionsSchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { format, months, userId } = validation.data

@@ -12,7 +12,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { formatDuration } from "@/app/(protected)/tasks/_utils/time-helpers"
 import { useDayEntries } from "../_hooks/use-day-entries"
 import { useTimeSheetsStore } from "../_stores/time-sheets-store"
-import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
+import { useTaskDialogStore } from "@/app/(protected)/tasks/_stores/task-dialog-stores"
 import type { HourType } from "@/../../prisma/generated/client"
 
 interface DayEntry {
@@ -51,7 +51,7 @@ function formatTime(date: Date): string {
 export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
     const dayEntriesDialog = useTimeSheetsStore((state) => state.dayEntriesDialog)
     const closeDayEntriesDialog = useTimeSheetsStore((state) => state.closeDayEntriesDialog)
-    const openDescriptionDialog = useTasksStore((state) => state.openDescriptionDialog)
+    const openDescriptionDialog = useTaskDialogStore((state) => state.openDescriptionDialog)
     const [currentTime, setCurrentTime] = useState(new Date())
 
     const { data, isLoading } = useDayEntries({
@@ -147,9 +147,9 @@ export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
                                                         <span className="text-muted-foreground italic">
                                                             {translations.active}
                                                         </span>
-                                                    ) : (
-                                                        formatTime(entry.endTime!)
-                                                    )}
+                                                    ) : entry.endTime ? (
+                                                        formatTime(entry.endTime)
+                                                    ) : null}
                                                 </td>
                                                 <td className="p-2 sm:p-4 align-middle text-right font-mono text-xs sm:text-sm">
                                                     {formatDuration(duration)}
@@ -240,9 +240,9 @@ export function DayEntriesDialog({ translations }: DayEntriesDialogProps) {
                                                                     <span className="italic">
                                                                         {translations.active}
                                                                     </span>
-                                                                ) : (
-                                                                    formatTime(entry.endTime!)
-                                                                )}
+                                                                ) : entry.endTime ? (
+                                                                    formatTime(entry.endTime)
+                                                                ) : null}
                                                             </span>
                                                         </div>
                                                         <div className="flex justify-between font-semibold">

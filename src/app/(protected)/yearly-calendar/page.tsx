@@ -32,12 +32,6 @@ export default async function YearlyCalendarPage() {
 
     const startOfYear = new Date(Date.UTC(currentYear, 0, 1))
     const today = new Date()
-    const endDate =
-        currentYear === today.getFullYear()
-            ? new Date(
-                  Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
-              )
-            : new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59, 999))
 
     const endOfYear = new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59, 999))
 

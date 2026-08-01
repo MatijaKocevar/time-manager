@@ -11,7 +11,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { formatDate } from "../_utils/helpers"
-import type { RequestHistoryTranslations } from "../types"
+import type { RequestHistoryTranslations } from "../_types/types"
 
 interface CancelDialogProps {
     open: boolean

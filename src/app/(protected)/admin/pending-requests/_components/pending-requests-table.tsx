@@ -23,18 +23,16 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ColumnFilter } from "./column-filter"
 import { RejectDialog } from "./reject-dialog"
 import { usePendingRequestsTable } from "../_hooks/use-pending-requests-table"
-import type { RequestDisplay, PendingRequestTranslations } from "../types"
+import type { RequestDisplay, PendingRequestTranslations } from "../_types/types"
 
 interface PendingRequestsTableClientProps {
     requests: RequestDisplay[]
-    holidays: Array<{ date: Date; name: string }>
     translations: PendingRequestTranslations
     locale: string
 }
 
 export function PendingRequestsTableClient({
     requests,
-    holidays,
     translations,
     locale,
 }: PendingRequestsTableClientProps) {
@@ -50,7 +48,7 @@ export function PendingRequestsTableClient({
         setRejectDialogOpen,
         setRejectionReason,
         handleReject,
-    } = usePendingRequestsTable({ requests, holidays, locale, translations })
+    } = usePendingRequestsTable({ requests, locale, translations })
 
     const table = useReactTable({
         data: requests,

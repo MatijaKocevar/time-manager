@@ -1,8 +1,8 @@
 "use server"
 
-import { getUrnikCookie } from "@/lib/urnik-session"
+import { getUrnikCookie } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
 import { requireAuth } from "@/lib/auth-helpers"
-import { URNIK_USER_AGENT } from "../../_lib/constants"
+import { URNIK_USER_AGENT } from "../../_utils/constants"
 import { getErrorMessage } from "../../_utils/helpers"
 import { prisma } from "@/lib/prisma"
 import type { ParsedHoursResult, DayDetailResult } from "../_schemas/hours-schema"

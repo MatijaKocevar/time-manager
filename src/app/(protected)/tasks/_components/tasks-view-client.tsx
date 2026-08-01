@@ -8,7 +8,8 @@ import { Plus } from "lucide-react"
 import { getActiveTimer } from "@/app/(protected)/shared/_actions/timer-actions"
 import { getLists } from "../_actions/list-actions"
 import { useTasksStore } from "../_stores/tasks-store"
-import { taskKeys, listKeys } from "../query-keys"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
+import { taskKeys, listKeys } from "../_constants/query-keys"
 import { CreateTaskDialog } from "./create-task-dialog"
 import { DeleteTaskDialog } from "./delete-task-dialog"
 import { TimeEntriesDialog } from "./time-entries-dialog"
@@ -26,7 +27,7 @@ export function TasksViewClient({ listId }: TasksViewClientProps) {
     const t = useTranslations("tasks.form")
     useTasksSSE()
     useTasksPusher()
-    const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
+    const openCreateDialog = useTaskDialogStore((state) => state.openCreateDialog)
     const setSelectedListId = useTasksStore((state) => state.setSelectedListId)
     const activeTimer = useTasksStore((state) => state.activeTimer)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)

@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { getActiveTimer } from "@/app/(protected)/shared/_actions/timer-actions"
 import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
-import { sharedKeys } from "../query-keys"
+import { sharedKeys } from "../_constants/query-keys"
 
 export function useActiveTimer() {
     const activeTimer = useTasksStore((state) => state.activeTimer)

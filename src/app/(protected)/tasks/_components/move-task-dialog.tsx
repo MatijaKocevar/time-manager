@@ -19,9 +19,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { useTasksStore } from "../_stores/tasks-store"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import { moveTaskToList } from "../_actions/list-actions"
-import { taskKeys, listKeys } from "../query-keys"
+import { taskKeys, listKeys } from "../_constants/query-keys"
 import type { ListDisplay } from "../_schemas/list-schemas"
 
 interface MoveTaskDialogProps {
@@ -33,16 +33,16 @@ export function MoveTaskDialog({ lists }: MoveTaskDialogProps) {
     const t = useTranslations("tasks.form")
     const tCommon = useTranslations("common")
     const tList = useTranslations("tasks.list")
-    const moveTaskDialog = useTasksStore((state) => state.moveTaskDialog)
-    const closeMoveTaskDialog = useTasksStore((state) => state.closeMoveTaskDialog)
-    const selectedListId = useTasksStore((state) => state.moveTaskForm.selectedListId)
-    const isLoading = useTasksStore((state) => state.moveTaskForm.isLoading)
-    const error = useTasksStore((state) => state.moveTaskForm.error)
-    const setMoveTaskSelectedListId = useTasksStore((state) => state.setMoveTaskSelectedListId)
-    const setMoveTaskLoading = useTasksStore((state) => state.setMoveTaskLoading)
-    const setMoveTaskError = useTasksStore((state) => state.setMoveTaskError)
-    const clearMoveTaskError = useTasksStore((state) => state.clearMoveTaskError)
-    const resetMoveTaskForm = useTasksStore((state) => state.resetMoveTaskForm)
+    const moveTaskDialog = useTaskDialogStore((state) => state.moveTaskDialog)
+    const closeMoveTaskDialog = useTaskDialogStore((state) => state.closeMoveTaskDialog)
+    const selectedListId = useTaskDialogStore((state) => state.moveTaskForm.selectedListId)
+    const isLoading = useTaskDialogStore((state) => state.moveTaskForm.isLoading)
+    const error = useTaskDialogStore((state) => state.moveTaskForm.error)
+    const setMoveTaskSelectedListId = useTaskDialogStore((state) => state.setMoveTaskSelectedListId)
+    const setMoveTaskLoading = useTaskDialogStore((state) => state.setMoveTaskLoading)
+    const setMoveTaskError = useTaskDialogStore((state) => state.setMoveTaskError)
+    const clearMoveTaskError = useTaskDialogStore((state) => state.clearMoveTaskError)
+    const resetMoveTaskForm = useTaskDialogStore((state) => state.resetMoveTaskForm)
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()

@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { useHoursStore } from "../_stores/hours-store"
 import { updateHourEntry } from "../_actions/hour-actions"
 import { HOUR_TYPES, MAX_HOURS_PER_DAY } from "../_constants/hour-types"
-import { hourKeys } from "../query-keys"
+import { hourKeys } from "../_constants/query-keys"
 import { getHourTypeTranslationKey } from "../_utils/translation-helpers"
 import type { WorkType } from "@/lib/work-type-styles"
 import { format } from "date-fns"

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Bold, Italic, Heading2, List, ListOrdered, Link2, ImageIcon } from "lucide-react"
 import { toast } from "sonner"
-import { useTasksStore } from "../_stores/tasks-store"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import { useTaskDescription } from "../_hooks/use-task-description"
 
 interface TaskDescriptionDialogClientProps {
@@ -28,10 +28,10 @@ interface TaskDescriptionDialogClientProps {
 }
 
 export function TaskDescriptionDialogClient({ translations }: TaskDescriptionDialogClientProps) {
-    const isOpen = useTasksStore((s) => s.descriptionDialog.isOpen)
-    const taskId = useTasksStore((s) => s.descriptionDialog.taskId)
-    const taskTitle = useTasksStore((s) => s.descriptionDialog.taskTitle)
-    const closeDescriptionDialog = useTasksStore((s) => s.closeDescriptionDialog)
+    const isOpen = useTaskDialogStore((s) => s.descriptionDialog.isOpen)
+    const taskId = useTaskDialogStore((s) => s.descriptionDialog.taskId)
+    const taskTitle = useTaskDialogStore((s) => s.descriptionDialog.taskTitle)
+    const closeDescriptionDialog = useTaskDialogStore((s) => s.closeDescriptionDialog)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const { description, isFetching, isLoading, handleSave, handleImageUpload } =

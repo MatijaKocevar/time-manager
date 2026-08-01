@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrivalDialog } from "@/components/arrival-dialog"
 import { useTrackerStore } from "../_stores/tracker-store"
 import { formatDuration } from "@/app/(protected)/tasks/_utils/time-helpers"
-import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
+import { useTaskDialogStore } from "@/app/(protected)/tasks/_stores/task-dialog-stores"
 import type { HourType } from "@/../../prisma/generated/client"
 import {
     useTrackerSSE,
@@ -100,7 +100,7 @@ export function TrackerDisplay({
     const handleViewEntries = () => {
         if (taskEntries.length > 0) {
             const firstEntry = taskEntries[0]
-            useTasksStore.getState().openTimeEntriesDialog(firstEntry.taskId)
+            useTaskDialogStore.getState().openTimeEntriesDialog(firstEntry.taskId)
         }
     }
 

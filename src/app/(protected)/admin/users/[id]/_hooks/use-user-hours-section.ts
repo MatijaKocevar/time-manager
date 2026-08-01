@@ -6,9 +6,9 @@ import { getHourEntriesForUser } from "@/app/(protected)/hours/_actions/hour-act
 import { getDateRange, getViewTitle } from "@/app/(protected)/hours/_utils/view-helpers"
 import { VIEW_MODE_VALUES } from "@/app/(protected)/hours/_schemas/hour-filter-schemas"
 import { getHolidaysInRange } from "@/app/(protected)/admin/holidays/_actions/holiday-actions"
-import { exportUserDetailsWithHours } from "../../_actions/export-actions"
+import { exportUserDetailsWithHours } from "@/app/(protected)/admin/users/_actions/export-actions"
 import { type ExportFormat } from "@/features/export"
-import { userHourKeys } from "../../query-keys"
+import { userHourKeys } from "@/app/(protected)/admin/users/_constants/query-keys"
 import { useHoursStore } from "@/app/(protected)/hours/_stores/hours-store"
 import { TASK_ID_VALUES } from "@/app/(protected)/hours/_constants/hour-types"
 import { useUserHoursSectionStore } from "../_stores/user-hours-store"
@@ -54,17 +54,16 @@ export function useUserHoursSection({
                     entry.type === type && entry.taskId === TASK_ID_VALUES.TOTAL
             )
 
-            const entriesByDate = filteredEntries.reduce(
-                (acc, entry) => {
-                    const dateKey = entry.date.toISOString().split("T")[0]
-                    if (!acc[dateKey]) {
-                        acc[dateKey] = { date: entry.date, hours: 0 }
-                    }
-                    acc[dateKey].hours += entry.hours
-                    return acc
-                },
-                {} as Record<string, { date: Date; hours: number }>
-            )
+            const entriesByDate = filteredEntries.reduce<
+                Record<string, { date: Date; hours: number }>
+            >((acc, entry) => {
+                const dateKey = entry.date.toISOString().split("T")[0]
+                if (!acc[dateKey]) {
+                    acc[dateKey] = { date: entry.date, hours: 0 }
+                }
+                acc[dateKey].hours += entry.hours
+                return acc
+            }, {})
 
             return Object.values(entriesByDate).filter((entry) => entry.hours > 0)
         }

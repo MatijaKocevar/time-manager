@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { useTasksStore } from "../_stores/tasks-store"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import type { ListDisplay } from "../_schemas/list-schemas"
 
 interface ListSelectorProps {
@@ -22,7 +22,7 @@ interface ListSelectorProps {
 export function ListSelector({ lists, selectedListId, onSelectList }: ListSelectorProps) {
     const t = useTranslations("tasks.table")
     const tForm = useTranslations("tasks.form")
-    const openListDialog = useTasksStore((state) => state.openListDialog)
+    const openListDialog = useTaskDialogStore((state) => state.openListDialog)
 
     const selectedList = lists.find((list) => list.id === selectedListId)
 

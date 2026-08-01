@@ -1,28 +1,20 @@
 import { getLocale } from "next-intl/server"
-import { getAllRequests } from "../../../requests/_actions/request-actions"
-import { getHolidays } from "../../holidays/_actions/holiday-actions"
-import { syncRequestStatuses } from "../../../requests/_actions/sync-request-statuses"
-import type { RequestDisplay } from "../types"
+import { getAllRequests } from "@/app/(protected)/requests/_actions/request-actions"
+import { syncRequestStatuses } from "@/app/(protected)/requests/_actions/sync-request-statuses"
+import type { RequestDisplay } from "../_types/types"
 
 export async function loadPendingRequestsData(): Promise<{
     requests: RequestDisplay[]
-    holidays: Array<{ date: Date; name: string }>
     locale: string
 }> {
     await syncRequestStatuses()
 
-    const [requests, holidaysResult, locale] = await Promise.all([
-        getAllRequests(["PENDING"]),
-        getHolidays(),
-        getLocale(),
-    ])
+    const [requests, locale] = await Promise.all([getAllRequests(["PENDING"]), getLocale()])
 
     const mappedRequests: RequestDisplay[] = requests.map((r) => ({
         ...r,
         user: r.user ?? { name: null, email: "Unknown" },
     }))
 
-    const holidays = (holidaysResult.success ? holidaysResult.data : []) ?? []
-
-    return { requests: mappedRequests, holidays, locale }
+    return { requests: mappedRequests, locale }
 }

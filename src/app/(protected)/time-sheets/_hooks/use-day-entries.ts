@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 import { getDayEntries } from "../_actions/time-sheet-actions"
-import { timeSheetKeys } from "../query-keys"
+import { timeSheetKeys } from "../_constants/query-keys"
 import type { HourType } from "@/../../prisma/generated/client"
 
 interface UseDayEntriesParams {

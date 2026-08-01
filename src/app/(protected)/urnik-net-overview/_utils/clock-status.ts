@@ -1,6 +1,7 @@
 import { getTodayDayInfo } from "@/app/(protected)/urnik-net-overview/_actions/clock-actions"
 import type { DayInfo } from "@/app/(protected)/urnik-net-overview/_schemas/day-info-schema"
 import { prisma } from "@/lib/prisma"
+import { startOfDay, endOfDay } from "@/lib/date-utils"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 
@@ -54,10 +55,8 @@ export async function getTodayWorkFromHomeStatus(): Promise<{
             let requestEnd: Date
 
             if (request.isFullDay || !request.startTime || !request.endTime) {
-                requestStart = new Date(request.startDate)
-                requestStart.setHours(0, 0, 0, 0)
-                requestEnd = new Date(request.endDate)
-                requestEnd.setHours(23, 59, 59, 999)
+                requestStart = startOfDay(new Date(request.startDate))
+                requestEnd = endOfDay(new Date(request.endDate))
             } else {
                 const [startHour, startMin] = request.startTime.split(":").map(Number)
                 const [endHour, endMin] = request.endTime.split(":").map(Number)

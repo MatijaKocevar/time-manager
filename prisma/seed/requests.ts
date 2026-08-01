@@ -5,7 +5,7 @@ import {
     ShiftLocation,
     HourType,
 } from "../generated/client"
-import { SeededRandom, normalizeDate, addDays, dateRange, isWeekday } from "./utils"
+import { SeededRandom, normalizeDate, addDays, dateRange } from "./utils"
 
 export async function seedRequestsForUser(
     prisma: PrismaClient,

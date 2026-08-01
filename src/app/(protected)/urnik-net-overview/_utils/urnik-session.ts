@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth"
-import { authConfig } from "./auth"
-import { prisma } from "./prisma"
+import { authConfig } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 import { loginToUrnikNet } from "@/app/(protected)/urnik-net-overview/requests/_actions/urnik-net-requests-actions"
 
 async function extractUrnikUserId(cookie: string): Promise<string | null> {
@@ -33,7 +33,6 @@ async function extractUrnikUserId(cookie: string): Promise<string | null> {
         }
 
         const userId = userIdMatch[1].trim()
-        console.log(`Successfully extracted urnik.net UserID: ${userId}`)
         return userId
     } catch (error) {
         console.error("Failed to extract urnik UserID:", error)

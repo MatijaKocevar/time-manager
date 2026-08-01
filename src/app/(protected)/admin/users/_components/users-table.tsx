@@ -37,7 +37,6 @@ import { Edit, Search, Plus, Download, MoreVertical } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { UserTableItem } from "../_schemas/user-table-schemas"
 import { USER_ROLE_COLORS } from "../_constants/user-constants"
-import { getUserRoleTranslationKey } from "../_utils/translation-helpers"
 import { type UserRole } from "../_schemas/user-action-schemas"
 import { useUsersTable } from "../_hooks/use-users-table"
 

@@ -2,6 +2,7 @@
 
 import { unstable_cache } from "next/cache"
 import { requireAuth } from "@/lib/auth-helpers"
+import { startOfDay, endOfDay } from "@/lib/date-utils"
 import { prisma } from "@/lib/prisma"
 import {
     GetTimeSheetEntriesSchema,
@@ -126,17 +127,15 @@ export async function getDayEntries(input: GetDayEntriesInput) {
     const { date, type } = validation.data
 
     try {
-        const startOfDay = new Date(date)
-        startOfDay.setHours(0, 0, 0, 0)
-        const endOfDay = new Date(date)
-        endOfDay.setHours(23, 59, 59, 999)
+        const startOfDayVar = startOfDay(new Date(date))
+        const endOfDayVar = endOfDay(new Date(date))
 
         const entries = await prisma.taskTimeEntry.findMany({
             where: {
                 userId: session.user.id,
                 startTime: {
-                    gte: startOfDay,
-                    lte: endOfDay,
+                    gte: startOfDayVar,
+                    lte: endOfDayVar,
                 },
                 ...(type && { type }),
             },

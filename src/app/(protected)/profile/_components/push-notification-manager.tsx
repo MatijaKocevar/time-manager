@@ -13,10 +13,7 @@ interface PushNotificationManagerProps {
     vapidPublicKey: string
 }
 
-export function PushNotificationManager({
-    initialHasSubscription,
-    vapidPublicKey,
-}: PushNotificationManagerProps) {
+export function PushNotificationManager({ vapidPublicKey }: PushNotificationManagerProps) {
     const t = useTranslations("notifications.pushNotifications")
 
     const [hasSubscription, setHasSubscription] = useState(false)

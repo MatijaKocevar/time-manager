@@ -25,6 +25,7 @@ type FormFieldContextValue<
     name: TName
 }
 
+// TODO: consider using a more type-safe default (e.g. null) instead of an empty cast
 const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue)
 
 const FormField = <
@@ -67,6 +68,7 @@ type FormItemContextValue = {
     id: string
 }
 
+// TODO: consider using a more type-safe default (e.g. null) instead of an empty cast
 const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue)
 
 function FormItem({ className, ...props }: React.ComponentProps<"div">) {

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { taskKeys } from "../query-keys"
-import { sharedKeys } from "@/app/(protected)/shared/query-keys"
+import { taskKeys } from "../_constants/query-keys"
+import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
 
 export function useTasksSSE() {
     const queryClient = useQueryClient()

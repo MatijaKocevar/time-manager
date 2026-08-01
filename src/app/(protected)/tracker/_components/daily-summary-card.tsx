@@ -3,6 +3,7 @@
 import { useDailySummary } from "../_hooks/use-daily-summary"
 import { formatHoursMinutes } from "@/app/(protected)/hours/_utils/time-helpers"
 import { useTimeSheetsStore } from "@/app/(protected)/time-sheets/_stores/time-sheets-store"
+import { startOfDay } from "@/lib/date-utils"
 import type { HourType } from "@/../../prisma/generated/client"
 
 interface DailySummaryCardProps {
@@ -27,8 +28,7 @@ export function DailySummaryCard({ initialData, translations }: DailySummaryCard
     const openDayEntriesDialog = useTimeSheetsStore((state) => state.openDayEntriesDialog)
 
     const handleTypeClick = (type: "WORK" | "BREAK" | "PRIVATE") => {
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const today = startOfDay(new Date())
         openDayEntriesDialog(today.toISOString(), type)
     }
 

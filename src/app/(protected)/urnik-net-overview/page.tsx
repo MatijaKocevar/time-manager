@@ -4,7 +4,10 @@ import { getTranslations } from "next-intl/server"
 import { ClockView } from "./_components/clock-view"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
-import { getArrivalLeaveStatus, getTodayWorkFromHomeStatus } from "@/lib/clock-status"
+import {
+    getArrivalLeaveStatus,
+    getTodayWorkFromHomeStatus,
+} from "@/app/(protected)/urnik-net-overview/_utils/clock-status"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function ClockPage() {

@@ -9,6 +9,12 @@ import {
 import { sendPushNotification } from "../actions/notification-actions"
 import type { NotificationType } from "../../../../prisma/generated/client"
 
+const REQUEST_TYPE_LABELS: Record<string, string> = {
+    VACATION: "Vacation",
+    SICK_LEAVE: "Sick Leave",
+    WORK_FROM_HOME: "Work from Home",
+}
+
 async function getOrCreatePreferences(userId: string) {
     let preferences = await prisma.notificationPreference.findUnique({
         where: { userId },
@@ -47,6 +53,102 @@ async function createNotificationRecord(
     }
 }
 
+interface PushPayload {
+    title: string
+    body: string
+    url?: string
+    actions?: Array<{ action: string; title: string }>
+    data?: Record<string, unknown>
+}
+
+interface SendUserNotificationParams {
+    userId: string
+    notificationType: NotificationType
+    notificationTitle: string
+    notificationMessage: string
+    notificationUrl?: string
+    notificationMetadata?: Record<string, unknown>
+    pushPreferenceKey?:
+        | "pushNewRequest"
+        | "pushRequestApproved"
+        | "pushRequestRejected"
+        | "pushRequestCancelled"
+        | "pushAutoCheckin"
+        | "pushAutoCheckout"
+    pushPayload?: PushPayload
+    emailPreferenceKey?:
+        | "emailNewRequest"
+        | "emailRequestApproved"
+        | "emailRequestRejected"
+        | "emailRequestCancelled"
+        | "emailAutoCheckin"
+        | "emailAutoCheckout"
+    emailSubject?: string
+    buildEmailHtml?: (locale: "en" | "sl") => string | Promise<string>
+}
+
+async function sendUserNotification(params: SendUserNotificationParams) {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: params.userId },
+            select: { email: true, locale: true },
+        })
+
+        if (!user) {
+            console.warn("User not found for notification:", params.notificationType)
+            return { success: false, pushSent: false, emailSent: false, error: "User not found" }
+        }
+
+        const preferences = await getOrCreatePreferences(params.userId)
+
+        let pushSent = false
+        let emailSent = false
+
+        if (
+            params.pushPreferenceKey &&
+            params.pushPayload &&
+            preferences[params.pushPreferenceKey]
+        ) {
+            try {
+                await sendPushNotification(params.userId, params.pushPayload)
+                pushSent = true
+            } catch (error) {
+                console.error(`Failed to send push to ${params.userId}:`, error)
+            }
+        }
+
+        await createNotificationRecord(
+            params.userId,
+            params.notificationType,
+            params.notificationTitle,
+            params.notificationMessage,
+            params.notificationUrl,
+            params.notificationMetadata
+        )
+
+        if (
+            params.emailPreferenceKey &&
+            params.buildEmailHtml &&
+            preferences[params.emailPreferenceKey]
+        ) {
+            const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
+            const html = await params.buildEmailHtml(locale)
+            const result = await sendEmail(user.email, params.emailSubject!, html)
+            emailSent = result.success
+        }
+
+        return { success: true, pushSent, emailSent }
+    } catch (error) {
+        console.error("Error in sendUserNotification:", error)
+        return {
+            success: false,
+            pushSent: false,
+            emailSent: false,
+            error: "Failed to send notification",
+        }
+    }
+}
+
 interface NotifyAdminsNewRequestParams {
     requestId: string
     requestUserId: string
@@ -77,13 +179,7 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
             return { success: true, emailsSent: 0, pushSent: 0 }
         }
 
-        const requestTypeLabels: Record<string, string> = {
-            VACATION: "Vacation",
-            SICK_LEAVE: "Sick Leave",
-            WORK_FROM_HOME: "Work from Home",
-        }
-
-        const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
+        const requestTypeLabel = REQUEST_TYPE_LABELS[params.requestType] || params.requestType
 
         const notificationTitle = params.autoApproved
             ? "Request Auto-Approved"
@@ -96,40 +192,27 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
         let emailsSent = 0
 
         for (const admin of admins) {
-            const preferences = await getOrCreatePreferences(admin.id)
-
-            if (preferences.pushNewRequest) {
-                try {
-                    await sendPushNotification(admin.id, {
-                        title: notificationTitle,
-                        body: notificationBody,
-                        url: "/admin/pending-requests",
-                    })
-                    pushSent++
-                } catch (error) {
-                    console.error(`Failed to send push to admin ${admin.id}:`, error)
-                }
-            }
-
-            await createNotificationRecord(
-                admin.id,
-                "REQUEST_SUBMITTED",
+            const result = await sendUserNotification({
+                userId: admin.id,
+                notificationType: "REQUEST_SUBMITTED",
                 notificationTitle,
-                notificationBody,
-                "/admin/pending-requests",
-                {
+                notificationMessage: notificationBody,
+                notificationUrl: "/admin/pending-requests",
+                notificationMetadata: {
                     requestId: params.requestId,
                     requestType: params.requestType,
                     userName: params.userName,
                     autoApproved: params.autoApproved ?? false,
-                }
-            )
-
-            if (preferences.emailNewRequest) {
-                const locale = (admin.locale === "sl" ? "sl" : "en") as "en" | "sl"
-                const emailResult = await sendEmail(
-                    admin.email,
-                    `${params.autoApproved ? "[Auto-Approved] " : ""}New Request: ${params.userName} - ${requestTypeLabel}`,
+                },
+                pushPreferenceKey: "pushNewRequest",
+                pushPayload: {
+                    title: notificationTitle,
+                    body: notificationBody,
+                    url: "/admin/pending-requests",
+                },
+                emailPreferenceKey: "emailNewRequest",
+                emailSubject: `${params.autoApproved ? "[Auto-Approved] " : ""}New Request: ${params.userName} - ${requestTypeLabel}`,
+                buildEmailHtml: (locale) =>
                     newRequestForAdminsEmail(
                         {
                             userName: params.userName,
@@ -139,12 +222,10 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
                             reason: params.reason,
                         },
                         locale
-                    )
-                )
-                if (emailResult.success) {
-                    emailsSent++
-                }
-            }
+                    ),
+            })
+            if (result.pushSent) pushSent++
+            if (result.emailSent) emailsSent++
         }
 
         return { success: true, emailsSent, pushSent, notified: admins.length }
@@ -165,71 +246,38 @@ interface NotifyUserApprovalParams {
 }
 
 export async function notifyUserApproval(params: NotifyUserApprovalParams) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: params.userId },
-            select: { email: true, locale: true },
-        })
-
-        if (!user) {
-            console.warn("User not found for approval notification")
-            return { success: false, error: "User not found" }
-        }
-
-        const preferences = await getOrCreatePreferences(params.userId)
-
-        const requestTypeLabels: Record<string, string> = {
-            VACATION: "Vacation",
-            SICK_LEAVE: "Sick Leave",
-            WORK_FROM_HOME: "Work from Home",
-        }
-
-        const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
-        const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
-
-        if (preferences.pushRequestApproved) {
-            await sendPushNotification(params.userId, {
-                title: "Request Approved ✓",
-                body: `Your ${requestTypeLabel} request has been approved`,
-                url: "/requests",
-            })
-        }
-
-        await createNotificationRecord(
-            params.userId,
-            "REQUEST_APPROVED",
-            "Request Approved ✓",
-            `Your ${requestTypeLabel} request has been approved by ${params.approvedByName}`,
-            "/requests",
-            {
-                requestType: params.requestType,
-                approvedByName: params.approvedByName,
-            }
-        )
-
-        if (preferences.emailRequestApproved) {
-            await sendEmail(
-                user.email,
-                `Request Approved: ${requestTypeLabel}`,
-                requestApprovedEmail(
-                    {
-                        userName: params.userName,
-                        requestType: params.requestType,
-                        startDate: params.startDate,
-                        endDate: params.endDate,
-                        reason: params.reason,
-                    },
-                    params.approvedByName,
-                    locale
-                )
-            )
-        }
-
-        return { success: true }
-    } catch (error) {
-        console.error("Error notifying user of approval:", error)
-        return { success: false, error: "Failed to notify user" }
-    }
+    const requestTypeLabel = REQUEST_TYPE_LABELS[params.requestType] || params.requestType
+    return sendUserNotification({
+        userId: params.userId,
+        notificationType: "REQUEST_APPROVED",
+        notificationTitle: "Request Approved ✓",
+        notificationMessage: `Your ${requestTypeLabel} request has been approved by ${params.approvedByName}`,
+        notificationUrl: "/requests",
+        notificationMetadata: {
+            requestType: params.requestType,
+            approvedByName: params.approvedByName,
+        },
+        pushPreferenceKey: "pushRequestApproved",
+        pushPayload: {
+            title: "Request Approved ✓",
+            body: `Your ${requestTypeLabel} request has been approved`,
+            url: "/requests",
+        },
+        emailPreferenceKey: "emailRequestApproved",
+        emailSubject: `Request Approved: ${requestTypeLabel}`,
+        buildEmailHtml: (locale) =>
+            requestApprovedEmail(
+                {
+                    userName: params.userName,
+                    requestType: params.requestType,
+                    startDate: params.startDate,
+                    endDate: params.endDate,
+                    reason: params.reason,
+                },
+                params.approvedByName,
+                locale
+            ),
+    })
 }
 
 interface NotifyUserRejectionParams {
@@ -244,73 +292,40 @@ interface NotifyUserRejectionParams {
 }
 
 export async function notifyUserRejection(params: NotifyUserRejectionParams) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: params.userId },
-            select: { email: true, locale: true },
-        })
-
-        if (!user) {
-            console.warn("User not found for rejection notification")
-            return { success: false, error: "User not found" }
-        }
-
-        const preferences = await getOrCreatePreferences(params.userId)
-
-        const requestTypeLabels: Record<string, string> = {
-            VACATION: "Vacation",
-            SICK_LEAVE: "Sick Leave",
-            WORK_FROM_HOME: "Work from Home",
-        }
-
-        const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
-        const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
-
-        if (preferences.pushRequestRejected) {
-            await sendPushNotification(params.userId, {
-                title: "Request Rejected",
-                body: `Your ${requestTypeLabel} request has been rejected`,
-                url: "/requests",
-            })
-        }
-
-        await createNotificationRecord(
-            params.userId,
-            "REQUEST_REJECTED",
-            "Request Rejected",
-            `Your ${requestTypeLabel} request has been rejected by ${params.rejectedByName}`,
-            "/requests",
-            {
-                requestType: params.requestType,
-                rejectedByName: params.rejectedByName,
-                rejectionReason: params.rejectionReason,
-            }
-        )
-
-        if (preferences.emailRequestRejected) {
-            await sendEmail(
-                user.email,
-                `Request Rejected: ${requestTypeLabel}`,
-                requestRejectedEmail(
-                    {
-                        userName: params.userName,
-                        requestType: params.requestType,
-                        startDate: params.startDate,
-                        endDate: params.endDate,
-                        reason: params.reason,
-                    },
-                    params.rejectedByName,
-                    params.rejectionReason,
-                    locale
-                )
-            )
-        }
-
-        return { success: true }
-    } catch (error) {
-        console.error("Error notifying user of rejection:", error)
-        return { success: false, error: "Failed to notify user" }
-    }
+    const requestTypeLabel = REQUEST_TYPE_LABELS[params.requestType] || params.requestType
+    return sendUserNotification({
+        userId: params.userId,
+        notificationType: "REQUEST_REJECTED",
+        notificationTitle: "Request Rejected",
+        notificationMessage: `Your ${requestTypeLabel} request has been rejected by ${params.rejectedByName}`,
+        notificationUrl: "/requests",
+        notificationMetadata: {
+            requestType: params.requestType,
+            rejectedByName: params.rejectedByName,
+            rejectionReason: params.rejectionReason,
+        },
+        pushPreferenceKey: "pushRequestRejected",
+        pushPayload: {
+            title: "Request Rejected",
+            body: `Your ${requestTypeLabel} request has been rejected`,
+            url: "/requests",
+        },
+        emailPreferenceKey: "emailRequestRejected",
+        emailSubject: `Request Rejected: ${requestTypeLabel}`,
+        buildEmailHtml: (locale) =>
+            requestRejectedEmail(
+                {
+                    userName: params.userName,
+                    requestType: params.requestType,
+                    startDate: params.startDate,
+                    endDate: params.endDate,
+                    reason: params.reason,
+                },
+                params.rejectedByName,
+                params.rejectionReason,
+                locale
+            ),
+    })
 }
 
 interface NotifyUserCancellationParams {
@@ -326,77 +341,46 @@ interface NotifyUserCancellationParams {
 }
 
 export async function notifyUserCancellation(params: NotifyUserCancellationParams) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: params.userId },
-            select: { email: true, locale: true },
-        })
+    const requestTypeLabel = REQUEST_TYPE_LABELS[params.requestType] || params.requestType
+    const notificationMessage = params.cancelledByAdmin
+        ? `Your ${requestTypeLabel} request has been cancelled by ${params.cancelledByName}`
+        : `Your ${requestTypeLabel} request has been cancelled`
 
-        if (!user) {
-            console.warn("User not found for cancellation notification")
-            return { success: false, error: "User not found" }
-        }
-
-        const preferences = await getOrCreatePreferences(params.userId)
-
-        const requestTypeLabels: Record<string, string> = {
-            VACATION: "Vacation",
-            SICK_LEAVE: "Sick Leave",
-            WORK_FROM_HOME: "Work from Home",
-        }
-
-        const requestTypeLabel = requestTypeLabels[params.requestType] || params.requestType
-        const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
-
-        if (preferences.pushRequestCancelled) {
-            await sendPushNotification(params.userId, {
-                title: "Request Cancelled",
-                body: `Your ${requestTypeLabel} request has been cancelled`,
-                url: "/requests",
-            })
-        }
-
-        await createNotificationRecord(
-            params.userId,
-            "REQUEST_CANCELLED",
-            "Request Cancelled",
-            params.cancelledByAdmin
-                ? `Your ${requestTypeLabel} request has been cancelled by ${params.cancelledByName}`
-                : `Your ${requestTypeLabel} request has been cancelled`,
-            "/requests",
-            {
-                requestType: params.requestType,
-                cancelledByName: params.cancelledByName,
-                cancellationReason: params.cancellationReason,
-                cancelledByAdmin: params.cancelledByAdmin,
-            }
-        )
-
-        if (preferences.emailRequestCancelled) {
-            await sendEmail(
-                user.email,
-                `Request Cancelled: ${requestTypeLabel}`,
-                requestCancelledEmail(
-                    {
-                        userName: params.userName,
-                        requestType: params.requestType,
-                        startDate: params.startDate,
-                        endDate: params.endDate,
-                        reason: params.reason,
-                    },
-                    params.cancelledByName,
-                    params.cancellationReason,
-                    params.cancelledByAdmin,
-                    locale
-                )
-            )
-        }
-
-        return { success: true }
-    } catch (error) {
-        console.error("Error notifying user of cancellation:", error)
-        return { success: false, error: "Failed to notify user" }
-    }
+    return sendUserNotification({
+        userId: params.userId,
+        notificationType: "REQUEST_CANCELLED",
+        notificationTitle: "Request Cancelled",
+        notificationMessage,
+        notificationUrl: "/requests",
+        notificationMetadata: {
+            requestType: params.requestType,
+            cancelledByName: params.cancelledByName,
+            cancellationReason: params.cancellationReason,
+            cancelledByAdmin: params.cancelledByAdmin,
+        },
+        pushPreferenceKey: "pushRequestCancelled",
+        pushPayload: {
+            title: "Request Cancelled",
+            body: `Your ${requestTypeLabel} request has been cancelled`,
+            url: "/requests",
+        },
+        emailPreferenceKey: "emailRequestCancelled",
+        emailSubject: `Request Cancelled: ${requestTypeLabel}`,
+        buildEmailHtml: (locale) =>
+            requestCancelledEmail(
+                {
+                    userName: params.userName,
+                    requestType: params.requestType,
+                    startDate: params.startDate,
+                    endDate: params.endDate,
+                    reason: params.reason,
+                },
+                params.cancelledByName,
+                params.cancellationReason,
+                params.cancelledByAdmin,
+                locale
+            ),
+    })
 }
 
 interface NotifyAutoCheckinReminderParams {
@@ -406,62 +390,37 @@ interface NotifyAutoCheckinReminderParams {
 }
 
 export async function notifyAutoCheckinReminder(params: NotifyAutoCheckinReminderParams) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: params.userId },
-            select: { email: true, locale: true },
-        })
-
-        if (!user) {
-            console.warn("User not found for auto check-in reminder")
-            return { success: false, error: "User not found" }
-        }
-
-        const preferences = await getOrCreatePreferences(params.userId)
-        const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
-
-        if (preferences.pushAutoCheckin) {
-            await sendPushNotification(params.userId, {
-                title: "Auto Check-In Reminder",
-                body: `Your work starts at ${params.workStartTime}. Auto check-in will happen soon if you don't log in manually.`,
-                url: "/urnik-net-overview",
-                actions: [
-                    { action: "delay-15", title: "Delay 15min" },
-                    { action: "delay-30", title: "Delay 30min" },
-                    { action: "cancel-auto", title: "Cancel" },
-                ],
-                data: {
-                    adjustmentType: "start",
-                    cancelType: "checkin",
-                },
-            })
-        }
-
-        await createNotificationRecord(
-            params.userId,
-            "AUTO_CHECKIN_REMINDER",
-            "Auto Check-In Reminder",
-            `Your work starts at ${params.workStartTime}. System will automatically log your arrival if you don't check in manually.`,
-            "/urnik-net-overview",
-            {
-                workStartTime: params.workStartTime,
-            }
-        )
-
-        if (preferences.emailAutoCheckin) {
+    return sendUserNotification({
+        userId: params.userId,
+        notificationType: "AUTO_CHECKIN_REMINDER",
+        notificationTitle: "Auto Check-In Reminder",
+        notificationMessage: `Your work starts at ${params.workStartTime}. System will automatically log your arrival if you don't check in manually.`,
+        notificationUrl: "/urnik-net-overview",
+        notificationMetadata: {
+            workStartTime: params.workStartTime,
+        },
+        pushPreferenceKey: "pushAutoCheckin",
+        pushPayload: {
+            title: "Auto Check-In Reminder",
+            body: `Your work starts at ${params.workStartTime}. Auto check-in will happen soon if you don't log in manually.`,
+            url: "/urnik-net-overview",
+            actions: [
+                { action: "delay-15", title: "Delay 15min" },
+                { action: "delay-30", title: "Delay 30min" },
+                { action: "cancel-auto", title: "Cancel" },
+            ],
+            data: {
+                adjustmentType: "start",
+                cancelType: "checkin",
+            },
+        },
+        emailPreferenceKey: "emailAutoCheckin",
+        emailSubject: "Auto Check-In Reminder",
+        buildEmailHtml: async (locale) => {
             const { autoCheckinReminderEmail } = await import("./email-templates")
-            await sendEmail(
-                user.email,
-                "Auto Check-In Reminder",
-                autoCheckinReminderEmail(params.userName, params.workStartTime, locale)
-            )
-        }
-
-        return { success: true }
-    } catch (error) {
-        console.error("Error sending auto check-in reminder:", error)
-        return { success: false, error: "Failed to send reminder" }
-    }
+            return autoCheckinReminderEmail(params.userName, params.workStartTime, locale)
+        },
+    })
 }
 
 interface NotifyAutoCheckinCompletedParams {
@@ -471,54 +430,29 @@ interface NotifyAutoCheckinCompletedParams {
 }
 
 export async function notifyAutoCheckinCompleted(params: NotifyAutoCheckinCompletedParams) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: params.userId },
-            select: { email: true, locale: true },
-        })
-
-        if (!user) {
-            console.warn("User not found for auto check-in completion notification")
-            return { success: false, error: "User not found" }
-        }
-
-        const preferences = await getOrCreatePreferences(params.userId)
-        const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
-        const checkInType = params.isWorkFromHome ? "Work from Home" : "Office"
-
-        if (preferences.pushAutoCheckin) {
-            await sendPushNotification(params.userId, {
-                title: "Auto Check-In Completed",
-                body: `You've been automatically checked in (${checkInType})`,
-                url: "/urnik-net-overview",
-            })
-        }
-
-        await createNotificationRecord(
-            params.userId,
-            "AUTO_CHECKIN_COMPLETED",
-            "Auto Check-In Completed",
-            `You've been automatically logged into urnik.net (${checkInType})`,
-            "/urnik-net-overview",
-            {
-                isWorkFromHome: params.isWorkFromHome,
-            }
-        )
-
-        if (preferences.emailAutoCheckin) {
+    const checkInType = params.isWorkFromHome ? "Work from Home" : "Office"
+    return sendUserNotification({
+        userId: params.userId,
+        notificationType: "AUTO_CHECKIN_COMPLETED",
+        notificationTitle: "Auto Check-In Completed",
+        notificationMessage: `You've been automatically logged into urnik.net (${checkInType})`,
+        notificationUrl: "/urnik-net-overview",
+        notificationMetadata: {
+            isWorkFromHome: params.isWorkFromHome,
+        },
+        pushPreferenceKey: "pushAutoCheckin",
+        pushPayload: {
+            title: "Auto Check-In Completed",
+            body: `You've been automatically checked in (${checkInType})`,
+            url: "/urnik-net-overview",
+        },
+        emailPreferenceKey: "emailAutoCheckin",
+        emailSubject: "Auto Check-In Completed",
+        buildEmailHtml: async (locale) => {
             const { autoCheckinCompletedEmail } = await import("./email-templates")
-            await sendEmail(
-                user.email,
-                "Auto Check-In Completed",
-                autoCheckinCompletedEmail(params.userName, checkInType, locale)
-            )
-        }
-
-        return { success: true }
-    } catch (error) {
-        console.error("Error sending auto check-in completion notification:", error)
-        return { success: false, error: "Failed to notify user" }
-    }
+            return autoCheckinCompletedEmail(params.userName, checkInType, locale)
+        },
+    })
 }
 
 interface NotifyAutoCheckoutReminderParams {
@@ -528,62 +462,37 @@ interface NotifyAutoCheckoutReminderParams {
 }
 
 export async function notifyAutoCheckoutReminder(params: NotifyAutoCheckoutReminderParams) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: params.userId },
-            select: { email: true, locale: true },
-        })
-
-        if (!user) {
-            console.warn("User not found for auto check-out reminder")
-            return { success: false, error: "User not found" }
-        }
-
-        const preferences = await getOrCreatePreferences(params.userId)
-        const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
-
-        if (preferences.pushAutoCheckout) {
-            await sendPushNotification(params.userId, {
-                title: "Auto Check-Out Reminder",
-                body: `Your work ends at ${params.workEndTime}. Auto check-out will happen soon. Visit profile to cancel if needed.`,
-                url: "/profile",
-                actions: [
-                    { action: "delay-15", title: "Delay 15min" },
-                    { action: "delay-30", title: "Delay 30min" },
-                    { action: "cancel-auto", title: "Cancel" },
-                ],
-                data: {
-                    adjustmentType: "end",
-                    cancelType: "checkout",
-                },
-            })
-        }
-
-        await createNotificationRecord(
-            params.userId,
-            "AUTO_CHECKOUT_REMINDER",
-            "Auto Check-Out Reminder",
-            `Your work ends at ${params.workEndTime}. System will automatically log your departure if you don't check out manually. You can cancel this in your profile.`,
-            "/profile",
-            {
-                workEndTime: params.workEndTime,
-            }
-        )
-
-        if (preferences.emailAutoCheckout) {
+    return sendUserNotification({
+        userId: params.userId,
+        notificationType: "AUTO_CHECKOUT_REMINDER",
+        notificationTitle: "Auto Check-Out Reminder",
+        notificationMessage: `Your work ends at ${params.workEndTime}. System will automatically log your departure if you don't check out manually. You can cancel this in your profile.`,
+        notificationUrl: "/profile",
+        notificationMetadata: {
+            workEndTime: params.workEndTime,
+        },
+        pushPreferenceKey: "pushAutoCheckout",
+        pushPayload: {
+            title: "Auto Check-Out Reminder",
+            body: `Your work ends at ${params.workEndTime}. Auto check-out will happen soon. Visit profile to cancel if needed.`,
+            url: "/profile",
+            actions: [
+                { action: "delay-15", title: "Delay 15min" },
+                { action: "delay-30", title: "Delay 30min" },
+                { action: "cancel-auto", title: "Cancel" },
+            ],
+            data: {
+                adjustmentType: "end",
+                cancelType: "checkout",
+            },
+        },
+        emailPreferenceKey: "emailAutoCheckout",
+        emailSubject: "Auto Check-Out Reminder",
+        buildEmailHtml: async (locale) => {
             const { autoCheckoutReminderEmail } = await import("./email-templates")
-            await sendEmail(
-                user.email,
-                "Auto Check-Out Reminder",
-                autoCheckoutReminderEmail(params.userName, params.workEndTime, locale)
-            )
-        }
-
-        return { success: true }
-    } catch (error) {
-        console.error("Error sending auto check-out reminder:", error)
-        return { success: false, error: "Failed to send reminder" }
-    }
+            return autoCheckoutReminderEmail(params.userName, params.workEndTime, locale)
+        },
+    })
 }
 
 interface NotifyAutoCheckoutCompletedParams {
@@ -592,48 +501,23 @@ interface NotifyAutoCheckoutCompletedParams {
 }
 
 export async function notifyAutoCheckoutCompleted(params: NotifyAutoCheckoutCompletedParams) {
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: params.userId },
-            select: { email: true, locale: true },
-        })
-
-        if (!user) {
-            console.warn("User not found for auto check-out completion notification")
-            return { success: false, error: "User not found" }
-        }
-
-        const preferences = await getOrCreatePreferences(params.userId)
-        const locale = (user.locale === "sl" ? "sl" : "en") as "en" | "sl"
-
-        if (preferences.pushAutoCheckout) {
-            await sendPushNotification(params.userId, {
-                title: "Auto Check-Out Completed",
-                body: "You've been automatically checked out",
-                url: "/urnik-net-overview",
-            })
-        }
-
-        await createNotificationRecord(
-            params.userId,
-            "AUTO_CHECKOUT_COMPLETED",
-            "Auto Check-Out Completed",
-            "You've been automatically logged out from urnik.net",
-            "/urnik-net-overview"
-        )
-
-        if (preferences.emailAutoCheckout) {
+    return sendUserNotification({
+        userId: params.userId,
+        notificationType: "AUTO_CHECKOUT_COMPLETED",
+        notificationTitle: "Auto Check-Out Completed",
+        notificationMessage: "You've been automatically logged out from urnik.net",
+        notificationUrl: "/urnik-net-overview",
+        pushPreferenceKey: "pushAutoCheckout",
+        pushPayload: {
+            title: "Auto Check-Out Completed",
+            body: "You've been automatically checked out",
+            url: "/urnik-net-overview",
+        },
+        emailPreferenceKey: "emailAutoCheckout",
+        emailSubject: "Auto Check-Out Completed",
+        buildEmailHtml: async (locale) => {
             const { autoCheckoutCompletedEmail } = await import("./email-templates")
-            await sendEmail(
-                user.email,
-                "Auto Check-Out Completed",
-                autoCheckoutCompletedEmail(params.userName, locale)
-            )
-        }
-
-        return { success: true }
-    } catch (error) {
-        console.error("Error sending auto check-out completion notification:", error)
-        return { success: false, error: "Failed to notify user" }
-    }
+            return autoCheckoutCompletedEmail(params.userName, locale)
+        },
+    })
 }

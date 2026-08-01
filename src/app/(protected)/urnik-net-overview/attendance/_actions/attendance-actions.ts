@@ -1,8 +1,8 @@
 "use server"
 
 import { requireAuth } from "@/lib/auth-helpers"
-import { getUrnikCookie } from "@/lib/urnik-session"
-import { URNIK_USER_AGENT } from "../../_lib/constants"
+import { getUrnikCookie } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
+import { URNIK_USER_AGENT } from "../../_utils/constants"
 import { prisma } from "@/lib/prisma"
 import { parseAttendanceHtml } from "../_utils/parse-attendance"
 import type { ParsedAttendanceResult } from "../_schemas/attendance-schema"

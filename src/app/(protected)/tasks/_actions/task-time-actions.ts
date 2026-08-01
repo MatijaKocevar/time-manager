@@ -1,9 +1,8 @@
 "use server"
 
+import { validateInput } from "@/lib/validation"
 import { requireAuth } from "@/lib/auth-helpers"
-import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
-import type { HourType } from "@/../../prisma/generated/client"
 import {
     UpdateTaskTimeEntrySchema,
     DeleteTaskTimeEntrySchema,
@@ -121,9 +120,9 @@ export async function updateTaskTimeEntry(input: UpdateTaskTimeEntryInput) {
     try {
         const session = await requireAuth()
 
-        const validation = UpdateTaskTimeEntrySchema.safeParse(input)
+        const validation = validateInput(UpdateTaskTimeEntrySchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { id, startTime, endTime } = validation.data
@@ -189,9 +188,9 @@ export async function deleteTaskTimeEntry(input: DeleteTaskTimeEntryInput) {
     try {
         const session = await requireAuth()
 
-        const validation = DeleteTaskTimeEntrySchema.safeParse(input)
+        const validation = validateInput(DeleteTaskTimeEntrySchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { id } = validation.data
@@ -203,9 +202,6 @@ export async function deleteTaskTimeEntry(input: DeleteTaskTimeEntryInput) {
         if (!existing || existing.userId !== session.user.id) {
             return { error: "Time entry not found" }
         }
-
-        const entryDate = new Date(existing.startTime)
-        entryDate.setHours(0, 0, 0, 0)
 
         await prisma.$transaction(async (tx) => {
             await tx.taskTimeEntry.delete({
@@ -228,9 +224,9 @@ export async function createTaskTimeEntry(input: CreateTaskTimeEntryInput) {
     try {
         const session = await requireAuth()
 
-        const validation = CreateTaskTimeEntrySchema.safeParse(input)
+        const validation = validateInput(CreateTaskTimeEntrySchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { taskId, startTime, endTime } = validation.data

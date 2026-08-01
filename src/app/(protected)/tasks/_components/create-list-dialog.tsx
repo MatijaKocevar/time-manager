@@ -16,21 +16,21 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useTasksStore } from "../_stores/tasks-store"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import { createList, updateList } from "../_actions/list-actions"
-import { listKeys } from "../query-keys"
+import { listKeys } from "../_constants/query-keys"
 
 export function CreateListDialog() {
     const queryClient = useQueryClient()
     const t = useTranslations("tasks.form")
     const tCommon = useTranslations("common")
-    const listDialog = useTasksStore((state) => state.listDialog)
-    const listForm = useTasksStore((state) => state.listForm)
-    const closeListDialog = useTasksStore((state) => state.closeListDialog)
-    const setListFormData = useTasksStore((state) => state.setListFormData)
-    const setListLoading = useTasksStore((state) => state.setListLoading)
-    const setListError = useTasksStore((state) => state.setListError)
-    const resetListForm = useTasksStore((state) => state.resetListForm)
+    const listDialog = useTaskDialogStore((state) => state.listDialog)
+    const listForm = useTaskDialogStore((state) => state.listForm)
+    const closeListDialog = useTaskDialogStore((state) => state.closeListDialog)
+    const setListFormData = useTaskDialogStore((state) => state.setListFormData)
+    const setListLoading = useTaskDialogStore((state) => state.setListLoading)
+    const setListError = useTaskDialogStore((state) => state.setListError)
+    const resetListForm = useTaskDialogStore((state) => state.resetListForm)
 
     const isEditing = Boolean(listDialog.listId)
 

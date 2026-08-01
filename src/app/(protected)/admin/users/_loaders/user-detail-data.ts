@@ -5,7 +5,7 @@ import {
     getHourEntriesForUser,
     getAttendanceDataForUser,
 } from "@/app/(protected)/hours/_actions/hour-actions"
-import { getHolidaysInRange } from "../../holidays/_actions/holiday-actions"
+import { getHolidaysInRange } from "@/app/(protected)/admin/holidays/_actions/holiday-actions"
 import { getUserRequestsForAdmin } from "@/app/(protected)/requests/_actions/request-actions"
 
 function getCurrentMonthDates() {

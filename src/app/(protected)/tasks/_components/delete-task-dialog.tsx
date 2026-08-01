@@ -11,21 +11,21 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { useTasksStore } from "../_stores/tasks-store"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import { deleteTask } from "../_actions/task-actions"
-import { taskKeys } from "../query-keys"
+import { taskKeys } from "../_constants/query-keys"
 
 export function DeleteTaskDialog() {
     const queryClient = useQueryClient()
     const t = useTranslations("tasks.form")
     const tCommon = useTranslations("common")
-    const deleteDialog = useTasksStore((state) => state.deleteDialog)
-    const closeDeleteDialog = useTasksStore((state) => state.closeDeleteDialog)
-    const isLoading = useTasksStore((state) => state.deleteTaskForm.isLoading)
-    const error = useTasksStore((state) => state.deleteTaskForm.error)
-    const setDeleteTaskLoading = useTasksStore((state) => state.setDeleteTaskLoading)
-    const setDeleteTaskError = useTasksStore((state) => state.setDeleteTaskError)
-    const clearDeleteTaskError = useTasksStore((state) => state.clearDeleteTaskError)
+    const deleteDialog = useTaskDialogStore((state) => state.deleteDialog)
+    const closeDeleteDialog = useTaskDialogStore((state) => state.closeDeleteDialog)
+    const isLoading = useTaskDialogStore((state) => state.deleteTaskForm.isLoading)
+    const error = useTaskDialogStore((state) => state.deleteTaskForm.error)
+    const setDeleteTaskLoading = useTaskDialogStore((state) => state.setDeleteTaskLoading)
+    const setDeleteTaskError = useTaskDialogStore((state) => state.setDeleteTaskError)
+    const clearDeleteTaskError = useTaskDialogStore((state) => state.clearDeleteTaskError)
 
     const handleDelete = async () => {
         if (!deleteDialog.taskId) return

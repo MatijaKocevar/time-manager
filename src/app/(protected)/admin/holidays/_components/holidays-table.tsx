@@ -12,30 +12,12 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar, Edit, Plus, Trash2, Sparkles, ChevronLeft, ChevronRight } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Calendar, Edit, Trash2, Sparkles, ChevronLeft, ChevronRight } from "lucide-react"
 import { createHoliday, updateHoliday, deleteHoliday } from "../_actions/holiday-actions"
 import { autoGenerateUpcomingHolidays } from "../_actions/generate-holidays"
-import { holidayKeys } from "../query-keys"
-
-type Holiday = {
-    id: string
-    date: Date
-    name: string
-    description: string | null
-    isRecurring: boolean
-    createdAt: Date
-    updatedAt: Date
-}
+import { holidayKeys } from "../_constants/query-keys"
+import { HolidayFormDialog, type Holiday } from "./holiday-form-dialog"
 
 interface HolidaysTableProps {
     holidays: Holiday[]
@@ -85,12 +67,6 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
         message: "",
     })
     const [editingHoliday, setEditingHoliday] = useState<Holiday | null>(null)
-    const [formData, setFormData] = useState({
-        date: "",
-        name: "",
-        description: "",
-        isRecurring: false,
-    })
 
     const createMutation = useMutation({
         mutationFn: createHoliday,
@@ -98,7 +74,6 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
             if (result.success) {
                 queryClient.invalidateQueries({ queryKey: holidayKeys.all })
                 setIsDialogOpen(false)
-                resetForm()
             } else {
                 alert(result.error || "Failed to create holiday")
             }
@@ -111,8 +86,6 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
             if (result.success) {
                 queryClient.invalidateQueries({ queryKey: holidayKeys.all })
                 setIsDialogOpen(false)
-                resetForm()
-                setEditingHoliday(null)
             } else {
                 alert(result.error || "Failed to update holiday")
             }
@@ -161,29 +134,17 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
         },
     })
 
-    const resetForm = () => {
-        setFormData({
-            date: "",
-            name: "",
-            description: "",
-            isRecurring: false,
-        })
-    }
-
     const handleEdit = (holiday: Holiday) => {
         setEditingHoliday(holiday)
-        setFormData({
-            date: new Date(holiday.date).toISOString().split("T")[0],
-            name: holiday.name,
-            description: holiday.description || "",
-            isRecurring: holiday.isRecurring,
-        })
         setIsDialogOpen(true)
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-
+    const handleSubmit = (formData: {
+        date: string
+        name: string
+        description: string
+        isRecurring: boolean
+    }) => {
         const dateObj = new Date(formData.date + "T00:00:00")
 
         if (editingHoliday) {
@@ -213,7 +174,6 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
     const handleOpenChange = (open: boolean) => {
         setIsDialogOpen(open)
         if (!open) {
-            resetForm()
             setEditingHoliday(null)
         }
     }
@@ -261,101 +221,14 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
                             ? translations.actions.importing
                             : translations.actions.importPublicHolidays}
                     </Button>
-                    <Dialog open={isDialogOpen} onOpenChange={handleOpenChange}>
-                        <DialogTrigger asChild>
-                            <Button id="holidays-add-btn">
-                                <Plus className="h-4 w-4 mr-2" />
-                                {translations.form.addHoliday}
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>
-                                    {editingHoliday
-                                        ? translations.form.editHoliday
-                                        : translations.form.addHoliday}
-                                </DialogTitle>
-                            </DialogHeader>
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <Label htmlFor="date">{translations.form.date}</Label>
-                                    <Input
-                                        id="date"
-                                        type="date"
-                                        value={formData.date}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, date: e.target.value })
-                                        }
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="name">{translations.form.name}</Label>
-                                    <Input
-                                        id="name"
-                                        value={formData.name}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, name: e.target.value })
-                                        }
-                                        required
-                                        maxLength={100}
-                                    />
-                                </div>
-                                <div>
-                                    <Label htmlFor="description">
-                                        {translations.form.description}
-                                    </Label>
-                                    <Textarea
-                                        id="description"
-                                        value={formData.description}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                description: e.target.value,
-                                            })
-                                        }
-                                        maxLength={500}
-                                    />
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        id="isRecurring"
-                                        type="checkbox"
-                                        checked={formData.isRecurring}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                isRecurring: e.target.checked,
-                                            })
-                                        }
-                                        className="h-4 w-4"
-                                    />
-                                    <Label htmlFor="isRecurring">
-                                        {translations.form.recurringAnnually}
-                                    </Label>
-                                </div>
-                                <div className="flex justify-end gap-2">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={() => handleOpenChange(false)}
-                                    >
-                                        {translations.form.cancel}
-                                    </Button>
-                                    <Button
-                                        type="submit"
-                                        disabled={
-                                            createMutation.isPending || updateMutation.isPending
-                                        }
-                                    >
-                                        {editingHoliday
-                                            ? translations.form.update
-                                            : translations.form.create}
-                                    </Button>
-                                </div>
-                            </form>
-                        </DialogContent>
-                    </Dialog>
+                    <HolidayFormDialog
+                        open={isDialogOpen}
+                        onOpenChange={handleOpenChange}
+                        editingHoliday={editingHoliday}
+                        onSubmit={handleSubmit}
+                        isPending={createMutation.isPending || updateMutation.isPending}
+                        translations={translations.form}
+                    />
                 </div>
             </div>
             <div id="holidays-table" className="rounded-md border overflow-auto flex-1 min-h-0">

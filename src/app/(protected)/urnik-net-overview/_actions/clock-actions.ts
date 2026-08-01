@@ -1,13 +1,13 @@
 "use server"
 
-import { getUrnikCookie } from "@/lib/urnik-session"
+import { getUrnikCookie } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
 import { requireAuth } from "@/lib/auth-helpers"
 import { getErrorMessage } from "../_utils/helpers"
 import { revalidatePath } from "next/cache"
 import { stopTimer } from "@/app/(protected)/shared/_actions/timer-actions"
 import { prisma } from "@/lib/prisma"
 import { DayInfoSchema, type DayInfo, type DayInfoResult } from "../_schemas/day-info-schema"
-import { URNIK_USER_AGENT } from "../_lib/constants"
+import { URNIK_USER_AGENT } from "../_utils/constants"
 
 function parseDayInfo(html: string): DayInfoResult {
     try {

@@ -1,6 +1,6 @@
 "use server"
 
-import { URNIK_USER_AGENT } from "../../_lib/constants"
+import { URNIK_USER_AGENT } from "../../_utils/constants"
 import { calculateWorkDays, formatDateDDMMYYYY } from "../../_utils/date-helpers"
 
 const URNIK_TENANT_ID = process.env.URNIK_TENANT_ID ?? ""

@@ -6,12 +6,12 @@ import Link from "next/link"
 import { Folder, Plus } from "lucide-react"
 import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
 import { getLists } from "@/app/(protected)/tasks/_actions/list-actions"
-import { listKeys } from "@/app/(protected)/tasks/query-keys"
-import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
+import { listKeys } from "@/app/(protected)/tasks/_constants/query-keys"
+import { useTaskDialogStore } from "@/app/(protected)/tasks/_stores/task-dialog-stores"
 
 export function DynamicListItems() {
     const pathname = usePathname()
-    const openListDialog = useTasksStore((state) => state.openListDialog)
+    const openListDialog = useTaskDialogStore((state) => state.openListDialog)
 
     const { data: lists = [] } = useQuery({
         queryKey: listKeys.all,

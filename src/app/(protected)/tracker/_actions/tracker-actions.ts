@@ -1,9 +1,8 @@
 "use server"
 
 import { requireAuth } from "@/lib/auth-helpers"
-import { revalidatePath } from "next/cache"
+import { startOfDay } from "@/lib/date-utils"
 import { prisma } from "@/lib/prisma"
-import { refreshDailyHourSummary } from "@/lib/materialized-views"
 import type { HourType } from "@/../../prisma/generated/client"
 import type { TaskDisplay } from "@/app/(protected)/tasks/_schemas/task-schemas"
 import { TASK_STATUS } from "@/app/(protected)/tasks/_constants/task-statuses"
@@ -94,8 +93,7 @@ export async function getLastTimeEntryToday(): Promise<{
     try {
         const session = await requireAuth()
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const today = startOfDay(new Date())
 
         const lastEntry = await prisma.taskTimeEntry.findFirst({
             where: {
@@ -232,8 +230,7 @@ export async function getTodayTimeSummary() {
     try {
         const session = await requireAuth()
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const today = startOfDay(new Date())
         const tomorrow = new Date(today)
         tomorrow.setDate(tomorrow.getDate() + 1)
 

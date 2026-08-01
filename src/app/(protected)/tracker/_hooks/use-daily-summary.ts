@@ -1,6 +1,6 @@
 "use client"
 
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { getTodayTimeSummary } from "../_actions/tracker-actions"
 import { useEffect, useState } from "react"
 import type { HourType } from "@/../../prisma/generated/client"
@@ -15,7 +15,6 @@ interface DailySummaryData {
 }
 
 export function useDailySummary(initialData: DailySummaryData) {
-    const queryClient = useQueryClient()
     const [, setTick] = useState(0)
 
     const { data, isLoading, error } = useQuery({

@@ -14,6 +14,7 @@ import {
 } from "@/features/export"
 import { ExportOptionsSchema, type ExportOptions } from "@/features/export"
 import { requireAuth, requireAdmin } from "@/lib/auth-helpers"
+import { validateInput } from "@/lib/validation"
 import { formatDateKey } from "../_utils/date-helpers"
 import { calculateWorkingDaysSync, calculateOvertime } from "../_utils/calculation-helpers"
 import { HOUR_TYPES } from "../_constants/hour-types"
@@ -152,9 +153,9 @@ export async function exportHoursData(input: ExportOptions) {
     try {
         const session = await requireAuth()
 
-        const validation = ExportOptionsSchema.safeParse(input)
+        const validation = validateInput(ExportOptionsSchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { format, months } = validation.data
@@ -211,9 +212,9 @@ export async function exportAllUsersHours(input: ExportOptions) {
     try {
         const session = await requireAdmin()
 
-        const validation = ExportOptionsSchema.safeParse(input)
+        const validation = validateInput(ExportOptionsSchema, input)
         if (!validation.success) {
-            return { error: validation.error.issues[0].message }
+            return { error: validation.error }
         }
 
         const { format, months, userId } = validation.data

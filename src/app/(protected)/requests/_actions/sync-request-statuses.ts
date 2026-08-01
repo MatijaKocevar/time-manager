@@ -1,7 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { URNIK_USER_AGENT } from "@/app/(protected)/urnik-net-overview/_lib/constants"
+import { URNIK_USER_AGENT } from "@/app/(protected)/urnik-net-overview/_utils/constants"
 import { loginToUrnikNet } from "@/app/(protected)/urnik-net-overview/requests/_actions/urnik-net-auth"
 import { systemApproveRequest, systemRejectRequest } from "./request-actions"
 import { requireAdmin } from "@/lib/auth-helpers"
@@ -106,7 +106,7 @@ export async function syncRequestStatuses(): Promise<{
                     continue
                 }
                 html = await response.text()
-            } catch (err) {
+            } catch (_err) {
                 continue
             }
 

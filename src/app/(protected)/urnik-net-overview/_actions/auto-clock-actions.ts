@@ -1,6 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
+import { startOfDay } from "@/lib/date-utils"
 import { getTodayDate } from "@/lib/utils"
 import { performClockInWithCookie, performClockOutWithCookie } from "./clock-actions"
 import {
@@ -9,7 +10,7 @@ import {
     notifyAutoCheckoutReminder,
     notifyAutoCheckoutCompleted,
 } from "@/features/notifications/lib/notify"
-import { getUrnikCookieForUser } from "@/lib/urnik-session"
+import { getUrnikCookieForUser } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
 import { requireAuth } from "@/lib/auth-helpers"
 import { sendPushNotification } from "@/features/notifications/actions/notification-actions"
 
@@ -140,8 +141,7 @@ export async function processAutoCheckin(userId: string): Promise<ActionResult> 
             return { success: false, error: "Urnik credentials not configured" }
         }
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const today = startOfDay(new Date())
 
         const wfhRequest = await prisma.request.findFirst({
             where: {
@@ -228,8 +228,7 @@ export async function processAutoCheckout(userId: string): Promise<ActionResult>
             return { success: false, error: "Urnik credentials not configured" }
         }
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const today = startOfDay(new Date())
 
         const cancellation = await prisma.autoCheckoutCancellation.findUnique({
             where: {
@@ -296,8 +295,7 @@ export async function cancelAutoCheckout(): Promise<ActionResult> {
         const session = await requireAuth()
         const userId = session.user.id
 
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
+        const today = startOfDay(new Date())
 
         await prisma.autoCheckoutCancellation.upsert({
             where: {

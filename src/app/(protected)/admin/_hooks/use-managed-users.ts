@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import { updateAdminManagedUsers, toggleAutoAdmin } from "../_actions/admin-settings-actions"
 import { useAdminSettingsStore } from "../_stores/admin-settings-store"
-import { adminSettingsKeys } from "../query-keys"
+import { adminSettingsKeys } from "../_constants/query-keys"
 
 interface ManagedUser {
     id: string

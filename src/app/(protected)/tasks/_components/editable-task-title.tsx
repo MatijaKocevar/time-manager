@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Pencil } from "lucide-react"
 import { updateTask } from "../_actions/task-actions"
 import { useQueryClient } from "@tanstack/react-query"
-import { taskKeys } from "../query-keys"
+import { taskKeys } from "../_constants/query-keys"
 import { useTasksStore } from "../_stores/tasks-store"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import type { TaskTreeNode } from "../_schemas"
 
 interface EditableTaskTitleProps {
@@ -23,7 +24,7 @@ export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
     const isLoading = useTasksStore(
         (state) => state.taskOperations.get(task.id)?.isLoading ?? false
     )
-    const openDescriptionDialog = useTasksStore((state) => state.openDescriptionDialog)
+    const openDescriptionDialog = useTaskDialogStore((state) => state.openDescriptionDialog)
 
     useEffect(() => {
         setValue(task.title)

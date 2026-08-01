@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation"
 import { useTranslations, useLocale } from "next-intl"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { formatDateToLocal } from "@/lib/utils"
-import { useRequestStore } from "../../requests/_stores/request-store"
-import { createRequest } from "../../requests/_actions/request-actions"
-import { REQUEST_TYPE } from "../../requests/_constants"
-import { type RequestType } from "../../requests/_schemas/request-schemas"
+import { startOfDay, endOfDay } from "@/lib/date-utils"
+import { useRequestStore } from "@/app/(protected)/requests/_stores/request-store"
+import { createRequest } from "@/app/(protected)/requests/_actions/request-actions"
+import { REQUEST_TYPE } from "@/app/(protected)/requests/_constants"
+import { type RequestType } from "@/app/(protected)/requests/_schemas/request-schemas"
 import type { UserWithWorkHours, ShiftDisplay } from "../_schemas/shift-schemas"
 import { ShiftsCalendarHeader } from "./shifts-calendar-header"
 import { ShiftsTable } from "./shifts-table"
@@ -68,32 +69,28 @@ export function ShiftsCalendar({
     const { startDate, days } = useMemo(() => {
         if (viewMode === "week") {
             const dayOfWeek = currentDate.getDay()
-            const start = new Date(currentDate)
+            const start = startOfDay(new Date(currentDate))
             start.setDate(currentDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
-            start.setHours(0, 0, 0, 0)
 
-            const end = new Date(start)
+            const end = endOfDay(new Date(start))
             end.setDate(start.getDate() + 6)
-            end.setHours(23, 59, 59, 999)
 
             const days = Array.from({ length: 7 }, (_, i) => {
-                const date = new Date(start)
+                const date = startOfDay(new Date(start))
                 date.setDate(start.getDate() + i)
-                date.setHours(0, 0, 0, 0)
                 return date
             })
 
             return { startDate: start, endDate: end, days }
         } else {
-            const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1)
-            start.setHours(0, 0, 0, 0)
-            const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
-            end.setHours(0, 0, 0, 0)
+            const start = startOfDay(new Date(currentDate.getFullYear(), currentDate.getMonth(), 1))
+            const end = startOfDay(
+                new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
+            )
 
             const days = Array.from({ length: end.getDate() }, (_, i) => {
-                const date = new Date(start)
+                const date = startOfDay(new Date(start))
                 date.setDate(i + 1)
-                date.setHours(0, 0, 0, 0)
                 return date
             })
 

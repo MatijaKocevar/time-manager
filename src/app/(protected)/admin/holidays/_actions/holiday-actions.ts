@@ -1,7 +1,9 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { startOfDay } from "@/lib/date-utils"
 import { prisma } from "@/lib/prisma"
+import { validateInput } from "@/lib/validation"
 import { requireAdmin, requireAuth } from "@/lib/auth-helpers"
 import {
     CreateHolidaySchema,
@@ -80,15 +82,14 @@ export async function createHoliday(input: CreateHolidayInput) {
     try {
         await requireAdmin()
 
-        const validation = CreateHolidaySchema.safeParse(input)
+        const validation = validateInput(CreateHolidaySchema, input)
         if (!validation.success) {
-            return { success: false, error: validation.error.issues[0].message }
+            return { success: false, error: validation.error }
         }
 
         const { date, name, description, isRecurring } = validation.data
 
-        const normalizedDate = new Date(date)
-        normalizedDate.setHours(0, 0, 0, 0)
+        const normalizedDate = startOfDay(new Date(date))
 
         const existing = await prisma.holiday.findUnique({
             where: { date: normalizedDate },
@@ -125,9 +126,9 @@ export async function updateHoliday(input: UpdateHolidayInput) {
     try {
         await requireAdmin()
 
-        const validation = UpdateHolidaySchema.safeParse(input)
+        const validation = validateInput(UpdateHolidaySchema, input)
         if (!validation.success) {
-            return { success: false, error: validation.error.issues[0].message }
+            return { success: false, error: validation.error }
         }
 
         const { id, date, name, description, isRecurring } = validation.data
@@ -140,8 +141,7 @@ export async function updateHoliday(input: UpdateHolidayInput) {
             return { success: false, error: "Holiday not found" }
         }
 
-        const normalizedDate = new Date(date)
-        normalizedDate.setHours(0, 0, 0, 0)
+        const normalizedDate = startOfDay(new Date(date))
 
         if (normalizedDate.getTime() !== existing.date.getTime()) {
             const dateConflict = await prisma.holiday.findUnique({
@@ -181,9 +181,9 @@ export async function deleteHoliday(input: DeleteHolidayInput) {
     try {
         await requireAdmin()
 
-        const validation = DeleteHolidaySchema.safeParse(input)
+        const validation = validateInput(DeleteHolidaySchema, input)
         if (!validation.success) {
-            return { success: false, error: validation.error.issues[0].message }
+            return { success: false, error: validation.error }
         }
 
         const { id } = validation.data

@@ -5,7 +5,7 @@ import type { Channel } from "pusher-js"
 import type { HourType } from "@/../../prisma/generated/client"
 import { getPusherClient } from "@/lib/pusher-client"
 import { useTrackerStore } from "../_stores/tracker-store"
-import { sharedKeys } from "@/app/(protected)/shared/query-keys"
+import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
 
 export function useTrackerPusher() {
     const queryClient = useQueryClient()

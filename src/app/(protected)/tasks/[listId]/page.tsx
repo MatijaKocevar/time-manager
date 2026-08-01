@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server"
 import { getTasks } from "../_actions/task-actions"
-import { getListById, getLists } from "../_actions/list-actions"
+import { getLists } from "../_actions/list-actions"
 import { TasksTable } from "../_components/tasks-table"
 import { TasksViewClient } from "../_components/tasks-view-client"
 import { TaskDescriptionDialog } from "../_components/task-description-dialog"
@@ -16,9 +16,8 @@ export default async function ListPage({ params }: ListPageProps) {
     const { listId } = await params
     const actualListId = listId === "no-list" ? null : listId
 
-    const [tasks, list, lists, tutorialsSeen, tTutorial, tTasksList] = await Promise.all([
+    const [tasks, lists, tutorialsSeen, tTutorial, tTasksList] = await Promise.all([
         getTasks({ listId: actualListId }),
-        actualListId ? getListById(actualListId) : null,
         getLists(),
         getTutorialsSeen(),
         getTranslations("tutorial"),

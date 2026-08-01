@@ -3,7 +3,7 @@
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { URNIK_USER_AGENT } from "../../_lib/constants"
+import { URNIK_USER_AGENT } from "../../_utils/constants"
 import { getErrorMessage } from "../../_utils/helpers"
 
 export async function loginToUrnikNet(username: string, password: string) {

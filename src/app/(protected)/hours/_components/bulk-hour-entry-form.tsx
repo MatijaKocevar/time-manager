@@ -9,7 +9,7 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { useHoursStore } from "../_stores/hours-store"
 import { bulkCreateHourEntries } from "../_actions/hour-actions"
 import { MAX_HOURS_PER_DAY } from "../_constants/hour-types"
-import { hourKeys } from "../query-keys"
+import { hourKeys } from "../_constants/query-keys"
 import { format } from "date-fns"
 
 interface HourEntryFormProps {
@@ -19,7 +19,6 @@ interface HourEntryFormProps {
 export function HourEntryForm({ onSuccess }: HourEntryFormProps) {
     const t = useTranslations("hours.form")
     const tCommon = useTranslations("common")
-    const tTypes = useTranslations("hours.types")
     const queryClient = useQueryClient()
     const bulkEntryForm = useHoursStore((state) => state.bulkEntryForm)
     const setBulkEntryFormData = useHoursStore((state) => state.setBulkEntryFormData)

@@ -36,7 +36,7 @@ export async function GET() {
 
                 try {
                     controller.enqueue(encoder.encode(`: keepalive\n\n`))
-                } catch (error) {
+                } catch (_error) {
                     console.log(`[SSE Route] Keep-alive failed for connection ${connectionId}`)
                     clearInterval(keepAliveInterval)
                 }

@@ -5,7 +5,7 @@ import { authConfig } from "@/lib/auth"
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
     const session = await getServerSession(authConfig)
 
-    if (session!.user.role !== "ADMIN") {
+    if (!session || session.user.role !== "ADMIN") {
         redirect("/tracker")
     }
 

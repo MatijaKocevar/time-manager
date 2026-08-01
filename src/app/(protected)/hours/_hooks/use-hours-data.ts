@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { getHourEntries } from "../_actions/hour-actions"
 import { getDateRange } from "../_utils/view-helpers"
-import { hourKeys } from "../query-keys"
+import { hourKeys } from "../_constants/query-keys"
 import type { ViewMode } from "../_schemas/hour-filter-schemas"
 import type { HourEntryDisplay } from "../_schemas/hour-entry-schemas"
 import { VIEW_MODE_VALUES } from "../_schemas/hour-filter-schemas"

@@ -65,7 +65,7 @@ export const useProfileStore = create<ProfileStoreState & ProfileStoreActions>((
             deactivateForm: { ...state.deactivateForm, isLoading },
         })),
     setDeactivateError: (error) =>
-        set((state) => ({
+        set((_state) => ({
             deactivateForm: { isLoading: false, error },
         })),
     clearDeactivateError: () =>

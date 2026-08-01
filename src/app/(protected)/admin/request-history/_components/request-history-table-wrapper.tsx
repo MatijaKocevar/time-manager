@@ -1,18 +1,13 @@
 import { getTranslations } from "next-intl/server"
 import { RequestHistoryTableClient } from "./request-history-table"
-import type { RequestDisplay } from "../types"
+import type { RequestDisplay } from "../_types/types"
 
 interface RequestHistoryTableProps {
     requests: RequestDisplay[]
-    holidays: Array<{ date: Date; name: string }>
     locale: string
 }
 
-export async function RequestHistoryTable({
-    requests,
-    holidays,
-    locale,
-}: RequestHistoryTableProps) {
+export async function RequestHistoryTable({ requests, locale }: RequestHistoryTableProps) {
     const [tTable, tCancel, tPagination, tFilter, tTypes, tStatuses] = await Promise.all([
         getTranslations("admin.requestHistory.table"),
         getTranslations("admin.requestHistory.cancel"),
@@ -82,7 +77,6 @@ export async function RequestHistoryTable({
     return (
         <RequestHistoryTableClient
             requests={requests}
-            holidays={holidays}
             translations={translations}
             locale={locale}
         />

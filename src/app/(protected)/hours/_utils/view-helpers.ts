@@ -1,11 +1,10 @@
 import type { ViewMode } from "../_schemas/hour-filter-schemas"
 import { VIEW_MODE_VALUES } from "../_schemas/hour-filter-schemas"
+import { startOfDay } from "@/lib/date-utils"
 
 export function getDateRange(mode: ViewMode, referenceDate: Date = new Date()) {
-    const start = new Date(referenceDate)
-    start.setHours(0, 0, 0, 0)
-    const end = new Date(referenceDate)
-    end.setHours(0, 0, 0, 0)
+    const start = startOfDay(referenceDate)
+    const end = startOfDay(referenceDate)
 
     switch (mode) {
         case VIEW_MODE_VALUES.WEEKLY:

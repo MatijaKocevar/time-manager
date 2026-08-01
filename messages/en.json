@@ -1010,7 +1010,8 @@
                 "action": "Action"
             },
             "structureChanged": "HTML Structure Changed",
-            "structureChangedDescription": "The urnik.net page structure has changed. The parser needs to be updated to match the new format. Please contact the developer."
+            "structureChangedDescription": "The urnik.net page structure has changed. The parser needs to be updated to match the new format. Please contact the developer.",
+            "noRequestsThisMonth": "No requests for this month"
         }
     },
     "urnikNetHours": {

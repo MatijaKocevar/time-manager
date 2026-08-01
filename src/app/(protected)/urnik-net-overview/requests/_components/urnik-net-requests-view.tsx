@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertTriangle, Loader2, ChevronLeft, ChevronRight, MoreVertical } from "lucide-react"
-import { Table, TableBody } from "@/components/ui/table"
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -56,9 +56,6 @@ export function UrnikNetRequestsView({
     }
 
     const isConnected = !!user.lastUrnikTestAt
-    const lastTestedText = user.lastUrnikTestAt
-        ? new Date(user.lastUrnikTestAt).toLocaleString()
-        : null
 
     const urnikNetRequests = requestsResult?.data || []
     const error = requestsResult?.error || null
@@ -158,7 +155,7 @@ export function UrnikNetRequestsView({
 
             {error && !structureChanged && <p className="text-red-600">Error: {error}</p>}
 
-            {urnikNetRequests.length > 0 && (
+            {isConnected && !error && (
                 <div className="flex-1 overflow-hidden relative">
                     <div
                         id="urnik-requests-table"
@@ -167,13 +164,24 @@ export function UrnikNetRequestsView({
                         <Table>
                             <RequestsTableHeader {...t.table} />
                             <TableBody>
-                                {urnikNetRequests.map((req, idx) => (
-                                    <SubmittedRequestRow
-                                        key={`existing-${req.no}-${idx}`}
-                                        request={req}
-                                        index={idx}
-                                    />
-                                ))}
+                                {urnikNetRequests.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={12}
+                                            className="text-center text-muted-foreground py-8 h-24 align-middle"
+                                        >
+                                            {t.noRequestsThisMonth}
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    urnikNetRequests.map((req, idx) => (
+                                        <SubmittedRequestRow
+                                            key={`existing-${req.no}-${idx}`}
+                                            request={req}
+                                            index={idx}
+                                        />
+                                    ))
+                                )}
                             </TableBody>
                         </Table>
                     </div>

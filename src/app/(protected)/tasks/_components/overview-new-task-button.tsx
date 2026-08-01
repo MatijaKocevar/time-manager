@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import { useTasksStore } from "../_stores/tasks-store"
+import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 
 interface OverviewNewTaskButtonProps {
     listId: string | null
@@ -11,7 +11,7 @@ interface OverviewNewTaskButtonProps {
 
 export function OverviewNewTaskButton({ listId }: OverviewNewTaskButtonProps) {
     const t = useTranslations("tasks.form")
-    const openCreateDialog = useTasksStore((state) => state.openCreateDialog)
+    const openCreateDialog = useTaskDialogStore((state) => state.openCreateDialog)
 
     return (
         <Button id="tasks-overview-new-task" onClick={() => openCreateDialog(undefined, listId)}>

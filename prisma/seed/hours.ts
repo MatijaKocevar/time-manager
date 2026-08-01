@@ -1,5 +1,5 @@
 import { PrismaClient, HourType } from "../generated/client"
-import { SeededRandom, normalizeDate, dateRange, isWeekday, addDays } from "./utils"
+import { SeededRandom, normalizeDate, dateRange, isWeekday } from "./utils"
 import { refreshDailyHourSummary } from "../../src/lib/materialized-views"
 
 export async function seedHourEntriesForUser(

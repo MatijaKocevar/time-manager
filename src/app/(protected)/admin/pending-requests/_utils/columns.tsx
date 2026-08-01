@@ -1,15 +1,14 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { getRequestTypeTranslationKey } from "../../../requests/_utils/translation-helpers"
-import type { RequestType } from "../../../requests/_schemas/request-schemas"
-import type { RequestDisplay, PendingRequestTranslations } from "../types"
+import { getRequestTypeTranslationKey } from "@/app/(protected)/requests/_utils/translation-helpers"
+import type { RequestType } from "@/app/(protected)/requests/_schemas/request-schemas"
+import type { RequestDisplay, PendingRequestTranslations } from "../_types/types"
 import { TYPE_COLORS } from "../_constants"
-import { calculateWorkdays, formatDate } from "./helpers"
+import { formatDate } from "./helpers"
 
 interface CreateColumnsParams {
     translations: PendingRequestTranslations
-    holidays: Array<{ date: Date; name: string }>
     locale: string
     isApproving: boolean
     isRejecting: boolean
@@ -21,7 +20,6 @@ interface CreateColumnsParams {
 
 export function createColumns({
     translations,
-    holidays,
     locale,
     isApproving,
     isRejecting,

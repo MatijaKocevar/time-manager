@@ -15,9 +15,9 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { Checkbox } from "@/components/ui/checkbox"
 import { format } from "date-fns"
 import { parseDateStringAsLocal } from "@/lib/utils"
-import { REQUEST_TYPES, REQUEST_TYPE } from "../../requests/_constants"
-import type { RequestType } from "../../requests/_schemas/request-schemas"
-import { getRequestTypeTranslationKey } from "../../requests/_utils/translation-helpers"
+import { REQUEST_TYPES, REQUEST_TYPE } from "@/app/(protected)/requests/_constants"
+import type { RequestType } from "@/app/(protected)/requests/_schemas/request-schemas"
+import { getRequestTypeTranslationKey } from "@/app/(protected)/requests/_utils/translation-helpers"
 
 interface RequestFormState {
     type: RequestType | ""

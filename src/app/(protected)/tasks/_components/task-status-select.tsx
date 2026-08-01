@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select"
 import { updateTask } from "../_actions/task-actions"
 import { useQueryClient } from "@tanstack/react-query"
-import { taskKeys } from "../query-keys"
+import { taskKeys } from "../_constants/query-keys"
 import { TASK_STATUSES } from "../_constants/task-statuses"
 import { getTaskStatusLabel } from "../_utils/task-status-labels"
 import { useTasksStore } from "../_stores/tasks-store"

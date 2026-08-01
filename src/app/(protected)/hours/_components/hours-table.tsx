@@ -2,7 +2,7 @@
 
 import { useMemo } from "react"
 import { useTranslations, useLocale } from "next-intl"
-import { SPECIAL_TYPES, HOUR_TYPE_VALUES, TASK_ID_VALUES } from "../_constants/hour-types"
+import { SPECIAL_TYPES } from "../_constants/hour-types"
 import {
     Table,
     TableBody,

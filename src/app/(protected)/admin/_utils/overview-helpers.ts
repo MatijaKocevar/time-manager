@@ -1,8 +1,8 @@
+import { startOfDay } from "@/lib/date-utils"
 import type { Holiday } from "../_schemas"
 
 export function getUpcomingHolidays(holidays: Holiday[]): Holiday[] {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const today = startOfDay(new Date())
 
     return holidays
         .filter((holiday) => holiday.date >= today)

@@ -8,7 +8,6 @@ interface TimeSheetsPageProps {
 
 export default async function TimeSheetsPage({ searchParams }: TimeSheetsPageProps) {
     const params = await searchParams
-    const viewMode = params.mode === "month" ? "month" : "week"
     const selectedDate = params.date ? new Date(params.date) : new Date()
 
     const monthRange = getDateRangeForView(selectedDate, "month")

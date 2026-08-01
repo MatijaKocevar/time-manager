@@ -4,24 +4,22 @@ import { useMemo, useEffect, useRef } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useSearchParams, useRouter } from "next/navigation"
 import type { OnChangeFn, SortingState, ColumnFiltersState } from "@tanstack/react-table"
-import { approveRequest, rejectRequest } from "../../../requests/_actions/request-actions"
-import { requestKeys } from "../../../requests/query-keys"
-import { hourKeys } from "../../../hours/query-keys"
+import { approveRequest, rejectRequest } from "@/app/(protected)/requests/_actions/request-actions"
+import { requestKeys } from "@/app/(protected)/requests/_constants/query-keys"
+import { hourKeys } from "@/app/(protected)/hours/_constants/query-keys"
 import { toast } from "sonner"
 import { createColumns } from "../_utils/columns"
 import { usePendingRequestsStore } from "../_stores/pending-requests-store"
-import type { RequestDisplay, PendingRequestTranslations } from "../types"
+import type { RequestDisplay, PendingRequestTranslations } from "../_types/types"
 
 interface UsePendingRequestsTableParams {
     requests: RequestDisplay[]
-    holidays: Array<{ date: Date; name: string }>
     locale: string
     translations: PendingRequestTranslations
 }
 
 export function usePendingRequestsTable({
     requests,
-    holidays,
     locale,
     translations,
 }: UsePendingRequestsTableParams) {
@@ -110,7 +108,6 @@ export function usePendingRequestsTable({
         () =>
             createColumns({
                 translations,
-                holidays,
                 locale,
                 isApproving: approveMutation.isPending,
                 isRejecting: rejectMutation.isPending,
@@ -123,7 +120,6 @@ export function usePendingRequestsTable({
             approveMutation,
             rejectMutation.isPending,
             approvingId,
-            holidays,
             translations,
             locale,
             openRejectDialog,

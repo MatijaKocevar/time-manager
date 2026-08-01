@@ -13,7 +13,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import type { ParsedHoursResult, DayEntry } from "../_schemas/hours-schema"
-import type { HoursViewTranslations } from "../types"
+import type { HoursViewTranslations } from "../_types/types"
 import { getPreviousMonthInt, getNextMonthInt } from "../../_utils/date-helpers"
 import {
     Table,

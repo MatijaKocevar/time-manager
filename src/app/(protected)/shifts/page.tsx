@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server"
+import { startOfDay, endOfDay } from "@/lib/date-utils"
 import { getShiftsForPeriod, getAllUsers } from "./_actions/shift-actions"
 import { getHolidaysInRange } from "../admin/holidays/_actions/holiday-actions"
 import { ShiftsCalendar } from "./_components/shifts-calendar"
@@ -30,7 +31,6 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
         shiftsResult,
         usersResult,
         holidays,
-        t,
         tShifts,
         tutorialsSeen,
         tTutorial,
@@ -39,7 +39,6 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
         getShiftsForPeriod({ startDate, endDate }),
         getAllUsers(),
         getHolidaysInRange(formatDate(startDate), formatDate(endDate)),
-        getTranslations("navigation"),
         getTranslations("shifts.messages"),
         getTutorialsSeen(),
         getTranslations("tutorial"),
@@ -121,26 +120,25 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
 }
 
 function getDateRange(viewMode: ViewMode, date: Date) {
-    const selectedDate = new Date(date)
-    selectedDate.setHours(0, 0, 0, 0)
+    const selectedDate = startOfDay(new Date(date))
 
     if (viewMode === "week") {
         const dayOfWeek = selectedDate.getDay()
-        const startDate = new Date(selectedDate)
+        const startDate = startOfDay(new Date(selectedDate))
         startDate.setDate(selectedDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
-        startDate.setHours(0, 0, 0, 0)
 
-        const endDate = new Date(startDate)
+        const endDate = endOfDay(new Date(startDate))
         endDate.setDate(startDate.getDate() + 6)
-        endDate.setHours(23, 59, 59, 999)
 
         return { startDate, endDate }
     } else {
-        const startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
-        startDate.setHours(0, 0, 0, 0)
+        const startDate = startOfDay(
+            new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1)
+        )
 
-        const endDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0)
-        endDate.setHours(23, 59, 59, 999)
+        const endDate = endOfDay(
+            new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0)
+        )
 
         return { startDate, endDate }
     }

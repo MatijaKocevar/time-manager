@@ -7,7 +7,7 @@ import {
     getYearlyBalance,
     DayData,
 } from "../_actions/yearly-calendar-actions"
-import { yearlyCalendarKeys } from "../query-keys"
+import { yearlyCalendarKeys } from "../_constants/query-keys"
 import { useYearlyCalendarStore } from "../_stores/yearly-calendar-store"
 import { YearlyCalendarHeader } from "./yearly-calendar-header"
 import { YearlyCalendarTable } from "./yearly-calendar-table"
@@ -59,7 +59,10 @@ export function YearlyCalendarClient({
             if (result.error) {
                 throw new Error(result.error)
             }
-            return result.data!
+            if (!result.data) {
+                throw new Error("No data returned")
+            }
+            return result.data
         },
         initialData: selectedYear === initialYear ? initialData : undefined,
         staleTime: 1000 * 60 * 5,
@@ -72,7 +75,10 @@ export function YearlyCalendarClient({
             if (result.error) {
                 throw new Error(result.error)
             }
-            return result.data!
+            if (!result.data && result.data !== 0) {
+                throw new Error("No balance data returned")
+            }
+            return result.data
         },
         initialData: selectedYear === initialYear ? yearlyBalance : undefined,
         staleTime: 1000 * 60 * 5,

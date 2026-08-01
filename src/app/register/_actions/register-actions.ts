@@ -3,6 +3,7 @@
 import bcrypt from "bcryptjs"
 import crypto from "crypto"
 import { prisma } from "@/lib/prisma"
+import { validateInput } from "@/lib/validation"
 import { RegisterSchema } from "../_schemas/register-schemas"
 import { sendEmail } from "@/features/notifications/lib/email"
 import { verificationEmail } from "@/features/notifications/lib/email-templates"
@@ -42,10 +43,10 @@ async function createVerificationToken(email: string, expiryHours: number = 24) 
 }
 
 export async function registerUser(input: unknown) {
-    const validation = RegisterSchema.safeParse(input)
+    const validation = validateInput(RegisterSchema, input)
 
     if (!validation.success) {
-        return { error: validation.error.issues[0].message }
+        return { error: validation.error }
     }
 
     const { name, email, password, locale } = validation.data

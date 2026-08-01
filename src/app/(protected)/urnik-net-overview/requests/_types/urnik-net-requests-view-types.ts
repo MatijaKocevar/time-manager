@@ -59,6 +59,7 @@ export interface UrnikNetRequestsViewTranslations {
     }
     structureChanged: string
     structureChangedDescription: string
+    noRequestsThisMonth: string
 }
 
 export interface UrnikNetRequestsViewProps {
