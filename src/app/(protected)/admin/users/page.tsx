@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server"
-import { UsersTableWrapper } from "./components/users-table-wrapper"
-import { loadUsersListData } from "./loaders/users-list-data"
+import { UsersTableWrapper } from "./_components/users-table-wrapper"
+import { loadUsersListData } from "./_loaders/users-list-data"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function AdminUsersPage() {

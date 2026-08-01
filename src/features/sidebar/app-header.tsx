@@ -3,9 +3,9 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Breadcrumbs } from "@/features/breadcrumbs"
 import { NotificationsDropdownClient } from "@/features/notifications/components/notifications-dropdown-client"
 import { getNotifications } from "@/features/notifications/actions/notification-actions"
-import { getActiveTimer } from "@/app/(protected)/shared/actions/timer-actions"
-import { getTasks } from "@/app/(protected)/tasks/actions/task-actions"
-import { TASK_STATUS } from "@/app/(protected)/tasks/constants/task-statuses"
+import { getActiveTimer } from "@/app/(protected)/shared/_actions/timer-actions"
+import { getTasks } from "@/app/(protected)/tasks/_actions/task-actions"
+import { TASK_STATUS } from "@/app/(protected)/tasks/_constants/task-statuses"
 import { TimerStatusCompact } from "./timer-status-compact"
 
 interface AppHeaderProps {

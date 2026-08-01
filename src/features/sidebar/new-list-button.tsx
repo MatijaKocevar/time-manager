@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react"
 import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
-import { useTasksStore } from "@/app/(protected)/tasks/stores/tasks-store"
+import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
 
 export function NewListButton() {
     const openListDialog = useTasksStore((state) => state.openListDialog)

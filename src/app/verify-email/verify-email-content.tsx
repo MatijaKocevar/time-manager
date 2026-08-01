@@ -7,10 +7,10 @@ import { useTranslations } from "next-intl"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { verifyEmail } from "./actions/verify-actions"
+import { verifyEmail } from "./_actions/verify-actions"
 import { AppLogo } from "@/components/app-logo"
 import { Separator } from "@/components/ui/separator"
-import { useVerifyEmailStore } from "./stores/verify-store"
+import { useVerifyEmailStore } from "./_stores/verify-store"
 
 export default function VerifyEmailContent() {
     const searchParams = useSearchParams()

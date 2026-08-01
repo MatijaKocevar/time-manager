@@ -1,9 +1,9 @@
 import { getTranslations } from "next-intl/server"
-import { getTasks } from "../actions/task-actions"
-import { getListById, getLists } from "../actions/list-actions"
-import { TasksTable } from "../components/tasks-table"
-import { TasksViewClient } from "../components/tasks-view-client"
-import { TaskDescriptionDialog } from "../components/task-description-dialog"
+import { getTasks } from "../_actions/task-actions"
+import { getListById, getLists } from "../_actions/list-actions"
+import { TasksTable } from "../_components/tasks-table"
+import { TasksViewClient } from "../_components/tasks-view-client"
+import { TaskDescriptionDialog } from "../_components/task-description-dialog"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 interface ListPageProps {

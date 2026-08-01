@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
 import { requireAuth } from "@/lib/auth-helpers"
 import { getTranslations } from "next-intl/server"
-import { ClockView } from "./components/clock-view"
+import { ClockView } from "./_components/clock-view"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { getArrivalLeaveStatus, getTodayWorkFromHomeStatus } from "@/lib/clock-status"

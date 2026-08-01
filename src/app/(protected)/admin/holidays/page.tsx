@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server"
-import { getHolidays } from "./actions/holiday-actions"
-import { HolidaysTable } from "./components/holidays-table"
+import { getHolidays } from "./_actions/holiday-actions"
+import { HolidaysTable } from "./_components/holidays-table"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export const dynamic = "force-dynamic"

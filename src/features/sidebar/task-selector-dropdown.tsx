@@ -9,7 +9,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import type { TaskDisplay } from "@/app/(protected)/tasks/schemas"
+import type { TaskDisplay } from "@/app/(protected)/tasks/_schemas"
 
 interface TaskSelectorDropdownProps {
     children: React.ReactNode

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { URNIK_USER_AGENT } from "@/app/(protected)/urnik-net-overview/lib/constants"
-import { loginToUrnikNet } from "@/app/(protected)/urnik-net-overview/requests/actions/urnik-net-auth"
+import { URNIK_USER_AGENT } from "@/app/(protected)/urnik-net-overview/_lib/constants"
+import { loginToUrnikNet } from "@/app/(protected)/urnik-net-overview/requests/_actions/urnik-net-auth"
 import {
     systemApproveRequest,
     systemRejectRequest,
-} from "@/app/(protected)/requests/actions/request-actions"
+} from "@/app/(protected)/requests/_actions/request-actions"
 
 const TRACKING_ID_REGEX = /\b(c[a-z0-9]{24})\b/i
 

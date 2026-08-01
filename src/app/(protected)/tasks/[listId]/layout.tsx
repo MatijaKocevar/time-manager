@@ -1,5 +1,5 @@
 import { ReactNode } from "react"
-import { getListById } from "../actions/list-actions"
+import { getListById } from "../_actions/list-actions"
 import { SetBreadcrumb } from "@/features/breadcrumbs"
 
 interface ListLayoutProps {

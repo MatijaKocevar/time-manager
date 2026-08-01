@@ -1,6 +1,6 @@
-import { TimeSheetsView } from "./components/time-sheets-view"
-import { getHolidaysInRange } from "../admin/holidays/actions/holiday-actions"
-import { getDateRangeForView } from "./utils/date-helpers"
+import { TimeSheetsView } from "./_components/time-sheets-view"
+import { getHolidaysInRange } from "../admin/holidays/_actions/holiday-actions"
+import { getDateRangeForView } from "./_utils/date-helpers"
 
 interface TimeSheetsPageProps {
     searchParams: Promise<{ mode?: string; date?: string; filter?: string }>

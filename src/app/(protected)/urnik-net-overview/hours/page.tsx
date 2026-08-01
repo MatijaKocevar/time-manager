@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation"
 import { requireAuth } from "@/lib/auth-helpers"
 import { getTranslations } from "next-intl/server"
-import { fetchMonthlyHours } from "./actions/hours-actions"
-import { HoursView } from "./components/hours-view"
+import { fetchMonthlyHours } from "./_actions/hours-actions"
+import { HoursView } from "./_components/hours-view"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export const dynamic = "force-dynamic"

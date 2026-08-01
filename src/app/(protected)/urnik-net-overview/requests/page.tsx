@@ -2,16 +2,16 @@ import { redirect } from "next/navigation"
 import { getTranslations } from "next-intl/server"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
-import { UrnikNetRequestsView } from "./components/urnik-net-requests-view"
-import { CreateRequestDialog } from "./components/create-request-dialog"
-import { getCurrentUser } from "../../profile/actions/profile-actions"
+import { UrnikNetRequestsView } from "./_components/urnik-net-requests-view"
+import { CreateRequestDialog } from "./_components/create-request-dialog"
+import { getCurrentUser } from "../../profile/_actions/profile-actions"
 import {
     attemptUrnikNetLogin,
     fetchUrnikNetRequests,
     syncUrnikNetStatuses,
     getSubmittedUrnikNetRequests,
-} from "./actions/urnik-net-requests-actions"
-import { syncRequestStatuses } from "../../requests/actions/sync-request-statuses"
+} from "./_actions/urnik-net-requests-actions"
+import { syncRequestStatuses } from "../../requests/_actions/sync-request-statuses"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export const dynamic = "force-dynamic"

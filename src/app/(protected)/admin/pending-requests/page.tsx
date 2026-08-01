@@ -2,9 +2,9 @@ import { getTranslations } from "next-intl/server"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authConfig } from "@/lib/auth"
-import { PendingRequestsTable } from "./components/pending-requests-table-wrapper"
+import { PendingRequestsTable } from "./_components/pending-requests-table-wrapper"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
-import { loadPendingRequestsData } from "./loaders/pending-requests-data"
+import { loadPendingRequestsData } from "./_loaders/pending-requests-data"
 
 export default async function PendingRequestsPage() {
     const session = await getServerSession(authConfig)

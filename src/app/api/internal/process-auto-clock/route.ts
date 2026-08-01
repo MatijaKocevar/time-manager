@@ -7,7 +7,7 @@ import {
     sendCheckoutReminder,
     processAutoCheckin,
     processAutoCheckout,
-} from "@/app/(protected)/urnik-net-overview/actions/auto-clock-actions"
+} from "@/app/(protected)/urnik-net-overview/_actions/auto-clock-actions"
 
 function parseTimeToDate(timeString: string): Date {
     const [hours, minutes] = timeString.split(":").map(Number)

@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation"
 import { requireAuth } from "@/lib/auth-helpers"
 import { getTranslations } from "next-intl/server"
-import { AttendanceView } from "./components/attendance-view"
-import { fetchTeamStatus } from "./actions/attendance-actions"
+import { AttendanceView } from "./_components/attendance-view"
+import { fetchTeamStatus } from "./_actions/attendance-actions"
 
 export const dynamic = "force-dynamic"
 

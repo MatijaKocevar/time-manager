@@ -1,6 +1,6 @@
-import { getActiveTimer } from "@/app/(protected)/shared/actions/timer-actions"
+import { getActiveTimer } from "@/app/(protected)/shared/_actions/timer-actions"
 import type { HourType } from "@/../../prisma/generated/client"
-import { TaskDescriptionDialog } from "@/app/(protected)/tasks/components/task-description-dialog"
+import { TaskDescriptionDialog } from "@/app/(protected)/tasks/_components/task-description-dialog"
 import {
     getGeneralWorkTask,
     getTrackerPreferences,
@@ -9,10 +9,10 @@ import {
     getTodayTimeSummary,
     getInProgressTasksForTracker,
     getLastTimeEntryToday,
-} from "./actions/tracker-actions"
-import { TrackerDisplay } from "./components/tracker-display"
-import { TimeEntriesDialog } from "@/app/(protected)/tasks/components/time-entries-dialog"
-import { DayEntriesDialog } from "@/app/(protected)/time-sheets/components/day-entries-dialog"
+} from "./_actions/tracker-actions"
+import { TrackerDisplay } from "./_components/tracker-display"
+import { TimeEntriesDialog } from "@/app/(protected)/tasks/_components/time-entries-dialog"
+import { DayEntriesDialog } from "@/app/(protected)/time-sheets/_components/day-entries-dialog"
 import { getTranslations } from "next-intl/server"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 

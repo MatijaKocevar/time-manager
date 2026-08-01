@@ -3,7 +3,7 @@
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "./app-sidebar"
 import { UserRole } from "@/types"
-import type { ListDisplay } from "@/app/(protected)/tasks/schemas/list-schemas"
+import type { ListDisplay } from "@/app/(protected)/tasks/_schemas/list-schemas"
 import { updateSidebarState } from "./actions/sidebar-actions"
 import { useSidebar } from "@/components/ui/sidebar"
 import { useEffect } from "react"

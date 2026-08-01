@@ -2,9 +2,9 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { getTranslations } from "next-intl/server"
 import { authConfig } from "@/lib/auth"
-import { RequestHistoryTable } from "./components/request-history-table-wrapper"
+import { RequestHistoryTable } from "./_components/request-history-table-wrapper"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
-import { loadRequestHistoryData } from "./loaders/request-history-data"
+import { loadRequestHistoryData } from "./_loaders/request-history-data"
 
 export default async function RequestHistoryPage() {
     const session = await getServerSession(authConfig)

@@ -1,0 +1,45 @@
+import { z } from "zod"
+import { TASK_STATUS } from "../_constants/task-statuses"
+
+export const TaskStatusSchema = z.enum([
+    TASK_STATUS.TODO,
+    TASK_STATUS.IN_PROGRESS,
+    TASK_STATUS.DONE,
+    TASK_STATUS.ON_HOLD,
+    TASK_STATUS.CANCELED,
+])
+
+const CreateTaskInputSchema = z.object({
+    title: z.string().min(1, "Title is required").max(255, "Title is too long"),
+    description: z.string().optional(),
+    status: TaskStatusSchema.default(TASK_STATUS.TODO),
+    parentId: z.string().optional(),
+    listId: z.string().nullable().optional(),
+})
+
+export const CreateTaskSchema = CreateTaskInputSchema
+
+const UpdateTaskInputSchema = z.object({
+    id: z.string(),
+    title: z.string().min(1, "Title is required").max(255, "Title is too long").optional(),
+    description: z.string().optional(),
+    status: TaskStatusSchema.optional(),
+    order: z.number().int().optional(),
+})
+
+export const UpdateTaskSchema = UpdateTaskInputSchema
+
+export const DeleteTaskSchema = z.object({
+    id: z.string(),
+})
+
+export const ToggleExpandedSchema = z.object({
+    id: z.string(),
+    isExpanded: z.boolean(),
+})
+
+export type TaskStatus = z.infer<typeof TaskStatusSchema>
+export type CreateTaskInput = z.infer<typeof CreateTaskSchema>
+export type UpdateTaskInput = z.infer<typeof UpdateTaskSchema>
+export type DeleteTaskInput = z.infer<typeof DeleteTaskSchema>
+export type ToggleExpandedInput = z.infer<typeof ToggleExpandedSchema>

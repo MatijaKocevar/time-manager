@@ -1,9 +1,9 @@
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getUserRequests } from "./actions/request-actions"
-import { RequestsTableWithDialog } from "./components/requests-table-with-dialog"
-import { syncRequestStatuses } from "./actions/sync-request-statuses"
+import { getUserRequests } from "./_actions/request-actions"
+import { RequestsTableWithDialog } from "./_components/requests-table-with-dialog"
+import { syncRequestStatuses } from "./_actions/sync-request-statuses"
 import { getTranslations } from "next-intl/server"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 

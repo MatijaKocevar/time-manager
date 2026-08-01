@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth"
 import { authConfig } from "./auth"
 import { prisma } from "./prisma"
-import { loginToUrnikNet } from "@/app/(protected)/urnik-net-overview/requests/actions/urnik-net-requests-actions"
+import { loginToUrnikNet } from "@/app/(protected)/urnik-net-overview/requests/_actions/urnik-net-requests-actions"
 
 async function extractUrnikUserId(cookie: string): Promise<string | null> {
     try {

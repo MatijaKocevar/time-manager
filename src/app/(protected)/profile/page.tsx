@@ -1,11 +1,11 @@
 import { redirect } from "next/navigation"
 import { getTranslations } from "next-intl/server"
-import { ProfileForm } from "./components/profile-form"
-import { PushNotificationManager } from "./components/push-notification-manager"
-import { NotificationPreferences } from "./components/notification-preferences"
-import { UrnikCredentialsForm } from "./components/urnik-credentials-form"
-import { AutoCheckinPreferences } from "./components/auto-checkin-preferences"
-import { getCurrentUser, getAutoCheckinPreferences } from "./actions/profile-actions"
+import { ProfileForm } from "./_components/profile-form"
+import { PushNotificationManager } from "./_components/push-notification-manager"
+import { NotificationPreferences } from "./_components/notification-preferences"
+import { UrnikCredentialsForm } from "./_components/urnik-credentials-form"
+import { AutoCheckinPreferences } from "./_components/auto-checkin-preferences"
+import { getCurrentUser, getAutoCheckinPreferences } from "./_actions/profile-actions"
 import {
     hasUserSubscription,
     getNotificationPreferences,

@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server"
-import { getShiftsForPeriod, getAllUsers } from "./actions/shift-actions"
-import { getHolidaysInRange } from "../admin/holidays/actions/holiday-actions"
-import { ShiftsCalendar } from "./components/shifts-calendar"
+import { getShiftsForPeriod, getAllUsers } from "./_actions/shift-actions"
+import { getHolidaysInRange } from "../admin/holidays/_actions/holiday-actions"
+import { ShiftsCalendar } from "./_components/shifts-calendar"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export const dynamic = "force-dynamic"

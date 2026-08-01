@@ -5,15 +5,15 @@ import { Play, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ArrivalDialog } from "@/components/arrival-dialog"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { formatDuration } from "@/app/(protected)/tasks/utils/time-helpers"
+import { formatDuration } from "@/app/(protected)/tasks/_utils/time-helpers"
 import {
     useTimerState,
     useTrackerSSE,
     useTrackerPusher,
     useTrackerMutations,
-} from "@/app/(protected)/tracker/hooks"
+} from "@/app/(protected)/tracker/_hooks"
 import type { HourType } from "@/../../prisma/generated/client"
-import type { TaskDisplay } from "@/app/(protected)/tasks/schemas"
+import type { TaskDisplay } from "@/app/(protected)/tasks/_schemas"
 import { TaskSelectorDropdown } from "./task-selector-dropdown"
 
 interface TimerStatusCompactProps {

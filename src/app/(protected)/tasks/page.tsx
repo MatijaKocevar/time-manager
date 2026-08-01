@@ -1,8 +1,8 @@
 import { getTranslations } from "next-intl/server"
-import { getInProgressTasksByLists } from "./actions/task-actions"
-import { getLists } from "./actions/list-actions"
-import { TasksOverview } from "./components/tasks-overview"
-import { TaskDescriptionDialog } from "./components/task-description-dialog"
+import { getInProgressTasksByLists } from "./_actions/task-actions"
+import { getLists } from "./_actions/list-actions"
+import { TasksOverview } from "./_components/tasks-overview"
+import { TaskDescriptionDialog } from "./_components/task-description-dialog"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function TasksPage() {

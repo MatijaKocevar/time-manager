@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server"
-import { DevToolsClient } from "./components/dev-tools-client"
+import { DevToolsClient } from "./_components/dev-tools-client"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 export default async function DevToolsPage() {

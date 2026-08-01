@@ -1,11 +1,11 @@
 import { getTranslations } from "next-intl/server"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { EditUserForm } from "../components/edit-user-form-wrapper"
-import { UserHoursSection } from "./components/user-hours-section-wrapper"
-import { RequestsCard } from "./components/requests-card"
+import { EditUserForm } from "../_components/edit-user-form-wrapper"
+import { UserHoursSection } from "./_components/user-hours-section-wrapper"
+import { RequestsCard } from "./_components/requests-card"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
-import { loadUserDetailData } from "../loaders/user-detail-data"
+import { loadUserDetailData } from "../_loaders/user-detail-data"
 
 export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params

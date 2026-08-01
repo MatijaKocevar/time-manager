@@ -11,11 +11,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LanguageToggle } from "@/features/locale/components/language-toggle"
 import { Eye, EyeOff } from "lucide-react"
-import { registerUser } from "./actions/register-actions"
+import { registerUser } from "./_actions/register-actions"
 import { AppLogo } from "@/components/app-logo"
 import { Separator } from "@/components/ui/separator"
-import { PASSWORD_MIN_LENGTH } from "./schemas/register-schemas"
-import { useRegisterStore } from "./stores/register-store"
+import { PASSWORD_MIN_LENGTH } from "./_schemas/register-schemas"
+import { useRegisterStore } from "./_stores/register-store"
 
 export default function RegisterPage() {
     const router = useRouter()

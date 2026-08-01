@@ -6,11 +6,11 @@ import {
     getActiveTimer,
     startTimer,
     stopTimer,
-} from "@/app/(protected)/shared/actions/timer-actions"
+} from "@/app/(protected)/shared/_actions/timer-actions"
 import {
     clockInToUrnik,
     clockOutAndStopTimer,
-} from "@/app/(protected)/urnik-net-overview/actions/clock-actions"
+} from "@/app/(protected)/urnik-net-overview/_actions/clock-actions"
 import { sendPushNotification } from "@/features/notifications/actions/notification-actions"
 import { sendEmail } from "@/features/notifications/lib/email"
 

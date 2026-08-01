@@ -1,5 +1,5 @@
 import { ReactNode } from "react"
-import { getUserById } from "../actions/user-actions"
+import { getUserById } from "../_actions/user-actions"
 import { SetBreadcrumb } from "@/features/breadcrumbs"
 
 interface UserLayoutProps {
