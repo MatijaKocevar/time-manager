@@ -162,6 +162,7 @@ export function useSomething() {
 - Copy `.env.example` → `.env`. Required: `DATABASE_URL` (PostgreSQL), `NEXTAUTH_SECRET`. Seeded login only works after `npm run db:seed`.
 - Optional: `RESEND_API_KEY` (email), `NEXT_PUBLIC_VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` (push), `URNIK_TENANT_ID`, `CRON_SECRET`, `PUSHER_*` (Vercel alternate to SSE), `UPLOAD_BASE_PATH` (persistent uploads). `DEBUG_SKIP_URNIK_LOGIN=true` skips urnik.net during dev.
 - NFC tap-in: `GET /api/tap-in` toggles the work timer; `?token=office` → WORK, `?token=home` → WORK_FROM_HOME.
-- Prod runs under PM2 (`ecosystem.config.js`): app + `urnik-sync-cron` + `auto-checkin-checkout-cron` (last one is the esbuild bundle from `build:cron`).
+- **Prod runs Docker on `server@192.168.0.10`** (hostname `server-asus`, SSH key auth from the dev machine), checkout at `/home/server/Documents/time-manager`. Update with `./scripts/deploy-docker.sh` (SSH → `git pull origin master` → rebuild + restart; `--backup` dumps the DB first, `--no-build` restarts only). The container entrypoint runs `prisma migrate deploy`, a minimal seed, and refreshes `daily_hour_summary` on every start. Live ports: nginx `:6280`, pgAdmin `:8888`, Postgres `:54320`.
+- The PM2 setup (`ecosystem.config.js`, `npm run deploy` → `scripts/deploy.sh`, cron apps) is **legacy/dormant** (`pm2 list` is empty, `/home/server/time-management-app`); don't use it to update the live server.
 
 > `.github/copilot-instructions.md` contains older, partly stale guidance (e.g. SQLite, API-route avoidance, i18n prop-drilling). Prefer this file when they conflict.
