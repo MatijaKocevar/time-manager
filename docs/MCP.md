@@ -6,6 +6,9 @@ The app exposes a [Model Context Protocol](https://modelcontextprotocol.io) serv
 ## How it works
 
 - The route `src/app/api/mcp/route.ts` uses `mcp-handler` + `@modelcontextprotocol/server` to serve the MCP protocol.
+- The `instructions` field in that route is the app's primer: clients such as opencode inject it into the
+  model's context at connect time (opencode renders it as `<mcp_instructions>`). Keep it accurate when the
+  domain changes; the per-tool descriptions in `src/features/mcp/tools/` explain each capability.
 - Tools live in `src/features/mcp/tools/` and call **existing server actions** (`getTasks`, `startTimer`, `fetchMonthlyHourData`, ...).
 - Authentication is a per-user API token sent as `Authorization: Bearer tm_...`.
   `withMcpAuth` validates it on every request; verification lives in `src/features/mcp/lib/verify-token.ts`.
@@ -111,13 +114,15 @@ it disabled otherwise so tools always come from production.
 ### Troubleshooting
 
 - **`time-manager` shows connection errors** — VPN is down or the server is unreachable. All other
-  opencode tools keep working; reconnect the VPN and restart opencode.
+  opencode tools keep working; check `curl http://10.8.0.1:6280/api/health` (public), reconnect the
+  VPN and restart opencode.
 - **401 `invalid_token` / `No authorization provided`** — token missing, revoked or expired. Check
   the header (including the `Bearer ` prefix) and create a new token if needed.
 - **404** — wrong host or port. Production is `:6280`; `:3000` is the dev server only.
 - **TLS error with `:8443`** — the device does not trust the server's mkcert CA. Use the HTTP VPN
   address instead, or install the CA.
-- **Tools missing after reconnecting** — opencode loads the tool list at startup; restart it.
+- **Tools missing after reconnecting** — opencode loads the tool list at startup; restart it
+  (`opencode mcp list` shows server status).
 
 ## Tools
 
@@ -137,19 +142,6 @@ it disabled otherwise so tools always come from production.
 | `get_today_summary` | Today's WORK/BREAK/PRIVATE totals + active timer.          |
 
 Durations are in seconds, timestamps are ISO 8601. Every tool only ever sees the token owner's data.
-
-## Troubleshooting
-
-- **MCP server shows as unavailable in opencode** — the client could not reach the URL. Check VPN, then
-  `curl -k https://time.manager:8443/api/health` (public). Restart/reconnect opencode afterwards.
-- **401 Unauthorized** — token missing, revoked or expired. Check the `Bearer {env:TIMEMANAGER_MCP_TOKEN}`
-  interpolation and re-create the token.
-- **Tools missing after VPN reconnect** — opencode fetches the tool list at startup; restart it or use the
-  MCP reconnect command (`opencode mcp list` to inspect servers).
-- **Self-signed dev certificate** — if `https://time-manager.home:3000` is rejected, either trust the
-  mkcert CA in the client environment or use the production endpoint.
-- **403 / token works in dev but not prod** — the production reverse proxy must forward the
-  `Authorization` header to the app.
 
 ## Adding a tool
 
