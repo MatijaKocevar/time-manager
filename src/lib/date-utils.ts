@@ -104,3 +104,13 @@ export function getHolidayForDate(
     const key = formatDateKey(date)
     return holidaysByDate.get(key)
 }
+
+export function parseDate(dateStr: string): Date {
+    const [year, month, day] = dateStr.split("-").map(Number)
+    return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0))
+}
+
+export function parseEndDate(dateStr: string): Date {
+    const [year, month, day] = dateStr.split("-").map(Number)
+    return new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999))
+}

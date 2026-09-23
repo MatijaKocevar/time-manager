@@ -160,11 +160,11 @@ Use any NFC writer app (NFC Tools on Android is free):
 
 **Multiple stands** (office, home) — add a token to determine the hour type:
 
-| Stand | URL | Hour Type |
-|---|---|---|
-| Office | `https://yourdomain.com/api/tap-in?token=office` | WORK |
-| Home | `https://yourdomain.com/api/tap-in?token=home` | WORK_FROM_HOME |
-| No token | `https://yourdomain.com/api/tap-in` | WORK (default) |
+| Stand    | URL                                              | Hour Type      |
+| -------- | ------------------------------------------------ | -------------- |
+| Office   | `https://yourdomain.com/api/tap-in?token=office` | WORK           |
+| Home     | `https://yourdomain.com/api/tap-in?token=home`   | WORK_FROM_HOME |
+| No token | `https://yourdomain.com/api/tap-in`              | WORK (default) |
 
 **Compatible tags**: NTAG213, NTAG215, NTAG216 (any NDEF-compatible NFC sticker or card).
 

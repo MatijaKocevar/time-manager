@@ -22,6 +22,7 @@ import {
 } from "../_schemas/hour-action-schemas"
 import { validateInput } from "@/lib/validation"
 import { requireAuth, requireAdmin } from "@/lib/auth-helpers"
+import { computeAttendanceData } from "@/lib/attendance"
 import { startOfDay } from "@/lib/date-utils"
 import { formatDateKey, parseDate, parseEndDate } from "../_utils/date-helpers"
 import { buildManualEntriesMap, buildGrandTotalEntries } from "../_utils/entry-helpers"
@@ -641,47 +642,8 @@ export async function getAttendanceData(startDate: string, endDate: string) {
     try {
         const session = await requireAuth()
 
-        const workDays = await prisma.dailyHourSummary.findMany({
-            where: {
-                userId: session.user.id,
-                date: {
-                    gte: parseDate(startDate),
-                    lte: parseEndDate(endDate),
-                },
-                type: "WORK",
-                trackedHours: {
-                    gt: 0,
-                },
-            },
-            select: {
-                date: true,
-            },
-            distinct: ["date"],
-        })
-
-        const wfhDays = await prisma.dailyHourSummary.findMany({
-            where: {
-                userId: session.user.id,
-                date: {
-                    gte: parseDate(startDate),
-                    lte: parseEndDate(endDate),
-                },
-                type: "WORK_FROM_HOME",
-                trackedHours: {
-                    gt: 0,
-                },
-            },
-            select: {
-                date: true,
-            },
-            distinct: ["date"],
-        })
-
-        const officeCount = workDays.length
-        const remoteCount = wfhDays.length
-
-        return { officeCount, remoteCount }
-    } catch (_error) {
+        return await computeAttendanceData(session.user.id, startDate, endDate)
+    } catch {
         throw new Error("Failed to fetch attendance data")
     }
 }
@@ -690,47 +652,8 @@ export async function getAttendanceDataForUser(userId: string, startDate: string
     try {
         await requireAdmin()
 
-        const workDays = await prisma.dailyHourSummary.findMany({
-            where: {
-                userId,
-                date: {
-                    gte: parseDate(startDate),
-                    lte: parseEndDate(endDate),
-                },
-                type: "WORK",
-                trackedHours: {
-                    gt: 0,
-                },
-            },
-            select: {
-                date: true,
-            },
-            distinct: ["date"],
-        })
-
-        const wfhDays = await prisma.dailyHourSummary.findMany({
-            where: {
-                userId,
-                date: {
-                    gte: parseDate(startDate),
-                    lte: parseEndDate(endDate),
-                },
-                type: "WORK_FROM_HOME",
-                trackedHours: {
-                    gt: 0,
-                },
-            },
-            select: {
-                date: true,
-            },
-            distinct: ["date"],
-        })
-
-        const officeCount = workDays.length
-        const remoteCount = wfhDays.length
-
-        return { officeCount, remoteCount }
-    } catch (_error) {
+        return await computeAttendanceData(userId, startDate, endDate)
+    } catch {
         throw new Error("Failed to fetch attendance data for user")
     }
 }

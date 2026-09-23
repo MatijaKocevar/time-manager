@@ -629,7 +629,6 @@ export function TimePicker({
             }
         }, 1)
         return () => clearTimeout(timeoutId)
-         
     }, [open])
 
     const onHourChange = useCallback(

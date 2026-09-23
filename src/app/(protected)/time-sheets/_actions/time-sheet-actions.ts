@@ -86,7 +86,7 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
         return { error: validation.error.message }
     }
 
-    const { startDate, endDate, taskFilter } = validation.data
+    const { startDate, endDate, taskFilter, fresh } = validation.data
 
     try {
         const getCachedEntries = unstable_cache(
@@ -99,7 +99,9 @@ export async function getTimeSheetEntries(input: GetTimeSheetEntriesInput) {
             }
         )
 
-        const entries = await getCachedEntries()
+        const entries = fresh
+            ? await fetchTimeSheetEntriesFromDb(session.user.id, startDate, endDate, taskFilter)
+            : await getCachedEntries()
 
         const activeTimer = entries.find((e) => e.endTime === null)
         const allEntries = entries.map((entry) => ({

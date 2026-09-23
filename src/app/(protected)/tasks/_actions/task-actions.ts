@@ -18,17 +18,111 @@ import type { TaskDisplay, TasksFilter } from "../_schemas/task-schemas"
 import { TASK_STATUS } from "../_constants/task-statuses"
 import { deleteOrphanedImages, deleteAllTaskImages } from "../_utils/image-cleanup"
 
-export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
+export type TaskWithTime = TaskDisplay & { totalTime: number }
+
+type TaskWhereClause = {
+    userId: string
+    id?: string
+    listId?: string | null
+    status?: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
+}
+
+async function fetchTaskDisplays(whereClause: TaskWhereClause): Promise<TaskWithTime[]> {
+    const [tasks, timeAggregates] = await Promise.all([
+        prisma.task.findMany({
+            where: whereClause,
+            orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+            select: {
+                id: true,
+                userId: true,
+                listId: true,
+                title: true,
+                description: true,
+                status: true,
+                parentId: true,
+                order: true,
+                isExpanded: true,
+                isSystemTask: true,
+                createdAt: true,
+                updatedAt: true,
+                list: {
+                    select: {
+                        name: true,
+                        color: true,
+                        icon: true,
+                        isPrivate: true,
+                    },
+                },
+            },
+        }),
+        prisma.taskTimeEntry.groupBy({
+            by: ["taskId"],
+            where: {
+                userId: whereClause.userId,
+                endTime: { not: null },
+                task: whereClause,
+            },
+            _sum: {
+                duration: true,
+            },
+        }),
+    ])
+
+    const timeMap = new Map(timeAggregates.map((agg) => [agg.taskId, agg._sum.duration ?? 0]))
+
+    type TaskMapEntry = TaskWithTime & { directTime: number }
+
+    const taskMap = new Map<string, TaskMapEntry>(
+        tasks.map((task) => {
+            const directTime = timeMap.get(task.id) ?? 0
+            const { list, ...taskData } = task
+            return [
+                task.id,
+                {
+                    ...taskData,
+                    listName: list?.name ?? null,
+                    listColor: list?.color ?? null,
+                    listIcon: list?.icon ?? null,
+                    listIsPrivate: list?.isPrivate ?? null,
+                    totalTime: directTime,
+                    directTime,
+                },
+            ]
+        })
+    )
+
+    const calculateTotalTime = (taskId: string): number => {
+        const task = taskMap.get(taskId)
+        if (!task) return 0
+
+        const subtasks = Array.from(taskMap.values()).filter((t) => t.parentId === taskId)
+        const subtaskTime = subtasks.reduce(
+            (sum: number, subtask) => sum + calculateTotalTime(subtask.id),
+            0
+        )
+
+        const total = task.directTime + subtaskTime
+        task.totalTime = total
+        return total
+    }
+
+    tasks.forEach((task) => {
+        if (!task.parentId) {
+            calculateTotalTime(task.id)
+        }
+    })
+
+    return Array.from(taskMap.values()).map(({ directTime, ...task }) => {
+        void directTime
+        return task
+    })
+}
+
+export async function getTasks(filters?: TasksFilter): Promise<TaskWithTime[]> {
     try {
         const session = await requireAuth()
 
-        type WhereClause = {
-            userId: string
-            listId?: string | null
-            status?: (typeof TASK_STATUS)[keyof typeof TASK_STATUS]
-        }
-
-        const whereClause: WhereClause = {
+        const whereClause: TaskWhereClause = {
             userId: session.user.id,
         }
 
@@ -40,106 +134,27 @@ export async function getTasks(filters?: TasksFilter): Promise<TaskDisplay[]> {
             whereClause.status = filters.status
         }
 
-        const [tasks, timeAggregates] = await Promise.all([
-            prisma.task.findMany({
-                where: whereClause,
-                orderBy: [{ order: "asc" }, { createdAt: "asc" }],
-                select: {
-                    id: true,
-                    userId: true,
-                    listId: true,
-                    title: true,
-                    description: true,
-                    status: true,
-                    parentId: true,
-                    order: true,
-                    isExpanded: true,
-                    isSystemTask: true,
-                    createdAt: true,
-                    updatedAt: true,
-                    list: {
-                        select: {
-                            name: true,
-                            color: true,
-                            icon: true,
-                            isPrivate: true,
-                        },
-                    },
-                },
-            }),
-            prisma.taskTimeEntry.groupBy({
-                by: ["taskId"],
-                where: {
-                    userId: session.user.id,
-                    endTime: { not: null },
-                    task: whereClause,
-                },
-                _sum: {
-                    duration: true,
-                },
-            }),
-        ])
-
-        const timeMap = new Map(timeAggregates.map((agg) => [agg.taskId, agg._sum.duration ?? 0]))
-
-        type TaskWithTime = Omit<(typeof tasks)[number], "list"> & {
-            listName: string | null
-            listColor: string | null
-            listIcon: string | null
-            listIsPrivate: boolean | null
-            totalTime: number
-            directTime: number
-        }
-
-        const taskMap = new Map<string, TaskWithTime>(
-            tasks.map((task) => {
-                const directTime = timeMap.get(task.id) ?? 0
-                const { list, ...taskData } = task
-                return [
-                    task.id,
-                    {
-                        ...taskData,
-                        listName: list?.name ?? null,
-                        listColor: list?.color ?? null,
-                        listIcon: list?.icon ?? null,
-                        listIsPrivate: list?.isPrivate ?? null,
-                        totalTime: directTime,
-                        directTime,
-                    },
-                ]
-            })
-        )
-
-        const calculateTotalTime = (taskId: string): number => {
-            const task = taskMap.get(taskId)
-            if (!task) return 0
-
-            const subtasks = Array.from(taskMap.values()).filter((t) => t.parentId === taskId)
-            const subtaskTime = subtasks.reduce(
-                (sum: number, subtask) => sum + calculateTotalTime(subtask.id),
-                0
-            )
-
-            const total = task.directTime + subtaskTime
-            task.totalTime = total
-            return total
-        }
-
-        tasks.forEach((task) => {
-            if (!task.parentId) {
-                calculateTotalTime(task.id)
-            }
-        })
-
-        return Array.from(taskMap.values()).map(({ directTime, ...task }) => {
-            void directTime
-            return task
-        })
+        return await fetchTaskDisplays(whereClause)
     } catch (error) {
         if (error instanceof Error) {
             throw error
         }
         throw new Error("Failed to fetch tasks")
+    }
+}
+
+export async function getTaskById(id: string): Promise<TaskWithTime | null> {
+    try {
+        const session = await requireAuth()
+
+        const tasks = await fetchTaskDisplays({ userId: session.user.id, id })
+
+        return tasks[0] ?? null
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error
+        }
+        throw new Error("Failed to fetch task")
     }
 }
 
