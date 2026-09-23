@@ -89,6 +89,20 @@ model User {
   autoAdmin                 Boolean                    @default(false)
   managedUsers              AdminUserAssignment[]      @relation("AdminAssignments")
   assignedAdmins            AdminUserAssignment[]      @relation("ManagedByAdmin")
+  apiTokens                 ApiToken[]
+}
+
+model ApiToken {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  tokenHash  String    @unique
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model AdminUserAssignment {

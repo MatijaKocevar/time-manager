@@ -901,6 +901,40 @@
                 "updateFailed": "Posodobitev urnik.net poverilnic ni uspela"
             }
         },
+        "apiTokens": {
+            "title": "MCP in API žetoni",
+            "description": "Ustvarite osebne dostopne žetone za MCP strežnik, da lahko orodja, kot je opencode, berejo in upravljajo vaše naloge, merilnike časa in ure.",
+            "create": "Ustvari žeton",
+            "creating": "Ustvarjanje ...",
+            "createTitle": "Ustvari API žeton",
+            "createDescription": "Žeton je prikazan le enkrat po ustvarjanju.",
+            "name": "Ime žetona",
+            "namePlaceholder": "npr. opencode prenosnik",
+            "nameRequired": "Ime žetona je obvezno",
+            "expiresIn": "Potek",
+            "expiresNever": "Nikoli ne poteče",
+            "expires30": "30 dni",
+            "expires90": "90 dni",
+            "expires365": "1 leto",
+            "empty": "Ni še nobenega API žetona.",
+            "lastUsed": "Nazadnje uporabljen",
+            "neverUsed": "nikoli uporabljen",
+            "expires": "Poteče",
+            "never": "nikoli",
+            "revoke": "Prekliči",
+            "revokeConfirm": "Prekličem ta žeton? Odjemalci, ki ga uporabljajo, bodo takoj izgubili dostop.",
+            "revokeSuccess": "Žeton preklican",
+            "createdTitle": "Kopirajte žeton zdaj",
+            "createdDescription": "To je edini prikaz žetona. Shranite ga v konfiguracijo svojega MCP odjemalca.",
+            "done": "Končano",
+            "cancel": "Prekliči",
+            "errors": {
+                "maxReached": "Dosežena omejitev števila žetonov. Najprej prekličite neuporabljen žeton.",
+                "createFailed": "Žetona ni bilo mogoče ustvariti",
+                "revokeFailed": "Žetona ni bilo mogoče preklicati",
+                "notFound": "Žeton ni najden"
+            }
+        },
         "autoCheckin": {
             "title": "Samodejni prihod/odhod",
             "description": "Samodejno zabeleži vaš prihod in odhod na urnik.net glede na vaše delovne ure",

@@ -39,6 +39,7 @@ docker compose version
 ```
 
 The script automatically:
+
 - Creates `.env.docker` with Docker-specific configuration
 - Generates `NEXTAUTH_SECRET`, `ENCRYPTION_KEY`, and `CRON_SECRET`
 - Builds and starts all services
@@ -92,21 +93,21 @@ UPLOAD_MAX_SIZE_MB=10
 1. Sign up for a free account at [resend.com](https://resend.com)
 2. Go to **API Keys** in the dashboard and create a new key
 3. Add it to `.env.docker`:
-   ```bash
-   RESEND_API_KEY="re_..."
-   ```
+    ```bash
+    RESEND_API_KEY="re_..."
+    ```
 
 ### Push Notifications (Web Push)
 
 1. Generate VAPID keys:
-   ```bash
-   npx web-push generate-vapid-keys
-   ```
+    ```bash
+    npx web-push generate-vapid-keys
+    ```
 2. Add both keys to `.env.docker`:
-   ```bash
-   NEXT_PUBLIC_VAPID_PUBLIC_KEY="<Public Key from output>"
-   VAPID_PRIVATE_KEY="<Private Key from output>"
-   ```
+    ```bash
+    NEXT_PUBLIC_VAPID_PUBLIC_KEY="<Public Key from output>"
+    VAPID_PRIVATE_KEY="<Private Key from output>"
+    ```
 
 ### Applying Optional Config Changes
 
@@ -119,22 +120,26 @@ docker compose down && docker compose up -d
 ## Services Overview
 
 ### app (Next.js Application)
+
 - Built from local Dockerfile (Node 22)
 - Internal port 3000, exposed via Nginx on 6280
 - Auto-runs migrations and seeds admin account on first start
 - Runs background cron jobs (auto-checkin, Urnik sync)
 
 ### db (PostgreSQL 16)
+
 - Image: postgres:16-alpine
 - Port: 54320
 - Persistent volume: timeapp-postgres-data
 
 ### pgAdmin (Database UI)
+
 - Image: dpage/pgadmin4:latest
 - Port: 8888
 - Credentials: admin@admin.com / admin
 
 ### nginx (Reverse Proxy)
+
 - Image: nginx:alpine
 - Port: 6280
 - Proxies to app:3000
@@ -146,6 +151,7 @@ docker compose down && docker compose up -d
 ```
 
 This single command handles everything. On first run, it will:
+
 1. Create `.env.docker` with auto-generated secrets
 2. Build the app Docker image
 3. Start all 4 services (db, app, pgadmin, nginx)
@@ -346,6 +352,7 @@ Many providers offer SSL termination at the edge (Cloudflare, AWS CloudFront, et
 ```
 
 This will:
+
 1. Create a database backup
 2. Pull latest code from git
 3. Update `.env.docker` with any new variables

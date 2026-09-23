@@ -15,10 +15,10 @@ import {
 import { ExportOptionsSchema, type ExportOptions } from "@/features/export"
 import { requireAuth, requireAdmin } from "@/lib/auth-helpers"
 import { validateInput } from "@/lib/validation"
+import { computeAttendanceData } from "@/lib/attendance"
 import { formatDateKey } from "../_utils/date-helpers"
 import { calculateWorkingDaysSync, calculateOvertime } from "../_utils/calculation-helpers"
 import { HOUR_TYPES } from "../_constants/hour-types"
-import { getAttendanceDataForUser } from "./hour-actions"
 
 export async function fetchMonthlyHourData(
     userId: string,
@@ -122,7 +122,7 @@ export async function fetchMonthlyHourData(
 
     const monthLabel = startDate.toLocaleString("en-US", { month: "long", year: "numeric" })
 
-    const attendanceData = await getAttendanceDataForUser(
+    const attendanceData = await computeAttendanceData(
         userId,
         formatDateKey(startDate),
         formatDateKey(endDate)

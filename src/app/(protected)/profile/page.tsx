@@ -5,7 +5,8 @@ import { PushNotificationManager } from "./_components/push-notification-manager
 import { NotificationPreferences } from "./_components/notification-preferences"
 import { UrnikCredentialsForm } from "./_components/urnik-credentials-form"
 import { AutoCheckinPreferences } from "./_components/auto-checkin-preferences"
-import { getCurrentUser, getAutoCheckinPreferences } from "./_actions/profile-actions"
+import { ApiTokensSection } from "./_components/api-tokens-section"
+import { getCurrentUser, getAutoCheckinPreferences, getApiTokens } from "./_actions/profile-actions"
 import {
     hasUserSubscription,
     getNotificationPreferences,
@@ -24,6 +25,7 @@ export default async function ProfilePage() {
     const { hasSubscription } = await hasUserSubscription()
     const { preferences, error } = await getNotificationPreferences()
     const autoCheckinResult = await getAutoCheckinPreferences()
+    const apiTokens = await getApiTokens()
     const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""
 
     if (error || !preferences) {
@@ -74,6 +76,7 @@ export default async function ProfilePage() {
                 vapidPublicKey={vapidPublicKey}
             />
             <NotificationPreferences initialPreferences={preferences} userRole={user.role} />
+            <ApiTokensSection initialTokens={apiTokens} isDemo={user.isDemo} />
         </div>
     )
 }

@@ -23,10 +23,6 @@ export function parseDateStringAsLocal(dateString: string): Date {
 export function getTodayDate(): Date {
     const nowInLjubljana = toZonedTime(new Date(), APP_TIMEZONE)
     return new Date(
-        Date.UTC(
-            nowInLjubljana.getFullYear(),
-            nowInLjubljana.getMonth(),
-            nowInLjubljana.getDate()
-        )
+        Date.UTC(nowInLjubljana.getFullYear(), nowInLjubljana.getMonth(), nowInLjubljana.getDate())
     )
 }

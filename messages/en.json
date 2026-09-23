@@ -901,6 +901,40 @@
                 "updateFailed": "Failed to update urnik.net credentials"
             }
         },
+        "apiTokens": {
+            "title": "MCP & API Tokens",
+            "description": "Create personal access tokens for the MCP server so tools like opencode can read and manage your tasks, timers, and hours.",
+            "create": "Create Token",
+            "creating": "Creating...",
+            "createTitle": "Create API Token",
+            "createDescription": "The token is shown only once after creation.",
+            "name": "Token Name",
+            "namePlaceholder": "e.g. opencode laptop",
+            "nameRequired": "Token name is required",
+            "expiresIn": "Expiration",
+            "expiresNever": "Never expires",
+            "expires30": "30 days",
+            "expires90": "90 days",
+            "expires365": "1 year",
+            "empty": "No API tokens yet.",
+            "lastUsed": "Last used",
+            "neverUsed": "never used",
+            "expires": "Expires",
+            "never": "never",
+            "revoke": "Revoke",
+            "revokeConfirm": "Revoke this token? Clients using it will lose access immediately.",
+            "revokeSuccess": "Token revoked",
+            "createdTitle": "Copy your token now",
+            "createdDescription": "This is the only time the token is shown. Store it in your MCP client configuration.",
+            "done": "Done",
+            "cancel": "Cancel",
+            "errors": {
+                "maxReached": "Token limit reached. Revoke an unused token first.",
+                "createFailed": "Failed to create token",
+                "revokeFailed": "Failed to revoke token",
+                "notFound": "Token not found"
+            }
+        },
         "autoCheckin": {
             "title": "Auto Check-In/Out",
             "description": "Automatically log your arrival and departure to urnik.net based on your work hours",

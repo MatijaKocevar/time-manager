@@ -49,6 +49,7 @@ npm run deploy         # PM2 deploy over SSH (hardcoded server); deploy:migrate 
 
 - Seeded login: `admin@example.com` / `password123`.
 - Local HTTPS needs certs at `certs/key.pem` + `certs/cert.pem` (`mkcert -install && mkcert time-manager.home`); app is served at `https://time-manager.home:3000` (`allowedDevOrigins`).
+- **The dev server is always running at `https://time-manager.home:3000`** — do not start another one; use it for manual checks and as the MCP dev endpoint.
 - Docker: `./scripts/docker-setup.sh` → app `:6280`, pgAdmin `:8888`, Postgres `:54320`; details in `docs/DOCKER.md`.
 - **There is no test runner** (`tests/` is empty). Verify changes with `npx tsc --noEmit`, `npm run lint`, and manual checks.
 
@@ -162,6 +163,7 @@ export function useSomething() {
 - Copy `.env.example` → `.env`. Required: `DATABASE_URL` (PostgreSQL), `NEXTAUTH_SECRET`. Seeded login only works after `npm run db:seed`.
 - Optional: `RESEND_API_KEY` (email), `NEXT_PUBLIC_VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` (push), `URNIK_TENANT_ID`, `CRON_SECRET`, `PUSHER_*` (Vercel alternate to SSE), `UPLOAD_BASE_PATH` (persistent uploads). `DEBUG_SKIP_URNIK_LOGIN=true` skips urnik.net during dev.
 - NFC tap-in: `GET /api/tap-in` toggles the work timer; `?token=office` → WORK, `?token=home` → WORK_FROM_HOME.
+- MCP server: `GET/POST /api/mcp` (Streamable HTTP, bearer `ApiToken`). Tools live in `src/features/mcp/` and call existing server actions; token identity reaches actions via `runWithAuthIdentity` from `@/lib/auth-identity` (checked in `requireAuth`/`requireAdmin` after the cookie session). Tokens are managed on `/profile`; details in `docs/MCP.md`.
 - **Prod runs Docker on `server@192.168.0.10`** (hostname `server-asus`, SSH key auth from the dev machine), checkout at `/home/server/Documents/time-manager`. Update with `./scripts/deploy-docker.sh` (SSH → `git pull origin master` → rebuild + restart; `--backup` dumps the DB first, `--no-build` restarts only). The container entrypoint runs `prisma migrate deploy`, a minimal seed, and refreshes `daily_hour_summary` on every start. Live ports: nginx `:6280`, pgAdmin `:8888`, Postgres `:54320`.
 - The PM2 setup (`ecosystem.config.js`, `npm run deploy` → `scripts/deploy.sh`, cron apps) is **legacy/dormant** (`pm2 list` is empty, `/home/server/time-management-app`); don't use it to update the live server.
 
