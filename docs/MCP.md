@@ -25,9 +25,38 @@ The app exposes a [Model Context Protocol](https://modelcontextprotocol.io) serv
 Tokens are stored as SHA-256 hashes (`ApiToken` model). A user can hold up to 20 tokens.
 Demo accounts cannot create tokens.
 
-## Client configuration (opencode)
+## Connect a device over the VPN
 
-`~/.config/opencode/opencode.json`:
+All client devices connect to the production MCP endpoint over WireGuard. Recommended address:
+
+| Address                                  | Notes                                                                                        |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `http://10.8.0.1:6280/api/mcp`           | **Recommended.** Server's WireGuard IP — works on any VPN device without DNS or LAN routing. |
+| `https://time.manager:8443/api/mcp`      | HTTPS variant; requires the server's mkcert CA to be trusted by the device.                  |
+| `http://192.168.0.10:6280/api/mcp`       | Only when the device can reach the home LAN (or the VPN routes `192.168.0.0/24`).            |
+| `https://time-manager.home:3000/api/mcp` | Dev server on the development machine only.                                                  |
+
+Plain HTTP is fine here: WireGuard encrypts the tunnel, so the token never travels the network
+outside the VPN. (`time.manager` resolves to the LAN IP, which not every VPN device can route.)
+
+### 1. Create a token on the device's behalf
+
+1. With the VPN connected, open the app (`http://10.8.0.1:6280`) and log in.
+2. Go to **Profile → MCP & API Tokens → Create Token**.
+3. Name it after the device (e.g. `opencode work-laptop`), optionally set an expiry, and copy the
+   token — it is shown **only once**.
+
+Create a separate token for every device and user. Revoke tokens from the same section when a
+device is retired or lost; `lastUsedAt` tells you if a token is still in use.
+
+### 2. Configure the MCP client (opencode)
+
+Global config file (create it if missing):
+
+- Linux/macOS: `~/.config/opencode/opencode.json`
+- Windows: `C:\Users\<you>\.config\opencode\opencode.json`
+
+Add the server to the `mcp` block (keep any existing servers):
 
 ```json
 {
@@ -35,36 +64,60 @@ Demo accounts cannot create tokens.
     "mcp": {
         "time-manager": {
             "type": "remote",
-            "url": "https://time.manager:8443/api/mcp",
+            "url": "http://10.8.0.1:6280/api/mcp",
             "enabled": true,
             "oauth": false,
             "timeout": 10000,
             "headers": {
-                "Authorization": "Bearer {env:TIMEMANAGER_MCP_TOKEN}"
-            }
-        },
-        "time-manager-dev": {
-            "type": "remote",
-            "url": "https://time-manager.home:3000/api/mcp",
-            "enabled": true,
-            "oauth": false,
-            "timeout": 10000,
-            "headers": {
-                "Authorization": "Bearer {env:TIMEMANAGER_MCP_TOKEN}"
+                "Authorization": "Bearer tm_..."
             }
         }
     }
 }
 ```
 
-Export the token in the shell opencode runs from (e.g. in `~/.zshrc`):
+Replace `tm_...` with the token from step 1. If you prefer not to store the token in the file, use
+`"Authorization": "Bearer {env:TIMEMANAGER_MCP_TOKEN}"` and export `TIMEMANAGER_MCP_TOKEN` in the
+shell that launches opencode.
 
-```bash
-export TIMEMANAGER_MCP_TOKEN="tm_..."
+`oauth: false` is required — without it the client tries OAuth discovery on a 401.
+
+### 3. Verify
+
+1. Restart opencode (config is read only at startup).
+2. Ask the agent to _"list my tasks"_ or run `opencode mcp list`.
+3. The sidebar should show `time-manager Connected`; successful tool calls confirm the token works.
+
+### Development server (optional)
+
+On the development machine, a second entry can point at the local dev server:
+
+```json
+"time-manager-dev": {
+    "type": "remote",
+    "url": "https://time-manager.home:3000/api/mcp",
+    "enabled": false,
+    "oauth": false,
+    "timeout": 10000,
+    "headers": {
+        "Authorization": "Bearer tm_..."
+    }
+}
 ```
 
-`oauth: false` is important — without it the client may try OAuth discovery on a 401.
-Use a separate token per machine and revoke it if the machine is lost.
+Enable it only while developing MCP changes (requires the dev HTTPS certs to be trusted), and keep
+it disabled otherwise so tools always come from production.
+
+### Troubleshooting
+
+- **`time-manager` shows connection errors** — VPN is down or the server is unreachable. All other
+  opencode tools keep working; reconnect the VPN and restart opencode.
+- **401 `invalid_token` / `No authorization provided`** — token missing, revoked or expired. Check
+  the header (including the `Bearer ` prefix) and create a new token if needed.
+- **404** — wrong host or port. Production is `:6280`; `:3000` is the dev server only.
+- **TLS error with `:8443`** — the device does not trust the server's mkcert CA. Use the HTTP VPN
+  address instead, or install the CA.
+- **Tools missing after reconnecting** — opencode loads the tool list at startup; restart it.
 
 ## Tools
 
