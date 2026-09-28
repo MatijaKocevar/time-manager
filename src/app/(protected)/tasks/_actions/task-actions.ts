@@ -4,6 +4,8 @@ import { validateInput } from "@/lib/validation"
 import { requireAuth } from "@/lib/auth-helpers"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
+import { refreshTimerData } from "@/lib/timer-utils"
+import { broadcastUserEvent } from "@/lib/user-events"
 import {
     CreateTaskSchema,
     UpdateTaskSchema,
@@ -195,7 +197,7 @@ export async function createTask(input: CreateTaskInput) {
             }
         }
 
-        await prisma.task.create({
+        const createdTask = await prisma.task.create({
             data: {
                 userId: session.user.id,
                 title,
@@ -207,6 +209,10 @@ export async function createTask(input: CreateTaskInput) {
         })
 
         revalidatePath("/tasks")
+        await broadcastUserEvent(session.user.id, "task-updated", {
+            taskId: createdTask.id,
+            action: "created",
+        })
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {
@@ -253,6 +259,10 @@ export async function updateTask(input: UpdateTaskInput) {
 
         revalidatePath("/tasks")
         revalidatePath("/time-sheets")
+        await broadcastUserEvent(session.user.id, "task-updated", {
+            taskId: id,
+            action: "updated",
+        })
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {
@@ -293,7 +303,11 @@ export async function deleteTask(input: DeleteTaskInput) {
 
         void deleteAllTaskImages(taskDescription)
 
-        revalidatePath("/tasks")
+        await refreshTimerData()
+        await broadcastUserEvent(session.user.id, "task-updated", {
+            taskId: id,
+            action: "deleted",
+        })
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {

@@ -36,6 +36,7 @@ export function useTimeSheetsSSE() {
         eventSource.addEventListener("timer-started", handleTimerEvent)
         eventSource.addEventListener("timer-stopped", handleTimerEvent)
         eventSource.addEventListener("time-entry-updated", handleTimerEvent)
+        eventSource.addEventListener("task-updated", handleTimerEvent)
 
         eventSource.onerror = () => {}
 
@@ -43,6 +44,7 @@ export function useTimeSheetsSSE() {
             eventSource.removeEventListener("timer-started", handleTimerEvent)
             eventSource.removeEventListener("timer-stopped", handleTimerEvent)
             eventSource.removeEventListener("time-entry-updated", handleTimerEvent)
+            eventSource.removeEventListener("task-updated", handleTimerEvent)
             eventSource.close()
         }
     }, [router, session?.user?.id])

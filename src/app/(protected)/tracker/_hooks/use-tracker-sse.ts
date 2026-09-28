@@ -1,9 +1,11 @@
 import { useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTrackerStore } from "../_stores/tracker-store"
 import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
 
 export function useTrackerSSE() {
+    const router = useRouter()
     const queryClient = useQueryClient()
     const eventSourceRef = useRef<EventSource | null>(null)
     const reconnectCountRef = useRef(0)
@@ -36,12 +38,18 @@ export function useTrackerSSE() {
             queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
         }
 
+        const handleTaskUpdated = () => {
+            queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+            router.refresh()
+        }
+
         eventSource.onopen = () => {
             const reconnectCount = reconnectCountRef.current
 
             if (reconnectCount > 0) {
                 queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
                 queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+                router.refresh()
             }
 
             reconnectCountRef.current += 1
@@ -50,6 +58,7 @@ export function useTrackerSSE() {
         eventSource.addEventListener("timer-started", handleTimerStarted)
         eventSource.addEventListener("timer-stopped", handleTimerStopped)
         eventSource.addEventListener("time-entry-updated", handleTimeEntryUpdated)
+        eventSource.addEventListener("task-updated", handleTaskUpdated)
 
         eventSource.onerror = () => {}
 
@@ -57,7 +66,8 @@ export function useTrackerSSE() {
             eventSource.removeEventListener("timer-started", handleTimerStarted)
             eventSource.removeEventListener("timer-stopped", handleTimerStopped)
             eventSource.removeEventListener("time-entry-updated", handleTimeEntryUpdated)
+            eventSource.removeEventListener("task-updated", handleTaskUpdated)
             eventSource.close()
         }
-    }, [queryClient, setSelectedType, setSelectedTaskId])
+    }, [router, queryClient, setSelectedType, setSelectedTaskId])
 }

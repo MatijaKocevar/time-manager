@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSession } from "next-auth/react"
 import type { Channel } from "pusher-js"
@@ -8,6 +9,7 @@ import { useTrackerStore } from "../_stores/tracker-store"
 import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
 
 export function useTrackerPusher() {
+    const router = useRouter()
     const queryClient = useQueryClient()
     const { data: session } = useSession()
     const pusherChannelRef = useRef<Channel | null>(null)
@@ -51,9 +53,14 @@ export function useTrackerPusher() {
             queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
         })
 
+        channel.bind("task-updated", () => {
+            queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+            router.refresh()
+        })
+
         return () => {
             channel.unbind_all()
             pusher.unsubscribe(`private-user-${session.user.id}`)
         }
-    }, [session?.user?.id, queryClient, setSelectedType, setSelectedTaskId])
+    }, [session?.user?.id, router, queryClient, setSelectedType, setSelectedTaskId])
 }
