@@ -10,9 +10,9 @@ echo ""
 mkdir -p backups
 
 # Check if database container is running
-if ! docker compose ps db | grep -q "Up"; then
+if ! docker compose --env-file .env.docker ps db | grep -q "Up"; then
     echo "Error: Database container is not running!"
-    echo "Start it with: docker compose up -d db"
+    echo "Start it with: docker compose --env-file .env.docker up -d db"
     exit 1
 fi
 
@@ -24,7 +24,7 @@ echo "Backup file: $BACKUP_FILE"
 echo ""
 
 # Create backup
-docker compose exec -T db pg_dump -U timeapp -d timeapp > "$BACKUP_FILE"
+docker compose --env-file .env.docker exec -T db pg_dump -U timeapp -d timeapp > "$BACKUP_FILE"
 
 # Check if backup was successful
 if [ $? -eq 0 ] && [ -s "$BACKUP_FILE" ]; then

@@ -93,6 +93,76 @@ else
     echo "  ✓ CRON_SECRET already configured"
 fi
 
+POSTGRES_PASSWORD=$(grep "^POSTGRES_PASSWORD=" .env.docker | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+PGADMIN_DEFAULT_EMAIL=$(grep "^PGADMIN_DEFAULT_EMAIL=" .env.docker | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+PGADMIN_DEFAULT_PASSWORD=$(grep "^PGADMIN_DEFAULT_PASSWORD=" .env.docker | cut -d '=' -f2- | tr -d '"' | tr -d "'")
+
+DB_VOLUME_EXISTS=false
+if docker volume inspect timeapp-postgres-data >/dev/null 2>&1; then
+    DB_VOLUME_EXISTS=true
+fi
+
+PGADMIN_VOLUME_EXISTS=false
+if docker volume inspect timeapp-pgadmin-data >/dev/null 2>&1; then
+    PGADMIN_VOLUME_EXISTS=true
+fi
+
+if [ -z "$POSTGRES_PASSWORD" ] || [ "$POSTGRES_PASSWORD" = "change-me" ]; then
+    if [ "$DB_VOLUME_EXISTS" = true ]; then
+        echo "  ⚠ Database volume already exists but POSTGRES_PASSWORD is not set in .env.docker"
+        echo "    Set it to the current database password (must match DATABASE_URL) and re-run."
+        exit 1
+    fi
+    echo "  Generating POSTGRES_PASSWORD..."
+    NEW_POSTGRES_PASSWORD=$(openssl rand -hex 24)
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "/^POSTGRES_PASSWORD=/d" .env.docker
+        sed -i '' "s|^DATABASE_URL=.*|DATABASE_URL=\"postgresql://timeapp:$NEW_POSTGRES_PASSWORD@db:5432/timeapp\"|" .env.docker
+    else
+        sed -i "/^POSTGRES_PASSWORD=/d" .env.docker
+        sed -i "s|^DATABASE_URL=.*|DATABASE_URL=\"postgresql://timeapp:$NEW_POSTGRES_PASSWORD@db:5432/timeapp\"|" .env.docker
+    fi
+    echo "POSTGRES_PASSWORD=\"$NEW_POSTGRES_PASSWORD\"" >> .env.docker
+    echo "  ✓ Generated POSTGRES_PASSWORD"
+    NEEDS_UPDATE=true
+else
+    echo "  ✓ POSTGRES_PASSWORD already configured"
+fi
+
+if [ -z "$PGADMIN_DEFAULT_PASSWORD" ] || [ "$PGADMIN_DEFAULT_PASSWORD" = "change-me" ]; then
+    if [ "$PGADMIN_VOLUME_EXISTS" = true ]; then
+        echo "  ⚠ pgAdmin volume already exists but PGADMIN_DEFAULT_PASSWORD is not set in .env.docker"
+        echo "    Set it to the current pgAdmin password and re-run."
+        exit 1
+    fi
+    echo "  Generating PGADMIN_DEFAULT_PASSWORD..."
+    NEW_PGADMIN_PASSWORD=$(openssl rand -hex 16)
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "/^PGADMIN_DEFAULT_PASSWORD=/d" .env.docker
+    else
+        sed -i "/^PGADMIN_DEFAULT_PASSWORD=/d" .env.docker
+    fi
+    echo "PGADMIN_DEFAULT_PASSWORD=\"$NEW_PGADMIN_PASSWORD\"" >> .env.docker
+    echo "  ✓ Generated PGADMIN_DEFAULT_PASSWORD (see .env.docker)"
+    NEEDS_UPDATE=true
+else
+    echo "  ✓ PGADMIN_DEFAULT_PASSWORD already configured"
+fi
+
+if [ -z "$PGADMIN_DEFAULT_EMAIL" ]; then
+    if [ "$PGADMIN_VOLUME_EXISTS" = true ]; then
+        echo "  ⚠ pgAdmin volume already exists but PGADMIN_DEFAULT_EMAIL is not set in .env.docker"
+        echo "    Set it to the current pgAdmin login email and re-run."
+        exit 1
+    fi
+    echo "  Setting PGADMIN_DEFAULT_EMAIL..."
+    echo "PGADMIN_DEFAULT_EMAIL=\"admin@example.com\"" >> .env.docker
+    echo "  ✓ Set PGADMIN_DEFAULT_EMAIL"
+    NEEDS_UPDATE=true
+else
+    echo "  ✓ PGADMIN_DEFAULT_EMAIL already configured"
+fi
+
 if [ "$NEEDS_UPDATE" = false ]; then
     echo "  ✓ All secrets already configured"
 fi
@@ -109,7 +179,7 @@ echo ""
 echo "  This may take a few minutes on first run..."
 echo ""
 
-docker compose up -d
+docker compose --env-file .env.docker up -d
 
 echo ""
 echo "================================================"
@@ -127,12 +197,16 @@ echo "Default login credentials:"
 echo "  • Email:     admin@example.com"
 echo "  • Password:  password123"
 echo ""
+echo "pgAdmin login: see PGADMIN_DEFAULT_EMAIL / PGADMIN_DEFAULT_PASSWORD in .env.docker"
+echo ""
 echo "Useful commands:"
-echo "  • View logs:        docker compose logs -f app"
+echo "  • View logs:        docker compose --env-file .env.docker logs -f app"
 echo "  • Update app:       ./scripts/docker-update.sh"
-echo "  • Stop containers:  docker compose down"
-echo "  • Restart:          docker compose restart"
-echo "  • Remove all:       docker compose down -v"
+echo "  • Stop containers:  docker compose --env-file .env.docker down"
+echo "  • Restart:          docker compose --env-file .env.docker restart"
+echo "  • Remove all:       docker compose --env-file .env.docker down -v"
+echo ""
+echo "Tip: export COMPOSE_ENV_FILES=.env.docker to run plain 'docker compose' commands"
 echo ""
 echo "Database backups:"
 echo "  • Backup:   ./scripts/docker-backup-db.sh"

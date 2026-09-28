@@ -46,27 +46,27 @@ fi
 
 echo ""
 echo "Rebuilding and restarting containers..."
-docker compose down
+docker compose --env-file .env.docker down
 
 if [ "$NO_BUILD" = true ]; then
-    docker compose up -d
+    docker compose --env-file .env.docker up -d
 else
-    docker compose build
-    docker compose up -d
+    docker compose --env-file .env.docker build
+    docker compose --env-file .env.docker up -d
 fi
 
 echo ""
 echo "Waiting for services..."
 sleep 5
 
-if docker compose ps | grep -q "Up"; then
+if docker compose --env-file .env.docker ps | grep -q "Up"; then
     echo ""
     echo "Deploy complete!"
     echo "https://time.manager:8443"
 else
     echo ""
     echo "ERROR: Some containers failed to start"
-    echo "Check logs: ssh server@192.168.0.10 'cd /home/server/Documents/time-manager && docker compose logs'"
+    echo "Check logs: ssh server@192.168.0.10 'cd /home/server/Documents/time-manager && docker compose --env-file .env.docker logs'"
     exit 1
 fi
 ENDSSH
@@ -75,7 +75,7 @@ echo "Deploy complete!"
 echo "Access: http://192.168.0.10:6280"
 echo ""
 echo "Useful commands:"
-echo "  View logs:    ssh $SERVER_USER@$SERVER_HOST 'cd /home/server/Documents/time-manager && docker compose logs -f app'"
-echo "  Check status: ssh $SERVER_USER@$SERVER_HOST 'cd /home/server/Documents/time-manager && docker compose ps'"
-echo "  Restart:      ssh $SERVER_USER@$SERVER_HOST 'cd /home/server/Documents/time-manager && docker compose restart'"
+echo "  View logs:    ssh $SERVER_USER@$SERVER_HOST 'cd /home/server/Documents/time-manager && docker compose --env-file .env.docker logs -f app'"
+echo "  Check status: ssh $SERVER_USER@$SERVER_HOST 'cd /home/server/Documents/time-manager && docker compose --env-file .env.docker ps'"
+echo "  Restart:      ssh $SERVER_USER@$SERVER_HOST 'cd /home/server/Documents/time-manager && docker compose --env-file .env.docker restart'"
 echo "  Redeploy:     ./scripts/deploy-docker.sh"

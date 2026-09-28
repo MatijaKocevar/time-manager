@@ -28,23 +28,15 @@ The app exposes a [Model Context Protocol](https://modelcontextprotocol.io) serv
 Tokens are stored as SHA-256 hashes (`ApiToken` model). A user can hold up to 20 tokens.
 Demo accounts cannot create tokens.
 
-## Connect a device over the VPN
+## Connect a client
 
-All client devices connect to the production MCP endpoint over WireGuard. Recommended address:
-
-| Address                                  | Notes                                                                                        |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `http://10.8.0.1:6280/api/mcp`           | **Recommended.** Server's WireGuard IP — works on any VPN device without DNS or LAN routing. |
-| `https://time.manager:8443/api/mcp`      | HTTPS variant; requires the server's mkcert CA to be trusted by the device.                  |
-| `http://192.168.0.10:6280/api/mcp`       | Only when the device can reach the home LAN (or the VPN routes `192.168.0.0/24`).            |
-| `https://time-manager.home:3000/api/mcp` | Dev server on the development machine only.                                                  |
-
-Plain HTTP is fine here: WireGuard encrypts the tunnel, so the token never travels the network
-outside the VPN. (`time.manager` resolves to the LAN IP, which not every VPN device can route.)
+Point the client at your deployment's base URL followed by `/api/mcp`. Any address that reaches
+the app works — use `https://<your-host>/api/mcp`, or an HTTP address only on a trusted network
+such as a VPN. Prefer HTTPS so the token never travels in the clear.
 
 ### 1. Create a token on the device's behalf
 
-1. With the VPN connected, open the app (`http://10.8.0.1:6280`) and log in.
+1. Open the app in a browser and log in.
 2. Go to **Profile → MCP & API Tokens → Create Token**.
 3. Name it after the device (e.g. `opencode work-laptop`), optionally set an expiry, and copy the
    token — it is shown **only once**.
@@ -67,7 +59,7 @@ Add the server to the `mcp` block (keep any existing servers):
     "mcp": {
         "time-manager": {
             "type": "remote",
-            "url": "http://10.8.0.1:6280/api/mcp",
+            "url": "https://<your-host>/api/mcp",
             "enabled": true,
             "oauth": false,
             "timeout": 10000,
@@ -79,9 +71,9 @@ Add the server to the `mcp` block (keep any existing servers):
 }
 ```
 
-Replace `tm_...` with the token from step 1. If you prefer not to store the token in the file, use
-`"Authorization": "Bearer {env:TIMEMANAGER_MCP_TOKEN}"` and export `TIMEMANAGER_MCP_TOKEN` in the
-shell that launches opencode.
+Replace `<your-host>` with the deployment's address and `tm_...` with the token from step 1. If you
+prefer not to store the token in the file, use `"Authorization": "Bearer {env:TIMEMANAGER_MCP_TOKEN}"`
+and export `TIMEMANAGER_MCP_TOKEN` in the shell that launches opencode.
 
 `oauth: false` is required — without it the client tries OAuth discovery on a 401.
 
@@ -98,7 +90,7 @@ On the development machine, a second entry can point at the local dev server:
 ```json
 "time-manager-dev": {
     "type": "remote",
-    "url": "https://time-manager.home:3000/api/mcp",
+    "url": "https://<your-dev-host>:3000/api/mcp",
     "enabled": false,
     "oauth": false,
     "timeout": 10000,
@@ -113,14 +105,14 @@ it disabled otherwise so tools always come from production.
 
 ### Troubleshooting
 
-- **`time-manager` shows connection errors** — VPN is down or the server is unreachable. All other
-  opencode tools keep working; check `curl http://10.8.0.1:6280/api/health` (public), reconnect the
-  VPN and restart opencode.
+- **`time-manager` shows connection errors** — the server is unreachable. All other opencode tools
+  keep working; check `curl <base-url>/api/health` (public), restore the connection and restart
+  opencode.
 - **401 `invalid_token` / `No authorization provided`** — token missing, revoked or expired. Check
   the header (including the `Bearer ` prefix) and create a new token if needed.
-- **404** — wrong host or port. Production is `:6280`; `:3000` is the dev server only.
-- **TLS error with `:8443`** — the device does not trust the server's mkcert CA. Use the HTTP VPN
-  address instead, or install the CA.
+- **404** — wrong host or port; the endpoint is `<base-url>/api/mcp` (dev server: `:3000`).
+- **TLS error** — the device does not trust the server's certificate. Install the CA or use an HTTP
+  address on a trusted network.
 - **Tools missing after reconnecting** — opencode loads the tool list at startup; restart it
   (`opencode mcp list` shows server status).
 
@@ -155,6 +147,6 @@ Durations are in seconds, timestamps are ISO 8601. Every tool only ever sees the
 
 ```bash
 npx @modelcontextprotocol/inspector
-# Transport: Streamable HTTP, URL: https://time-manager.home:3000/api/mcp,
+# Transport: Streamable HTTP, URL: <base-url>/api/mcp,
 # Header: Authorization: Bearer tm_...
 ```
