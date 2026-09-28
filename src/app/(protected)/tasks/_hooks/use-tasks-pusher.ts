@@ -1,12 +1,14 @@
 import { useEffect, useRef } from "react"
+import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { useSession } from "next-auth/react"
 import type { Channel } from "pusher-js"
 import { getPusherClient } from "@/lib/pusher-client"
-import { taskKeys } from "../_constants/query-keys"
+import { taskKeys, listKeys } from "../_constants/query-keys"
 import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
 
 export function useTasksPusher() {
+    const router = useRouter()
     const queryClient = useQueryClient()
     const { data: session } = useSession()
     const pusherChannelRef = useRef<Channel | null>(null)
@@ -36,9 +38,15 @@ export function useTasksPusher() {
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
         })
 
+        channel.bind("task-updated", () => {
+            queryClient.invalidateQueries({ queryKey: taskKeys.all })
+            queryClient.invalidateQueries({ queryKey: listKeys.all })
+            router.refresh()
+        })
+
         return () => {
             channel.unbind_all()
             pusher.unsubscribe(`private-user-${session.user.id}`)
         }
-    }, [session?.user?.id, queryClient])
+    }, [session?.user?.id, router, queryClient])
 }

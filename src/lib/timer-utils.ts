@@ -1,7 +1,6 @@
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
 import { revalidatePath, revalidateTag } from "next/cache"
-import { sseManager } from "@/lib/sse-manager"
-import { getPusherServer } from "@/lib/pusher-server"
+import { broadcastUserEvent } from "@/lib/user-events"
 import type { HourType, Prisma } from "@/../../prisma/generated/client"
 
 export interface TimerBroadcastData {
@@ -17,14 +16,7 @@ export async function broadcastTimerEvent(
     event: "timer-started" | "timer-stopped" | "time-entry-updated",
     data: TimerBroadcastData
 ) {
-    sseManager.broadcast(userId, event, data)
-
-    if (process.env.VERCEL) {
-        const pusher = getPusherServer()
-        if (pusher) {
-            await pusher.trigger(`private-user-${userId}`, event, data)
-        }
-    }
+    await broadcastUserEvent(userId, event, data)
 }
 
 export async function findActiveTimer(tx: Prisma.TransactionClient, userId: string) {

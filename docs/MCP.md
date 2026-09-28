@@ -16,6 +16,9 @@ The app exposes a [Model Context Protocol](https://modelcontextprotocol.io) serv
   (`runWithAuthIdentity` from `@/lib/auth-identity`). `requireAuth()` in `src/lib/auth-helpers.ts`
   falls back to that identity when no NextAuth cookie session exists, so all existing ownership checks,
   materialized-view refreshes and SSE broadcasts keep working unchanged.
+- Write tools broadcast over SSE/Pusher exactly like UI writes: timer tools emit `timer-started` /
+  `timer-stopped`, and task tools emit `task-updated`. Open pages (tasks, tracker, time sheets, hours)
+  subscribe to these events, so changes made through MCP appear without a reload.
 - Tokens are **not** valid outside the MCP route: the identity is only injected there, so bearer tokens
   cannot be used to call server actions directly over HTTP.
 

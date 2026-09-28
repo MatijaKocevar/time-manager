@@ -8,6 +8,8 @@ import { useHoursBatchStore } from "../_stores/hours-batch-store"
 import { useHoursNavigation } from "../_hooks/use-hours-navigation"
 import { useHoursData } from "../_hooks/use-hours-data"
 import { useHolidays } from "../_hooks/use-holidays"
+import { useHoursSSE } from "../_hooks/use-hours-sse"
+import { useHoursPusher } from "../_hooks/use-hours-pusher"
 import { useUnsavedChangesWarning } from "@/hooks/use-unsaved-changes-warning"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -86,6 +88,9 @@ export function HoursView({
         )
 
     const holidays = useHolidays(monthRange.startDate, monthRange.endDate, initialHolidays)
+
+    useHoursSSE()
+    useHoursPusher()
 
     useEffect(() => {
         const hoursStore = useHoursStore.getState()
