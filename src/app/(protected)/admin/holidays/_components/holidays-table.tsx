@@ -104,7 +104,7 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
     })
 
     const generateMutation = useMutation({
-        mutationFn: () => autoGenerateUpcomingHolidays("SI"),
+        mutationFn: () => autoGenerateUpcomingHolidays(),
         onSuccess: async (data) => {
             if (data.success) {
                 await queryClient.refetchQueries({ queryKey: holidayKeys.all })

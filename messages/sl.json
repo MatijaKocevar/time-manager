@@ -633,7 +633,7 @@
                 "update": "Posodobi"
             },
             "actions": {
-                "importPublicHolidays": "Uvozi javne praznike (SI)",
+                "importPublicHolidays": "Uvozi dela proste dneve (SI)",
                 "importing": "Uvažanje...",
                 "deleteConfirm": "Ali ste prepričani, da želite izbrisati ta praznik?",
                 "importSuccess": "✅ Uvoženih {count} praznikov za {year} in {nextYear}",

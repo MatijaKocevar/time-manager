@@ -1,67 +1,65 @@
 "use server"
 
-import { startOfDay } from "@/lib/date-utils"
+import { revalidatePath } from "next/cache"
+import { requireAdmin } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
+import { getNonWorkFreeNameSets, getWorkFreeHolidays } from "@/lib/si-holidays"
 
-interface PublicHoliday {
-    date: string
-    localName: string
-    name: string
-    countryCode: string
-    global: boolean
+function parseHolidayDate(dateStr: string): Date {
+    const [year, month, day] = dateStr.split("-").map(Number)
+    return new Date(Date.UTC(year, month - 1, day))
 }
 
-export async function fetchPublicHolidays(
-    year: number,
-    countryCode: string = "US"
-): Promise<PublicHoliday[]> {
+export async function importWorkFreeHolidays(year: number) {
     try {
-        const response = await fetch(
-            `https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`,
-            { signal: AbortSignal.timeout(10000) }
-        )
+        await requireAdmin()
 
-        if (!response.ok) {
-            const errorMsg = `HTTP ${response.status}: ${response.statusText}`
-            throw new Error(`Failed to fetch holidays: ${errorMsg}`)
-        }
-
-        const holidays: PublicHoliday[] = await response.json()
-        return holidays
-    } catch (error) {
-        throw error
-    }
-}
-
-export async function importHolidaysFromAPI(year: number, countryCode: string = "US") {
-    try {
-        const holidays = await fetchPublicHolidays(year, countryCode)
+        const holidays = getWorkFreeHolidays(year)
 
         if (holidays.length === 0) {
             return { success: false, error: "No holidays found", created: 0 }
         }
 
+        const nonWorkFreeNames = getNonWorkFreeNameSets()
+
+        await prisma.holiday.deleteMany({
+            where: {
+                date: {
+                    gte: new Date(Date.UTC(year, 0, 1)),
+                    lte: new Date(Date.UTC(year, 11, 31)),
+                },
+                OR: [
+                    { name: { in: [...nonWorkFreeNames.english] } },
+                    { description: { in: [...nonWorkFreeNames.slovenian] } },
+                ],
+            },
+        })
+
         let created = 0
 
         for (const holiday of holidays) {
-            const date = startOfDay(new Date(holiday.date + "T00:00:00"))
+            const date = parseHolidayDate(holiday.date)
+            const data = {
+                name: holiday.nameEn,
+                description: holiday.nameSl !== holiday.nameEn ? holiday.nameSl : null,
+                isRecurring: true,
+            }
 
             const existing = await prisma.holiday.findUnique({
                 where: { date },
             })
 
-            if (!existing) {
-                await prisma.holiday.create({
-                    data: {
-                        date,
-                        name: holiday.name,
-                        description: holiday.localName !== holiday.name ? holiday.localName : null,
-                        isRecurring: true,
-                    },
-                })
+            if (existing) {
+                await prisma.holiday.update({ where: { date }, data })
+            } else {
+                await prisma.holiday.create({ data: { date, ...data } })
                 created++
             }
         }
+
+        revalidatePath("/admin/holidays")
+        revalidatePath("/hours")
+        revalidatePath("/shifts")
 
         return {
             success: true,
@@ -75,13 +73,13 @@ export async function importHolidaysFromAPI(year: number, countryCode: string = 
     }
 }
 
-export async function autoGenerateUpcomingHolidays(countryCode: string = "US") {
+export async function autoGenerateUpcomingHolidays() {
     try {
         const currentYear = new Date().getFullYear()
         const nextYear = currentYear + 1
 
-        const currentYearResult = await importHolidaysFromAPI(currentYear, countryCode)
-        const nextYearResult = await importHolidaysFromAPI(nextYear, countryCode)
+        const currentYearResult = await importWorkFreeHolidays(currentYear)
+        const nextYearResult = await importWorkFreeHolidays(nextYear)
 
         const errors = []
         if (!currentYearResult.success && currentYearResult.error) {

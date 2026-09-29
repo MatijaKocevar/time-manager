@@ -65,8 +65,11 @@ COPY --from=builder --chown=nextjs:nodejs /app/package*.json ./
 COPY --chown=nextjs:nodejs prisma/schema.prisma ./prisma/
 COPY --chown=nextjs:nodejs prisma/migrations ./prisma/migrations/
 
-# Copy seed scripts (changes here won't invalidate Next.js build cache)
+# Copy seed scripts and holiday snapshot (changes here won't invalidate Next.js build cache)
 COPY --chown=nextjs:nodejs prisma/seed ./prisma/seed/
+COPY --chown=nextjs:nodejs prisma/data ./prisma/data/
+COPY --chown=nextjs:nodejs src/lib ./src/lib/
+COPY --chown=nextjs:nodejs tsconfig.json ./tsconfig.json
 
 # Copy compiled cron scripts
 COPY --from=builder --chown=nextjs:nodejs /app/scripts/build ./scripts/build/
