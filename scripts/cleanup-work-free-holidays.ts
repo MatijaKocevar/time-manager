@@ -1,8 +1,10 @@
-import "dotenv/config"
+import { config } from "dotenv"
 import { PrismaClient } from "../prisma/generated/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Pool } from "pg"
 import { seedHolidays } from "../prisma/seed/holidays"
+
+config({ path: [".env.development.local", ".env.local", ".env"], quiet: true })
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)

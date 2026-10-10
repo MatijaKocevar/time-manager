@@ -21,6 +21,8 @@
         "db:reset:minimal": "prisma migrate reset --skip-seed && npm run db:seed:minimal",
         "db:studio": "prisma studio",
         "db:clear": "tsx scripts/clear-time-data.ts",
+        "db:use:prod": "./scripts/use-db.sh prod",
+        "db:use:dev": "./scripts/use-db.sh dev",
         "db:holidays:sync": "tsx scripts/cleanup-work-free-holidays.ts",
         "db:holidays:generate": "tsx scripts/generate-si-holidays.ts",
         "db:seed:test-user": "tsx scripts/seed-test-user.ts",

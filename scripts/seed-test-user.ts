@@ -1,6 +1,7 @@
 import { PrismaClient } from "../prisma/generated/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Pool } from "pg"
+import { config } from "dotenv"
 import bcrypt from "bcryptjs"
 import { SeededRandom } from "../prisma/seed/utils"
 import { seedHolidays } from "../prisma/seed/holidays"
@@ -9,6 +10,8 @@ import { seedTasksForUser, seedTimeEntriesForUser } from "../prisma/seed/tasks"
 import { seedHourEntriesForUser, recalculateSummariesForUser } from "../prisma/seed/hours"
 import { seedRequestsForUser } from "../prisma/seed/requests"
 import { seedShiftsForUser } from "../prisma/seed/shifts"
+
+config({ path: [".env.development.local", ".env.local", ".env"], quiet: true })
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
