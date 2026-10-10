@@ -24,7 +24,7 @@ echo "Backup file: $BACKUP_FILE"
 echo ""
 
 # Create backup
-docker compose --env-file .env.docker exec -T db pg_dump -U timeapp -d timeapp > "$BACKUP_FILE"
+docker compose --env-file .env.docker exec -T db pg_dump -U timeapp -d timeapp > "$BACKUP_FILE" < /dev/null
 
 # Check if backup was successful
 if [ $? -eq 0 ] && [ -s "$BACKUP_FILE" ]; then
@@ -37,8 +37,10 @@ if [ $? -eq 0 ] && [ -s "$BACKUP_FILE" ]; then
     echo ""
     
     # Optional: Create compressed version
-    read -p "Create compressed version? (y/n) " -n 1 -r
-    echo ""
+    if [ -t 0 ]; then
+        read -p "Create compressed version? (y/n) " -n 1 -r
+        echo ""
+    fi
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo "Compressing backup..."
         gzip -c "$BACKUP_FILE" > "${BACKUP_FILE}.gz"
