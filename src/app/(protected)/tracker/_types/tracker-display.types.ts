@@ -22,17 +22,7 @@ export interface TrackerDisplayProps {
             isSystemTask: boolean
         }
     } | null
-    initialTodayEntries: Array<{
-        id: string
-        userId: string
-        taskId: string
-        startTime: Date
-        endTime: Date | null
-        duration: number | null
-        createdAt: Date
-        updatedAt: Date
-        type: HourType
-    }>
+    initialTaskEntryCount: number
     initialDailySummary: {
         totals: Record<"WORK" | "BREAK" | "PRIVATE", number>
         activeTimer: {

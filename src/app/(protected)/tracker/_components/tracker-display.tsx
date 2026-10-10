@@ -22,7 +22,7 @@ import {
     useTrackerPusher,
     useTimerState,
     useTrackerMutations,
-    useTaskTimeEntries,
+    useTaskEntryCount,
     useTrackerSelection,
 } from "../_hooks"
 import type { TrackerDisplayProps } from "../_types/tracker-display.types"
@@ -34,7 +34,7 @@ export function TrackerDisplay({
     initialSelectedType,
     initialSelectedTaskId,
     initialActiveTimer,
-    initialTodayEntries,
+    initialTaskEntryCount,
     initialDailySummary,
     translations,
 }: TrackerDisplayProps) {
@@ -69,7 +69,7 @@ export function TrackerDisplay({
         setShowArrivalDialog(true)
     })
 
-    const { taskEntries } = useTaskTimeEntries(selectedTaskId, initialTodayEntries)
+    const { count: taskEntryCount } = useTaskEntryCount(selectedTaskId, initialTaskEntryCount)
 
     const isTrackingCurrentSelection =
         isTimerRunning &&
@@ -98,9 +98,8 @@ export function TrackerDisplay({
     }
 
     const handleViewEntries = () => {
-        if (taskEntries.length > 0) {
-            const firstEntry = taskEntries[0]
-            useTaskDialogStore.getState().openTimeEntriesDialog(firstEntry.taskId)
+        if (selectedTaskId) {
+            useTaskDialogStore.getState().openTimeEntriesDialog(selectedTaskId)
         }
     }
 
@@ -224,10 +223,10 @@ export function TrackerDisplay({
                             variant="outline"
                             className="w-full xl:w-auto"
                             onClick={handleViewEntries}
-                            disabled={taskEntries.length === 0}
+                            disabled={taskEntryCount === 0}
                         >
                             <Clock className="mr-2 h-4 w-4" />
-                            {translations.todayEntries} ({taskEntries.length})
+                            {translations.todayEntries} ({taskEntryCount})
                         </Button>
                     </div>
 

@@ -4,7 +4,7 @@ import { TaskDescriptionDialog } from "@/app/(protected)/tasks/_components/task-
 import {
     getGeneralWorkTask,
     getTrackerPreferences,
-    getTaskTimeEntries,
+    getTaskTimeEntryCount,
     getSystemTaskByType,
     getTodayTimeSummary,
     getInProgressTasksForTracker,
@@ -60,7 +60,7 @@ export default async function TrackerPage() {
         finalSelectedTaskId = systemTask?.id ?? null
     }
 
-    const initialTaskEntries = await getTaskTimeEntries(finalSelectedTaskId ?? undefined)
+    const initialTaskEntryCount = await getTaskTimeEntryCount(finalSelectedTaskId ?? undefined)
 
     const translations = {
         selectType: t("selectType"),
@@ -132,7 +132,7 @@ export default async function TrackerPage() {
                     initialSelectedType={initialSelectedType}
                     initialSelectedTaskId={finalSelectedTaskId}
                     initialActiveTimer={activeTimer}
-                    initialTodayEntries={initialTaskEntries}
+                    initialTaskEntryCount={initialTaskEntryCount}
                     initialDailySummary={dailySummary}
                     translations={translations}
                 />

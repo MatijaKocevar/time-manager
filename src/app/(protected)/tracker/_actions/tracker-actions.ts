@@ -192,37 +192,25 @@ export async function getSystemTaskByType(type: "BREAK" | "PRIVATE") {
     }
 }
 
-export async function getTaskTimeEntries(taskId?: string) {
+export async function getTaskTimeEntryCount(taskId?: string) {
     try {
         const session = await requireAuth()
 
         if (!taskId) {
-            return []
+            return 0
         }
 
-        const entries = await prisma.taskTimeEntry.findMany({
+        return await prisma.taskTimeEntry.count({
             where: {
                 userId: session.user.id,
                 taskId,
             },
-            include: {
-                task: {
-                    select: {
-                        id: true,
-                        title: true,
-                        isSystemTask: true,
-                    },
-                },
-            },
-            orderBy: { startTime: "desc" },
         })
-
-        return entries
     } catch (error) {
         if (error instanceof Error) {
             throw error
         }
-        throw new Error("Failed to fetch today's time entries")
+        throw new Error("Failed to count task time entries")
     }
 }
 
