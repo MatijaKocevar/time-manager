@@ -13,7 +13,13 @@ import {
 } from "../_schemas/task-time-entry-schemas"
 import { broadcastTimerEvent, refreshTimerData, type TimerBroadcastData } from "@/lib/timer-utils"
 
-export async function getTaskTimeEntries(taskId: string) {
+const DEFAULT_TIME_ENTRY_PAGE_SIZE = 50
+const MAX_TIME_ENTRY_PAGE_SIZE = 200
+
+export async function getTaskTimeEntries(
+    taskId: string,
+    options?: { limit?: number; offset?: number }
+) {
     try {
         const session = await requireAuth()
 
@@ -25,34 +31,50 @@ export async function getTaskTimeEntries(taskId: string) {
             throw new Error("Task not found")
         }
 
-        const entries = await prisma.taskTimeEntry.findMany({
-            where: { taskId },
-            include: {
-                task: {
-                    select: {
-                        id: true,
-                        title: true,
-                        isSystemTask: true,
+        const take = Math.min(
+            Math.max(options?.limit ?? DEFAULT_TIME_ENTRY_PAGE_SIZE, 1),
+            MAX_TIME_ENTRY_PAGE_SIZE
+        )
+        const skip = Math.max(options?.offset ?? 0, 0)
+
+        const [entries, totalCount, totalDurationResult, descendantIds] = await Promise.all([
+            prisma.taskTimeEntry.findMany({
+                where: { taskId, userId: session.user.id },
+                include: {
+                    task: {
+                        select: {
+                            id: true,
+                            title: true,
+                            isSystemTask: true,
+                        },
                     },
                 },
-            },
-            orderBy: { startTime: "desc" },
-        })
-
-        const descendantIds = await prisma.$queryRaw<Array<{ id: string }>>`
-            WITH RECURSIVE task_tree AS (
-                SELECT id, "parentId"
-                FROM "Task"
-                WHERE "parentId" = ${taskId}
-                
-                UNION ALL
-                
-                SELECT t.id, t."parentId"
-                FROM "Task" t
-                INNER JOIN task_tree tt ON t."parentId" = tt.id
-            )
-            SELECT id FROM task_tree
-        `
+                orderBy: { startTime: "desc" },
+                take,
+                skip,
+            }),
+            prisma.taskTimeEntry.count({
+                where: { taskId, userId: session.user.id },
+            }),
+            prisma.taskTimeEntry.aggregate({
+                where: { taskId, userId: session.user.id, endTime: { not: null } },
+                _sum: { duration: true },
+            }),
+            prisma.$queryRaw<Array<{ id: string }>>`
+                WITH RECURSIVE task_tree AS (
+                    SELECT id, "parentId"
+                    FROM "Task"
+                    WHERE "parentId" = ${taskId}
+                    
+                    UNION ALL
+                    
+                    SELECT t.id, t."parentId"
+                    FROM "Task" t
+                    INNER JOIN task_tree tt ON t."parentId" = tt.id
+                )
+                SELECT id FROM task_tree
+            `,
+        ])
 
         let childAggregation = null
         if (descendantIds.length > 0) {
@@ -76,7 +98,13 @@ export async function getTaskTimeEntries(taskId: string) {
             }
         }
 
-        return { entries, childAggregation }
+        return {
+            entries,
+            totalCount,
+            totalDuration: totalDurationResult._sum.duration ?? 0,
+            childAggregation,
+            hasMore: skip + entries.length < totalCount,
+        }
     } catch (error) {
         if (error instanceof Error) {
             throw error
@@ -97,17 +125,16 @@ export async function getTotalTaskTime(taskId: string): Promise<number> {
             throw new Error("Task not found")
         }
 
-        const entries = await prisma.taskTimeEntry.findMany({
+        const result = await prisma.taskTimeEntry.aggregate({
             where: {
                 taskId,
+                userId: session.user.id,
                 endTime: { not: null },
             },
-            select: { duration: true },
+            _sum: { duration: true },
         })
 
-        const total = entries.reduce((sum, entry) => sum + (entry.duration || 0), 0)
-
-        return total
+        return result._sum.duration ?? 0
     } catch (error) {
         if (error instanceof Error) {
             throw error

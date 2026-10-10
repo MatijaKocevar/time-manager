@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTrackerStore } from "../_stores/tracker-store"
 import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
+import { trackerKeys } from "../_constants/query-keys"
 
 export function useTrackerSSE() {
     const router = useRouter()
@@ -25,21 +26,21 @@ export function useTrackerSSE() {
                 }
             } catch {}
             queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
-            queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+            queryClient.invalidateQueries({ queryKey: trackerKeys.taskEntryCounts() })
         }
 
         const handleTimerStopped = () => {
             queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
-            queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+            queryClient.invalidateQueries({ queryKey: trackerKeys.taskEntryCounts() })
         }
 
         const handleTimeEntryUpdated = () => {
             queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
-            queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+            queryClient.invalidateQueries({ queryKey: trackerKeys.taskEntryCounts() })
         }
 
         const handleTaskUpdated = () => {
-            queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+            queryClient.invalidateQueries({ queryKey: trackerKeys.taskEntryCounts() })
             router.refresh()
         }
 
@@ -48,7 +49,7 @@ export function useTrackerSSE() {
 
             if (reconnectCount > 0) {
                 queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
-                queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+                queryClient.invalidateQueries({ queryKey: trackerKeys.taskEntryCounts() })
                 router.refresh()
             }
 

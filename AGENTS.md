@@ -42,6 +42,8 @@ npm run db:migrate     # prisma migrate dev (schema changes)
 npm run db:seed        # seed test data (prisma/seed/index.ts); db:seed:minimal for a minimal set
 npm run db:studio      # Prisma Studio
 # also: db:push, db:migrate:deploy, db:reset, db:reset:minimal, db:clear, db:seed:test-user
+# db:use:dev / db:use:prod switch the active database (writes .env.local from
+# .env.db.dev / .env.db.prod); restart the dev server after switching
 
 npm run build:cron     # esbuild-bundle scripts/*-cron.ts -> scripts/build/*.js (PM2 runs these in prod)
 npm run deploy         # PM2 deploy over SSH (hardcoded server); deploy:migrate also migrates

@@ -4,6 +4,7 @@ import { useTrackerStore } from "../_stores/tracker-store"
 import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
 import { taskKeys } from "@/app/(protected)/tasks/_constants/query-keys"
 import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
+import { trackerKeys } from "../_constants/query-keys"
 
 export function useTrackerMutations(
     onArrivalNeeded?: (hasApprovedWFH: boolean, wfhLocation: string | null) => void
@@ -26,8 +27,8 @@ export function useTrackerMutations(
                     onArrivalNeeded(data.hasApprovedWFH ?? false, data.wfhLocation ?? null)
                 }
                 queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
-                queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
-                queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+                queryClient.invalidateQueries({ queryKey: trackerKeys.dailySummary() })
+                queryClient.invalidateQueries({ queryKey: trackerKeys.taskEntryCounts() })
                 queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
             }
         },
@@ -47,8 +48,8 @@ export function useTrackerMutations(
             } else {
                 clearActiveTimer()
                 queryClient.invalidateQueries({ queryKey: sharedKeys.activeTimer() })
-                queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
-                queryClient.invalidateQueries({ queryKey: ["tracker", "taskEntries"] })
+                queryClient.invalidateQueries({ queryKey: trackerKeys.dailySummary() })
+                queryClient.invalidateQueries({ queryKey: trackerKeys.taskEntryCounts() })
                 queryClient.invalidateQueries({ queryKey: taskKeys.activeTimer() })
             }
         },

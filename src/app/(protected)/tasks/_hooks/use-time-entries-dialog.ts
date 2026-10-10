@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTasksStore } from "../_stores/tasks-store"
 import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import {
@@ -15,7 +15,10 @@ import { taskKeys } from "../_constants/query-keys"
 import { hourKeys } from "@/app/(protected)/hours/_constants/query-keys"
 import { timeSheetKeys } from "@/app/(protected)/time-sheets/_constants/query-keys"
 import { sharedKeys } from "@/app/(protected)/shared/_constants/query-keys"
+import { trackerKeys } from "@/app/(protected)/tracker/_constants/query-keys"
 import type { TaskTimeEntryDisplay } from "../_schemas/task-time-entry-schemas"
+
+const TIME_ENTRY_PAGE_SIZE = 50
 
 interface EditedEntry {
     id: string
@@ -37,17 +40,23 @@ export function useTimeEntriesDialog() {
     const [newEntryStart, setNewEntryStart] = useState<Date | undefined>(undefined)
     const [newEntryEnd, setNewEntryEnd] = useState<Date | undefined>(undefined)
 
-    const { data, isLoading } = useQuery({
+    const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
         queryKey: taskKeys.timeEntriesForTask(timeEntriesDialog.taskId ?? ""),
-        queryFn: () => {
-            if (!timeEntriesDialog.taskId) return { entries: [], childAggregation: null }
-            return getTaskTimeEntries(timeEntriesDialog.taskId)
-        },
+        queryFn: ({ pageParam }) =>
+            getTaskTimeEntries(timeEntriesDialog.taskId ?? "", {
+                limit: TIME_ENTRY_PAGE_SIZE,
+                offset: pageParam,
+            }),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+            lastPage.hasMore ? lastPageParam + TIME_ENTRY_PAGE_SIZE : undefined,
         enabled: timeEntriesDialog.isOpen && !!timeEntriesDialog.taskId,
     })
 
-    const entries = data?.entries ?? []
-    const childAggregation = data?.childAggregation
+    const entries = data?.pages.flatMap((page) => page.entries) ?? []
+    const totalCount = data?.pages[0]?.totalCount ?? 0
+    const totalCompletedDuration = data?.pages[0]?.totalDuration ?? 0
+    const childAggregation = data?.pages[0]?.childAggregation
 
     const isOpen = timeEntriesDialog.isOpen
     const prevIsOpen = useRef(isOpen)
@@ -62,15 +71,17 @@ export function useTimeEntriesDialog() {
         prevIsOpen.current = isOpen
     }, [isOpen])
 
+    const hasActiveEntry = entries.some((entry) => entry.endTime === null)
+
     useEffect(() => {
-        if (!isOpen) return
+        if (!isOpen || !hasActiveEntry) return
 
         const interval = setInterval(() => {
             setCurrentTime(new Date())
         }, 1000)
 
         return () => clearInterval(interval)
-    }, [isOpen])
+    }, [isOpen, hasActiveEntry])
 
     const getEntryDate = (
         entry: TaskTimeEntryDisplay,
@@ -150,7 +161,7 @@ export function useTimeEntriesDialog() {
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
             queryClient.invalidateQueries({ queryKey: hourKeys.all })
             queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
-            queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
+            queryClient.invalidateQueries({ queryKey: trackerKeys.dailySummary() })
 
             setEditedEntries(new Map())
         } finally {
@@ -165,7 +176,7 @@ export function useTimeEntriesDialog() {
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
             queryClient.invalidateQueries({ queryKey: hourKeys.all })
             queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
-            queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
+            queryClient.invalidateQueries({ queryKey: trackerKeys.dailySummary() })
             queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
         },
     })
@@ -178,7 +189,7 @@ export function useTimeEntriesDialog() {
             queryClient.invalidateQueries({ queryKey: taskKeys.all })
             queryClient.invalidateQueries({ queryKey: hourKeys.all })
             queryClient.invalidateQueries({ queryKey: timeSheetKeys.all })
-            queryClient.invalidateQueries({ queryKey: ["tracker", "dailySummary"] })
+            queryClient.invalidateQueries({ queryKey: trackerKeys.dailySummary() })
             queryClient.invalidateQueries({ queryKey: ["tracker", "activeTimer"] })
         },
     })
@@ -194,8 +205,8 @@ export function useTimeEntriesDialog() {
             const elapsed = Math.floor((currentTime.getTime() - entry.startTime.getTime()) / 1000)
             return sum + elapsed
         }
-        return sum + (entry.duration ?? 0)
-    }, 0)
+        return sum
+    }, totalCompletedDuration)
 
     const saveDisabled =
         isSaving ||
@@ -214,6 +225,7 @@ export function useTimeEntriesDialog() {
         activeTimer,
         currentTime,
         entries,
+        totalCount,
         childAggregation,
         isLoading,
         isSaving,
@@ -233,5 +245,8 @@ export function useTimeEntriesDialog() {
         setNewEntryStart,
         setNewEntryEnd,
         cancelNewEntry,
+        hasNextPage,
+        isFetchingNextPage,
+        loadMore: fetchNextPage,
     }
 }
