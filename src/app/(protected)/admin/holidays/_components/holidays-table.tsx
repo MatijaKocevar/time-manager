@@ -145,19 +145,17 @@ export function HolidaysTable({ holidays, translations }: HolidaysTableProps) {
         description: string
         isRecurring: boolean
     }) => {
-        const dateObj = new Date(formData.date + "T00:00:00")
-
         if (editingHoliday) {
             updateMutation.mutate({
                 id: editingHoliday.id,
-                date: dateObj,
+                date: formData.date,
                 name: formData.name,
                 description: formData.description || undefined,
                 isRecurring: formData.isRecurring,
             })
         } else {
             createMutation.mutate({
-                date: dateObj,
+                date: formData.date,
                 name: formData.name,
                 description: formData.description || undefined,
                 isRecurring: formData.isRecurring,

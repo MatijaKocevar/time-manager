@@ -2,60 +2,19 @@
 
 import { revalidatePath } from "next/cache"
 import { requireAdmin } from "@/lib/auth-helpers"
+import { syncWorkFreeHolidays } from "@/lib/holiday-sync"
 import { prisma } from "@/lib/prisma"
-import { getNonWorkFreeNameSets, getWorkFreeHolidays } from "@/lib/si-holidays"
-
-function parseHolidayDate(dateStr: string): Date {
-    const [year, month, day] = dateStr.split("-").map(Number)
-    return new Date(Date.UTC(year, month - 1, day))
-}
+import { getWorkFreeHolidays } from "@/lib/si-holidays"
 
 export async function importWorkFreeHolidays(year: number) {
     try {
         await requireAdmin()
 
-        const holidays = getWorkFreeHolidays(year)
-
-        if (holidays.length === 0) {
+        if (getWorkFreeHolidays(year).length === 0) {
             return { success: false, error: "No holidays found", created: 0 }
         }
 
-        const nonWorkFreeNames = getNonWorkFreeNameSets()
-
-        await prisma.holiday.deleteMany({
-            where: {
-                date: {
-                    gte: new Date(Date.UTC(year, 0, 1)),
-                    lte: new Date(Date.UTC(year, 11, 31)),
-                },
-                OR: [
-                    { name: { in: [...nonWorkFreeNames.english] } },
-                    { description: { in: [...nonWorkFreeNames.slovenian] } },
-                ],
-            },
-        })
-
-        let created = 0
-
-        for (const holiday of holidays) {
-            const date = parseHolidayDate(holiday.date)
-            const data = {
-                name: holiday.nameEn,
-                description: holiday.nameSl !== holiday.nameEn ? holiday.nameSl : null,
-                isRecurring: true,
-            }
-
-            const existing = await prisma.holiday.findUnique({
-                where: { date },
-            })
-
-            if (existing) {
-                await prisma.holiday.update({ where: { date }, data })
-            } else {
-                await prisma.holiday.create({ data: { date, ...data } })
-                created++
-            }
-        }
+        const result = await syncWorkFreeHolidays(prisma, [year])
 
         revalidatePath("/admin/holidays")
         revalidatePath("/hours")
@@ -63,8 +22,8 @@ export async function importWorkFreeHolidays(year: number) {
 
         return {
             success: true,
-            created,
-            message: `Imported ${created} holidays for ${year}`,
+            created: result.created,
+            message: `Imported ${result.created} holidays for ${year}`,
             error: null,
         }
     } catch (error) {

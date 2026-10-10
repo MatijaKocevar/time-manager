@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { startOfDay } from "@/lib/date-utils"
+import { parseHolidayDate } from "@/lib/holiday-sync"
 import { prisma } from "@/lib/prisma"
 import { validateInput } from "@/lib/validation"
 import { requireAdmin, requireAuth } from "@/lib/auth-helpers"
@@ -89,7 +89,7 @@ export async function createHoliday(input: CreateHolidayInput) {
 
         const { date, name, description, isRecurring } = validation.data
 
-        const normalizedDate = startOfDay(new Date(date))
+        const normalizedDate = parseHolidayDate(date)
 
         const existing = await prisma.holiday.findUnique({
             where: { date: normalizedDate },
@@ -141,7 +141,7 @@ export async function updateHoliday(input: UpdateHolidayInput) {
             return { success: false, error: "Holiday not found" }
         }
 
-        const normalizedDate = startOfDay(new Date(date))
+        const normalizedDate = parseHolidayDate(date)
 
         if (normalizedDate.getTime() !== existing.date.getTime()) {
             const dateConflict = await prisma.holiday.findUnique({
