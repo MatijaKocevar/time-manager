@@ -1,6 +1,6 @@
 "use server"
 
-import { getUrnikCookie } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
+import { getUrnikCookieForUser } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
 import { requireAuth } from "@/lib/auth-helpers"
 import { URNIK_USER_AGENT } from "../../_utils/constants"
 import { getErrorMessage } from "../../_utils/helpers"
@@ -52,7 +52,7 @@ export async function fetchMonthlyHours(year: number, month: number): Promise<Pa
             }
         }
 
-        const cookie = await getUrnikCookie()
+        const cookie = await getUrnikCookieForUser(session.user.id)
 
         if (!cookie) {
             return {
@@ -149,7 +149,7 @@ export async function fetchDayDetail(
             }
         }
 
-        const cookie = await getUrnikCookie()
+        const cookie = await getUrnikCookieForUser(session.user.id)
         if (!cookie) {
             return {
                 success: false,

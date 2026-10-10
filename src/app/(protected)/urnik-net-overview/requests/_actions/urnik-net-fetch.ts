@@ -1,7 +1,6 @@
 "use server"
 
-import { getServerSession } from "next-auth"
-import { authConfig } from "@/lib/auth"
+import { requireAuth } from "@/lib/auth-helpers"
 import { prisma } from "@/lib/prisma"
 import { URNIK_USER_AGENT } from "../../_utils/constants"
 import { getErrorMessage } from "../../_utils/helpers"
@@ -166,11 +165,7 @@ function parseUrnikNetRequestsHtml(html: string): {
 }
 
 export async function fetchUrnikNetRequests(month?: string) {
-    const session = await getServerSession(authConfig)
-
-    if (!session?.user) {
-        return { success: false, error: "Unauthorized" }
-    }
+    const session = await requireAuth()
 
     const user = await prisma.user.findUnique({
         where: { id: session.user.id },

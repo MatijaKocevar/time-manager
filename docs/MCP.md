@@ -121,22 +121,55 @@ it disabled otherwise so tools always come from production.
 
 ## Tools
 
-| Tool                | Purpose                                                    |
-| ------------------- | ---------------------------------------------------------- |
-| `list_tasks`        | List tasks (filter by status/list, system tasks excluded). |
-| `get_task`          | Task details, description, tracked time and time entries.  |
-| `create_task`       | Create a task or subtask.                                  |
-| `update_task`       | Update title, description, status or order.                |
-| `delete_task`       | Delete a task and its subtasks.                            |
-| `list_task_lists`   | Lists with ids for `listId` filters/assignment.            |
-| `get_active_timer`  | Currently running timer or null.                           |
-| `start_timer`       | Start tracking a task or a category (auto-stops previous). |
-| `stop_timer`        | Stop the active (or given) timer.                          |
-| `get_monthly_hours` | Monthly totals: per-day by type, expected hours, overtime. |
-| `get_timesheet`     | Tracked entries for a date range.                          |
-| `get_today_summary` | Today's WORK/BREAK/PRIVATE totals + active timer.          |
+| Tool                            | Purpose                                                      |
+| ------------------------------- | ------------------------------------------------------------ |
+| `list_tasks`                    | List tasks (filter by status/list, system tasks excluded).   |
+| `get_task`                      | Task details, description, tracked time and time entries.    |
+| `create_task`                   | Create a task or subtask.                                    |
+| `update_task`                   | Update title, description, status or order.                  |
+| `delete_task`                   | Delete a task and its subtasks.                              |
+| `list_task_lists`               | Lists with ids for `listId` filters/assignment.              |
+| `get_active_timer`              | Currently running timer or null.                             |
+| `start_timer`                   | Start tracking a task or a category (auto-stops previous).   |
+| `stop_timer`                    | Stop the active (or given) timer.                            |
+| `list_time_entries`             | Tracked entries for a date range (ids for edit/move/delete). |
+| `create_time_entry`             | Add a completed entry for a task (start + end time).         |
+| `update_time_entry`             | Edit start/end times; setting endTime stops a running entry. |
+| `delete_time_entry`             | Delete a time entry.                                         |
+| `move_time_entry`               | Move ("switch") a time entry to another task.                |
+| `list_my_requests`              | Own time-off/absence requests with status and details.       |
+| `create_request`                | Create a vacation/sick/WFH/work request (PENDING).           |
+| `update_request`                | Update a pending request's type, dates, reason or location.  |
+| `cancel_request`                | Cancel own pending request.                                  |
+| `list_all_requests`             | (Admin) All users' requests, filter by status/userId.        |
+| `approve_request`               | (Admin) Approve a pending request (FIFO order enforced).     |
+| `reject_request`                | (Admin) Reject a pending request with optional reason.       |
+| `cancel_approved_request`       | (Admin) Cancel an approved request with a reason.            |
+| `get_urnik_day_info`            | Today's urnik.net day info (hours, balances, vacation).      |
+| `get_urnik_monthly_hours`       | Monthly hours table from urnik.net.                          |
+| `get_urnik_day_detail`          | Single-day urnik.net entries and break totals.               |
+| `get_urnik_requests`            | The user's requests as listed on urnik.net.                  |
+| `list_submitted_urnik_requests` | Locally stored urnik.net submissions + sync status.          |
+| `get_urnik_team_status`         | Team presence (present/absent) from urnik.net.               |
+| `get_monthly_hours`             | Monthly totals: per-day by type, expected hours, overtime.   |
+| `get_timesheet`                 | Tracked entries for a date range.                            |
+| `get_today_summary`             | Today's WORK/BREAK/PRIVATE totals + active timer.            |
 
 Durations are in seconds, timestamps are ISO 8601. Every tool only ever sees the token owner's data.
+
+Time-entry timestamps must be ISO 8601 **with a timezone offset** (e.g. `2026-10-10T09:00:00+02:00`):
+the server may run in UTC, so an offset-free time would be misread. Entry ids come from `get_timesheet`,
+`get_task` or `list_time_entries`. `update_time_entry` on the running entry (endTime `null`) stops it at the
+given time, which fixes a timer that was left running; an ended entry cannot be reopened.
+
+Request tools follow the app's rules: owners handle their own pending requests, admins process requests in
+submission order (FIFO). Admin tools are registered for every token but return `Admin access required` for
+non-admin users, and the underlying actions re-check the role. `create_request` can submit to Urnik.net when
+`sendToUrnikNet` is true and the user has linked Urnik.net credentials; a failed submission falls back to
+normal admin approval.
+
+Urnik.net tools are read-only: they call urnik.net live with the user's linked credentials and never clock
+in/out or submit anything.
 
 ## Adding a tool
 

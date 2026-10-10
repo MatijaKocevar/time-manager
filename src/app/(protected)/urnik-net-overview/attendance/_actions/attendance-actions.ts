@@ -1,7 +1,7 @@
 "use server"
 
 import { requireAuth } from "@/lib/auth-helpers"
-import { getUrnikCookie } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
+import { getUrnikCookieForUser } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
 import { URNIK_USER_AGENT } from "../../_utils/constants"
 import { prisma } from "@/lib/prisma"
 import { parseAttendanceHtml } from "../_utils/parse-attendance"
@@ -53,7 +53,7 @@ export async function fetchTeamStatus(): Promise<ParsedAttendanceResult> {
             }
         }
 
-        const cookie = await getUrnikCookie()
+        const cookie = await getUrnikCookieForUser(session.user.id)
 
         if (!cookie) {
             return {

@@ -18,7 +18,15 @@ const handler = createMcpHandler(registerTools, {
         "Timestamps are ISO 8601, durations are in seconds, dates use YYYY-MM-DD and months YYYY-MM. " +
         "Monthly hours include per-day totals by type, working days (weekends and holidays excluded), " +
         "expected hours and overtime. Use list_task_lists to discover list ids and list_tasks to discover " +
-        "task ids; every tool only accesses the token owner's data.",
+        "task ids; every tool only accesses the token owner's data. Individual tracked intervals can be listed, " +
+        "added, edited, moved between tasks and deleted with the time-entry tools; their timestamps are ISO 8601 " +
+        "with a timezone offset, and setting an end time on the running entry stops it. Time-off requests " +
+        "(VACATION, SICK_LEAVE, WORK_FROM_HOME, WORK) are created PENDING and approved or rejected by an admin; " +
+        "owners can list, create, update and cancel their own requests, and admin tokens can list all requests, " +
+        "approve, reject or cancel approved ones. create_request can submit to Urnik.net with sendToUrnikNet when " +
+        "the user has linked credentials, otherwise it stays in Time Manager. Read-only Urnik.net tools expose day " +
+        "info, monthly hours, day detail, urnik requests and team presence from urnik.net, plus locally stored " +
+        "submissions.",
 })
 
 const authHandler = withMcpAuth(handler, verifyApiToken, { required: true })

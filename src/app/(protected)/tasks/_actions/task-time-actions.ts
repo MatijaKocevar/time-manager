@@ -211,6 +211,13 @@ export async function deleteTaskTimeEntry(input: DeleteTaskTimeEntryInput) {
 
         await refreshTimerData()
 
+        const broadcastData: TimerBroadcastData = {
+            entryId: id,
+            taskId: existing.taskId,
+        }
+
+        await broadcastTimerEvent(session.user.id, "time-entry-updated", broadcastData)
+
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {
@@ -253,8 +260,8 @@ export async function createTaskTimeEntry(input: CreateTaskTimeEntryInput) {
 
         const duration = Math.floor((endTime.getTime() - startTime.getTime()) / 1000)
 
-        await prisma.$transaction(async (tx) => {
-            await tx.taskTimeEntry.create({
+        const createdEntry = await prisma.$transaction((tx) =>
+            tx.taskTimeEntry.create({
                 data: {
                     taskId,
                     userId: session.user.id,
@@ -263,9 +270,18 @@ export async function createTaskTimeEntry(input: CreateTaskTimeEntryInput) {
                     duration,
                 },
             })
-        })
+        )
 
         await refreshTimerData()
+
+        const broadcastData: TimerBroadcastData = {
+            entryId: createdEntry.id,
+            taskId,
+            startTime,
+            duration,
+        }
+
+        await broadcastTimerEvent(session.user.id, "time-entry-updated", broadcastData)
 
         return { success: true }
     } catch (error) {

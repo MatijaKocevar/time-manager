@@ -40,13 +40,9 @@ async function fetchTimeSheetEntriesFromDb(
                                     ? { in: ["PRIVATE", "BREAK"] }
                                     : { notIn: ["PRIVATE", "BREAK"] },
                         },
-                        {
-                            task: {
-                                list: {
-                                    isPrivate: taskFilter === "private" ? true : false,
-                                },
-                            },
-                        },
+                        taskFilter === "private"
+                            ? { task: { list: { isPrivate: true } } }
+                            : { task: { OR: [{ list: { isPrivate: false } }, { listId: null }] } },
                     ],
                 },
             ],
