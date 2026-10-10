@@ -15,7 +15,7 @@ import {
     type CancelApprovedRequestInput,
 } from "../_schemas/request-schemas"
 import { executeApproval } from "./request-helpers"
-import { getUrnikCookie } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
+import { getUrnikCookieForUser } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
 import {
     extractCsrfToken,
     submitVacationToUrnikNet,
@@ -74,7 +74,7 @@ export async function createRequest(input: CreateRequestInput) {
 
             if (user?.urnikUsername && user?.urnikUserId) {
                 try {
-                    const cookie = await getUrnikCookie()
+                    const cookie = await getUrnikCookieForUser(session.user.id)
                     let submitResult: { success: boolean; error?: string } = {
                         success: false,
                         error: "Authentication failed",

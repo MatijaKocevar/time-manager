@@ -1,6 +1,6 @@
 "use server"
 
-import { getUrnikCookie } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
+import { getUrnikCookieForUser } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
 import { requireAuth } from "@/lib/auth-helpers"
 import { getErrorMessage } from "../_utils/helpers"
 import { revalidatePath } from "next/cache"
@@ -122,9 +122,9 @@ function parseDayInfo(html: string): DayInfoResult {
 
 export async function getTodayDayInfo(): Promise<DayInfoResult> {
     try {
-        await requireAuth()
+        const session = await requireAuth()
 
-        const cookie = await getUrnikCookie()
+        const cookie = await getUrnikCookieForUser(session.user.id)
 
         if (!cookie) {
             return { success: false, error: "No urnik credentials or login failed" }
@@ -233,7 +233,7 @@ export async function clockInToUrnik(isWorkFromHome: boolean = false) {
     try {
         const session = await requireAuth()
 
-        const cookie = await getUrnikCookie()
+        const cookie = await getUrnikCookieForUser(session.user.id)
 
         if (!cookie) {
             return { success: false, error: "No urnik credentials or login failed" }
@@ -265,7 +265,7 @@ export async function clockOutFromUrnik() {
     try {
         const session = await requireAuth()
 
-        const cookie = await getUrnikCookie()
+        const cookie = await getUrnikCookieForUser(session.user.id)
 
         if (!cookie) {
             return { success: false, error: "No urnik credentials or login failed" }
