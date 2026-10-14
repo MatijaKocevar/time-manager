@@ -6,9 +6,15 @@ export type UserEventName =
     | "timer-stopped"
     | "time-entry-updated"
     | "task-updated"
+    | "list-updated"
 
 export interface TaskBroadcastData {
     taskId: string
+    action: "created" | "updated" | "deleted"
+}
+
+export interface ListBroadcastData {
+    listId: string
     action: "created" | "updated" | "deleted"
 }
 

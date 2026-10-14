@@ -8,7 +8,13 @@ import {
     updateTask,
     type TaskWithTime,
 } from "@/app/(protected)/tasks/_actions/task-actions"
-import { getLists } from "@/app/(protected)/tasks/_actions/list-actions"
+import {
+    createList,
+    deleteList,
+    getLists,
+    moveTaskToList,
+    updateList,
+} from "@/app/(protected)/tasks/_actions/list-actions"
 import { getTaskTimeEntries } from "@/app/(protected)/tasks/_actions/task-time-actions"
 import { errorResult, jsonResult, runTool } from "../lib/tool-helpers"
 
@@ -25,6 +31,30 @@ function toTaskSummary(task: TaskWithTime) {
         isSystemTask: task.isSystemTask,
         trackedSeconds: task.totalTime,
         updatedAt: task.updatedAt,
+    }
+}
+
+function toListSummary(list: {
+    id: string
+    name: string
+    description: string | null
+    color: string | null
+    icon: string | null
+    order: number
+    isDefault: boolean
+    isPrivate: boolean
+    taskCount?: number
+}) {
+    return {
+        id: list.id,
+        name: list.name,
+        description: list.description,
+        color: list.color,
+        icon: list.icon,
+        order: list.order,
+        isDefault: list.isDefault,
+        isPrivate: list.isPrivate,
+        taskCount: list.taskCount,
     }
 }
 
@@ -185,21 +215,132 @@ export function registerTaskTools(server: McpServer) {
         "list_task_lists",
         {
             title: "List task lists",
-            description: "List the authenticated user's task lists with id, name and task count.",
+            description:
+                "List the authenticated user's task lists with id, name, description, color, icon, order, " +
+                "privacy and task count.",
         },
-        async (ctx) =>
-            runTool(ctx, async () => {
-                const lists = await getLists()
+        async (ctx) => runTool(ctx, async () => jsonResult((await getLists()).map(toListSummary)))
+    )
 
-                return jsonResult(
-                    lists.map((list) => ({
-                        id: list.id,
-                        name: list.name,
-                        taskCount: list.taskCount,
-                        isDefault: list.isDefault,
-                        isPrivate: list.isPrivate,
-                    }))
-                )
+    server.registerTool(
+        "create_task_list",
+        {
+            title: "Create task list",
+            description:
+                "Create a task list (project) for the authenticated user. The name must be unique; the new " +
+                "list id can be used with create_task and move_task_to_list.",
+            inputSchema: z.object({
+                name: z.string().min(1).max(100).describe("Unique list name"),
+                description: z.string().optional(),
+                color: z.string().optional().describe("Color as hex, e.g. #3b82f6"),
+                icon: z.string().optional().describe("Icon identifier"),
+                order: z.number().int().min(0).optional().describe("Sort order (default 0)"),
+                isDefault: z
+                    .boolean()
+                    .optional()
+                    .describe("Mark as the user's default list (default false)"),
+                isPrivate: z.boolean().optional().describe("Private list (default false)"),
+            }),
+        },
+        async (input, ctx) =>
+            runTool(ctx, async () => {
+                const result = await createList(input)
+
+                if (result.error) {
+                    return errorResult(result.error)
+                }
+
+                const list = result.list
+
+                if (!list) {
+                    return errorResult("Failed to create list")
+                }
+
+                return jsonResult(toListSummary(list))
+            })
+    )
+
+    server.registerTool(
+        "update_task_list",
+        {
+            title: "Update task list",
+            description:
+                "Update a task list's name, description, color, icon, sort order or privacy. The name must " +
+                "stay unique; the default flag cannot be changed here.",
+            inputSchema: z.object({
+                id: z.string().describe("List id"),
+                name: z.string().min(1).max(100).optional(),
+                description: z.string().optional(),
+                color: z.string().optional().describe("Color as hex, e.g. #3b82f6"),
+                icon: z.string().optional().describe("Icon identifier"),
+                order: z.number().int().min(0).optional(),
+                isPrivate: z.boolean().optional(),
+            }),
+        },
+        async (input, ctx) =>
+            runTool(ctx, async () => {
+                const result = await updateList(input)
+
+                if (result.error) {
+                    return errorResult(result.error)
+                }
+
+                const list = result.list
+
+                if (!list) {
+                    return errorResult("Failed to update list")
+                }
+
+                return jsonResult(toListSummary(list))
+            })
+    )
+
+    server.registerTool(
+        "delete_task_list",
+        {
+            title: "Delete task list",
+            description:
+                "Delete a task list. The default list cannot be deleted; tasks in the list are moved to the " +
+                "default list.",
+            inputSchema: z.object({
+                id: z.string().describe("List id"),
+            }),
+        },
+        async ({ id }, ctx) =>
+            runTool(ctx, async () => {
+                const result = await deleteList({ id })
+
+                if (result.error) {
+                    return errorResult(result.error)
+                }
+
+                return jsonResult({ success: true, id })
+            })
+    )
+
+    server.registerTool(
+        "move_task_to_list",
+        {
+            title: "Move task to list",
+            description:
+                "Move a task and its subtasks to another task list, or remove them from any list with listId null.",
+            inputSchema: z.object({
+                taskId: z.string().describe("Task id"),
+                listId: z
+                    .string()
+                    .nullable()
+                    .describe("Target list id, or null to remove the task from any list"),
+            }),
+        },
+        async ({ taskId, listId }, ctx) =>
+            runTool(ctx, async () => {
+                const result = await moveTaskToList({ taskId, listId })
+
+                if (result.error) {
+                    return errorResult(result.error)
+                }
+
+                return jsonResult({ success: true, taskId, listId })
             })
     )
 }

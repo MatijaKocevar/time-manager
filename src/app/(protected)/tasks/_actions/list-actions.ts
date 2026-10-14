@@ -2,6 +2,7 @@
 
 import { validateInput } from "@/lib/validation"
 import { requireAuth } from "@/lib/auth-helpers"
+import { broadcastUserEvent } from "@/lib/user-events"
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import {
@@ -145,6 +146,10 @@ export async function createList(input: CreateListInput) {
         })
 
         revalidatePath("/tasks")
+        await broadcastUserEvent(session.user.id, "list-updated", {
+            listId: list.id,
+            action: "created",
+        })
         return { success: true, list }
     } catch (error) {
         console.error("Error creating list:", error)
@@ -195,6 +200,10 @@ export async function updateList(input: UpdateListInput) {
         })
 
         revalidatePath("/tasks")
+        await broadcastUserEvent(session.user.id, "list-updated", {
+            listId: id,
+            action: "updated",
+        })
         return { success: true, list }
     } catch (error) {
         console.error("Error updating list:", error)
@@ -272,6 +281,10 @@ export async function deleteList(
         })
 
         revalidatePath("/tasks")
+        await broadcastUserEvent(session.user.id, "list-updated", {
+            listId: id,
+            action: "deleted",
+        })
         return { success: true }
     } catch (error) {
         console.error("Error deleting list:", error)
@@ -341,6 +354,10 @@ export async function moveTaskToList(input: MoveTaskToListInput) {
         })
 
         revalidatePath("/tasks")
+        await broadcastUserEvent(session.user.id, "task-updated", {
+            taskId,
+            action: "updated",
+        })
         return { success: true }
     } catch (error) {
         console.error("Error moving task to list:", error)
