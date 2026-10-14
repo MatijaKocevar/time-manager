@@ -1,7 +1,7 @@
 # MCP Server
 
 The app exposes a [Model Context Protocol](https://modelcontextprotocol.io) server at `/api/mcp`
-(Streamable HTTP) so AI clients such as opencode can read and manage tasks, timers and hours.
+(Streamable HTTP) so AI clients such as opencode can read and manage task lists, tasks, timers and hours.
 
 ## How it works
 
@@ -121,39 +121,43 @@ it disabled otherwise so tools always come from production.
 
 ## Tools
 
-| Tool                            | Purpose                                                      |
-| ------------------------------- | ------------------------------------------------------------ |
-| `list_tasks`                    | List tasks (filter by status/list, system tasks excluded).   |
-| `get_task`                      | Task details, description, tracked time and time entries.    |
-| `create_task`                   | Create a task or subtask.                                    |
-| `update_task`                   | Update title, description, status or order.                  |
-| `delete_task`                   | Delete a task and its subtasks.                              |
-| `list_task_lists`               | Lists with ids for `listId` filters/assignment.              |
-| `get_active_timer`              | Currently running timer or null.                             |
-| `start_timer`                   | Start tracking a task or a category (auto-stops previous).   |
-| `stop_timer`                    | Stop the active (or given) timer.                            |
-| `list_time_entries`             | Tracked entries for a date range (ids for edit/move/delete). |
-| `create_time_entry`             | Add a completed entry for a task (start + end time).         |
-| `update_time_entry`             | Edit start/end times; setting endTime stops a running entry. |
-| `delete_time_entry`             | Delete a time entry.                                         |
-| `move_time_entry`               | Move ("switch") a time entry to another task.                |
-| `list_my_requests`              | Own time-off/absence requests with status and details.       |
-| `create_request`                | Create a vacation/sick/WFH/work request (PENDING).           |
-| `update_request`                | Update a pending request's type, dates, reason or location.  |
-| `cancel_request`                | Cancel own pending request.                                  |
-| `list_all_requests`             | (Admin) All users' requests, filter by status/userId.        |
-| `approve_request`               | (Admin) Approve a pending request (FIFO order enforced).     |
-| `reject_request`                | (Admin) Reject a pending request with optional reason.       |
-| `cancel_approved_request`       | (Admin) Cancel an approved request with a reason.            |
-| `get_urnik_day_info`            | Today's urnik.net day info (hours, balances, vacation).      |
-| `get_urnik_monthly_hours`       | Monthly hours table from urnik.net.                          |
-| `get_urnik_day_detail`          | Single-day urnik.net entries and break totals.               |
-| `get_urnik_requests`            | The user's requests as listed on urnik.net.                  |
-| `list_submitted_urnik_requests` | Locally stored urnik.net submissions + sync status.          |
-| `get_urnik_team_status`         | Team presence (present/absent) from urnik.net.               |
-| `get_monthly_hours`             | Monthly totals: per-day by type, expected hours, overtime.   |
-| `get_timesheet`                 | Tracked entries for a date range.                            |
-| `get_today_summary`             | Today's WORK/BREAK/PRIVATE totals + active timer.            |
+| Tool                            | Purpose                                                              |
+| ------------------------------- | -------------------------------------------------------------------- |
+| `list_tasks`                    | List tasks (filter by status/list, system tasks excluded).           |
+| `get_task`                      | Task details, description, tracked time and time entries.            |
+| `create_task`                   | Create a task or subtask.                                            |
+| `update_task`                   | Update title, description, status or order.                          |
+| `delete_task`                   | Delete a task and its subtasks.                                      |
+| `list_task_lists`               | Lists with ids for `listId` filters/assignment.                      |
+| `create_task_list`              | Create a list (unique name); returns its id.                         |
+| `update_task_list`              | Change a list's name, description, color, icon, order, privacy.      |
+| `delete_task_list`              | Delete a list (not the default); its tasks move to the default list. |
+| `move_task_to_list`             | Move a task and its subtasks to another list (`null` unassigns).     |
+| `get_active_timer`              | Currently running timer or null.                                     |
+| `start_timer`                   | Start tracking a task or a category (auto-stops previous).           |
+| `stop_timer`                    | Stop the active (or given) timer.                                    |
+| `list_time_entries`             | Tracked entries for a date range (ids for edit/move/delete).         |
+| `create_time_entry`             | Add a completed entry for a task (start + end time).                 |
+| `update_time_entry`             | Edit start/end times; setting endTime stops a running entry.         |
+| `delete_time_entry`             | Delete a time entry.                                                 |
+| `move_time_entry`               | Move ("switch") a time entry to another task.                        |
+| `list_my_requests`              | Own time-off/absence requests with status and details.               |
+| `create_request`                | Create a vacation/sick/WFH/work request (PENDING).                   |
+| `update_request`                | Update a pending request's type, dates, reason or location.          |
+| `cancel_request`                | Cancel own pending request.                                          |
+| `list_all_requests`             | (Admin) All users' requests, filter by status/userId.                |
+| `approve_request`               | (Admin) Approve a pending request (FIFO order enforced).             |
+| `reject_request`                | (Admin) Reject a pending request with optional reason.               |
+| `cancel_approved_request`       | (Admin) Cancel an approved request with a reason.                    |
+| `get_urnik_day_info`            | Today's urnik.net day info (hours, balances, vacation).              |
+| `get_urnik_monthly_hours`       | Monthly hours table from urnik.net.                                  |
+| `get_urnik_day_detail`          | Single-day urnik.net entries and break totals.                       |
+| `get_urnik_requests`            | The user's requests as listed on urnik.net.                          |
+| `list_submitted_urnik_requests` | Locally stored urnik.net submissions + sync status.                  |
+| `get_urnik_team_status`         | Team presence (present/absent) from urnik.net.                       |
+| `get_monthly_hours`             | Monthly totals: per-day by type, expected hours, overtime.           |
+| `get_timesheet`                 | Tracked entries for a date range.                                    |
+| `get_today_summary`             | Today's WORK/BREAK/PRIVATE totals + active timer.                    |
 
 Durations are in seconds, timestamps are ISO 8601. Every tool only ever sees the token owner's data.
 

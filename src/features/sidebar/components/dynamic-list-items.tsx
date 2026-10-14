@@ -8,10 +8,13 @@ import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar"
 import { getLists } from "@/app/(protected)/tasks/_actions/list-actions"
 import { listKeys } from "@/app/(protected)/tasks/_constants/query-keys"
 import { useTaskDialogStore } from "@/app/(protected)/tasks/_stores/task-dialog-stores"
+import { useListUpdates } from "../hooks/use-list-updates"
 
 export function DynamicListItems() {
     const pathname = usePathname()
     const openListDialog = useTaskDialogStore((state) => state.openListDialog)
+
+    useListUpdates()
 
     const { data: lists = [] } = useQuery({
         queryKey: listKeys.all,

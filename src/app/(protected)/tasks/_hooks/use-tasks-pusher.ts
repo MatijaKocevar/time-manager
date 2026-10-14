@@ -44,6 +44,12 @@ export function useTasksPusher() {
             router.refresh()
         })
 
+        channel.bind("list-updated", () => {
+            queryClient.invalidateQueries({ queryKey: taskKeys.all })
+            queryClient.invalidateQueries({ queryKey: listKeys.all })
+            router.refresh()
+        })
+
         return () => {
             channel.unbind_all()
             pusher.unsubscribe(`private-user-${session.user.id}`)

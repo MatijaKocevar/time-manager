@@ -46,6 +46,7 @@ export function useTasksSSE() {
         eventSource.addEventListener("timer-stopped", handleTimerStopped)
         eventSource.addEventListener("time-entry-updated", handleTimerStopped)
         eventSource.addEventListener("task-updated", handleTaskUpdated)
+        eventSource.addEventListener("list-updated", handleTaskUpdated)
 
         eventSource.onerror = () => {}
 
@@ -54,6 +55,7 @@ export function useTasksSSE() {
             eventSource.removeEventListener("timer-stopped", handleTimerStopped)
             eventSource.removeEventListener("time-entry-updated", handleTimerStopped)
             eventSource.removeEventListener("task-updated", handleTaskUpdated)
+            eventSource.removeEventListener("list-updated", handleTaskUpdated)
             eventSource.close()
         }
     }, [router, queryClient])

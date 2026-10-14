@@ -18,7 +18,9 @@ const handler = createMcpHandler(registerTools, {
         "Timestamps are ISO 8601, durations are in seconds, dates use YYYY-MM-DD and months YYYY-MM. " +
         "Monthly hours include per-day totals by type, working days (weekends and holidays excluded), " +
         "expected hours and overtime. Use list_task_lists to discover list ids and list_tasks to discover " +
-        "task ids; every tool only accesses the token owner's data. Individual tracked intervals can be listed, " +
+        "task ids; task lists can be created, updated and deleted, and tasks moved between them (list names " +
+        "are unique and the default list cannot be deleted); every tool only accesses the token owner's data. " +
+        "Individual tracked intervals can be listed, " +
         "added, edited, moved between tasks and deleted with the time-entry tools; their timestamps are ISO 8601 " +
         "with a timezone offset, and setting an end time on the running entry stops it. Time-off requests " +
         "(VACATION, SICK_LEAVE, WORK_FROM_HOME, WORK) are created PENDING and approved or rejected by an admin; " +
