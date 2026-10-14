@@ -1,34 +1,38 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
+type Theme = "light" | "dark"
+
 interface ThemeState {
-    theme: "light" | "dark"
-    hasHydrated: boolean
+    theme: Theme
 }
 
 interface ThemeActions {
-    setTheme: (theme: "light" | "dark") => void
+    setTheme: (theme: Theme) => void
     toggleTheme: () => void
-    setHasHydrated: (hasHydrated: boolean) => void
+}
+
+function getPreferredTheme(): Theme {
+    if (typeof window === "undefined") {
+        return "light"
+    }
+
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
 }
 
 export const useThemeStore = create<ThemeState & ThemeActions>()(
     persist(
         (set) => ({
-            theme: "light",
-            hasHydrated: false,
+            theme: getPreferredTheme(),
             setTheme: (theme) => set({ theme }),
             toggleTheme: () =>
                 set((state) => ({
                     theme: state.theme === "light" ? "dark" : "light",
                 })),
-            setHasHydrated: (hasHydrated) => set({ hasHydrated }),
         }),
         {
             name: "theme-storage",
-            onRehydrateStorage: () => (state) => {
-                state?.setHasHydrated(true)
-            },
+            partialize: (state) => ({ theme: state.theme }),
         }
     )
 )

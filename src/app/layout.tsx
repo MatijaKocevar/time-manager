@@ -8,7 +8,7 @@ import SessionWrapper from "@/providers/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
 import { ConditionalSidebar } from "@/features/sidebar"
 import { AppHeader } from "@/features/sidebar"
-import { getUserLayoutData } from "@/features/sidebar/actions/sidebar-actions"
+import { getHasUrnikCredentials } from "@/features/sidebar/actions/sidebar-actions"
 import { authConfig } from "@/lib/auth"
 import { getLists } from "./(protected)/tasks/_actions/list-actions"
 import { NextIntlClientProvider } from "next-intl"
@@ -73,10 +73,7 @@ export default async function RootLayout({
         pendingRequestsCount = notifications.count
     }
 
-    const { defaultOpen, userTheme, sidebarExpandedItems, hasUrnikCredentials } =
-        await getUserLayoutData()
-
-    const themeColor = userTheme === "dark" ? "#000000" : "#ffffff"
+    const hasUrnikCredentials = await getHasUrnikCredentials()
 
     const t = await getTranslations("navigation")
     const tHeader = await getTranslations("header")
@@ -114,42 +111,26 @@ export default async function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
-                <meta
-                    name="theme-color"
-                    content={themeColor}
-                    media="(prefers-color-scheme: dark)"
-                />
-                <meta
-                    name="theme-color"
-                    content={themeColor}
-                    media="(prefers-color-scheme: light)"
-                />
+                <meta name="theme-color" content="#ffffff" />
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `
                             (function() {
-                                const serverTheme = '${userTheme}';
-                                const isAuthenticated = ${!!session};
-                                let theme = serverTheme;
-                                
-                                if (!isAuthenticated) {
-                                    try {
-                                        const stored = localStorage.getItem('theme-storage');
-                                        if (stored) {
-                                            const parsed = JSON.parse(stored);
-                                            theme = parsed.state?.theme || theme;
-                                        } else {
-                                            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                                            theme = prefersDark ? 'dark' : 'light';
-                                        }
-                                    } catch (e) {
-                                        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                                        theme = prefersDark ? 'dark' : 'light';
+                                var theme = 'light';
+                                try {
+                                    var stored = localStorage.getItem('theme-storage');
+                                    if (stored) {
+                                        theme = JSON.parse(stored).state.theme || theme;
+                                    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                                        theme = 'dark';
                                     }
-                                }
-                                
+                                } catch (e) {}
                                 if (theme === 'dark') {
                                     document.documentElement.classList.add('dark');
+                                }
+                                var meta = document.querySelector('meta[name="theme-color"]');
+                                if (meta) {
+                                    meta.setAttribute('content', theme === 'dark' ? '#000000' : '#ffffff');
                                 }
                             })();
                         `,
@@ -160,17 +141,12 @@ export default async function RootLayout({
                 className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col`}
             >
                 <NextIntlClientProvider>
-                    <ThemeProvider
-                        initialTheme={userTheme as "light" | "dark"}
-                        isAuthenticated={!!session}
-                    >
+                    <ThemeProvider>
                         <NavigationProgress />
                         <QueryProvider>
                             <SessionWrapper>
                                 <BreadcrumbProvider initialOverrides={breadcrumbTranslations}>
                                     <ConditionalSidebar
-                                        defaultOpen={defaultOpen}
-                                        sidebarExpandedItems={sidebarExpandedItems}
                                         hasSession={!!session}
                                         userRole={session?.user?.role}
                                         userName={session?.user?.name}

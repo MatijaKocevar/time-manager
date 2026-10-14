@@ -4,7 +4,6 @@ import { MoreHorizontal, Edit, Trash, ChevronRight, ChevronDown, Lock } from "lu
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
-import { useState, useEffect, useRef } from "react"
 
 import {
     Sidebar,
@@ -35,8 +34,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useTasksStore } from "@/app/(protected)/tasks/_stores/tasks-store"
 import { useTaskDialogStore } from "@/app/(protected)/tasks/_stores/task-dialog-stores"
-import { updateSidebarExpandedItems } from "../actions/sidebar-actions"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useSidebarExpandedItems } from "../hooks/use-sidebar-expanded-items"
 import { SettingsMenu } from "./settings-menu"
 
 interface AppSidebarProps {
@@ -44,7 +43,6 @@ interface AppSidebarProps {
     userName?: string | null
     userEmail?: string | null
     lists?: ListDisplay[]
-    initialExpandedItems?: string[]
     pendingRequestsCount?: number
     hasUrnikCredentials?: boolean
     settingsMenuTranslations?: {
@@ -62,7 +60,6 @@ export function AppSidebar({
     userName,
     userEmail,
     lists = [],
-    initialExpandedItems = [],
     pendingRequestsCount = 0,
     hasUrnikCredentials = false,
     settingsMenuTranslations,
@@ -74,8 +71,7 @@ export function AppSidebar({
     const openListDialog = useTaskDialogStore((state) => state.openListDialog)
     const deletingListId = useTasksStore((state) => state.deletingListId)
     const deleteList = useTasksStore((state) => state.deleteList)
-    const [expandedItemsSet, setExpandedItemsSet] = useState(() => new Set(initialExpandedItems))
-    const hasInitializedRef = useRef(false)
+    const { toggleItem, isExpanded } = useSidebarExpandedItems()
     const t = useTranslations()
     const tCommon = useTranslations("common")
     const tTasks = useTranslations("tasks")
@@ -85,29 +81,6 @@ export function AppSidebar({
             setOpenMobile(false)
         }
     }
-
-    useEffect(() => {
-        if (!hasInitializedRef.current) {
-            hasInitializedRef.current = true
-            return
-        }
-        const items = Array.from(expandedItemsSet)
-        updateSidebarExpandedItems(items).catch(console.error)
-    }, [expandedItemsSet])
-
-    const toggleItem = (itemUrl: string) => {
-        setExpandedItemsSet((prev) => {
-            const newSet = new Set(prev)
-            if (newSet.has(itemUrl)) {
-                newSet.delete(itemUrl)
-            } else {
-                newSet.add(itemUrl)
-            }
-            return newSet
-        })
-    }
-
-    const isExpanded = (itemUrl: string) => expandedItemsSet.has(itemUrl)
 
     const filteredItems = navigationItems.filter((item) => {
         if (!userRole || !item.roles.includes(userRole)) {
