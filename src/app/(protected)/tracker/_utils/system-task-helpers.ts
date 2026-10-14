@@ -1,7 +1,7 @@
 import type { HourType } from "@/../../prisma/generated/client"
 import type { PrismaClient } from "@/../../prisma/generated/client"
 
-export type SystemTaskType = "BREAK" | "PRIVATE" | "GENERAL_WORK"
+export type SystemTaskType = "BREAK" | "PRIVATE" | "GENERAL_WORK" | "OVERTIME_USE"
 
 export function getSystemTaskTitle(type: SystemTaskType): string {
     if (type === "GENERAL_WORK") {
@@ -24,6 +24,8 @@ export function getSystemTaskTitleForHourType(hourType: HourType): string {
             return "System: BREAK"
         case "PRIVATE":
             return "System: PRIVATE"
+        case "OVERTIME_USE":
+            return "System: OVERTIME_USE"
     }
 }
 
@@ -65,7 +67,12 @@ export function isBreakOrPrivate(type: HourType): boolean {
 }
 
 export function shouldUseSystemTask(type: HourType, hasTaskId: boolean): boolean {
-    return type === "BREAK" || type === "PRIVATE" || (type === "WORK" && !hasTaskId)
+    return (
+        type === "BREAK" ||
+        type === "PRIVATE" ||
+        type === "OVERTIME_USE" ||
+        (type === "WORK" && !hasTaskId)
+    )
 }
 
 export async function getOrCreateSystemTask(

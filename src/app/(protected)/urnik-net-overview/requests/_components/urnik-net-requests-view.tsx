@@ -55,6 +55,12 @@ export function UrnikNetRequestsView({
         openDialog()
     }
 
+    const handleSelectFreeHours = () => {
+        setRequestCategory("FREE_HOURS")
+        setSelectedType(null)
+        openDialog()
+    }
+
     const isConnected = !!user.lastUrnikTestAt
 
     const urnikNetRequests = requestsResult?.data || []
@@ -137,6 +143,14 @@ export function UrnikNetRequestsView({
                                         onClick={() => handleSelectDayType("WORK_FROM_HOME")}
                                     >
                                         {t.typeDayWorkFromHome}
+                                    </DropdownMenuItem>
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>{t.freeHoursLabel}</DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <DropdownMenuItem onClick={handleSelectFreeHours}>
+                                        {t.typeFreeHours}
                                     </DropdownMenuItem>
                                 </DropdownMenuSubContent>
                             </DropdownMenuSub>

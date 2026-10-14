@@ -2,7 +2,7 @@ import { create } from "zustand"
 import type { UrnikNetRequestType } from "../_schemas/create-urnik-net-request-schema"
 import type { UrnikDayRequestType } from "../_schemas/create-urnik-net-day-request-schema"
 
-export type RequestCategory = "HOUR" | "DAY"
+export type RequestCategory = "HOUR" | "DAY" | "FREE_HOURS"
 
 interface CreateRequestStoreState {
     isDialogOpen: boolean

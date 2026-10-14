@@ -3,8 +3,9 @@ export { calculateWorkingDays as calculateWorkingDaysSync } from "@/lib/date-uti
 export function calculateOvertime(
     totalHours: number,
     workingDays: number,
-    hoursPerDay: number = 8
+    hoursPerDay: number = 8,
+    overtimeUsed: number = 0
 ): number {
     const expectedHours = workingDays * hoursPerDay
-    return totalHours - expectedHours
+    return totalHours - expectedHours - overtimeUsed
 }

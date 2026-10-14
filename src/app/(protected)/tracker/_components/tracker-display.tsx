@@ -80,6 +80,7 @@ export function TrackerDisplay({
     const canStart =
         selectedType === "BREAK" ||
         selectedType === "PRIVATE" ||
+        selectedType === "OVERTIME_USE" ||
         selectedType === "WORK" ||
         selectedType === "WORK_FROM_HOME"
 
@@ -113,6 +114,8 @@ export function TrackerDisplay({
                 return translations.break
             case "PRIVATE":
                 return translations.private
+            case "OVERTIME_USE":
+                return translations.overtimeUse
             default:
                 return type
         }
@@ -157,6 +160,9 @@ export function TrackerDisplay({
                                     </SelectItem>
                                     <SelectItem value="BREAK">{translations.break}</SelectItem>
                                     <SelectItem value="PRIVATE">{translations.private}</SelectItem>
+                                    <SelectItem value="OVERTIME_USE">
+                                        {translations.overtimeUse}
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -286,6 +292,7 @@ export function TrackerDisplay({
                                 work: translations.work,
                                 break: translations.break,
                                 private: translations.private,
+                                overtimeUse: translations.overtimeUse,
                             }}
                         />
                     </div>

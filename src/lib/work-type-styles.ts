@@ -1,4 +1,11 @@
-export type WorkType = "WORK" | "WORK_FROM_HOME" | "VACATION" | "SICK_LEAVE" | "BREAK" | "PRIVATE"
+export type WorkType =
+    | "WORK"
+    | "WORK_FROM_HOME"
+    | "VACATION"
+    | "SICK_LEAVE"
+    | "BREAK"
+    | "PRIVATE"
+    | "OVERTIME_USE"
 
 export type WorkTypeVariant = "default" | "light" | "lighter" | "strong"
 
@@ -38,6 +45,12 @@ export const WORK_TYPE_COLORS: Record<WorkType, Record<WorkTypeVariant, string>>
         light: "bg-cyan-50 text-cyan-700 dark:bg-cyan-900 dark:text-cyan-300",
         lighter: "bg-cyan-50 text-cyan-600 dark:bg-cyan-900/50 dark:text-cyan-400",
         strong: "bg-cyan-200 text-cyan-900 dark:bg-cyan-900 dark:text-cyan-100",
+    },
+    OVERTIME_USE: {
+        default: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200",
+        light: "bg-rose-50 text-rose-700 dark:bg-rose-900 dark:text-rose-300",
+        lighter: "bg-rose-50 text-rose-600 dark:bg-rose-900/50 dark:text-rose-400",
+        strong: "bg-rose-200 text-rose-900 dark:bg-rose-900 dark:text-rose-100",
     },
 }
 

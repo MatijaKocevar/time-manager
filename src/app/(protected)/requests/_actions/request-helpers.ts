@@ -1,19 +1,37 @@
 import { revalidatePath } from "next/cache"
 import { prisma } from "@/lib/prisma"
 import { startOfDay, endOfDay } from "@/lib/date-utils"
+import { fromZonedTime } from "date-fns-tz"
+import { APP_TIMEZONE } from "@/lib/utils"
 import type { HourType, RequestType } from "@/../../prisma/generated/client"
 import {
     mapRequestTypeToShiftLocation,
     mapRequestTypeToHourType,
 } from "@/app/(protected)/shifts/_utils/request-shift-mapping"
 import { notifyUserApproval, notifyUserRejection } from "@/features/notifications/lib/notify"
+import { notifyAdminsOvertimeOverdrawn } from "@/features/notifications/lib/notify"
 import { refreshDailyHourSummary } from "@/lib/materialized-views"
+import { getOvertimeAvailability } from "@/lib/overtime"
 
 function combineDateTime(date: Date, timeStr: string): Date {
     const [hours, minutes] = timeStr.split(":").map(Number)
     const combined = new Date(date)
     combined.setHours(hours, minutes, 0, 0)
     return combined
+}
+
+function buildZonedDateTime(day: Date, time: string): Date {
+    const [hours, minutes] = time.split(":").map(Number)
+    const wall = new Date(
+        day.getUTCFullYear(),
+        day.getUTCMonth(),
+        day.getUTCDate(),
+        hours,
+        minutes,
+        0,
+        0
+    )
+    return fromZonedTime(wall, APP_TIMEZONE)
 }
 
 function getRequestDateTimeRange(request: {
@@ -75,6 +93,28 @@ async function cleanupRequestDataInRange(
             notes: { contains: "Auto-generated from" },
         },
     })
+
+    if (requestType === "OVERTIME_USE") {
+        const systemTask = await tx.task.findFirst({
+            where: {
+                userId,
+                title: "System: OVERTIME_USE",
+                isSystemTask: true,
+            },
+        })
+
+        if (systemTask) {
+            await tx.taskTimeEntry.deleteMany({
+                where: {
+                    userId,
+                    taskId: systemTask.id,
+                    startTime: { gte: startDateTime, lte: endDateTime },
+                },
+            })
+        }
+
+        return
+    }
 
     if (requestType === "VACATION" || requestType === "SICK_LEAVE") {
         const systemTask = await tx.task.findFirst({
@@ -310,74 +350,168 @@ export async function executeApproval(request: ApproveableRequest, approvedById?
               })
             : []
 
-        const shiftLocation = mapRequestTypeToShiftLocation(request.type)
+        const shiftLocation =
+            request.type === "OVERTIME_USE" ? null : mapRequestTypeToShiftLocation(request.type)
 
-        const startDay = new Date(request.startDate)
-        startDay.setUTCHours(0, 0, 0, 0)
-        const endDay = new Date(request.endDate)
-        endDay.setUTCHours(0, 0, 0, 0)
+        if (shiftLocation) {
+            const startDay = new Date(request.startDate)
+            startDay.setUTCHours(0, 0, 0, 0)
+            const endDay = new Date(request.endDate)
+            endDay.setUTCHours(0, 0, 0, 0)
 
-        const daysDiff = Math.round((endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24))
+            const daysDiff = Math.round(
+                (endDay.getTime() - startDay.getTime()) / (1000 * 60 * 60 * 24)
+            )
 
-        for (let i = 0; i <= daysDiff; i++) {
-            const currentDay = new Date(startDay)
-            currentDay.setUTCDate(startDay.getUTCDate() + i)
+            for (let i = 0; i <= daysDiff; i++) {
+                const currentDay = new Date(startDay)
+                currentDay.setUTCDate(startDay.getUTCDate() + i)
 
-            const dayOfWeek = currentDay.getDay()
-            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+                const dayOfWeek = currentDay.getDay()
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
 
-            const isHol =
-                request.skipHolidays &&
-                holidays.some((h) => {
-                    const holidayDate = startOfDay(new Date(h.date))
-                    return holidayDate.getTime() === currentDay.getTime()
-                })
+                const isHol =
+                    request.skipHolidays &&
+                    holidays.some((h) => {
+                        const holidayDate = startOfDay(new Date(h.date))
+                        return holidayDate.getTime() === currentDay.getTime()
+                    })
 
-            if ((!request.skipWeekends || !isWeekend) && !isHol) {
-                let shiftStartDateTime: Date
-                let shiftEndDateTime: Date
+                if ((!request.skipWeekends || !isWeekend) && !isHol) {
+                    let shiftStartDateTime: Date
+                    let shiftEndDateTime: Date
 
-                if (request.isFullDay || !request.startTime || !request.endTime) {
-                    shiftStartDateTime = startOfDay(new Date(currentDay))
-                    shiftEndDateTime = endOfDay(new Date(currentDay))
-                } else {
-                    const isFirstDay = i === 0
-                    const isLastDay = i === daysDiff
-
-                    if (isFirstDay) {
-                        const [startHour, startMin] = request.startTime.split(":").map(Number)
-                        shiftStartDateTime = new Date(currentDay)
-                        shiftStartDateTime.setHours(startHour, startMin, 0, 0)
-                    } else {
+                    if (request.isFullDay || !request.startTime || !request.endTime) {
                         shiftStartDateTime = startOfDay(new Date(currentDay))
-                    }
-
-                    if (isLastDay) {
-                        const [endHour, endMin] = request.endTime.split(":").map(Number)
-                        shiftEndDateTime = new Date(currentDay)
-                        shiftEndDateTime.setHours(endHour, endMin, 0, 0)
-                    } else {
                         shiftEndDateTime = endOfDay(new Date(currentDay))
-                    }
-                }
+                    } else {
+                        const isFirstDay = i === 0
+                        const isLastDay = i === daysDiff
 
-                await tx.shift.create({
-                    data: {
-                        userId: request.userId,
-                        date: currentDay,
-                        startDateTime: shiftStartDateTime,
-                        endDateTime: shiftEndDateTime,
-                        location: shiftLocation,
-                        notes: `Auto-generated from ${request.type.toLowerCase()} request`,
-                    },
-                })
+                        if (isFirstDay) {
+                            const [startHour, startMin] = request.startTime.split(":").map(Number)
+                            shiftStartDateTime = new Date(currentDay)
+                            shiftStartDateTime.setHours(startHour, startMin, 0, 0)
+                        } else {
+                            shiftStartDateTime = startOfDay(new Date(currentDay))
+                        }
+
+                        if (isLastDay) {
+                            const [endHour, endMin] = request.endTime.split(":").map(Number)
+                            shiftEndDateTime = new Date(currentDay)
+                            shiftEndDateTime.setHours(endHour, endMin, 0, 0)
+                        } else {
+                            shiftEndDateTime = endOfDay(new Date(currentDay))
+                        }
+                    }
+
+                    await tx.shift.create({
+                        data: {
+                            userId: request.userId,
+                            date: currentDay,
+                            startDateTime: shiftStartDateTime,
+                            endDateTime: shiftEndDateTime,
+                            location: shiftLocation,
+                            notes: `Auto-generated from ${request.type.toLowerCase()} request`,
+                        },
+                    })
+                }
             }
         }
 
         if (request.affectsHourType) {
             const targetHourType = mapRequestTypeToHourType(request.type)
 
-            if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
+            if (request.type === "OVERTIME_USE") {
+                const requestUser = await tx.user.findUnique({
+                    where: { id: request.userId },
+                    select: {
+                        workStartTime: true,
+                        workHoursPerDay: true,
+                    },
+                })
+
+                const userWorkHours = requestUser?.workHoursPerDay || 8
+                const userStartTime = requestUser?.workStartTime || "08:00"
+
+                const taskStartDay = new Date(request.startDate)
+                taskStartDay.setUTCHours(0, 0, 0, 0)
+                const taskEndDay = new Date(request.endDate)
+                taskEndDay.setUTCHours(0, 0, 0, 0)
+
+                const taskDaysDiff = Math.round(
+                    (taskEndDay.getTime() - taskStartDay.getTime()) / (1000 * 60 * 60 * 24)
+                )
+
+                const systemTaskTitle = "System: OVERTIME_USE"
+                let systemTask = await tx.task.findFirst({
+                    where: {
+                        userId: request.userId,
+                        title: systemTaskTitle,
+                    },
+                })
+
+                if (!systemTask) {
+                    systemTask = await tx.task.create({
+                        data: {
+                            userId: request.userId,
+                            title: systemTaskTitle,
+                            description: "Automatically created for request tracking",
+                            status: "DONE",
+                            isSystemTask: true,
+                        },
+                    })
+                }
+
+                for (let i = 0; i <= taskDaysDiff; i++) {
+                    const currentDay = new Date(taskStartDay)
+                    currentDay.setUTCDate(taskStartDay.getUTCDate() + i)
+
+                    const dayOfWeek = currentDay.getUTCDay()
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+
+                    const isHoliday = holidays.some((h) => {
+                        const holidayDate = new Date(h.date)
+                        holidayDate.setUTCHours(0, 0, 0, 0)
+                        return holidayDate.getTime() === currentDay.getTime()
+                    })
+
+                    const shouldSkip =
+                        (request.skipWeekends && isWeekend) || (request.skipHolidays && isHoliday)
+
+                    if (shouldSkip) {
+                        continue
+                    }
+
+                    let entryStart: Date
+                    let entryEnd: Date
+                    let dayHours: number
+
+                    if (!request.isFullDay && request.startTime && request.endTime) {
+                        entryStart = buildZonedDateTime(currentDay, request.startTime)
+                        entryEnd = buildZonedDateTime(currentDay, request.endTime)
+                        dayHours =
+                            request.requestedHours !== null
+                                ? Number(request.requestedHours)
+                                : (entryEnd.getTime() - entryStart.getTime()) / 3600000
+                    } else {
+                        dayHours = userWorkHours
+                        entryStart = buildZonedDateTime(currentDay, userStartTime)
+                        entryEnd = new Date(entryStart.getTime() + dayHours * 3600 * 1000)
+                    }
+
+                    await tx.taskTimeEntry.create({
+                        data: {
+                            taskId: systemTask.id,
+                            userId: request.userId,
+                            startTime: entryStart,
+                            endTime: entryEnd,
+                            duration: Math.round(dayHours * 3600),
+                            type: "OVERTIME_USE",
+                        },
+                    })
+                }
+            } else if (request.type === "VACATION" || request.type === "SICK_LEAVE") {
                 const vacationSickLeaveTasks = await tx.task.findMany({
                     where: {
                         userId: request.userId,
@@ -760,6 +894,27 @@ export async function executeApproval(request: ApproveableRequest, approvedById?
     })
 
     await refreshDailyHourSummary()
+
+    if (request.type === "OVERTIME_USE" && !approvedById) {
+        const availability = await getOvertimeAvailability(request.userId)
+
+        if (availability.available < -0.001) {
+            const overdrawnUser = await prisma.user.findUnique({
+                where: { id: request.userId },
+                select: { name: true, email: true },
+            })
+
+            notifyAdminsOvertimeOverdrawn({
+                requestUserId: request.userId,
+                userName: overdrawnUser?.name || overdrawnUser?.email || "User",
+                availableHours: availability.available,
+                startDate: request.startDate,
+                endDate: request.endDate,
+            }).catch((error) => {
+                console.error("Failed to notify admins of overtime overdraw:", error)
+            })
+        }
+    }
 
     const requestUser = await prisma.user.findUnique({
         where: { id: request.userId },

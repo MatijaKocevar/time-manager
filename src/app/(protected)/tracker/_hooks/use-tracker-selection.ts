@@ -58,8 +58,8 @@ export function useTrackerSelection({
         setSelectedTypeLocal(newType)
         setSelectedTypeStore(newType)
 
-        // For BREAK and PRIVATE, fetch the system task ID
-        if (newType === "BREAK" || newType === "PRIVATE") {
+        // For BREAK, PRIVATE and OVERTIME_USE, fetch the system task ID
+        if (newType === "BREAK" || newType === "PRIVATE" || newType === "OVERTIME_USE") {
             lastWorkTaskRef.current = selectedTaskId
 
             const systemTask = await getSystemTaskByType(newType)

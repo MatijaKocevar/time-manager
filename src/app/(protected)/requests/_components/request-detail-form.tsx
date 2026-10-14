@@ -6,7 +6,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { cancelRequest, updateRequest, createRequest } from "../_actions/request-actions"
 import { requestKeys } from "../_constants/query-keys"
 import { hourKeys } from "@/app/(protected)/hours/_constants/query-keys"
-import { REQUEST_TYPES, REQUEST_STATUS_COLORS, REQUEST_STATUS, REQUEST_TYPE } from "../_constants"
+import {
+    REQUEST_TYPES,
+    REQUEST_STATUS_COLORS,
+    REQUEST_STATUS,
+    REQUEST_TYPE,
+    isUrnikSubmittableRequestType,
+} from "../_constants"
 import { useRequestStore } from "../_stores/request-store"
 import { type RequestType, type RequestDisplay } from "../_schemas/request-schemas"
 import { Button } from "@/components/ui/button"
@@ -24,6 +30,7 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { DateTimePicker } from "@/components/ui/datetime-picker"
 import { useEffect } from "react"
 import { format } from "date-fns"
+import { formatBalance } from "@/lib/balance-helpers"
 import {
     getRequestTypeTranslationKey,
     getRequestStatusTranslationKey,
@@ -33,12 +40,14 @@ interface RequestDetailFormProps {
     request?: RequestDisplay
     onSuccess?: () => void
     hasUrnikCredentials?: boolean
+    availableOvertime?: number
 }
 
 export function RequestDetailForm({
     request,
     onSuccess,
     hasUrnikCredentials = false,
+    availableOvertime,
 }: RequestDetailFormProps) {
     const t = useTranslations("requests.form")
     const tCommon = useTranslations("common")
@@ -48,6 +57,8 @@ export function RequestDetailForm({
     const queryClient = useQueryClient()
     const formData = useRequestStore((state) => state.formData)
     const setFormData = useRequestStore((state) => state.setFormData)
+    const formError = useRequestStore((state) => state.error)
+    const setError = useRequestStore((state) => state.setError)
 
     useEffect(() => {
         if (request) {
@@ -67,22 +78,30 @@ export function RequestDetailForm({
     const updateMutation = useMutation({
         mutationFn: updateRequest,
         onSuccess: (result) => {
-            if (result.success) {
-                queryClient.invalidateQueries({ queryKey: requestKeys.all })
-                queryClient.invalidateQueries({ queryKey: hourKeys.all })
-                onSuccess?.()
+            if ("error" in result) {
+                setError(result.error ?? null)
+                return
             }
+
+            setError(null)
+            queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            queryClient.invalidateQueries({ queryKey: hourKeys.all })
+            onSuccess?.()
         },
     })
 
     const createMutation = useMutation({
         mutationFn: createRequest,
         onSuccess: (result) => {
-            if (result.success) {
-                queryClient.invalidateQueries({ queryKey: requestKeys.all })
-                queryClient.invalidateQueries({ queryKey: hourKeys.all })
-                onSuccess?.()
+            if ("error" in result) {
+                setError(result.error ?? null)
+                return
             }
+
+            setError(null)
+            queryClient.invalidateQueries({ queryKey: requestKeys.all })
+            queryClient.invalidateQueries({ queryKey: hourKeys.all })
+            onSuccess?.()
         },
     })
 
@@ -99,48 +118,15 @@ export function RequestDetailForm({
         cancelMutation.mutate({ id: request.id })
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!formData.type || !formData.startDate || !formData.endDate) return
-
-        if (request) {
-            updateMutation.mutate({
-                id: request.id,
-                type: formData.type as RequestType,
-                startDate: formData.startDate,
-                endDate: formData.endDate,
-                startTime: formData.isFullDay ? undefined : formData.startTime,
-                endTime: formData.isFullDay ? undefined : formData.endTime,
-                isFullDay: formData.isFullDay,
-                reason: formData.reason,
-                location:
-                    formData.type === REQUEST_TYPE.WORK_FROM_HOME ? formData.location : undefined,
-            })
-        } else {
-            createMutation.mutate({
-                type: formData.type as RequestType,
-                startDate: formData.startDate,
-                endDate: formData.endDate,
-                startTime: formData.isFullDay ? undefined : formData.startTime,
-                endTime: formData.isFullDay ? undefined : formData.endTime,
-                isFullDay: formData.isFullDay,
-                reason: formData.reason,
-                location:
-                    formData.type === REQUEST_TYPE.WORK_FROM_HOME ? formData.location : undefined,
-                skipWeekends: formData.skipWeekends,
-                skipHolidays: formData.skipHolidays,
-                sendToUrnikNet: formData.sendToUrnikNet,
-            })
-        }
-    }
+    const isOvertimeUse = formData.type === REQUEST_TYPE.OVERTIME_USE
 
     const calculateRequestedHours = () => {
         if (
-            formData.isFullDay ||
             !formData.startDate ||
             !formData.endDate ||
             !formData.startTime ||
-            !formData.endTime
+            !formData.endTime ||
+            (formData.isFullDay && !isOvertimeUse)
         ) {
             return null
         }
@@ -159,6 +145,49 @@ export function RequestDetailForm({
     }
 
     const requestedHours = calculateRequestedHours()
+
+    const requestedOvertimeHours = isOvertimeUse ? requestedHours : null
+
+    const insufficientOvertime =
+        isOvertimeUse &&
+        availableOvertime !== undefined &&
+        requestedOvertimeHours !== null &&
+        requestedOvertimeHours > availableOvertime + 0.001
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!formData.type || !formData.startDate || !formData.endDate) return
+        if (isOvertimeUse && (insufficientOvertime || requestedOvertimeHours === null)) {
+            return
+        }
+
+        setError(null)
+
+        const basePayload = {
+            type: formData.type as RequestType,
+            startDate: formData.startDate,
+            endDate: formData.endDate,
+            startTime: formData.isFullDay && !isOvertimeUse ? undefined : formData.startTime,
+            endTime: formData.isFullDay && !isOvertimeUse ? undefined : formData.endTime,
+            isFullDay: isOvertimeUse ? false : formData.isFullDay,
+            reason: formData.reason,
+            location: formData.type === REQUEST_TYPE.WORK_FROM_HOME ? formData.location : undefined,
+        }
+
+        if (request) {
+            updateMutation.mutate({
+                id: request.id,
+                ...basePayload,
+            })
+        } else {
+            createMutation.mutate({
+                ...basePayload,
+                skipWeekends: formData.skipWeekends,
+                skipHolidays: formData.skipHolidays,
+                sendToUrnikNet: formData.sendToUrnikNet,
+            })
+        }
+    }
 
     const formatDate = (date: Date) => {
         return new Date(date).toLocaleDateString()
@@ -256,18 +285,23 @@ export function RequestDetailForm({
                 )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid gap-4 ${isOvertimeUse ? "grid-cols-1" : "grid-cols-2"}`}>
                 <div className="space-y-2">
-                    <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
+                    <Label htmlFor="startDate">
+                        {isOvertimeUse ? tCommon("fields.date") : tCommon("fields.startDate")}
+                    </Label>
                     {isEditable ? (
-                        formData.isFullDay ? (
+                        formData.isFullDay || isOvertimeUse ? (
                             <DatePicker
                                 date={formData.startDate ? new Date(formData.startDate) : undefined}
-                                onDateChange={(date) =>
-                                    setFormData({
-                                        startDate: date ? format(date, "yyyy-MM-dd") : "",
-                                    })
-                                }
+                                onDateChange={(date) => {
+                                    const value = date ? format(date, "yyyy-MM-dd") : ""
+                                    setFormData(
+                                        isOvertimeUse
+                                            ? { startDate: value, endDate: value }
+                                            : { startDate: value }
+                                    )
+                                }}
                                 placeholder={t("selectStartDate")}
                             />
                         ) : (
@@ -305,70 +339,97 @@ export function RequestDetailForm({
                         )
                     )}
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
-                    {isEditable ? (
-                        formData.isFullDay ? (
-                            <DatePicker
-                                date={formData.endDate ? new Date(formData.endDate) : undefined}
-                                onDateChange={(date) =>
-                                    setFormData({
-                                        endDate: date ? format(date, "yyyy-MM-dd") : "",
-                                    })
-                                }
-                                placeholder={t("selectEndDate")}
-                            />
-                        ) : (
-                            <DateTimePicker
-                                value={
-                                    formData.endDate
-                                        ? new Date(
-                                              `${formData.endDate}T${formData.endTime || "00:00"}:00`
-                                          )
-                                        : undefined
-                                }
-                                onChange={(date) => {
-                                    if (date) {
+                {!isOvertimeUse && (
+                    <div className="space-y-2">
+                        <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
+                        {isEditable ? (
+                            formData.isFullDay ? (
+                                <DatePicker
+                                    date={formData.endDate ? new Date(formData.endDate) : undefined}
+                                    onDateChange={(date) =>
                                         setFormData({
-                                            endDate: format(date, "yyyy-MM-dd"),
-                                            endTime: format(date, "HH:mm"),
+                                            endDate: date ? format(date, "yyyy-MM-dd") : "",
                                         })
                                     }
-                                }}
-                                modal={true}
-                                hideTime={false}
-                                timePicker={{ hour: true, minute: true, second: false }}
-                            />
-                        )
-                    ) : (
-                        request && (
-                            <div className="text-lg">
-                                {formatDate(request.endDate)}
-                                {request.endTime && (
-                                    <span className="text-sm text-muted-foreground ml-2">
-                                        {request.endTime}
-                                    </span>
-                                )}
-                            </div>
-                        )
-                    )}
-                </div>
+                                    placeholder={t("selectEndDate")}
+                                />
+                            ) : (
+                                <DateTimePicker
+                                    value={
+                                        formData.endDate
+                                            ? new Date(
+                                                  `${formData.endDate}T${formData.endTime || "00:00"}:00`
+                                              )
+                                            : undefined
+                                    }
+                                    onChange={(date) => {
+                                        if (date) {
+                                            setFormData({
+                                                endDate: format(date, "yyyy-MM-dd"),
+                                                endTime: format(date, "HH:mm"),
+                                            })
+                                        }
+                                    }}
+                                    modal={true}
+                                    hideTime={false}
+                                    timePicker={{ hour: true, minute: true, second: false }}
+                                />
+                            )
+                        ) : (
+                            request && (
+                                <div className="text-lg">
+                                    {formatDate(request.endDate)}
+                                    {request.endTime && (
+                                        <span className="text-sm text-muted-foreground ml-2">
+                                            {request.endTime}
+                                        </span>
+                                    )}
+                                </div>
+                            )
+                        )}
+                    </div>
+                )}
             </div>
+
+            {isEditable && isOvertimeUse && (
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="overtime-start-time">{t("startTime")}</Label>
+                        <Input
+                            id="overtime-start-time"
+                            type="time"
+                            value={formData.startTime}
+                            onChange={(e) => setFormData({ startTime: e.target.value })}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="overtime-end-time">{t("endTime")}</Label>
+                        <Input
+                            id="overtime-end-time"
+                            type="time"
+                            value={formData.endTime}
+                            onChange={(e) => setFormData({ endTime: e.target.value })}
+                        />
+                    </div>
+                </div>
+            )}
 
             {isEditable && (
                 <>
-                    <div className="flex items-center space-x-2">
-                        <Checkbox
-                            id="full-day"
-                            checked={formData.isFullDay}
-                            onCheckedChange={(checked) =>
-                                setFormData({ isFullDay: checked === true })
-                            }
-                        />
-                        <Label htmlFor="full-day" className="cursor-pointer font-normal">
-                            {t("fullDay")}
-                        </Label>
-                    </div>
+                    {!isOvertimeUse && (
+                        <div className="flex items-center space-x-2">
+                            <Checkbox
+                                id="full-day"
+                                checked={formData.isFullDay}
+                                onCheckedChange={(checked) =>
+                                    setFormData({ isFullDay: checked === true })
+                                }
+                            />
+                            <Label htmlFor="full-day" className="cursor-pointer font-normal">
+                                {t("fullDay")}
+                            </Label>
+                        </div>
+                    )}
 
                     {requestedHours !== null && !formData.isFullDay && (
                         <div className="text-sm text-muted-foreground">
@@ -376,6 +437,30 @@ export function RequestDetailForm({
                         </div>
                     )}
                 </>
+            )}
+
+            {isEditable && isOvertimeUse && availableOvertime !== undefined && (
+                <div
+                    className={`rounded-md border px-4 py-3 text-sm ${
+                        insufficientOvertime
+                            ? "border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
+                            : "border-border"
+                    }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <span>{t("availableOvertime")}</span>
+                        <span className="font-semibold">{formatBalance(availableOvertime)}</span>
+                    </div>
+                    {requestedOvertimeHours !== null && (
+                        <div className="flex items-center justify-between mt-1">
+                            <span>{t("overtimeToUse")}</span>
+                            <span className="font-semibold">
+                                {requestedOvertimeHours.toFixed(2)} {t("hours")}
+                            </span>
+                        </div>
+                    )}
+                    {insufficientOvertime && <p className="mt-1">{t("insufficientOvertime")}</p>}
+                </div>
             )}
 
             {!isEditable && request && !request.isFullDay && request.requestedHours !== null && (
@@ -457,7 +542,7 @@ export function RequestDetailForm({
                 !request &&
                 hasUrnikCredentials &&
                 formData.type &&
-                formData.type !== "WORK" && (
+                isUrnikSubmittableRequestType(formData.type) && (
                     <div className="space-y-2 rounded-md border border-border p-4">
                         <div className="flex items-center space-x-2">
                             <Checkbox
@@ -477,12 +562,19 @@ export function RequestDetailForm({
                     </div>
                 )}
 
+            {formError && <div className="text-sm text-red-600 dark:text-red-500">{formError}</div>}
+
             {isEditable && (
                 <div className="flex justify-end">
                     <Button
                         type="submit"
                         disabled={
-                            isPending || !formData.type || !formData.startDate || !formData.endDate
+                            isPending ||
+                            !formData.type ||
+                            !formData.startDate ||
+                            !formData.endDate ||
+                            insufficientOvertime ||
+                            (isOvertimeUse && requestedOvertimeHours === null)
                         }
                     >
                         {isPending ? tCommon("status.saving") : tCommon("actions.save")}

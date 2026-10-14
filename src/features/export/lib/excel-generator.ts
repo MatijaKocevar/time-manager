@@ -6,7 +6,15 @@ export async function generateExcel(monthData: MonthlyHourExportData): Promise<B
     const worksheet = workbook.addWorksheet(monthData.monthLabel)
 
     const { summaryStats, dailyData } = monthData
-    const hourTypes = ["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE", "BREAK", "PRIVATE"]
+    const hourTypes = [
+        "WORK",
+        "WORK_FROM_HOME",
+        "VACATION",
+        "SICK_LEAVE",
+        "BREAK",
+        "PRIVATE",
+        "OVERTIME_USE",
+    ]
     const numCols = hourTypes.length + 2
 
     let currentRow = 1
@@ -273,7 +281,15 @@ export async function generateMultiSheetExcel(
         const worksheet = workbook.addWorksheet(sheetName)
 
         const { summaryStats, dailyData } = monthData
-        const hourTypes = ["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE", "BREAK", "PRIVATE"]
+        const hourTypes = [
+            "WORK",
+            "WORK_FROM_HOME",
+            "VACATION",
+            "SICK_LEAVE",
+            "BREAK",
+            "PRIVATE",
+            "OVERTIME_USE",
+        ]
         const numCols = hourTypes.length + 2
 
         let currentRow = 1

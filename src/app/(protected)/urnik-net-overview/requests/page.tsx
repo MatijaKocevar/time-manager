@@ -94,11 +94,13 @@ export default async function UrnikNetRequestsPage({
         createRequestButton: tCreateRequest("buttonLabel"),
         hoursLabel: tCreateRequest("hoursLabel"),
         daysLabel: tCreateRequest("daysLabel"),
+        freeHoursLabel: tCreateRequest("freeHoursLabel"),
         typeWork: tCreateRequest("typeWork"),
         typeWorkFromHome: tCreateRequest("typeWorkFromHome"),
         typeVacation: tCreateRequest("typeVacation"),
         typeSickLeave: tCreateRequest("typeSickLeave"),
         typeDayWorkFromHome: tCreateRequest("typeDayWorkFromHome"),
+        typeFreeHours: tCreateRequest("typeFreeHours"),
         table: {
             no: t("table.no"),
             requestDate: t("table.requestDate"),

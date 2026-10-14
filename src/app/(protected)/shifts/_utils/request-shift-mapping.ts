@@ -3,9 +3,9 @@ import { REQUEST_TYPE } from "@/app/(protected)/requests/_constants"
 import { SHIFT_LOCATION } from "../_constants"
 
 type RequestType = (typeof REQUEST_TYPE)[keyof typeof REQUEST_TYPE]
-type HourType = "WORK" | "WORK_FROM_HOME" | "VACATION" | "SICK_LEAVE"
+type HourType = "WORK" | "WORK_FROM_HOME" | "VACATION" | "SICK_LEAVE" | "OVERTIME_USE"
 
-export function mapRequestTypeToShiftLocation(type: RequestType): ShiftLocation {
+export function mapRequestTypeToShiftLocation(type: RequestType): ShiftLocation | null {
     switch (type) {
         case REQUEST_TYPE.VACATION:
             return SHIFT_LOCATION.VACATION
@@ -15,6 +15,8 @@ export function mapRequestTypeToShiftLocation(type: RequestType): ShiftLocation 
             return SHIFT_LOCATION.HOME
         case REQUEST_TYPE.WORK:
             return SHIFT_LOCATION.OFFICE
+        case REQUEST_TYPE.OVERTIME_USE:
+            return null
     }
 }
 
@@ -41,6 +43,8 @@ export function mapRequestTypeToHourType(type: RequestType): HourType {
             return "WORK_FROM_HOME"
         case REQUEST_TYPE.WORK:
             return "WORK"
+        case REQUEST_TYPE.OVERTIME_USE:
+            return "OVERTIME_USE"
     }
 }
 

@@ -24,7 +24,15 @@ export function generateCSV(monthlyDataArray: MonthlyHourExportData[]): string {
         monthSection.push(`Overtime,${summaryStats.overtime}`)
         monthSection.push("")
 
-        const hourTypes = ["WORK", "WORK_FROM_HOME", "VACATION", "SICK_LEAVE", "BREAK", "PRIVATE"]
+        const hourTypes = [
+            "WORK",
+            "WORK_FROM_HOME",
+            "VACATION",
+            "SICK_LEAVE",
+            "BREAK",
+            "PRIVATE",
+            "OVERTIME_USE",
+        ]
 
         monthSection.push("Hours by Type")
         hourTypes.forEach((type) => {

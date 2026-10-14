@@ -4,4 +4,6 @@ export {
     REQUEST_STATUS_COLORS,
     REQUEST_STATUS,
     REQUEST_TYPE,
+    URNIK_SUBMITTABLE_REQUEST_TYPES,
+    isUrnikSubmittableRequestType,
 } from "./request-constants"

@@ -7,4 +7,5 @@ export const HOUR_TYPE_ABBREVIATIONS: Record<HourType, string> = {
     SICK_LEAVE: "SL",
     BREAK: "B",
     PRIVATE: "P",
+    OVERTIME_USE: "OU",
 }

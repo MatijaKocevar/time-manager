@@ -64,6 +64,7 @@ export async function PendingRequestsTable({ requests, locale }: PendingRequests
             vacation: tTypes("vacation"),
             sickLeave: tTypes("sickLeave"),
             workFromHome: tTypes("workFromHome"),
+            overtimeUse: tTypes("overtimeUse"),
         },
     }
 

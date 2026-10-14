@@ -4,7 +4,15 @@ import type { HourType } from "@/../../prisma/generated/client"
 export const StartTimerSchema = z.object({
     taskId: z.string().optional(),
     type: z
-        .enum(["WORK", "WORK_FROM_HOME", "BREAK", "PRIVATE", "VACATION", "SICK_LEAVE"])
+        .enum([
+            "WORK",
+            "WORK_FROM_HOME",
+            "BREAK",
+            "PRIVATE",
+            "VACATION",
+            "SICK_LEAVE",
+            "OVERTIME_USE",
+        ])
         .optional(),
 })
 

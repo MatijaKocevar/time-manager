@@ -1,0 +1,5 @@
+-- AlterEnum
+ALTER TYPE "HourType" ADD VALUE 'OVERTIME_USE';
+
+-- AlterEnum
+ALTER TYPE "RequestType" ADD VALUE 'OVERTIME_USE';

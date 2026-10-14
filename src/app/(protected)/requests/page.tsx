@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { getUserRequests } from "./_actions/request-actions"
 import { RequestsTableWithDialog } from "./_components/requests-table-with-dialog"
 import { syncRequestStatuses } from "./_actions/sync-request-statuses"
+import { getOvertimeAvailability } from "@/lib/overtime"
 import { getTranslations } from "next-intl/server"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
@@ -28,6 +29,8 @@ export default async function RequestsPage() {
         getTranslations("tutorial"),
         getTranslations("tutorial.requests"),
     ])
+
+    const overtimeAvailability = await getOvertimeAvailability(session.user.id)
 
     const hasUrnikCredentials = !!userRecord?.urnikUsername
 
@@ -65,6 +68,7 @@ export default async function RequestsPage() {
                     requests={requests}
                     showUser={false}
                     hasUrnikCredentials={hasUrnikCredentials}
+                    availableOvertime={overtimeAvailability.available}
                 />
             </div>
         </>

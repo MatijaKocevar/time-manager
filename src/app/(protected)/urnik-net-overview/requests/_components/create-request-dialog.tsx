@@ -25,6 +25,7 @@ export async function CreateRequestDialog() {
             typeVacation={t("typeVacation")}
             typeSickLeave={t("typeSickLeave")}
             typeDayWorkFromHome={t("typeDayWorkFromHome")}
+            typeFreeHours={t("typeFreeHours")}
         />
     )
 }

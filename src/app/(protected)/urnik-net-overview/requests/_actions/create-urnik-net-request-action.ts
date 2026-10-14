@@ -54,13 +54,18 @@ export async function createUrnikNetRequest(
 
         const dateTime = formatDateYYYYSlashMMDD(date)
 
+        const urnikComment =
+            comment && comment.trim().length > 0
+                ? `${comment.trim()} ${urnikNetRequestRecord.id}`
+                : urnikNetRequestRecord.id
+
         const url = new URL("https://urnik.net/App/Main")
         url.searchParams.append("handler", "SaveRequestHours")
         url.searchParams.append("timeStart", startTime)
         url.searchParams.append("timeEnd", endTime)
         url.searchParams.append("dateTime", dateTime)
         url.searchParams.append("type", String(urnikNetRequestRecord.urnikType))
-        url.searchParams.append("comment", comment || urnikNetRequestRecord.id)
+        url.searchParams.append("comment", urnikComment)
 
         const response = await fetch(url.toString(), {
             method: "GET",

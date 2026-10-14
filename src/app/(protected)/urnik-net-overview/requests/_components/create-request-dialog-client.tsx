@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { RequestTypeSelector } from "./request-type-selector"
 import { CreateRequestForm } from "./create-request-form"
 import { CreateDayRequestForm } from "./create-day-request-form"
+import { CreateFreeHoursRequestForm } from "./create-free-hours-request-form"
 import { useCreateRequestStore } from "../_stores/create-request-store"
 
 interface CreateRequestDialogClientProps {
@@ -26,6 +27,7 @@ interface CreateRequestDialogClientProps {
     typeVacation: string
     typeSickLeave: string
     typeDayWorkFromHome: string
+    typeFreeHours: string
 }
 
 export function CreateRequestDialogClient({
@@ -48,6 +50,7 @@ export function CreateRequestDialogClient({
     typeVacation,
     typeSickLeave,
     typeDayWorkFromHome,
+    typeFreeHours,
 }: CreateRequestDialogClientProps) {
     const isDialogOpen = useCreateRequestStore((state) => state.isDialogOpen)
     const closeDialog = useCreateRequestStore((state) => state.closeDialog)
@@ -93,6 +96,19 @@ export function CreateRequestDialogClient({
                             typeVacation={typeVacation}
                             typeSickLeave={typeSickLeave}
                             typeWorkFromHome={typeDayWorkFromHome}
+                        />
+                    )}
+                    {requestCategory === "FREE_HOURS" && (
+                        <CreateFreeHoursRequestForm
+                            dateLabel={dateLabel}
+                            startTimeLabel={startTimeLabel}
+                            endTimeLabel={endTimeLabel}
+                            commentLabel={commentLabel}
+                            submitButton={submitButton}
+                            successMessage={successMessage}
+                            errorPrefix={errorPrefix}
+                            retryButton={retryButton}
+                            typeFreeHours={typeFreeHours}
                         />
                     )}
                 </div>

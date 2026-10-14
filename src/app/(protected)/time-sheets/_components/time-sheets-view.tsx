@@ -51,6 +51,10 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
         0
     )
 
+    const overtimeUseSeconds = initialData
+        .filter((entry) => entry.type === "OVERTIME_USE")
+        .reduce((sum, entry) => sum + (entry.duration ?? 0), 0)
+
     const expectedHours =
         taskFilter === "private"
             ? 0
@@ -61,7 +65,10 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
                   userWorkHoursPerDay
               )
 
-    const balance = taskFilter === "private" ? 0 : calculateBalance(totalSeconds, expectedHours)
+    const balance =
+        taskFilter === "private"
+            ? 0
+            : calculateBalance(totalSeconds - overtimeUseSeconds, expectedHours)
 
     return (
         <>

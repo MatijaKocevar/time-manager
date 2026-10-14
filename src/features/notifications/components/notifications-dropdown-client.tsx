@@ -18,6 +18,7 @@ interface NotificationsDropdownClientProps {
             VACATION: string
             SICK_LEAVE: string
             WORK_FROM_HOME: string
+            OVERTIME_USE: string
         }
         approve?: string
         reject?: string

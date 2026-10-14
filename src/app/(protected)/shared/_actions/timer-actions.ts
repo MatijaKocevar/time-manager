@@ -67,8 +67,8 @@ export async function startTimer(input: StartTimerInput) {
 
         const { type = "WORK", taskId } = validation.data
 
-        if ((type === "BREAK" || type === "PRIVATE") && taskId) {
-            return { error: "Task should not be provided for break/private type" }
+        if ((type === "BREAK" || type === "PRIVATE" || type === "OVERTIME_USE") && taskId) {
+            return { error: "Task should not be provided for this type" }
         }
 
         if (taskId) {
@@ -86,7 +86,7 @@ export async function startTimer(input: StartTimerInput) {
 
             let finalTaskId = taskId
 
-            if (type === "BREAK" || type === "PRIVATE") {
+            if (type === "BREAK" || type === "PRIVATE" || type === "OVERTIME_USE") {
                 const systemTask = await getOrCreateSystemTask(
                     tx,
                     session.user.id,

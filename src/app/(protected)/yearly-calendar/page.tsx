@@ -1,10 +1,8 @@
 import { getTranslations } from "next-intl/server"
 import { getYearlyCalendarData } from "./_actions/yearly-calendar-actions"
 import { YearlyCalendarClient } from "./_components/yearly-calendar-client"
-import { getCurrentUser } from "../profile/_actions/profile-actions"
 import { getHolidaysInRange } from "../admin/holidays/_actions/holiday-actions"
-import { calculateExpectedHoursToDate } from "@/lib/balance-helpers"
-import { prisma } from "@/lib/prisma"
+import { calculateOvertimeFund } from "@/lib/overtime"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
@@ -27,48 +25,12 @@ export default async function YearlyCalendarPage() {
     const result = await getYearlyCalendarData({ year: currentYear })
     const initialData = result.data || {}
 
-    const currentUser = await getCurrentUser()
-    const userWorkHoursPerDay = currentUser?.workHoursPerDay || 8
-
     const startOfYear = new Date(Date.UTC(currentYear, 0, 1))
-    const today = new Date()
-
     const endOfYear = new Date(Date.UTC(currentYear, 11, 31, 23, 59, 59, 999))
 
     const holidays = await getHolidaysInRange(startOfYear.toISOString(), endOfYear.toISOString())
 
-    let yearlyBalance = 0
-    const currentMonth = today.getMonth()
-
-    for (let month = 0; month <= currentMonth; month++) {
-        const monthStart = new Date(Date.UTC(currentYear, month, 1))
-        const monthEnd = new Date(Date.UTC(currentYear, month + 1, 0, 23, 59, 59, 999))
-
-        const monthSummaries = await prisma.dailyHourSummary.findMany({
-            where: {
-                userId: session.user.id,
-                date: {
-                    gte: monthStart,
-                    lte: monthEnd,
-                },
-            },
-        })
-
-        const monthTotalHours = monthSummaries.reduce((sum, s) => sum + Number(s.totalHours), 0)
-
-        const monthStartLocal = new Date(currentYear, month, 1)
-        const monthEndLocal = new Date(currentYear, month + 1, 0)
-
-        const monthExpectedHours = calculateExpectedHoursToDate(
-            monthStartLocal,
-            monthEndLocal,
-            holidays,
-            userWorkHoursPerDay
-        )
-
-        const monthBalance = monthTotalHours - monthExpectedHours
-        yearlyBalance += monthBalance
-    }
+    const yearlyBalance = await calculateOvertimeFund(session.user.id, currentYear)
 
     const months = Array.from({ length: 12 }, (_, i) => t(`months.${i}`))
 

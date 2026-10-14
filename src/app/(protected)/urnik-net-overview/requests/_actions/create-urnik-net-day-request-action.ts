@@ -74,6 +74,9 @@ export async function createUrnikNetDayRequest(
             },
         })
 
+        const urnikComment =
+            comment && comment.trim().length > 0 ? `${comment.trim()} ${record.id}` : record.id
+
         let result: { success: boolean; error?: string }
 
         if (type === "VACATION") {
@@ -82,7 +85,7 @@ export async function createUrnikNetDayRequest(
                 urnikUserId,
                 startDate,
                 endDate,
-                comment || record.id
+                urnikComment
             )
         } else {
             const csrf = await extractCsrfToken(cookie)
@@ -102,7 +105,7 @@ export async function createUrnikNetDayRequest(
                     urnikUserId,
                     startDate,
                     endDate,
-                    comment || record.id
+                    urnikComment
                 )
             } else {
                 result = await submitWorkFromHomeToUrnikNet(
@@ -112,7 +115,7 @@ export async function createUrnikNetDayRequest(
                     urnikUserId,
                     startDate,
                     endDate,
-                    comment || record.id
+                    urnikComment
                 )
             }
         }

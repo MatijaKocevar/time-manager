@@ -4,6 +4,13 @@ import { revalidatePath } from "next/cache"
 import { validateInput } from "@/lib/validation"
 import { prisma } from "@/lib/prisma"
 import { requireAuth, requireAdmin } from "@/lib/auth-helpers"
+import { startOfDay, endOfDay } from "@/lib/date-utils"
+import { refreshDailyHourSummary } from "@/lib/materialized-views"
+import {
+    getOvertimeAvailability,
+    getRequestOvertimeHours,
+    formatOvertimeHours,
+} from "@/lib/overtime"
 import {
     CreateRequestSchema,
     UpdateRequestSchema,
@@ -14,6 +21,7 @@ import {
     type CancelRequestInput,
     type CancelApprovedRequestInput,
 } from "../_schemas/request-schemas"
+import { isUrnikSubmittableRequestType } from "../_constants"
 import { executeApproval } from "./request-helpers"
 import { getUrnikCookieForUser } from "@/app/(protected)/urnik-net-overview/_utils/urnik-session"
 import {
@@ -21,6 +29,7 @@ import {
     submitVacationToUrnikNet,
     submitSickLeaveToUrnikNet,
     submitWorkFromHomeToUrnikNet,
+    submitFreeHoursToUrnikNet,
 } from "@/app/(protected)/urnik-net-overview/requests/_actions/urnik-net-day-submission"
 import { notifyAdminsNewRequest, notifyUserCancellation } from "@/features/notifications/lib/notify"
 
@@ -43,11 +52,34 @@ export async function createRequest(input: CreateRequestInput) {
             type,
             reason,
             location,
+            skipWeekends,
+            skipHolidays,
             sendToUrnikNet,
         } = validation.data
 
         if (startDate > endDate) {
             return { error: "Start date must be before or equal to end date" }
+        }
+
+        if (type === "OVERTIME_USE") {
+            const availability = await getOvertimeAvailability(session.user.id)
+            const requestedOvertime = await getRequestOvertimeHours(
+                {
+                    isFullDay,
+                    startDate,
+                    endDate,
+                    requestedHours: requestedHours ?? null,
+                    skipWeekends,
+                    skipHolidays,
+                },
+                availability.workHoursPerDay
+            )
+
+            if (requestedOvertime > availability.available + 0.001) {
+                return {
+                    error: `Not enough overtime available: ${formatOvertimeHours(requestedOvertime)} requested, ${formatOvertimeHours(availability.available)} available`,
+                }
+            }
         }
 
         const createdRequest = await prisma.request.create({
@@ -62,11 +94,13 @@ export async function createRequest(input: CreateRequestInput) {
                 requestedHours,
                 reason,
                 location,
+                skipWeekends,
+                skipHolidays,
                 affectsHourType: true,
             },
         })
 
-        if (sendToUrnikNet && type !== "WORK") {
+        if (sendToUrnikNet && isUrnikSubmittableRequestType(type)) {
             const user = await prisma.user.findUnique({
                 where: { id: session.user.id },
                 select: { urnikUsername: true, urnikUserId: true },
@@ -81,13 +115,26 @@ export async function createRequest(input: CreateRequestInput) {
                     }
 
                     if (cookie) {
-                        if (type === "VACATION") {
+                        const urnikComment =
+                            reason && reason.trim().length > 0
+                                ? `${reason.trim()} ${createdRequest.id}`
+                                : createdRequest.id
+
+                        if (type === "OVERTIME_USE") {
+                            submitResult = await submitFreeHoursToUrnikNet(
+                                cookie,
+                                startDate,
+                                startTime ?? "",
+                                endTime ?? "",
+                                urnikComment
+                            )
+                        } else if (type === "VACATION") {
                             submitResult = await submitVacationToUrnikNet(
                                 cookie,
                                 user.urnikUserId,
                                 startDate,
                                 endDate,
-                                createdRequest.id
+                                urnikComment
                             )
                         } else {
                             const csrf = await extractCsrfToken(cookie)
@@ -100,7 +147,7 @@ export async function createRequest(input: CreateRequestInput) {
                                         user.urnikUserId,
                                         startDate,
                                         endDate,
-                                        createdRequest.id
+                                        urnikComment
                                     )
                                 } else if (type === "WORK_FROM_HOME") {
                                     submitResult = await submitWorkFromHomeToUrnikNet(
@@ -110,7 +157,7 @@ export async function createRequest(input: CreateRequestInput) {
                                         user.urnikUserId,
                                         startDate,
                                         endDate,
-                                        createdRequest.id
+                                        urnikComment
                                     )
                                 }
                             } else {
@@ -238,6 +285,36 @@ export async function updateRequest(input: UpdateRequestInput) {
         if (validatedData.affectsHourType !== undefined)
             updateData.affectsHourType = validatedData.affectsHourType
 
+        const effectiveType = validatedData.type ?? existing.type
+
+        if (effectiveType === "OVERTIME_USE") {
+            updateData.isFullDay = false
+            updateData.requestedHours = validatedData.requestedHours ?? existing.requestedHours
+
+            const availability = await getOvertimeAvailability(session.user.id, existing.id)
+            const requestedOvertime = await getRequestOvertimeHours(
+                {
+                    isFullDay: false,
+                    startDate: validatedData.startDate ?? existing.startDate,
+                    endDate: validatedData.endDate ?? existing.endDate,
+                    requestedHours:
+                        updateData.requestedHours !== null &&
+                        updateData.requestedHours !== undefined
+                            ? Number(updateData.requestedHours)
+                            : null,
+                    skipWeekends: existing.skipWeekends,
+                    skipHolidays: existing.skipHolidays,
+                },
+                availability.workHoursPerDay
+            )
+
+            if (requestedOvertime > availability.available + 0.001) {
+                return {
+                    error: `Not enough overtime available: ${formatOvertimeHours(requestedOvertime)} requested, ${formatOvertimeHours(availability.available)} available`,
+                }
+            }
+        }
+
         await prisma.request.update({
             where: { id: validatedData.id },
             data: updateData,
@@ -344,6 +421,31 @@ export async function cancelApprovedRequest(input: CancelApprovedRequestInput) {
                 cancellationReason,
             },
         })
+
+        if (request.type === "OVERTIME_USE") {
+            const systemTask = await prisma.task.findFirst({
+                where: {
+                    userId: request.userId,
+                    title: "System: OVERTIME_USE",
+                    isSystemTask: true,
+                },
+            })
+
+            if (systemTask) {
+                await prisma.taskTimeEntry.deleteMany({
+                    where: {
+                        userId: request.userId,
+                        taskId: systemTask.id,
+                        startTime: {
+                            gte: startOfDay(new Date(request.startDate)),
+                            lte: endOfDay(new Date(request.endDate)),
+                        },
+                    },
+                })
+
+                await refreshDailyHourSummary()
+            }
+        }
 
         const requestWithUser = await prisma.request.findUnique({
             where: { id },

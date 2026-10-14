@@ -2,7 +2,13 @@ import { z } from "zod"
 
 const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
 
-export const RequestTypeSchema = z.enum(["VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "WORK"])
+export const RequestTypeSchema = z.enum([
+    "VACATION",
+    "SICK_LEAVE",
+    "WORK_FROM_HOME",
+    "WORK",
+    "OVERTIME_USE",
+])
 
 export const RequestStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED", "CANCELLED"])
 
@@ -22,19 +28,37 @@ const CreateRequestInputSchema = z
     })
     .refine(
         (data) => {
+            if (data.type === "OVERTIME_USE") {
+                return data.startTime !== undefined && data.endTime !== undefined
+            }
             if (!data.isFullDay) {
                 return data.startTime !== undefined && data.endTime !== undefined
             }
             return true
         },
         {
-            message: "Start time and end time are required for partial day requests",
+            message: "Start time and end time are required",
             path: ["startTime"],
         }
     )
     .refine(
         (data) => {
-            if (!data.isFullDay && data.startTime && data.endTime) {
+            if (data.type === "OVERTIME_USE") {
+                return (
+                    new Date(data.startDate).toDateString() ===
+                    new Date(data.endDate).toDateString()
+                )
+            }
+            return true
+        },
+        {
+            message: "Overtime use must be on a single day",
+            path: ["endDate"],
+        }
+    )
+    .refine(
+        (data) => {
+            if (data.startTime && data.endTime) {
                 const start = new Date(data.startDate)
                 const end = new Date(data.endDate)
                 const isSameDay = start.toDateString() === end.toDateString()
@@ -58,10 +82,11 @@ const CreateRequestInputSchema = z
 export const CreateRequestSchema = CreateRequestInputSchema.transform((data) => {
     const startDate = new Date(data.startDate)
     const endDate = new Date(data.endDate)
+    const isOvertimeUse = data.type === "OVERTIME_USE"
 
     let requestedHours: number | undefined
 
-    if (!data.isFullDay && data.startTime && data.endTime) {
+    if (data.startTime && data.endTime) {
         const [startHour, startMin] = data.startTime.split(":").map(Number)
         const [endHour, endMin] = data.endTime.split(":").map(Number)
 
@@ -77,6 +102,7 @@ export const CreateRequestSchema = CreateRequestInputSchema.transform((data) => 
 
     return {
         ...data,
+        isFullDay: isOvertimeUse ? false : data.isFullDay,
         startDate,
         endDate,
         requestedHours,
@@ -126,7 +152,13 @@ export const UpdateRequestSchema = UpdateRequestInputSchema.transform((data) => 
     if (data.reason !== undefined) result.reason = data.reason
     if (data.location !== undefined) result.location = data.location
 
-    if (!data.isFullDay && data.startTime && data.endTime && data.startDate && data.endDate) {
+    if (
+        data.isFullDay !== true &&
+        data.startTime &&
+        data.endTime &&
+        data.startDate &&
+        data.endDate
+    ) {
         const [startHour, startMin] = data.startTime.split(":").map(Number)
         const [endHour, endMin] = data.endTime.split(":").map(Number)
 

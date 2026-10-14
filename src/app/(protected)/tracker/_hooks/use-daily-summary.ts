@@ -7,7 +7,7 @@ import type { HourType } from "@/../../prisma/generated/client"
 import { trackerKeys } from "../_constants/query-keys"
 
 interface DailySummaryData {
-    totals: Record<"WORK" | "BREAK" | "PRIVATE", number>
+    totals: Record<"WORK" | "BREAK" | "PRIVATE" | "OVERTIME_USE", number>
     activeTimer: {
         id: string
         startTime: Date
@@ -36,7 +36,7 @@ export function useDailySummary(initialData: DailySummaryData) {
         }
     }, [data?.activeTimer])
 
-    const getAdjustedTotal = (type: "WORK" | "BREAK" | "PRIVATE") => {
+    const getAdjustedTotal = (type: "WORK" | "BREAK" | "PRIVATE" | "OVERTIME_USE") => {
         if (!data) return 0
 
         let total = data.totals[type]
@@ -55,6 +55,7 @@ export function useDailySummary(initialData: DailySummaryData) {
             WORK: getAdjustedTotal("WORK"),
             BREAK: getAdjustedTotal("BREAK"),
             PRIVATE: getAdjustedTotal("PRIVATE"),
+            OVERTIME_USE: getAdjustedTotal("OVERTIME_USE"),
         },
         isLoading,
         error,

@@ -6,7 +6,12 @@ import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent } from "@/components/ui/card"
 import type { HourEntryDisplay } from "../_schemas/hour-entry-schemas"
 import type { ViewMode } from "../_schemas/hour-filter-schemas"
-import { HOUR_TYPES, HOUR_TYPE_COLORS, TASK_ID_VALUES } from "../_constants/hour-types"
+import {
+    HOUR_TYPES,
+    HOUR_TYPE_COLORS,
+    HOUR_TYPE_VALUES,
+    TASK_ID_VALUES,
+} from "../_constants/hour-types"
 import { VIEW_MODE_VALUES } from "../_schemas/hour-filter-schemas"
 import { getHourTypeTranslationKey } from "../_utils/translation-helpers"
 import { formatHoursMinutes } from "../_utils/time-helpers"
@@ -62,6 +67,22 @@ export function HoursSummary({
         .filter((entry) => entry.taskId === TASK_ID_VALUES.TOTAL)
         .reduce((sum, entry) => sum + entry.hours, 0)
 
+    const weeklyOvertimeUsed = weeklyEntries
+        .filter(
+            (entry) =>
+                entry.taskId === TASK_ID_VALUES.TOTAL &&
+                entry.type === HOUR_TYPE_VALUES.OVERTIME_USE
+        )
+        .reduce((sum, entry) => sum + entry.hours, 0)
+
+    const monthlyOvertimeUsed = monthlyEntries
+        .filter(
+            (entry) =>
+                entry.taskId === TASK_ID_VALUES.TOTAL &&
+                entry.type === HOUR_TYPE_VALUES.OVERTIME_USE
+        )
+        .reduce((sum, entry) => sum + entry.hours, 0)
+
     let expectedHours = 0
     let overtime = 0
     let workingDays = 0
@@ -88,9 +109,9 @@ export function HoursSummary({
         expectedHours = expectedForPeriod
 
         if (viewMode === VIEW_MODE_VALUES.WEEKLY) {
-            overtime = weeklyGrandTotal - expectedHours
+            overtime = weeklyGrandTotal - expectedHours - weeklyOvertimeUsed
         } else {
-            overtime = monthlyGrandTotal - expectedHours
+            overtime = monthlyGrandTotal - expectedHours - monthlyOvertimeUsed
         }
     }
 

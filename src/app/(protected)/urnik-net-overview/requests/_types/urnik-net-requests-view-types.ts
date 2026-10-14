@@ -38,11 +38,13 @@ export interface UrnikNetRequestsViewTranslations {
     createRequestButton: string
     hoursLabel: string
     daysLabel: string
+    freeHoursLabel: string
     typeWork: string
     typeWorkFromHome: string
     typeVacation: string
     typeSickLeave: string
     typeDayWorkFromHome: string
+    typeFreeHours: string
     table: {
         no: string
         requestDate: string
