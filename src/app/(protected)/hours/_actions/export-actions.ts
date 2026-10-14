@@ -18,7 +18,7 @@ import { validateInput } from "@/lib/validation"
 import { computeAttendanceData } from "@/lib/attendance"
 import { formatDateKey } from "../_utils/date-helpers"
 import { calculateWorkingDaysSync, calculateOvertime } from "../_utils/calculation-helpers"
-import { HOUR_TYPES } from "../_constants/hour-types"
+import { HOUR_TYPES, HOUR_TYPE_VALUES } from "../_constants/hour-types"
 
 export async function fetchMonthlyHourData(
     userId: string,
@@ -110,7 +110,11 @@ export async function fetchMonthlyHourData(
     const hoursPerDay = user?.workHoursPerDay || 8
     const expectedHours = workingDays * hoursPerDay
     const totalHours = dailyData.reduce((sum, day) => sum + day.grandTotal, 0)
-    const overtime = calculateOvertime(totalHours, workingDays, hoursPerDay)
+    const overtimeUsed = dailyData.reduce(
+        (sum, day) => sum + (day.byType[HOUR_TYPE_VALUES.OVERTIME_USE] || 0),
+        0
+    )
+    const overtime = calculateOvertime(totalHours, workingDays, hoursPerDay, overtimeUsed)
 
     const hoursByType: Record<string, number> = {}
     for (const hourType of HOUR_TYPES) {

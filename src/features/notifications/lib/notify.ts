@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { formatBalance } from "@/lib/balance-helpers"
 import { sendEmail } from "./email"
 import {
     newRequestForAdminsEmail,
@@ -13,6 +14,7 @@ const REQUEST_TYPE_LABELS: Record<string, string> = {
     VACATION: "Vacation",
     SICK_LEAVE: "Sick Leave",
     WORK_FROM_HOME: "Work from Home",
+    OVERTIME_USE: "Overtime use",
 }
 
 async function getOrCreatePreferences(userId: string) {
@@ -231,6 +233,63 @@ export async function notifyAdminsNewRequest(params: NotifyAdminsNewRequestParam
         return { success: true, emailsSent, pushSent, notified: admins.length }
     } catch (error) {
         console.error("Error notifying admins:", error)
+        return { success: false, error: "Failed to notify admins" }
+    }
+}
+
+interface NotifyAdminsOvertimeOverdrawnParams {
+    requestUserId: string
+    userName: string
+    availableHours: number
+    startDate: Date
+    endDate: Date
+}
+
+export async function notifyAdminsOvertimeOverdrawn(params: NotifyAdminsOvertimeOverdrawnParams) {
+    try {
+        const admins = await prisma.user.findMany({
+            where: {
+                role: "ADMIN",
+                id: { not: params.requestUserId },
+                OR: [
+                    { managedUsers: { none: {} } },
+                    { managedUsers: { some: { userId: params.requestUserId } } },
+                ],
+            },
+            select: { id: true },
+        })
+
+        if (admins.length === 0) {
+            return { success: true }
+        }
+
+        const period = `${params.startDate.toLocaleDateString("en-GB")} - ${params.endDate.toLocaleDateString("en-GB")}`
+        const notificationTitle = "Overtime balance exceeded"
+        const notificationMessage = `${params.userName}'s approved overtime use (${period}) exceeds the available overtime balance (balance: ${formatBalance(params.availableHours)})`
+
+        for (const admin of admins) {
+            await sendUserNotification({
+                userId: admin.id,
+                notificationType: "REQUEST_SUBMITTED",
+                notificationTitle,
+                notificationMessage,
+                notificationUrl: "/admin/pending-requests",
+                notificationMetadata: {
+                    requestUserId: params.requestUserId,
+                    availableHours: params.availableHours,
+                },
+                pushPreferenceKey: "pushNewRequest",
+                pushPayload: {
+                    title: notificationTitle,
+                    body: notificationMessage,
+                    url: "/admin/pending-requests",
+                },
+            })
+        }
+
+        return { success: true }
+    } catch (error) {
+        console.error("Error notifying admins of overtime overdraw:", error)
         return { success: false, error: "Failed to notify admins" }
     }
 }

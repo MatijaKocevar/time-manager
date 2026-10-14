@@ -67,5 +67,6 @@ export interface PendingRequestTranslations {
         vacation: string
         sickLeave: string
         workFromHome: string
+        overtimeUse: string
     }
 }

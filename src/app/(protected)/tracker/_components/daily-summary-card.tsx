@@ -8,7 +8,7 @@ import type { HourType } from "@/../../prisma/generated/client"
 
 interface DailySummaryCardProps {
     initialData: {
-        totals: Record<"WORK" | "BREAK" | "PRIVATE", number>
+        totals: Record<"WORK" | "BREAK" | "PRIVATE" | "OVERTIME_USE", number>
         activeTimer: {
             id: string
             startTime: Date
@@ -20,6 +20,7 @@ interface DailySummaryCardProps {
         work: string
         break: string
         private: string
+        overtimeUse: string
     }
 }
 
@@ -27,7 +28,7 @@ export function DailySummaryCard({ initialData, translations }: DailySummaryCard
     const { totals } = useDailySummary(initialData)
     const openDayEntriesDialog = useTimeSheetsStore((state) => state.openDayEntriesDialog)
 
-    const handleTypeClick = (type: "WORK" | "BREAK" | "PRIVATE") => {
+    const handleTypeClick = (type: "WORK" | "BREAK" | "PRIVATE" | "OVERTIME_USE") => {
         const today = startOfDay(new Date())
         openDayEntriesDialog(today.toISOString(), type)
     }
@@ -36,7 +37,7 @@ export function DailySummaryCard({ initialData, translations }: DailySummaryCard
         <div>
             <label className="text-sm font-medium mb-2 block">{translations.title}</label>
             <div className="bg-muted rounded-lg p-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div
                         className="flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors"
                         onClick={() => handleTypeClick("WORK")}
@@ -68,6 +69,17 @@ export function DailySummaryCard({ initialData, translations }: DailySummaryCard
                         </span>
                         <span className="text-2xl font-bold tabular-nums">
                             {formatHoursMinutes(totals.PRIVATE)}
+                        </span>
+                    </div>
+                    <div
+                        className="flex flex-col items-center gap-2 cursor-pointer hover:bg-muted/50 rounded-lg p-2 transition-colors"
+                        onClick={() => handleTypeClick("OVERTIME_USE")}
+                    >
+                        <span className="text-sm text-muted-foreground font-medium">
+                            {translations.overtimeUse}
+                        </span>
+                        <span className="text-2xl font-bold tabular-nums">
+                            {formatHoursMinutes(totals.OVERTIME_USE)}
                         </span>
                     </div>
                 </div>

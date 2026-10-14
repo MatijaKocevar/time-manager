@@ -2,6 +2,8 @@
 
 import { URNIK_USER_AGENT } from "../../_utils/constants"
 import { calculateWorkDays, formatDateDDMMYYYY } from "../../_utils/date-helpers"
+import { formatInTimeZone } from "date-fns-tz"
+import { APP_TIMEZONE } from "@/lib/utils"
 
 const URNIK_TENANT_ID = process.env.URNIK_TENANT_ID ?? ""
 
@@ -52,7 +54,7 @@ export async function submitVacationToUrnikNet(
     urnikUserId: string,
     startDate: Date,
     endDate: Date,
-    trackingId: string
+    comment: string
 ): Promise<{ success: boolean; error?: string }> {
     const startUnix = Math.floor(startDate.getTime() / 1000)
     const endUnix = Math.floor(endDate.getTime() / 1000)
@@ -62,7 +64,7 @@ export async function submitVacationToUrnikNet(
     url.searchParams.append("UserID", urnikUserId)
     url.searchParams.append("start", String(startUnix))
     url.searchParams.append("end", String(endUnix))
-    url.searchParams.append("comment", trackingId)
+    url.searchParams.append("comment", comment)
 
     const response = await fetch(url.toString(), {
         method: "GET",
@@ -90,14 +92,14 @@ export async function submitSickLeaveToUrnikNet(
     urnikUserId: string,
     startDate: Date,
     endDate: Date,
-    trackingId: string
+    comment: string
 ): Promise<{ success: boolean; error?: string }> {
     const formData = new FormData()
     formData.append("SickdayType", "4")
     formData.append("startDate", formatDateDDMMYYYY(startDate))
     formData.append("endDate", formatDateDDMMYYYY(endDate))
     formData.append("Duration", String(calculateWorkDays(startDate, endDate)))
-    formData.append("Description", trackingId)
+    formData.append("Description", comment)
     formData.append("TenantID", URNIK_TENANT_ID)
     formData.append("UserID", urnikUserId)
     formData.append("__RequestVerificationToken", csrfToken)
@@ -129,14 +131,14 @@ export async function submitWorkFromHomeToUrnikNet(
     urnikUserId: string,
     startDate: Date,
     endDate: Date,
-    trackingId: string
+    comment: string
 ): Promise<{ success: boolean; error?: string }> {
     const formData = new FormData()
     formData.append("startDate", formatDateDDMMYYYY(startDate))
     formData.append("endDate", formatDateDDMMYYYY(endDate))
     formData.append("Duration", String(calculateWorkDays(startDate, endDate)))
     formData.append("__Invariant", "Duration")
-    formData.append("Description", trackingId)
+    formData.append("Description", comment)
     formData.append("TenantID", URNIK_TENANT_ID)
     formData.append("UserID", urnikUserId)
     formData.append("__RequestVerificationToken", csrfToken)
@@ -156,6 +158,48 @@ export async function submitWorkFromHomeToUrnikNet(
 
     if (!response.ok) {
         return { success: false, error: `Urnik.net returned ${response.status}` }
+    }
+
+    return { success: true }
+}
+
+export async function submitFreeHoursToUrnikNet(
+    cookie: string,
+    date: Date,
+    startTime: string,
+    endTime: string,
+    comment: string
+): Promise<{ success: boolean; error?: string }> {
+    const url = new URL("https://urnik.net/App/Main")
+    url.searchParams.append("handler", "SendFreeRequest")
+    url.searchParams.append("timeStart", startTime)
+    url.searchParams.append("timeEnd", endTime)
+    url.searchParams.append("dateTime", formatInTimeZone(date, APP_TIMEZONE, "yyyy/MM/dd"))
+    url.searchParams.append("comment", comment)
+
+    const response = await fetch(url.toString(), {
+        method: "GET",
+        headers: {
+            "User-Agent": URNIK_USER_AGENT,
+            Cookie: cookie,
+            Accept: "*/*",
+            "Accept-Language": "en-GB,en;q=0.9,sl;q=0.8",
+            "X-Requested-With": "XMLHttpRequest",
+            Referer: "https://urnik.net/App/Main",
+        },
+    })
+
+    if (!response.ok) {
+        return { success: false, error: `Urnik.net returned ${response.status}` }
+    }
+
+    const data = (await response.json().catch(() => null)) as {
+        isError?: boolean
+        error?: string
+    } | null
+
+    if (data?.isError) {
+        return { success: false, error: data.error || "Urnik.net rejected the request" }
     }
 
     return { success: true }

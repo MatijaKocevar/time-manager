@@ -1,3 +1,4 @@
 {
-    "tailwindCSS.lint.suggestCanonicalClasses": "ignore"
+    "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
+    "python.terminal.activateEnvironment": false
 }

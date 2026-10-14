@@ -29,6 +29,7 @@ const hourTypeSchema = z.enum([
     "PRIVATE",
     "VACATION",
     "SICK_LEAVE",
+    "OVERTIME_USE",
 ])
 
 export function registerTimeEntryTools(server: McpServer) {

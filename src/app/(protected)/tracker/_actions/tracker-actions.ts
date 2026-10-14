@@ -173,7 +173,7 @@ export async function getGeneralWorkTask() {
     }
 }
 
-export async function getSystemTaskByType(type: "BREAK" | "PRIVATE") {
+export async function getSystemTaskByType(type: "BREAK" | "PRIVATE" | "OVERTIME_USE") {
     try {
         const session = await requireAuth()
         const title = `System: ${type}`
@@ -244,14 +244,21 @@ export async function getTodayTimeSummary() {
 
         const totals = entries.reduce(
             (acc, entry) => {
-                const type = entry.type as "WORK" | "BREAK" | "PRIVATE"
-                if (type === "WORK" || type === "BREAK" || type === "PRIVATE") {
+                if (
+                    entry.type === "WORK" ||
+                    entry.type === "BREAK" ||
+                    entry.type === "PRIVATE" ||
+                    entry.type === "OVERTIME_USE"
+                ) {
                     const durationHours = entry.duration ? entry.duration / 3600 : 0
-                    acc[type] += durationHours
+                    acc[entry.type] += durationHours
                 }
                 return acc
             },
-            { WORK: 0, BREAK: 0, PRIVATE: 0 } as Record<"WORK" | "BREAK" | "PRIVATE", number>
+            { WORK: 0, BREAK: 0, PRIVATE: 0, OVERTIME_USE: 0 } as Record<
+                "WORK" | "BREAK" | "PRIVATE" | "OVERTIME_USE",
+                number
+            >
         )
 
         return {

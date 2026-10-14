@@ -17,8 +17,8 @@ import type { AuthIdentity } from "@/lib/auth-identity"
 import { errorResult, jsonResult, runTool } from "../lib/tool-helpers"
 
 const requestTypeSchema = z
-    .enum(["VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "WORK"])
-    .describe("VACATION, SICK_LEAVE, WORK_FROM_HOME or WORK")
+    .enum(["VACATION", "SICK_LEAVE", "WORK_FROM_HOME", "WORK", "OVERTIME_USE"])
+    .describe("VACATION, SICK_LEAVE, WORK_FROM_HOME, WORK or OVERTIME_USE")
 
 const requestStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED", "CANCELLED"])
 
@@ -76,8 +76,8 @@ export function registerRequestTools(server: McpServer) {
         {
             title: "List my requests",
             description:
-                "List the authenticated user's time-off and absence requests (vacation, sick leave, work from home, work), " +
-                "newest first, with status, dates and approver/rejector/canceller details.",
+                "List the authenticated user's time-off and absence requests (vacation, sick leave, work from home, work, " +
+                "overtime use), newest first, with status, dates and approver/rejector/canceller details.",
         },
         async (ctx) =>
             runTool(ctx, async () =>
@@ -91,16 +91,26 @@ export function registerRequestTools(server: McpServer) {
             title: "Create request",
             description:
                 "Create a time-off or absence request for the authenticated user. Full day by default; set isFullDay false " +
-                "and provide startTime/endTime (HH:MM) for a partial day. The request starts as PENDING for admin approval. " +
-                "With sendToUrnikNet true and linked Urnik.net credentials it is submitted to Urnik.net instead; submission " +
-                "failures fall back to normal admin approval.",
+                "and provide startTime/endTime (HH:MM) for a partial day. OVERTIME_USE is a single day with " +
+                "startTime/endTime and is blocked when it exceeds the available overtime balance. The request starts as " +
+                "PENDING for admin approval. With sendToUrnikNet true and linked Urnik.net credentials it is submitted to " +
+                "Urnik.net instead; submission failures fall back to normal admin approval.",
             inputSchema: z.object({
                 type: requestTypeSchema,
                 startDate: dateSchema.describe("First day"),
-                endDate: dateSchema.describe("Last day; same as startDate for a single day"),
-                isFullDay: z.boolean().optional().describe("Default true; false for a partial day"),
-                startTime: timeSchema.optional().describe("Required when isFullDay is false"),
-                endTime: timeSchema.optional().describe("Required when isFullDay is false"),
+                endDate: dateSchema.describe(
+                    "Last day; same as startDate for a single day; for OVERTIME_USE must equal startDate"
+                ),
+                isFullDay: z
+                    .boolean()
+                    .optional()
+                    .describe("Default true; false for a partial day; ignored for OVERTIME_USE"),
+                startTime: timeSchema
+                    .optional()
+                    .describe("Required when isFullDay is false; required for OVERTIME_USE"),
+                endTime: timeSchema
+                    .optional()
+                    .describe("Required when isFullDay is false; required for OVERTIME_USE"),
                 reason: z.string().optional(),
                 location: z
                     .string()

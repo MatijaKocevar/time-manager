@@ -66,6 +66,7 @@ export async function RequestHistoryTable({ requests, locale }: RequestHistoryTa
             vacation: tTypes("vacation"),
             sickLeave: tTypes("sickLeave"),
             workFromHome: tTypes("workFromHome"),
+            overtimeUse: tTypes("overtimeUse"),
         },
         statuses: {
             approved: tStatuses("approved"),

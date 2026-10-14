@@ -10,6 +10,11 @@ import {
     type RejectRequestInput,
 } from "../_schemas/request-schemas"
 import { executeApproval, executeRejection } from "./request-helpers"
+import {
+    getOvertimeAvailability,
+    getRequestOvertimeHours,
+    formatOvertimeHours,
+} from "@/lib/overtime"
 
 export async function approveRequest(input: ApproveRequestInput) {
     try {
@@ -51,6 +56,20 @@ export async function approveRequest(input: ApproveRequestInput) {
         if (earlierPendingRequests > 0) {
             return {
                 error: `Cannot approve - ${earlierPendingRequests} earlier pending request(s) must be processed first. Approve requests in submission order.`,
+            }
+        }
+
+        if (request.type === "OVERTIME_USE") {
+            const availability = await getOvertimeAvailability(request.userId, request.id)
+            const requestedOvertime = await getRequestOvertimeHours(
+                request,
+                availability.workHoursPerDay
+            )
+
+            if (requestedOvertime > availability.available + 0.001) {
+                return {
+                    error: `Not enough overtime available: ${formatOvertimeHours(requestedOvertime)} requested, ${formatOvertimeHours(availability.available)} available`,
+                }
             }
         }
 

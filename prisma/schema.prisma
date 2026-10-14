@@ -408,6 +408,7 @@ enum HourType {
   WORK_FROM_HOME
   BREAK
   PRIVATE
+  OVERTIME_USE
 }
 
 enum TaskStatus {
@@ -423,6 +424,7 @@ enum RequestType {
   VACATION
   SICK_LEAVE
   WORK_FROM_HOME
+  OVERTIME_USE
 }
 
 enum RequestStatus {
@@ -460,6 +462,7 @@ enum UrnikRequestStatus {
 enum UrnikRequestCategory {
   HOUR
   DAY
+  FREE_HOURS
 }
 
 model AutoCheckoutCancellation {

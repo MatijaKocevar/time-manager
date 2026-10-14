@@ -175,6 +175,10 @@ export function TimeSheetsClient({
         0
     )
 
+    const overtimeUseSeconds = data
+        .filter((entry) => entry.type === "OVERTIME_USE")
+        .reduce((sum, entry) => sum + (entry.duration ?? 0), 0)
+
     const hasActiveTimer = useMemo(() => data.some((entry) => entry.endTime === null), [data])
 
     const expectedHours = useMemo(() => {
@@ -189,8 +193,8 @@ export function TimeSheetsClient({
 
     const balance = useMemo(() => {
         if (!hasActiveTimer) return initialBalance
-        return calculateBalance(totalSeconds, expectedHours)
-    }, [hasActiveTimer, initialBalance, totalSeconds, expectedHours])
+        return calculateBalance(totalSeconds - overtimeUseSeconds, expectedHours)
+    }, [hasActiveTimer, initialBalance, totalSeconds, overtimeUseSeconds, expectedHours])
 
     const handleExport = async (format: ExportFormat, months: string[]) => {
         if (!months || months.length === 0) {

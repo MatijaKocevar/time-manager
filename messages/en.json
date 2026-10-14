@@ -212,7 +212,8 @@
             "vacation": "Vacation",
             "sickLeave": "Sick Leave",
             "break": "Break",
-            "private": "Private"
+            "private": "Private",
+            "overtimeUse": "Overtime use"
         },
         "labels": {
             "total": "TOTAL",
@@ -403,7 +404,8 @@
             "sickLeave": "Sick Leave",
             "workFromHome": "Work From Home",
             "businessTrip": "Business Trip",
-            "work": "Work"
+            "work": "Work",
+            "overtimeUse": "Overtime use"
         },
         "statuses": {
             "pending": "Pending",
@@ -434,6 +436,9 @@
             "endTime": "End Time",
             "requestedHours": "Requested Hours",
             "hours": "hours",
+            "availableOvertime": "Available overtime",
+            "overtimeToUse": "Overtime to use",
+            "insufficientOvertime": "Not enough overtime available for this request",
             "sendToUrnikNet": "Also submit to Urnik.net",
             "urnikNetNote": "Approval will come from Urnik.net. This request cannot be edited after submission.",
             "urnikSyncedNote": "This request was submitted to Urnik.net and cannot be edited. Cancel it and create a new one if changes are needed.",
@@ -1233,11 +1238,13 @@
             "typePlaceholder": "Select request type...",
             "hoursLabel": "Hours",
             "daysLabel": "Days",
+            "freeHoursLabel": "Free hours",
             "typeWork": "Work",
             "typeWorkFromHome": "Work from home",
             "typeVacation": "Vacation",
             "typeSickLeave": "Sick leave",
             "typeDayWorkFromHome": "Work from home",
+            "typeFreeHours": "Use of free hours",
             "dateLabel": "Date",
             "startTimeLabel": "Start Time",
             "endTimeLabel": "End Time",

@@ -208,6 +208,7 @@ export async function bulkCreateHourEntries(input: BulkCreateHourEntriesInput) {
             where: {
                 userId: session.user.id,
                 status: "APPROVED",
+                type: { not: "OVERTIME_USE" },
                 startDate: { lte: endDate },
                 endDate: { gte: startDate },
             },

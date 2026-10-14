@@ -16,7 +16,7 @@ export function registerReportTools(server: McpServer) {
         {
             title: "Get monthly hours",
             description:
-                "Get aggregated hours for a month: per-day hours by type (work, work from home, vacation, sick leave, break, private), " +
+                "Get aggregated hours for a month: per-day hours by type (work, work from home, vacation, sick leave, break, private, overtime use), " +
                 "working days, expected hours, overtime and office/remote day counts.",
             inputSchema: z.object({
                 month: z
@@ -71,7 +71,7 @@ export function registerReportTools(server: McpServer) {
         {
             title: "Get today's summary",
             description:
-                "Get today's worked hours grouped by WORK, BREAK and PRIVATE, plus the currently active timer if any.",
+                "Get today's worked hours grouped by WORK, BREAK, PRIVATE and OVERTIME_USE, plus the currently active timer if any.",
         },
         async (ctx) => runTool(ctx, async () => jsonResult(await getTodayTimeSummary()))
     )

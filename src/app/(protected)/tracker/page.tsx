@@ -54,7 +54,8 @@ export default async function TrackerPage() {
     if (
         !useLastEntry &&
         (trackerPreferences.selectedType === "BREAK" ||
-            trackerPreferences.selectedType === "PRIVATE")
+            trackerPreferences.selectedType === "PRIVATE" ||
+            trackerPreferences.selectedType === "OVERTIME_USE")
     ) {
         const systemTask = await getSystemTaskByType(trackerPreferences.selectedType)
         finalSelectedTaskId = systemTask?.id ?? null
@@ -71,6 +72,7 @@ export default async function TrackerPage() {
         workFromHome: tTypes("workFromHome"),
         break: tTypes("break"),
         private: tTypes("private"),
+        overtimeUse: tTypes("overtimeUse"),
         noTasksAvailable: t("noTasksAvailable"),
         generalWork: "General",
         dailySummaryTitle: t("dailySummaryTitle"),

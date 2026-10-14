@@ -11,6 +11,7 @@ interface RequestsTableWithDialogProps {
     showUser: boolean
     showNewButton?: boolean
     hasUrnikCredentials?: boolean
+    availableOvertime?: number
 }
 
 export function RequestsTableWithDialog({
@@ -18,6 +19,7 @@ export function RequestsTableWithDialog({
     showUser,
     showNewButton = true,
     hasUrnikCredentials = false,
+    availableOvertime,
 }: RequestsTableWithDialogProps) {
     const [selectedRequest, setSelectedRequest] = useState<RequestDisplay | null>(null)
     const [isNewRequestOpen, setIsNewRequestOpen] = useState(false)
@@ -40,6 +42,7 @@ export function RequestsTableWithDialog({
                     <RequestDetailForm
                         onSuccess={() => setIsNewRequestOpen(false)}
                         hasUrnikCredentials={hasUrnikCredentials}
+                        availableOvertime={availableOvertime}
                     />
                 </DialogContent>
             </Dialog>
@@ -54,6 +57,7 @@ export function RequestsTableWithDialog({
                             request={selectedRequest}
                             onSuccess={() => setSelectedRequest(null)}
                             hasUrnikCredentials={hasUrnikCredentials}
+                            availableOvertime={availableOvertime}
                         />
                     )}
                 </DialogContent>

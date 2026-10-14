@@ -23,6 +23,7 @@ export const HOUR_TYPE_VALUES = {
     WORK_FROM_HOME: "WORK_FROM_HOME",
     BREAK: "BREAK",
     PRIVATE: "PRIVATE",
+    OVERTIME_USE: "OVERTIME_USE",
 } as const
 
 export const ALL_HOUR_TYPES = [
@@ -32,6 +33,7 @@ export const ALL_HOUR_TYPES = [
     HOUR_TYPE_VALUES.SICK_LEAVE,
     HOUR_TYPE_VALUES.BREAK,
     HOUR_TYPE_VALUES.PRIVATE,
+    HOUR_TYPE_VALUES.OVERTIME_USE,
 ] as const
 
 export const HOUR_TYPES = [
@@ -41,6 +43,7 @@ export const HOUR_TYPES = [
     { value: HOUR_TYPE_VALUES.SICK_LEAVE },
     { value: HOUR_TYPE_VALUES.BREAK },
     { value: HOUR_TYPE_VALUES.PRIVATE },
+    { value: HOUR_TYPE_VALUES.OVERTIME_USE },
 ] as const
 
 export const HOUR_TYPE_COLORS = {
@@ -69,6 +72,10 @@ export const HOUR_TYPE_COLORS = {
     PRIVATE_TRACKED: getWorkTypeColor("PRIVATE", "default"),
     PRIVATE_MANUAL: getWorkTypeColor("PRIVATE", "light"),
     PRIVATE_TOTAL: getWorkTypeColor("PRIVATE", "strong"),
+    OVERTIME_USE: getWorkTypeColor("OVERTIME_USE", "default"),
+    OVERTIME_USE_TRACKED: getWorkTypeColor("OVERTIME_USE", "default"),
+    OVERTIME_USE_MANUAL: getWorkTypeColor("OVERTIME_USE", "light"),
+    OVERTIME_USE_TOTAL: getWorkTypeColor("OVERTIME_USE", "strong"),
 } as const
 
 export const ROW_BG_COLORS = {
@@ -91,6 +98,9 @@ export const ROW_BG_COLORS = {
     PRIVATE_TOTAL: "bg-cyan-500/10 dark:bg-cyan-500/15",
     PRIVATE_TRACKED: "bg-cyan-500/5 dark:bg-cyan-500/10",
     PRIVATE_MANUAL: "bg-cyan-500/5 dark:bg-cyan-500/10",
+    OVERTIME_USE_TOTAL: "bg-rose-500/10 dark:bg-rose-500/15",
+    OVERTIME_USE_TRACKED: "bg-rose-500/5 dark:bg-rose-500/10",
+    OVERTIME_USE_MANUAL: "bg-rose-500/5 dark:bg-rose-500/10",
 } as const
 
 export const DEFAULT_HOURS = 8
