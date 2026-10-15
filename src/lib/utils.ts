@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { toZonedTime } from "date-fns-tz"
+import { toZonedTime, fromZonedTime } from "date-fns-tz"
 
 export const APP_TIMEZONE = "Europe/Ljubljana"
 
@@ -20,9 +20,23 @@ export function parseDateStringAsLocal(dateString: string): Date {
     return new Date(year, month - 1, day)
 }
 
-export function getTodayDate(): Date {
-    const nowInLjubljana = toZonedTime(new Date(), APP_TIMEZONE)
-    return new Date(
-        Date.UTC(nowInLjubljana.getFullYear(), nowInLjubljana.getMonth(), nowInLjubljana.getDate())
-    )
+export function getTodayDate(timeZone: string = APP_TIMEZONE): Date {
+    const nowInZone = toZonedTime(new Date(), timeZone)
+    return new Date(Date.UTC(nowInZone.getFullYear(), nowInZone.getMonth(), nowInZone.getDate()))
+}
+
+export function getDayBoundsInTimeZone(
+    timeZone: string,
+    reference: Date = new Date()
+): { start: Date; end: Date; dateKey: string } {
+    const wall = toZonedTime(reference, timeZone)
+    const year = wall.getFullYear()
+    const month = wall.getMonth()
+    const day = wall.getDate()
+
+    const start = fromZonedTime(new Date(year, month, day, 0, 0, 0, 0), timeZone)
+    const end = fromZonedTime(new Date(year, month, day + 1, 0, 0, 0, 0), timeZone)
+    const dateKey = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+
+    return { start, end, dateKey }
 }

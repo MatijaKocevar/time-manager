@@ -47,9 +47,9 @@ export function calculateExpectedHoursToDate(
     startDate: Date,
     endDate: Date,
     holidays: Array<{ date: Date }>,
-    hoursPerDay: number
+    hoursPerDay: number,
+    now: Date = new Date()
 ): number {
-    const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const end = new Date(endDate)
     const periodEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate())

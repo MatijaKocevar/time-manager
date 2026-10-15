@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
-import { getTodayDate } from "@/lib/utils"
+import { getTodayDate, APP_TIMEZONE } from "@/lib/utils"
 
 export async function POST(request: NextRequest) {
     try {
@@ -26,7 +26,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "User ID required" }, { status: 400 })
         }
 
-        const today = getTodayDate()
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { timeZone: true },
+        })
+
+        const today = getTodayDate(user?.timeZone || APP_TIMEZONE)
 
         await prisma.autoCheckoutCancellation.upsert({
             where: {

@@ -9,14 +9,19 @@ import {
     processAutoCheckout,
 } from "@/app/(protected)/urnik-net-overview/_actions/auto-clock-actions"
 
-function parseTimeToDate(timeString: string): Date {
+function parseTimeToDate(timeString: string, timeZone: string): Date {
     const [hours, minutes] = timeString.split(":").map(Number)
-    const nowUtc = new Date()
-    const year = nowUtc.getUTCFullYear()
-    const month = nowUtc.getUTCMonth()
-    const day = nowUtc.getUTCDate()
-    const ljubljanaDate = new Date(year, month, day, hours, minutes, 0, 0)
-    return fromZonedTime(ljubljanaDate, APP_TIMEZONE)
+    const nowInZone = toZonedTime(new Date(), timeZone)
+    const wallDate = new Date(
+        nowInZone.getFullYear(),
+        nowInZone.getMonth(),
+        nowInZone.getDate(),
+        hours,
+        minutes,
+        0,
+        0
+    )
+    return fromZonedTime(wallDate, timeZone)
 }
 
 function shouldTrigger(triggerTime: Date | null, lastFired: Date | null): boolean {
@@ -29,13 +34,13 @@ function shouldTrigger(triggerTime: Date | null, lastFired: Date | null): boolea
     return lastFired < triggerTime && now >= triggerTime
 }
 
-function isTodayInLjubljana(date: Date): boolean {
-    const nowInLjubljana = toZonedTime(new Date(), APP_TIMEZONE)
-    const dateInLjubljana = toZonedTime(date, APP_TIMEZONE)
+function isTodayInTimeZone(date: Date, timeZone: string): boolean {
+    const nowInZone = toZonedTime(new Date(), timeZone)
+    const dateInZone = toZonedTime(date, timeZone)
     return (
-        dateInLjubljana.getFullYear() === nowInLjubljana.getFullYear() &&
-        dateInLjubljana.getMonth() === nowInLjubljana.getMonth() &&
-        dateInLjubljana.getDate() === nowInLjubljana.getDate()
+        dateInZone.getFullYear() === nowInZone.getFullYear() &&
+        dateInZone.getMonth() === nowInZone.getMonth() &&
+        dateInZone.getDate() === nowInZone.getDate()
     )
 }
 
@@ -71,6 +76,7 @@ export async function POST(request: NextRequest) {
             id: true,
             workStartTime: true,
             workEndTime: true,
+            timeZone: true,
             preferences: {
                 select: {
                     autoCheckInEnabled: true,
@@ -97,11 +103,12 @@ export async function POST(request: NextRequest) {
 
     const errors: string[] = []
 
-    const nowInLjubljana = toZonedTime(new Date(), APP_TIMEZONE)
-    const todayDayOfWeek = nowInLjubljana.getDay()
-
     for (const user of users) {
         await new Promise((resolve) => setTimeout(resolve, 500))
+
+        const timeZone = user.timeZone || APP_TIMEZONE
+        const nowInZone = toZonedTime(new Date(), timeZone)
+        const todayDayOfWeek = nowInZone.getDay()
 
         const workDays: number[] =
             user.workDays.length > 0 ? user.workDays.map((r) => r.dayOfWeek) : [1, 2, 3, 4, 5]
@@ -120,14 +127,14 @@ export async function POST(request: NextRequest) {
 
         const checkinTime =
             user.preferences?.autoCheckInEnabled && effectiveStartTime
-                ? parseTimeToDate(effectiveStartTime)
+                ? parseTimeToDate(effectiveStartTime, timeZone)
                 : null
         const checkinReminderTime = checkinTime
             ? new Date(checkinTime.getTime() - 15 * 60 * 1000)
             : null
         const checkoutTime =
             user.preferences?.autoCheckOutEnabled && effectiveEndTime
-                ? parseTimeToDate(effectiveEndTime)
+                ? parseTimeToDate(effectiveEndTime, timeZone)
                 : null
         const checkoutReminderTime = checkoutTime
             ? new Date(checkoutTime.getTime() - 15 * 60 * 1000)
@@ -139,9 +146,10 @@ export async function POST(request: NextRequest) {
             create: { userId: user.id },
         })
 
-        const clockedInToday = state.clockedInAt !== null && isTodayInLjubljana(state.clockedInAt)
+        const clockedInToday =
+            state.clockedInAt !== null && isTodayInTimeZone(state.clockedInAt, timeZone)
         const clockedOutToday =
-            state.clockedOutAt !== null && isTodayInLjubljana(state.clockedOutAt)
+            state.clockedOutAt !== null && isTodayInTimeZone(state.clockedOutAt, timeZone)
 
         if (!clockedInToday && shouldTrigger(checkinReminderTime, state.checkinReminderFiredAt)) {
             const result = await sendCheckinReminder(user.id)
@@ -159,7 +167,7 @@ export async function POST(request: NextRequest) {
             clockedInToday ||
             (state.checkinFiredAt !== null &&
                 checkinTime !== null &&
-                isTodayInLjubljana(state.checkinFiredAt))
+                isTodayInTimeZone(state.checkinFiredAt, timeZone))
 
         if (!alreadyCheckedInToday && shouldTrigger(checkinTime, state.checkinFiredAt)) {
             const result = await processAutoCheckin(user.id)

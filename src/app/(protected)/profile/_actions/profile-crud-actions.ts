@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "@/lib/auth"
-import { getTodayDate } from "@/lib/utils"
+import { getTodayDate, APP_TIMEZONE } from "@/lib/utils"
 import { validateInput } from "@/lib/validation"
 import { requireNotDemo } from "@/lib/auth-helpers"
 import {
@@ -23,7 +23,14 @@ export async function getCurrentUser() {
         return null
     }
 
-    const today = getTodayDate()
+    const timeZone = (
+        await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { timeZone: true },
+        })
+    )?.timeZone
+
+    const today = getTodayDate(timeZone || APP_TIMEZONE)
 
     const user = await prisma.user.findUnique({
         where: { id: session.user.id },
@@ -121,7 +128,11 @@ export async function updateProfile(input: UpdateProfileInput) {
         })
 
         if (workStartTime !== undefined || workEndTime !== undefined) {
-            const today = getTodayDate()
+            const profileUser = await prisma.user.findUnique({
+                where: { id: session.user.id },
+                select: { timeZone: true },
+            })
+            const today = getTodayDate(profileUser?.timeZone || APP_TIMEZONE)
             await prisma.workTimeAdjustment.deleteMany({
                 where: { userId: session.user.id, date: today },
             })
