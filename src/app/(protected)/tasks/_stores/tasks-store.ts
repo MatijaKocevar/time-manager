@@ -9,8 +9,7 @@ interface ActiveTimer {
 }
 
 interface TasksStoreState {
-    expandedRows: Set<string>
-    expandedTasks: Set<string>
+    expansionOverrides: Map<string, boolean>
     expandedStatusSections: Map<string, Set<TaskStatus>>
     activeTimer: ActiveTimer | null
     elapsedSeconds: number
@@ -20,12 +19,9 @@ interface TasksStoreState {
 }
 
 interface TasksStoreActions {
-    toggleRow: (taskId: string) => void
-    toggleTaskExpanded: (taskId: string) => void
+    setTaskExpansion: (taskId: string, isExpanded: boolean) => void
     toggleStatusSection: (listId: string | null, status: TaskStatus) => void
-    hydrateExpandedTasks: () => void
-    expandAll: (taskIds: string[]) => void
-    collapseAll: () => void
+    hydrateExpansionState: () => void
     setActiveTimer: (taskId: string, entryId: string, startTime: Date) => void
     clearActiveTimer: () => void
     updateElapsedTime: (seconds: number) => void
@@ -36,13 +32,31 @@ interface TasksStoreActions {
     deleteList: (listId: string, confirmMessage: string) => Promise<boolean>
 }
 
-const saveExpandedTasks = (expandedTasks: Set<string>) => {
+const EXPANSION_OVERRIDES_STORAGE_KEY = "taskExpansionOverrides"
+
+const saveExpansionOverrides = (overrides: Map<string, boolean>) => {
     if (typeof window === "undefined") return
     try {
-        localStorage.setItem("expandedTasks", JSON.stringify(Array.from(expandedTasks)))
+        localStorage.setItem(
+            EXPANSION_OVERRIDES_STORAGE_KEY,
+            JSON.stringify(Array.from(overrides.entries()))
+        )
     } catch {
         return
     }
+}
+
+const loadExpansionOverrides = (): Map<string, boolean> => {
+    if (typeof window === "undefined") return new Map()
+    try {
+        const stored = localStorage.getItem(EXPANSION_OVERRIDES_STORAGE_KEY)
+        if (stored) {
+            return new Map(JSON.parse(stored) as [string, boolean][])
+        }
+    } catch {
+        return new Map()
+    }
+    return new Map()
 }
 
 const saveExpandedStatusSections = (expandedSections: Map<string, Set<TaskStatus>>) => {
@@ -75,40 +89,18 @@ const loadExpandedStatusSections = (): Map<string, Set<TaskStatus>> => {
 }
 
 export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) => ({
-    expandedRows: new Set<string>(),
-    toggleRow: (taskId) =>
+    expansionOverrides: new Map(),
+    setTaskExpansion: (taskId, isExpanded) =>
         set((state) => {
-            const newExpanded = new Set(state.expandedRows)
-            if (newExpanded.has(taskId)) {
-                newExpanded.delete(taskId)
-            } else {
-                newExpanded.add(taskId)
-            }
-            return { expandedRows: newExpanded }
-        }),
-    expandAll: (taskIds) =>
-        set(() => ({
-            expandedRows: new Set(taskIds),
-        })),
-    collapseAll: () =>
-        set(() => ({
-            expandedRows: new Set(),
-        })),
+            const newOverrides = new Map(state.expansionOverrides)
 
-    expandedTasks: new Set<string>(),
-    toggleTaskExpanded: (taskId) =>
-        set((state) => {
-            const newExpanded = new Set(state.expandedTasks)
-            if (newExpanded.has(taskId)) {
-                newExpanded.delete(taskId)
-            } else {
-                newExpanded.add(taskId)
-            }
-            saveExpandedTasks(newExpanded)
-            return { expandedTasks: newExpanded }
+            newOverrides.set(taskId, isExpanded)
+            saveExpansionOverrides(newOverrides)
+
+            return { expansionOverrides: newOverrides }
         }),
 
-    expandedStatusSections: loadExpandedStatusSections(),
+    expandedStatusSections: new Map(),
     toggleStatusSection: (listId, status) =>
         set((state) => {
             const key = listId || "no-list"
@@ -128,19 +120,11 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
             return { expandedStatusSections: newExpanded }
         }),
 
-    hydrateExpandedTasks: () =>
-        set(() => {
-            if (typeof window === "undefined") return {}
-            try {
-                const stored = localStorage.getItem("expandedTasks")
-                if (stored) {
-                    return { expandedTasks: new Set(JSON.parse(stored)) }
-                }
-            } catch {
-                return {}
-            }
-            return {}
-        }),
+    hydrateExpansionState: () =>
+        set(() => ({
+            expansionOverrides: loadExpansionOverrides(),
+            expandedStatusSections: loadExpandedStatusSections(),
+        })),
 
     activeTimer: null,
     setActiveTimer: (taskId, entryId, startTime) =>

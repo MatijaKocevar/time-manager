@@ -1,12 +1,14 @@
 "use client"
 
+import { useEffect } from "react"
 import { useTranslations } from "next-intl"
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { buildTaskTree } from "../_utils/task-tree-helpers"
 import { TaskRow } from "./task-row"
 import { TaskCard } from "./task-card"
+import { useTasksStore } from "../_stores/tasks-store"
+import { useIsDesktop } from "../_hooks/use-is-desktop"
 import type { TaskDisplay } from "../_schemas"
-
 import type { ListDisplay } from "../_schemas/list-schemas"
 
 interface TasksFlatTableProps {
@@ -17,7 +19,13 @@ interface TasksFlatTableProps {
 export function TasksFlatTable({ tasks, lists }: TasksFlatTableProps) {
     const t = useTranslations("tasks.table")
     const tCommon = useTranslations("common")
+    const isDesktop = useIsDesktop()
+    const hydrateExpansionState = useTasksStore((state) => state.hydrateExpansionState)
     const taskTree = buildTaskTree(tasks)
+
+    useEffect(() => {
+        hydrateExpansionState()
+    }, [hydrateExpansionState])
 
     if (tasks.length === 0) {
         return (
@@ -27,10 +35,13 @@ export function TasksFlatTable({ tasks, lists }: TasksFlatTableProps) {
         )
     }
 
+    if (isDesktop === null) {
+        return null
+    }
+
     return (
         <div className="rounded-md border overflow-x-auto">
-            {/* Desktop table view */}
-            <div className="hidden sm:block">
+            {isDesktop ? (
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -50,14 +61,13 @@ export function TasksFlatTable({ tasks, lists }: TasksFlatTableProps) {
                         ))}
                     </TableBody>
                 </Table>
-            </div>
-
-            {/* Mobile card view */}
-            <div className="sm:hidden space-y-3 p-3">
-                {taskTree.map((task) => (
-                    <TaskCard key={task.id} task={task} lists={lists} />
-                ))}
-            </div>
+            ) : (
+                <div className="space-y-3 p-3">
+                    {taskTree.map((task) => (
+                        <TaskCard key={task.id} task={task} lists={lists} />
+                    ))}
+                </div>
+            )}
         </div>
     )
 }

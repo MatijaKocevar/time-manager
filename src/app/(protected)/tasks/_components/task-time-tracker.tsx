@@ -26,7 +26,9 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
     const tClock = useTranslations("clock")
     const tCommon = useTranslations("common")
     const activeTimer = useTasksStore((state) => state.activeTimer)
-    const elapsedSeconds = useTasksStore((state) => state.elapsedSeconds)
+    const elapsedSeconds = useTasksStore((state) =>
+        state.activeTimer?.taskId === task.id ? state.elapsedSeconds : null
+    )
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
     const clearActiveTimer = useTasksStore((state) => state.clearActiveTimer)
     const openTimeEntriesDialog = useTaskDialogStore((state) => state.openTimeEntriesDialog)
@@ -116,7 +118,7 @@ export function TaskTimeTracker({ task }: TaskTimeTrackerProps) {
                     className="tasks-time-entries-btn text-sm font-mono hover:underline cursor-pointer"
                 >
                     {isRunning
-                        ? formatDuration(elapsedSeconds)
+                        ? formatDuration(elapsedSeconds ?? 0)
                         : formatDuration(task.totalTime ?? 0)}
                 </button>
             </div>
