@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server"
 import { startOfDay, endOfDay } from "@/lib/date-utils"
-import { getShiftsForPeriod, getAllUsers } from "./_actions/shift-actions"
+import { getShiftsForPeriod, getAllUsers, getOvertimeUseForPeriod } from "./_actions/shift-actions"
+import { fetchUrnikAbsences } from "./_actions/urnik-absences-actions"
 import { getHolidaysInRange } from "../admin/holidays/_actions/holiday-actions"
 import { ShiftsCalendar } from "./_components/shifts-calendar"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
@@ -31,6 +32,8 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
         shiftsResult,
         usersResult,
         holidays,
+        absencesResult,
+        overtimeUseResult,
         tShifts,
         tutorialsSeen,
         tTutorial,
@@ -39,6 +42,8 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
         getShiftsForPeriod({ startDate, endDate }),
         getAllUsers(),
         getHolidaysInRange(formatDate(startDate), formatDate(endDate)),
+        fetchUrnikAbsences({ startDate, endDate }),
+        getOvertimeUseForPeriod({ startDate, endDate }),
         getTranslations("shifts.messages"),
         getTutorialsSeen(),
         getTranslations("tutorial"),
@@ -59,6 +64,17 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
 
     const shifts = shiftsResult.shifts || []
     const users = usersResult.users || []
+    const absences = absencesResult.absences || []
+    const overtimeUse = overtimeUseResult.overtimeUse || []
+    const urnikUsers = (absencesResult.employees || []).map((employee) => ({
+        id: employee.id,
+        name: employee.name,
+        email: "",
+        workStartTime: null,
+        workEndTime: null,
+        workHoursPerDay: null,
+        isUrnikOnly: true,
+    }))
 
     const shiftsWithNormalizedDates = shifts.map((shift) => {
         const date = new Date(shift.date)
@@ -110,7 +126,10 @@ export default async function ShiftsPage({ searchParams }: ShiftsPageProps) {
                 <ShiftsCalendar
                     initialShifts={shiftsWithNormalizedDates}
                     users={users}
+                    urnikUsers={urnikUsers}
                     initialHolidays={holidays}
+                    initialUrnikAbsences={absences}
+                    initialOvertimeUse={overtimeUse}
                     initialViewMode={viewMode}
                     initialSelectedDate={selectedDate}
                 />

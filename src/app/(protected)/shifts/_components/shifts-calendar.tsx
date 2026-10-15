@@ -10,7 +10,8 @@ import { useRequestStore } from "@/app/(protected)/requests/_stores/request-stor
 import { createRequest } from "@/app/(protected)/requests/_actions/request-actions"
 import { REQUEST_TYPE } from "@/app/(protected)/requests/_constants"
 import { type RequestType } from "@/app/(protected)/requests/_schemas/request-schemas"
-import type { UserWithWorkHours, ShiftDisplay } from "../_schemas/shift-schemas"
+import type { UserWithWorkHours, ShiftDisplay, OvertimeUseDay } from "../_schemas/shift-schemas"
+import type { UrnikAbsence } from "../_schemas/urnik-absence-schemas"
 import { ShiftsCalendarHeader } from "./shifts-calendar-header"
 import { ShiftsTable } from "./shifts-table"
 import { RequestFormDialog } from "./request-form-dialog"
@@ -19,7 +20,10 @@ import { ShiftDetailsDialog } from "./shift-details-dialog"
 interface ShiftsCalendarProps {
     initialShifts: ShiftDisplay[]
     users: UserWithWorkHours[]
+    urnikUsers: UserWithWorkHours[]
     initialHolidays?: Array<{ date: Date; name: string }>
+    initialUrnikAbsences: UrnikAbsence[]
+    initialOvertimeUse: OvertimeUseDay[]
     initialViewMode: "week" | "month"
     initialSelectedDate: Date
 }
@@ -27,7 +31,10 @@ interface ShiftsCalendarProps {
 export function ShiftsCalendar({
     initialShifts,
     users,
+    urnikUsers,
     initialHolidays = [],
+    initialUrnikAbsences,
+    initialOvertimeUse,
     initialViewMode,
     initialSelectedDate,
 }: ShiftsCalendarProps) {
@@ -49,6 +56,8 @@ export function ShiftsCalendar({
         date: Date
         user: UserWithWorkHours
         shifts: ShiftDisplay[]
+        absences: UrnikAbsence[]
+        overtimeUse: OvertimeUseDay[]
     } | null>(null)
 
     const formData = useRequestStore((state) => state.formData)
@@ -117,6 +126,44 @@ export function ShiftsCalendar({
         return shiftsByUserAndDate.get(key) || []
     }
 
+    const urnikAbsencesByUserAndDate = useMemo(() => {
+        const map = new Map<string, UrnikAbsence[]>()
+        initialUrnikAbsences.forEach((absence) => {
+            const key = `${absence.userId}-${absence.dateString}`
+            const existing = map.get(key) || []
+            map.set(key, [...existing, absence])
+        })
+        return map
+    }, [initialUrnikAbsences])
+
+    const getUrnikAbsences = (userId: string, date: Date) => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        const dateStr = `${year}-${month}-${day}`
+        const key = `${userId}-${dateStr}`
+        return urnikAbsencesByUserAndDate.get(key) || []
+    }
+
+    const overtimeUseByUserAndDate = useMemo(() => {
+        const map = new Map<string, OvertimeUseDay[]>()
+        initialOvertimeUse.forEach((entry) => {
+            const key = `${entry.userId}-${entry.dateString}`
+            const existing = map.get(key) || []
+            map.set(key, [...existing, entry])
+        })
+        return map
+    }, [initialOvertimeUse])
+
+    const getOvertimeUse = (userId: string, date: Date) => {
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, "0")
+        const day = String(date.getDate()).padStart(2, "0")
+        const dateStr = `${year}-${month}-${day}`
+        const key = `${userId}-${dateStr}`
+        return overtimeUseByUserAndDate.get(key) || []
+    }
+
     const holidaysByDate = useMemo(() => {
         const map = new Map<string, { name: string }>()
         initialHolidays.forEach((holiday) => {
@@ -147,10 +194,16 @@ export function ShiftsCalendar({
         )
     }
 
-    const handleCellClick = (date: Date, user: UserWithWorkHours, shifts: ShiftDisplay[]) => {
-        if (shifts.length > 0) {
-            setSelectedDayShifts({ date, user, shifts })
-        } else {
+    const handleCellClick = (
+        date: Date,
+        user: UserWithWorkHours,
+        shifts: ShiftDisplay[],
+        absences: UrnikAbsence[],
+        overtimeUse: OvertimeUseDay[]
+    ) => {
+        if (shifts.length > 0 || absences.length > 0 || overtimeUse.length > 0) {
+            setSelectedDayShifts({ date, user, shifts, absences, overtimeUse })
+        } else if (!user.isUrnikOnly) {
             resetForm()
             const dateString = formatDateToLocal(date)
             setFormData({ startDate: dateString, endDate: dateString })
@@ -242,10 +295,12 @@ export function ShiftsCalendar({
     const locationsMap: Record<string, string> = {}
     const locationsShortMap: Record<string, string> = {}
 
-    ;["office", "home", "vacation", "sickLeave"].forEach((key) => {
-        locationsMap[key] = tLocations(key as never)
-        locationsShortMap[key] = tLocationsShort(key as never)
-    })
+    ;["office", "home", "vacation", "sickLeave", "overtimeUse", "break", "absence"].forEach(
+        (key) => {
+            locationsMap[key] = tLocations(key as never)
+            locationsShortMap[key] = tLocationsShort(key as never)
+        }
+    )
 
     return (
         <div className="flex flex-col gap-4 h-full">
@@ -270,14 +325,18 @@ export function ShiftsCalendar({
             <ShiftsTable
                 days={days}
                 users={users}
+                urnikUsers={urnikUsers}
                 dateLocale={dateLocale}
                 getShifts={getShifts}
+                getUrnikAbsences={getUrnikAbsences}
+                getOvertimeUse={getOvertimeUse}
                 isHoliday={isHoliday}
                 isToday={isToday}
                 onCellClick={handleCellClick}
                 translations={{
                     employee: t("table.employee"),
                     unknown: t("table.unknown"),
+                    urnikSection: t("table.urnikSection"),
                 }}
                 locationsTranslations={locationsMap}
                 locationsShortTranslations={locationsShortMap}

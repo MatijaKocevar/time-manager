@@ -2,15 +2,25 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { SHIFT_LOCATION_COLORS } from "../_constants"
-import { getShiftLocationTranslationKey } from "../_utils/translation-helpers"
-import type { UserWithWorkHours, ShiftDisplay } from "../_schemas/shift-schemas"
+import {
+    SHIFT_LOCATION_COLORS,
+    URNIK_ABSENCE_BADGE_COLORS,
+    OVERTIME_USE_BADGE_COLORS,
+} from "../_constants"
+import {
+    getShiftLocationTranslationKey,
+    getUrnikAbsenceTranslationKey,
+} from "../_utils/translation-helpers"
+import type { UserWithWorkHours, ShiftDisplay, OvertimeUseDay } from "../_schemas/shift-schemas"
+import type { UrnikAbsence } from "../_schemas/urnik-absence-schemas"
 
 interface ShiftDetailsDialogProps {
     selectedDayShifts: {
         date: Date
         user: UserWithWorkHours
         shifts: ShiftDisplay[]
+        absences: UrnikAbsence[]
+        overtimeUse: OvertimeUseDay[]
     } | null
     onClose: () => void
     locale: string
@@ -60,7 +70,9 @@ export function ShiftDetailsDialog({
                                     {selectedDayShifts.user.name || selectedDayShifts.user.email}
                                 </div>
                             </div>
-                            {selectedDayShifts.shifts.length === 0 ? (
+                            {selectedDayShifts.shifts.length === 0 &&
+                            selectedDayShifts.absences.length === 0 &&
+                            selectedDayShifts.overtimeUse.length === 0 ? (
                                 <div className="text-sm text-muted-foreground py-4 text-center">
                                     {translations.noShifts}
                                 </div>
@@ -109,6 +121,42 @@ export function ShiftDetailsDialog({
                                                 </div>
                                                 <div className="text-sm opacity-90">
                                                     {timeRange}
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                    {selectedDayShifts.overtimeUse.map((entry) => (
+                                        <div
+                                            key={`${entry.userId}-${entry.dateString}`}
+                                            className={`rounded-lg p-3 ${OVERTIME_USE_BADGE_COLORS.bg} ${OVERTIME_USE_BADGE_COLORS.text}`}
+                                        >
+                                            <div className="font-semibold mb-1">
+                                                {locationsTranslations.overtimeUse}
+                                            </div>
+                                            <div className="text-sm opacity-90">
+                                                {entry.startTime && entry.endTime
+                                                    ? `${entry.startTime} - ${entry.endTime}`
+                                                    : translations.allDay}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {selectedDayShifts.absences.map((absence) => {
+                                        const translationKey = getUrnikAbsenceTranslationKey(
+                                            absence.badge
+                                        )
+                                        const colors = URNIK_ABSENCE_BADGE_COLORS[absence.badge]
+
+                                        return (
+                                            <div
+                                                key={`${absence.userId}-${absence.dateString}`}
+                                                className={`rounded-lg p-3 ${colors.bg} ${colors.text}`}
+                                            >
+                                                <div className="font-semibold mb-1">
+                                                    {locationsTranslations[translationKey] ||
+                                                        absence.badge}
+                                                </div>
+                                                <div className="text-sm opacity-90">
+                                                    {translations.allDay}
                                                 </div>
                                             </div>
                                         )
