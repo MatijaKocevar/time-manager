@@ -3,22 +3,22 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { z } from "zod"
-import { fromZonedTime } from "date-fns-tz"
+import { fromZonedTime, toZonedTime } from "date-fns-tz"
 import { getTodayDate, APP_TIMEZONE } from "@/lib/utils"
 
-function parseTimeToDate(timeString: string): Date {
+function parseTimeToDate(timeString: string, timeZone: string): Date {
     const [hours, minutes] = timeString.split(":").map(Number)
-    const nowUtc = new Date()
-    const ljubljanaDate = new Date(
-        nowUtc.getUTCFullYear(),
-        nowUtc.getUTCMonth(),
-        nowUtc.getUTCDate(),
+    const nowInZone = toZonedTime(new Date(), timeZone)
+    const wallDate = new Date(
+        nowInZone.getFullYear(),
+        nowInZone.getMonth(),
+        nowInZone.getDate(),
         hours,
         minutes,
         0,
         0
     )
-    return fromZonedTime(ljubljanaDate, APP_TIMEZONE)
+    return fromZonedTime(wallDate, timeZone)
 }
 
 const QuickAdjustSchema = z.object({
@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
             select: {
                 workStartTime: true,
                 workEndTime: true,
+                timeZone: true,
             },
         })
 
@@ -57,7 +58,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "User not found" }, { status: 404 })
         }
 
-        const today = getTodayDate()
+        const timeZone = user.timeZone || APP_TIMEZONE
+        const today = getTodayDate(timeZone)
 
         const addMinutes = (time: string, minutes: number): string => {
             const [h, m] = time.split(":").map(Number)
@@ -98,7 +100,7 @@ export async function POST(request: NextRequest) {
             })
 
             const newCheckinReminderTime = new Date(
-                parseTimeToDate(newStart).getTime() - 15 * 60 * 1000
+                parseTimeToDate(newStart, timeZone).getTime() - 15 * 60 * 1000
             )
             await prisma.autoClockState.upsert({
                 where: { userId: session.user.id },
@@ -130,7 +132,9 @@ export async function POST(request: NextRequest) {
             update: { adjustedEndTime: newEnd },
         })
 
-        const newCheckoutReminderTime = new Date(parseTimeToDate(newEnd).getTime() - 15 * 60 * 1000)
+        const newCheckoutReminderTime = new Date(
+            parseTimeToDate(newEnd, timeZone).getTime() - 15 * 60 * 1000
+        )
         await prisma.autoClockState.upsert({
             where: { userId: session.user.id },
             update: { checkoutReminderFiredAt: newCheckoutReminderTime },

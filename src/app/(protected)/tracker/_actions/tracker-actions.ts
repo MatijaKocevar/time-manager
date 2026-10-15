@@ -1,7 +1,7 @@
 "use server"
 
 import { requireAuth } from "@/lib/auth-helpers"
-import { startOfDay } from "@/lib/date-utils"
+import { getDayBoundsInTimeZone, APP_TIMEZONE } from "@/lib/utils"
 import { prisma } from "@/lib/prisma"
 import type { HourType } from "@/../../prisma/generated/client"
 import type { TaskDisplay } from "@/app/(protected)/tasks/_schemas/task-schemas"
@@ -93,7 +93,12 @@ export async function getLastTimeEntryToday(): Promise<{
     try {
         const session = await requireAuth()
 
-        const today = startOfDay(new Date())
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { timeZone: true },
+        })
+
+        const { start: today } = getDayBoundsInTimeZone(user?.timeZone || APP_TIMEZONE)
 
         const lastEntry = await prisma.taskTimeEntry.findFirst({
             where: {
@@ -218,9 +223,14 @@ export async function getTodayTimeSummary() {
     try {
         const session = await requireAuth()
 
-        const today = startOfDay(new Date())
-        const tomorrow = new Date(today)
-        tomorrow.setDate(tomorrow.getDate() + 1)
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { timeZone: true },
+        })
+
+        const { start: today, end: tomorrow } = getDayBoundsInTimeZone(
+            user?.timeZone || APP_TIMEZONE
+        )
 
         const entries = await prisma.taskTimeEntry.findMany({
             where: {

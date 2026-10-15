@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import { calculateExpectedHoursToDate } from "@/lib/balance-helpers"
 import { calculateOvertimeUseHours, type OvertimeRequestLike } from "@/lib/overtime-helpers"
+import { toZonedTime } from "date-fns-tz"
+import { APP_TIMEZONE } from "@/lib/utils"
 import type { Prisma } from "../../prisma/generated/client"
 
 export interface OvertimeRequestSource {
@@ -39,17 +41,26 @@ export async function getRequestOvertimeHours(
 export async function calculateOvertimeFund(userId: string, year: number): Promise<number> {
     const user = await prisma.user.findUnique({
         where: { id: userId },
-        select: { workHoursPerDay: true },
+        select: { workHoursPerDay: true, timeZone: true },
     })
 
     const workHoursPerDay = user?.workHoursPerDay || 8
+    const timeZone = user?.timeZone || APP_TIMEZONE
 
-    const today = new Date()
+    const nowInZone = toZonedTime(new Date(), timeZone)
     const startOfYear = new Date(Date.UTC(year, 0, 1))
     const endDate =
-        year === today.getFullYear()
+        year === nowInZone.getFullYear()
             ? new Date(
-                  Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
+                  Date.UTC(
+                      nowInZone.getFullYear(),
+                      nowInZone.getMonth(),
+                      nowInZone.getDate(),
+                      23,
+                      59,
+                      59,
+                      999
+                  )
               )
             : new Date(Date.UTC(year, 11, 31, 23, 59, 59, 999))
 
@@ -58,7 +69,7 @@ export async function calculateOvertimeFund(userId: string, year: number): Promi
     })
 
     let balance = 0
-    const currentMonth = year === today.getFullYear() ? today.getMonth() : 11
+    const currentMonth = year === nowInZone.getFullYear() ? nowInZone.getMonth() : 11
 
     for (let month = 0; month <= currentMonth; month++) {
         const monthStart = new Date(Date.UTC(year, month, 1))
@@ -84,7 +95,8 @@ export async function calculateOvertimeFund(userId: string, year: number): Promi
             monthStartLocal,
             monthEndLocal,
             holidays,
-            workHoursPerDay
+            workHoursPerDay,
+            nowInZone
         )
 
         balance += monthHours - monthExpectedHours
@@ -108,14 +120,17 @@ export async function getOvertimeAvailability(
     userId: string,
     excludeRequestId?: string
 ): Promise<OvertimeAvailability> {
-    const year = new Date().getFullYear()
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { workHoursPerDay: true, timeZone: true },
+    })
 
-    const [fund, user, pendingRequests] = await Promise.all([
+    const timeZone = user?.timeZone || APP_TIMEZONE
+    const nowInZone = toZonedTime(new Date(), timeZone)
+    const year = nowInZone.getFullYear()
+
+    const [fund, pendingRequests] = await Promise.all([
         calculateOvertimeFund(userId, year),
-        prisma.user.findUnique({
-            where: { id: userId },
-            select: { workHoursPerDay: true },
-        }),
         prisma.request.findMany({
             where: {
                 userId,

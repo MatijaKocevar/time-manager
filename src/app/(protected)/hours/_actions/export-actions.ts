@@ -25,8 +25,8 @@ export async function fetchMonthlyHourData(
     month: string
 ): Promise<MonthlyHourExportData> {
     const [year, monthNum] = month.split("-").map(Number)
-    const startDate = new Date(year, monthNum - 1, 1)
-    const endDate = new Date(year, monthNum, 0)
+    const startDate = new Date(Date.UTC(year, monthNum - 1, 1))
+    const endDate = new Date(Date.UTC(year, monthNum, 0))
 
     const summaryQuery = Prisma.sql`
         SELECT * FROM daily_hour_summary

@@ -20,7 +20,7 @@ function combineDateTime(date: Date, timeStr: string): Date {
     return combined
 }
 
-function buildZonedDateTime(day: Date, time: string): Date {
+function buildZonedDateTime(day: Date, time: string, timeZone: string): Date {
     const [hours, minutes] = time.split(":").map(Number)
     const wall = new Date(
         day.getUTCFullYear(),
@@ -31,7 +31,7 @@ function buildZonedDateTime(day: Date, time: string): Date {
         0,
         0
     )
-    return fromZonedTime(wall, APP_TIMEZONE)
+    return fromZonedTime(wall, timeZone)
 }
 
 function getRequestDateTimeRange(request: {
@@ -428,11 +428,13 @@ export async function executeApproval(request: ApproveableRequest, approvedById?
                     select: {
                         workStartTime: true,
                         workHoursPerDay: true,
+                        timeZone: true,
                     },
                 })
 
                 const userWorkHours = requestUser?.workHoursPerDay || 8
                 const userStartTime = requestUser?.workStartTime || "08:00"
+                const timeZone = requestUser?.timeZone || APP_TIMEZONE
 
                 const taskStartDay = new Date(request.startDate)
                 taskStartDay.setUTCHours(0, 0, 0, 0)
@@ -488,15 +490,15 @@ export async function executeApproval(request: ApproveableRequest, approvedById?
                     let dayHours: number
 
                     if (!request.isFullDay && request.startTime && request.endTime) {
-                        entryStart = buildZonedDateTime(currentDay, request.startTime)
-                        entryEnd = buildZonedDateTime(currentDay, request.endTime)
+                        entryStart = buildZonedDateTime(currentDay, request.startTime, timeZone)
+                        entryEnd = buildZonedDateTime(currentDay, request.endTime, timeZone)
                         dayHours =
                             request.requestedHours !== null
                                 ? Number(request.requestedHours)
                                 : (entryEnd.getTime() - entryStart.getTime()) / 3600000
                     } else {
                         dayHours = userWorkHours
-                        entryStart = buildZonedDateTime(currentDay, userStartTime)
+                        entryStart = buildZonedDateTime(currentDay, userStartTime, timeZone)
                         entryEnd = new Date(entryStart.getTime() + dayHours * 3600 * 1000)
                     }
 

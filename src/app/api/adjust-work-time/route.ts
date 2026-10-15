@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { getServerSession } from "next-auth"
 import { authConfig } from "@/lib/auth"
 import { z } from "zod"
-import { getTodayDate } from "@/lib/utils"
-import { startOfDay } from "@/lib/date-utils"
+import { getTodayDate, APP_TIMEZONE } from "@/lib/utils"
+import { parseDate } from "@/lib/date-utils"
 
 const AdjustTimeSchema = z.object({
     adjustedStartTime: z
@@ -44,7 +44,13 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const targetDate = startOfDay(dateStr ? new Date(dateStr) : getTodayDate())
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { timeZone: true },
+        })
+
+        const timeZone = user?.timeZone || APP_TIMEZONE
+        const targetDate = dateStr ? parseDate(dateStr) : getTodayDate(timeZone)
 
         await prisma.workTimeAdjustment.upsert({
             where: {
@@ -87,7 +93,12 @@ export async function DELETE() {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
 
-        const today = getTodayDate()
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { timeZone: true },
+        })
+
+        const today = getTodayDate(user?.timeZone || APP_TIMEZONE)
 
         await prisma.workTimeAdjustment.deleteMany({
             where: {

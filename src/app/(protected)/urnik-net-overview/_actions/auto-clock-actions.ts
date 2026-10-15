@@ -1,8 +1,7 @@
 "use server"
 
 import { prisma } from "@/lib/prisma"
-import { startOfDay } from "@/lib/date-utils"
-import { getTodayDate } from "@/lib/utils"
+import { getTodayDate, getDayBoundsInTimeZone, APP_TIMEZONE } from "@/lib/utils"
 import { performClockInWithCookie, performClockOutWithCookie } from "./clock-actions"
 import {
     notifyAutoCheckinReminder,
@@ -22,21 +21,16 @@ interface ActionResult {
 
 export async function sendCheckinReminder(userId: string): Promise<ActionResult> {
     try {
-        const today = getTodayDate()
-
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
                 name: true,
                 workStartTime: true,
+                timeZone: true,
                 preferences: {
                     select: {
                         autoCheckInEnabled: true,
                     },
-                },
-                workTimeAdjustments: {
-                    where: { date: today },
-                    take: 1,
                 },
             },
         })
@@ -49,8 +43,12 @@ export async function sendCheckinReminder(userId: string): Promise<ActionResult>
             return { success: false, error: "Work start time not configured" }
         }
 
-        const effectiveStartTime =
-            user.workTimeAdjustments[0]?.adjustedStartTime ?? user.workStartTime
+        const today = getTodayDate(user.timeZone || APP_TIMEZONE)
+        const adjustment = await prisma.workTimeAdjustment.findUnique({
+            where: { userId_date: { userId, date: today } },
+        })
+
+        const effectiveStartTime = adjustment?.adjustedStartTime ?? user.workStartTime
 
         await notifyAutoCheckinReminder({
             userId,
@@ -70,21 +68,16 @@ export async function sendCheckinReminder(userId: string): Promise<ActionResult>
 
 export async function sendCheckoutReminder(userId: string): Promise<ActionResult> {
     try {
-        const today = getTodayDate()
-
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
                 name: true,
                 workEndTime: true,
+                timeZone: true,
                 preferences: {
                     select: {
                         autoCheckOutEnabled: true,
                     },
-                },
-                workTimeAdjustments: {
-                    where: { date: today },
-                    take: 1,
                 },
             },
         })
@@ -97,7 +90,12 @@ export async function sendCheckoutReminder(userId: string): Promise<ActionResult
             return { success: false, error: "Work end time not configured" }
         }
 
-        const effectiveEndTime = user.workTimeAdjustments[0]?.adjustedEndTime ?? user.workEndTime
+        const today = getTodayDate(user.timeZone || APP_TIMEZONE)
+        const adjustment = await prisma.workTimeAdjustment.findUnique({
+            where: { userId_date: { userId, date: today } },
+        })
+
+        const effectiveEndTime = adjustment?.adjustedEndTime ?? user.workEndTime
 
         await notifyAutoCheckoutReminder({
             userId,
@@ -123,6 +121,7 @@ export async function processAutoCheckin(userId: string): Promise<ActionResult> 
                 name: true,
                 urnikUsername: true,
                 urnikPassword: true,
+                timeZone: true,
                 preferences: {
                     select: {
                         autoCheckInEnabled: true,
@@ -141,7 +140,7 @@ export async function processAutoCheckin(userId: string): Promise<ActionResult> 
             return { success: false, error: "Urnik credentials not configured" }
         }
 
-        const today = startOfDay(new Date())
+        const { start: today } = getDayBoundsInTimeZone(user.timeZone || APP_TIMEZONE)
 
         const wfhRequest = await prisma.request.findFirst({
             where: {
@@ -157,7 +156,7 @@ export async function processAutoCheckin(userId: string): Promise<ActionResult> 
 
         if (isDryRun) {
             const time = new Date().toLocaleTimeString("sl-SI", {
-                timeZone: "Europe/Ljubljana",
+                timeZone: user.timeZone || APP_TIMEZONE,
                 hour: "2-digit",
                 minute: "2-digit",
             })
@@ -210,6 +209,7 @@ export async function processAutoCheckout(userId: string): Promise<ActionResult>
                 name: true,
                 urnikUsername: true,
                 urnikPassword: true,
+                timeZone: true,
                 preferences: {
                     select: {
                         autoCheckOutEnabled: true,
@@ -228,7 +228,7 @@ export async function processAutoCheckout(userId: string): Promise<ActionResult>
             return { success: false, error: "Urnik credentials not configured" }
         }
 
-        const today = startOfDay(new Date())
+        const { start: today } = getDayBoundsInTimeZone(user.timeZone || APP_TIMEZONE)
 
         const cancellation = await prisma.autoCheckoutCancellation.findUnique({
             where: {
@@ -245,7 +245,7 @@ export async function processAutoCheckout(userId: string): Promise<ActionResult>
 
         if (isDryRun) {
             const time = new Date().toLocaleTimeString("sl-SI", {
-                timeZone: "Europe/Ljubljana",
+                timeZone: user.timeZone || APP_TIMEZONE,
                 hour: "2-digit",
                 minute: "2-digit",
             })
@@ -295,7 +295,12 @@ export async function cancelAutoCheckout(): Promise<ActionResult> {
         const session = await requireAuth()
         const userId = session.user.id
 
-        const today = startOfDay(new Date())
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { timeZone: true },
+        })
+
+        const today = getTodayDate(user?.timeZone || APP_TIMEZONE)
 
         await prisma.autoCheckoutCancellation.upsert({
             where: {
