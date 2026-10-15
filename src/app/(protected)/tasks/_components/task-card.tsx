@@ -24,9 +24,9 @@ import {
 import { useQueryClient } from "@tanstack/react-query"
 import { useTasksStore } from "../_stores/tasks-store"
 import { useTaskDialogStore } from "../_stores/task-dialog-stores"
-import { toggleTaskExpanded } from "../_actions/task-actions"
 import { moveTaskToList } from "../_actions/list-actions"
 import { taskKeys, listKeys } from "../_constants/query-keys"
+import { useTaskExpansion } from "../_hooks/use-task-expansion"
 import { EditableTaskTitle } from "./editable-task-title"
 import { TaskStatusSelect } from "./task-status-select"
 import { TaskTimeTracker } from "./task-time-tracker"
@@ -53,30 +53,12 @@ export function TaskCard({ task, lists, parentColor, parentTitle }: TaskCardProp
     const isOperationLoading = useTasksStore(
         (state) => state.taskOperations.get(task.id)?.isLoading ?? false
     )
+    const { isExpanded, toggleExpansion, expand } = useTaskExpansion(task)
 
-    const isExpanded = task.isExpanded
     const hasSubtasks = task.subtasks && task.subtasks.length > 0
 
-    const handleToggleExpand = async () => {
-        if (!hasSubtasks || isOperationLoading) return
-
-        setTaskOperationLoading(task.id, true)
-        try {
-            const result = await toggleTaskExpanded({ id: task.id, isExpanded: !isExpanded })
-
-            if (result.success) {
-                await queryClient.invalidateQueries({ queryKey: taskKeys.all })
-            } else {
-                console.error("Failed to toggle task expansion:", result.error)
-            }
-        } catch (error) {
-            console.error("Failed to toggle task expansion:", error)
-        } finally {
-            setTaskOperationLoading(task.id, false)
-        }
-    }
-
     const handleAddSubtask = () => {
+        expand()
         openCreateDialog(task.id)
     }
 
@@ -121,9 +103,8 @@ export function TaskCard({ task, lists, parentColor, parentTitle }: TaskCardProp
                     <div className="flex items-start gap-2 flex-1 min-w-0">
                         {hasSubtasks && (
                             <button
-                                onClick={handleToggleExpand}
-                                disabled={isOperationLoading}
-                                className="p-1 hover:bg-muted rounded disabled:opacity-50 mt-1 shrink-0"
+                                onClick={toggleExpansion}
+                                className="p-1 hover:bg-muted rounded mt-1 shrink-0"
                             >
                                 {isExpanded ? (
                                     <ChevronDown className="h-4 w-4" />

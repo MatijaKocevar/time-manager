@@ -10,6 +10,7 @@ import { getStatusColor } from "../_constants/task-statuses"
 import { getTaskStatusLabel } from "../_utils/task-status-labels"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { useTasksStore } from "../_stores/tasks-store"
+import { useIsDesktop } from "../_hooks/use-is-desktop"
 import type { TaskDisplay } from "../_schemas"
 import type { ListDisplay } from "../_schemas/list-schemas"
 
@@ -20,10 +21,11 @@ interface TasksTableProps {
 }
 
 export function TasksTable({ tasks, listId, lists }: TasksTableProps) {
-    const [isMounted, setIsMounted] = useState(false)
     const t = useTranslations("tasks.table")
     const tCommon = useTranslations("common")
     const tStatus = useTranslations("tasks.statuses")
+    const isDesktop = useIsDesktop()
+    const hydrateExpansionState = useTasksStore((state) => state.hydrateExpansionState)
     const groupedTasks = buildGroupedTaskTree(tasks)
     const key = listId || "no-list"
     const [defaultExpanded] = useState(() => new Set(["IN_PROGRESS" as const, "TODO" as const]))
@@ -33,11 +35,10 @@ export function TasksTable({ tasks, listId, lists }: TasksTableProps) {
     const toggleStatusSection = useTasksStore((state) => state.toggleStatusSection)
 
     useEffect(() => {
-        const timer = setTimeout(() => setIsMounted(true), 0)
-        return () => clearTimeout(timer)
-    }, [])
+        hydrateExpansionState()
+    }, [hydrateExpansionState])
 
-    if (!isMounted) {
+    if (isDesktop === null) {
         return null
     }
 
@@ -68,46 +69,41 @@ export function TasksTable({ tasks, listId, lists }: TasksTableProps) {
                                 </span>
                             </div>
                         </button>
-                        {isExpanded && (
-                            <>
-                                {/* Desktop table view */}
-                                <div className="hidden sm:block overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead className="w-12"></TableHead>
-                                                <TableHead className="min-w-[300px]">
-                                                    {t("title")}
-                                                </TableHead>
-                                                <TableHead className="w-[150px]">
-                                                    {tCommon("fields.status")}
-                                                </TableHead>
-                                                <TableHead className="w-[180px]">
-                                                    {t("list")}
-                                                </TableHead>
-                                                <TableHead className="w-[200px]">
-                                                    {t("timeTracker")}
-                                                </TableHead>
-                                                <TableHead className="w-[100px] text-right">
-                                                    {tCommon("fields.actions")}
-                                                </TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {group.tasks.map((task) => (
-                                                <TaskRow key={task.id} task={task} lists={lists} />
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-
-                                {/* Mobile card view */}
-                                <div className="sm:hidden space-y-3 p-3">
-                                    {group.tasks.map((task) => (
-                                        <TaskCard key={task.id} task={task} lists={lists} />
-                                    ))}
-                                </div>
-                            </>
+                        {isExpanded && isDesktop && (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-12"></TableHead>
+                                            <TableHead className="min-w-[300px]">
+                                                {t("title")}
+                                            </TableHead>
+                                            <TableHead className="w-[150px]">
+                                                {tCommon("fields.status")}
+                                            </TableHead>
+                                            <TableHead className="w-[180px]">{t("list")}</TableHead>
+                                            <TableHead className="w-[200px]">
+                                                {t("timeTracker")}
+                                            </TableHead>
+                                            <TableHead className="w-[100px] text-right">
+                                                {tCommon("fields.actions")}
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {group.tasks.map((task) => (
+                                            <TaskRow key={task.id} task={task} lists={lists} />
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
+                        {isExpanded && !isDesktop && (
+                            <div className="space-y-3 p-3">
+                                {group.tasks.map((task) => (
+                                    <TaskCard key={task.id} task={task} lists={lists} />
+                                ))}
+                            </div>
                         )}
                     </div>
                 )

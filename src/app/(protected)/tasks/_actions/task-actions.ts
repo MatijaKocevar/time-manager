@@ -19,6 +19,7 @@ import {
 import type { TaskDisplay, TasksFilter } from "../_schemas/task-schemas"
 import { TASK_STATUS } from "../_constants/task-statuses"
 import { deleteOrphanedImages, deleteAllTaskImages } from "../_utils/image-cleanup"
+import { applyTaskTotalTimes } from "../_utils/task-time-totals"
 
 export type TaskWithTime = TaskDisplay & { totalTime: number }
 
@@ -93,26 +94,7 @@ async function fetchTaskDisplays(whereClause: TaskWhereClause): Promise<TaskWith
         })
     )
 
-    const calculateTotalTime = (taskId: string): number => {
-        const task = taskMap.get(taskId)
-        if (!task) return 0
-
-        const subtasks = Array.from(taskMap.values()).filter((t) => t.parentId === taskId)
-        const subtaskTime = subtasks.reduce(
-            (sum: number, subtask) => sum + calculateTotalTime(subtask.id),
-            0
-        )
-
-        const total = task.directTime + subtaskTime
-        task.totalTime = total
-        return total
-    }
-
-    tasks.forEach((task) => {
-        if (!task.parentId) {
-            calculateTotalTime(task.id)
-        }
-    })
+    applyTaskTotalTimes(Array.from(taskMap.values()))
 
     return Array.from(taskMap.values()).map(({ directTime, ...task }) => {
         void directTime
@@ -328,20 +310,15 @@ export async function toggleTaskExpanded(input: ToggleExpandedInput) {
 
         const { id, isExpanded } = validation.data
 
-        const existing = await prisma.task.findUnique({
-            where: { id },
-        })
-
-        if (!existing || existing.userId !== session.user.id) {
-            return { error: "Task not found" }
-        }
-
-        await prisma.task.update({
-            where: { id },
+        const result = await prisma.task.updateMany({
+            where: { id, userId: session.user.id },
             data: { isExpanded },
         })
 
-        revalidatePath("/tasks")
+        if (result.count === 0) {
+            return { error: "Task not found" }
+        }
+
         return { success: true }
     } catch (error) {
         if (error instanceof Error) {
@@ -431,26 +408,7 @@ export async function getInProgressTasksByLists(): Promise<TasksByList[]> {
             })
         )
 
-        const calculateTotalTime = (taskId: string): number => {
-            const task = taskMap.get(taskId)
-            if (!task) return 0
-
-            const subtasks = Array.from(taskMap.values()).filter((t) => t.parentId === taskId)
-            const subtaskTime = subtasks.reduce(
-                (sum, subtask) => sum + calculateTotalTime(subtask.id),
-                0
-            )
-
-            const total = task.directTime + subtaskTime
-            task.totalTime = total
-            return total
-        }
-
-        tasks.forEach((task) => {
-            if (!task.parentId) {
-                calculateTotalTime(task.id)
-            }
-        })
+        applyTaskTotalTimes(Array.from(taskMap.values()))
 
         const groupedByList = new Map<string | null, TasksByList>()
 
