@@ -469,13 +469,19 @@
             "office": "Pisarna",
             "home": "Delo od doma",
             "vacation": "Dopust",
-            "sickLeave": "Bolniška"
+            "sickLeave": "Bolniška",
+            "overtimeUse": "Koriščenje prostih ur",
+            "break": "Odmor",
+            "absence": "Odsotnost"
         },
         "locationsShort": {
             "office": "PIS",
             "home": "DDD",
             "vacation": "DOP",
-            "sickLeave": "BOL"
+            "sickLeave": "BOL",
+            "overtimeUse": "PRO",
+            "break": "ODM",
+            "absence": "ODS"
         },
         "dialog": {
             "title": "Podrobnosti izmene - {date}",
@@ -484,7 +490,8 @@
         },
         "table": {
             "employee": "Zaposleni",
-            "unknown": "Neznano"
+            "unknown": "Neznano",
+            "urnikSection": "Urnik.net odsotnosti"
         },
         "form": {
             "editShift": "Uredi izmeno",
@@ -1404,7 +1411,7 @@
             },
             "calendar": {
                 "title": "Koledar izmen",
-                "description": "Vsaka vrstica predstavlja člana ekipe, vsak stolpec pa dan. Barvne oznake prikazujejo, kje delajo — pisarna, dom, dopust ali bolniška."
+                "description": "Vsaka vrstica predstavlja člana ekipe, vsak stolpec pa dan. Barvne oznake prikažejo dneve, ki niso običajen pisarniški dan — delo od doma, dopust, bolniška ali koriščenje prostih ur."
             },
             "cell": {
                 "title": "Klikabilne celice",

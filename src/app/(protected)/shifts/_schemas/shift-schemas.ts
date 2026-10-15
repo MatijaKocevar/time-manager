@@ -24,6 +24,7 @@ export const UserWithWorkHoursSchema = z.object({
     workStartTime: z.string().nullable(),
     workEndTime: z.string().nullable(),
     workHoursPerDay: z.number().nullable(),
+    isUrnikOnly: z.boolean().optional(),
 })
 
 export type UserWithWorkHours = z.infer<typeof UserWithWorkHoursSchema>
@@ -53,3 +54,12 @@ export const ShiftDisplaySchema = ShiftWithUserSchema.extend({
 })
 
 export type ShiftDisplay = z.infer<typeof ShiftDisplaySchema>
+
+export const OvertimeUseDaySchema = z.object({
+    userId: z.string(),
+    dateString: z.string(),
+    startTime: z.string().nullable(),
+    endTime: z.string().nullable(),
+})
+
+export type OvertimeUseDay = z.infer<typeof OvertimeUseDaySchema>

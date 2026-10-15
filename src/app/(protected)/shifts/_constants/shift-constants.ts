@@ -47,3 +47,11 @@ export const SHIFT_LOCATION_COLORS: Record<
         label: "Sick Leave",
     },
 }
+
+export function toColorParts(color: string) {
+    const classes = color.split(" ")
+
+    return { bg: classes.slice(0, 2).join(" "), text: classes.slice(2).join(" ") }
+}
+
+export const OVERTIME_USE_BADGE_COLORS = toColorParts(getWorkTypeColor("OVERTIME_USE", "default"))

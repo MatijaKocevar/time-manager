@@ -469,13 +469,19 @@
             "office": "Office",
             "home": "Work from Home",
             "vacation": "Vacation",
-            "sickLeave": "Sick Leave"
+            "sickLeave": "Sick Leave",
+            "overtimeUse": "Overtime Use",
+            "break": "Break",
+            "absence": "Absence"
         },
         "locationsShort": {
             "office": "OFF",
             "home": "WFH",
             "vacation": "VAC",
-            "sickLeave": "SL"
+            "sickLeave": "SL",
+            "overtimeUse": "OVT",
+            "break": "BRK",
+            "absence": "ABS"
         },
         "dialog": {
             "title": "Shift Details - {date}",
@@ -484,7 +490,8 @@
         },
         "table": {
             "employee": "Employee",
-            "unknown": "Unknown"
+            "unknown": "Unknown",
+            "urnikSection": "Urnik.net absences"
         },
         "form": {
             "editShift": "Edit Shift",
@@ -1404,7 +1411,7 @@
             },
             "calendar": {
                 "title": "Shifts Calendar",
-                "description": "Each row is a team member. Each column is a day. Colored badges show where they are working — office, home, vacation, or sick leave."
+                "description": "Each row is a team member. Each column is a day. Colored badges mark days that are not a regular office day — working from home, vacation, sick leave or overtime use."
             },
             "cell": {
                 "title": "Clickable Cells",
