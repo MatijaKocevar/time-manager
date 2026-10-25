@@ -12,7 +12,6 @@ export async function CreateRequestDialog() {
             typeWork={t("typeWork")}
             typeWorkFromHome={t("typeWorkFromHome")}
             dateLabel={t("dateLabel")}
-            startTimeLabel={t("startTimeLabel")}
             endTimeLabel={t("endTimeLabel")}
             commentLabel={t("commentLabel")}
             submitButton={t("submitButton")}

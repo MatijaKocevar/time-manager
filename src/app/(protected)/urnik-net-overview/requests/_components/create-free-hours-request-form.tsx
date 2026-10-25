@@ -2,18 +2,17 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
+import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { DatePicker } from "@/components/ui/date-picker"
+import { DateTimePicker } from "@/components/ui/datetime-picker"
 import { WorkTypeBadge } from "@/components/work-type-badge"
 import { useCreateRequestStore } from "../_stores/create-request-store"
 import { createUrnikNetFreeRequest } from "../_actions/create-urnik-net-free-request-action"
 
 interface CreateFreeHoursRequestFormProps {
     dateLabel: string
-    startTimeLabel: string
     endTimeLabel: string
     commentLabel: string
     submitButton: string
@@ -25,7 +24,6 @@ interface CreateFreeHoursRequestFormProps {
 
 export function CreateFreeHoursRequestForm({
     dateLabel,
-    startTimeLabel,
     endTimeLabel,
     commentLabel,
     submitButton,
@@ -40,22 +38,69 @@ export function CreateFreeHoursRequestForm({
     const setError = useCreateRequestStore((state) => state.setError)
     const closeDialog = useCreateRequestStore((state) => state.closeDialog)
 
-    const [date, setDate] = useState<Date>()
-    const [startTime, setStartTime] = useState("08:00")
-    const [endTime, setEndTime] = useState("12:00")
+    const [startDateTime, setStartDateTime] = useState<Date | undefined>(() => {
+        const date = new Date()
+        date.setHours(8, 0, 0, 0)
+        return date
+    })
+    const [endDateTime, setEndDateTime] = useState<Date | undefined>(() => {
+        const date = new Date()
+        date.setHours(12, 0, 0, 0)
+        return date
+    })
     const [comment, setComment] = useState("")
+
+    const handleStartDateTimeChange = (date: Date | undefined) => {
+        setStartDateTime(date)
+
+        if (!date) return
+
+        setEndDateTime((current) => {
+            if (!current) return current
+
+            return new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate(),
+                current.getHours(),
+                current.getMinutes()
+            )
+        })
+    }
+
+    const handleEndDateTimeChange = (date: Date | undefined) => {
+        if (!date) {
+            setEndDateTime(undefined)
+            return
+        }
+
+        const base = startDateTime ?? date
+
+        setEndDateTime(
+            new Date(
+                base.getFullYear(),
+                base.getMonth(),
+                base.getDate(),
+                date.getHours(),
+                date.getMinutes()
+            )
+        )
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (!date || endTime <= startTime) return
+        if (!startDateTime || !endDateTime || endDateTime <= startDateTime) return
 
         setSubmitting(true)
         setError(null)
 
+        const requestDate = new Date(startDateTime)
+        requestDate.setHours(0, 0, 0, 0)
+
         const result = await createUrnikNetFreeRequest({
-            date,
-            startTime,
-            endTime,
+            date: requestDate,
+            startTime: format(startDateTime, "HH:mm"),
+            endTime: format(endDateTime, "HH:mm"),
             comment: comment || undefined,
         })
 
@@ -101,30 +146,27 @@ export function CreateFreeHoursRequestForm({
 
             <div className="space-y-2">
                 <Label>{dateLabel}</Label>
-                <DatePicker date={date} onDateChange={setDate} placeholder={dateLabel} />
+                <DateTimePicker
+                    value={startDateTime}
+                    onChange={handleStartDateTimeChange}
+                    modal={true}
+                    hideTime={false}
+                    timePicker={{ hour: true, minute: true, second: false }}
+                    disabled={isSubmitting}
+                />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label htmlFor="free-start-time">{startTimeLabel}</Label>
-                    <Input
-                        id="free-start-time"
-                        type="time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        disabled={isSubmitting}
-                    />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="free-end-time">{endTimeLabel}</Label>
-                    <Input
-                        id="free-end-time"
-                        type="time"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                        disabled={isSubmitting}
-                    />
-                </div>
+            <div className="space-y-2">
+                <Label>{endTimeLabel}</Label>
+                <DateTimePicker
+                    value={endDateTime}
+                    onChange={handleEndDateTimeChange}
+                    modal={true}
+                    hideTime={false}
+                    timePicker={{ hour: true, minute: true, second: false }}
+                    disabled={isSubmitting}
+                    min={startDateTime}
+                />
             </div>
 
             <div className="space-y-2">
@@ -141,7 +183,9 @@ export function CreateFreeHoursRequestForm({
             <Button
                 type="submit"
                 className="w-full"
-                disabled={isSubmitting || !date || endTime <= startTime}
+                disabled={
+                    isSubmitting || !startDateTime || !endDateTime || endDateTime <= startDateTime
+                }
             >
                 {isSubmitting ? "..." : submitButton}
             </Button>

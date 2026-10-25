@@ -14,7 +14,6 @@ import type { WorkType } from "@/lib/work-type-styles"
 
 interface CreateRequestFormProps {
     dateLabel: string
-    startTimeLabel: string
     endTimeLabel: string
     commentLabel: string
     submitButton: string
@@ -25,7 +24,6 @@ interface CreateRequestFormProps {
 
 export function CreateRequestForm({
     dateLabel,
-    startTimeLabel,
     endTimeLabel,
     commentLabel,
     submitButton,
