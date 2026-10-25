@@ -285,23 +285,18 @@ export function RequestDetailForm({
                 )}
             </div>
 
-            <div className={`grid gap-4 ${isOvertimeUse ? "grid-cols-1" : "grid-cols-2"}`}>
+            <div className="grid gap-4 grid-cols-2">
                 <div className="space-y-2">
-                    <Label htmlFor="startDate">
-                        {isOvertimeUse ? tCommon("fields.date") : tCommon("fields.startDate")}
-                    </Label>
+                    <Label htmlFor="startDate">{tCommon("fields.startDate")}</Label>
                     {isEditable ? (
-                        formData.isFullDay || isOvertimeUse ? (
+                        formData.isFullDay && !isOvertimeUse ? (
                             <DatePicker
                                 date={formData.startDate ? new Date(formData.startDate) : undefined}
-                                onDateChange={(date) => {
-                                    const value = date ? format(date, "yyyy-MM-dd") : ""
-                                    setFormData(
-                                        isOvertimeUse
-                                            ? { startDate: value, endDate: value }
-                                            : { startDate: value }
-                                    )
-                                }}
+                                onDateChange={(date) =>
+                                    setFormData({
+                                        startDate: date ? format(date, "yyyy-MM-dd") : "",
+                                    })
+                                }
                                 placeholder={t("selectStartDate")}
                             />
                         ) : (
@@ -314,12 +309,23 @@ export function RequestDetailForm({
                                         : undefined
                                 }
                                 onChange={(date) => {
-                                    if (date) {
+                                    if (!date) return
+
+                                    const value = format(date, "yyyy-MM-dd")
+
+                                    if (isOvertimeUse) {
                                         setFormData({
-                                            startDate: format(date, "yyyy-MM-dd"),
+                                            startDate: value,
+                                            endDate: value,
                                             startTime: format(date, "HH:mm"),
                                         })
+                                        return
                                     }
+
+                                    setFormData({
+                                        startDate: value,
+                                        startTime: format(date, "HH:mm"),
+                                    })
                                 }}
                                 modal={true}
                                 hideTime={false}
@@ -339,80 +345,58 @@ export function RequestDetailForm({
                         )
                     )}
                 </div>
-                {!isOvertimeUse && (
-                    <div className="space-y-2">
-                        <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
-                        {isEditable ? (
-                            formData.isFullDay ? (
-                                <DatePicker
-                                    date={formData.endDate ? new Date(formData.endDate) : undefined}
-                                    onDateChange={(date) =>
-                                        setFormData({
-                                            endDate: date ? format(date, "yyyy-MM-dd") : "",
-                                        })
-                                    }
-                                    placeholder={t("selectEndDate")}
-                                />
-                            ) : (
-                                <DateTimePicker
-                                    value={
-                                        formData.endDate
-                                            ? new Date(
-                                                  `${formData.endDate}T${formData.endTime || "00:00"}:00`
-                                              )
-                                            : undefined
-                                    }
-                                    onChange={(date) => {
-                                        if (date) {
-                                            setFormData({
-                                                endDate: format(date, "yyyy-MM-dd"),
-                                                endTime: format(date, "HH:mm"),
-                                            })
-                                        }
-                                    }}
-                                    modal={true}
-                                    hideTime={false}
-                                    timePicker={{ hour: true, minute: true, second: false }}
-                                />
-                            )
+                <div className="space-y-2">
+                    <Label htmlFor="endDate">{tCommon("fields.endDate")}</Label>
+                    {isEditable ? (
+                        formData.isFullDay && !isOvertimeUse ? (
+                            <DatePicker
+                                date={formData.endDate ? new Date(formData.endDate) : undefined}
+                                onDateChange={(date) =>
+                                    setFormData({
+                                        endDate: date ? format(date, "yyyy-MM-dd") : "",
+                                    })
+                                }
+                                placeholder={t("selectEndDate")}
+                            />
                         ) : (
-                            request && (
-                                <div className="text-lg">
-                                    {formatDate(request.endDate)}
-                                    {request.endTime && (
-                                        <span className="text-sm text-muted-foreground ml-2">
-                                            {request.endTime}
-                                        </span>
-                                    )}
-                                </div>
-                            )
-                        )}
-                    </div>
-                )}
-            </div>
+                            <DateTimePicker
+                                value={
+                                    formData.endDate
+                                        ? new Date(
+                                              `${formData.endDate}T${formData.endTime || "00:00"}:00`
+                                          )
+                                        : undefined
+                                }
+                                onChange={(date) => {
+                                    if (!date) return
 
-            {isEditable && isOvertimeUse && (
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="overtime-start-time">{t("startTime")}</Label>
-                        <Input
-                            id="overtime-start-time"
-                            type="time"
-                            value={formData.startTime}
-                            onChange={(e) => setFormData({ startTime: e.target.value })}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="overtime-end-time">{t("endTime")}</Label>
-                        <Input
-                            id="overtime-end-time"
-                            type="time"
-                            value={formData.endTime}
-                            onChange={(e) => setFormData({ endTime: e.target.value })}
-                        />
-                    </div>
+                                    setFormData({
+                                        endDate:
+                                            isOvertimeUse && formData.startDate
+                                                ? formData.startDate
+                                                : format(date, "yyyy-MM-dd"),
+                                        endTime: format(date, "HH:mm"),
+                                    })
+                                }}
+                                modal={true}
+                                hideTime={false}
+                                timePicker={{ hour: true, minute: true, second: false }}
+                            />
+                        )
+                    ) : (
+                        request && (
+                            <div className="text-lg">
+                                {formatDate(request.endDate)}
+                                {request.endTime && (
+                                    <span className="text-sm text-muted-foreground ml-2">
+                                        {request.endTime}
+                                    </span>
+                                )}
+                            </div>
+                        )
+                    )}
                 </div>
-            )}
+            </div>
 
             {isEditable && (
                 <>

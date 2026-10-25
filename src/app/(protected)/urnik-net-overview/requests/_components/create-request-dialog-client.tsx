@@ -14,7 +14,6 @@ interface CreateRequestDialogClientProps {
     typeWork: string
     typeWorkFromHome: string
     dateLabel: string
-    startTimeLabel: string
     endTimeLabel: string
     commentLabel: string
     submitButton: string
@@ -37,7 +36,6 @@ export function CreateRequestDialogClient({
     typeWork,
     typeWorkFromHome,
     dateLabel,
-    startTimeLabel,
     endTimeLabel,
     commentLabel,
     submitButton,
@@ -73,7 +71,6 @@ export function CreateRequestDialogClient({
                             />
                             <CreateRequestForm
                                 dateLabel={dateLabel}
-                                startTimeLabel={startTimeLabel}
                                 endTimeLabel={endTimeLabel}
                                 commentLabel={commentLabel}
                                 submitButton={submitButton}
@@ -101,7 +98,6 @@ export function CreateRequestDialogClient({
                     {requestCategory === "FREE_HOURS" && (
                         <CreateFreeHoursRequestForm
                             dateLabel={dateLabel}
-                            startTimeLabel={startTimeLabel}
                             endTimeLabel={endTimeLabel}
                             commentLabel={commentLabel}
                             submitButton={submitButton}
