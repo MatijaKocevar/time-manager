@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { NotificationsDropdown } from "./notifications-dropdown"
 import type { NotificationData } from "../actions/notification-actions"
 
@@ -31,16 +30,6 @@ export function NotificationsDropdownClient({
     initialNotifications,
     translations,
 }: NotificationsDropdownClientProps) {
-    const [mounted, setMounted] = useState(false)
-
-    useEffect(() => {
-        setMounted(true)
-    }, [])
-
-    if (!mounted) {
-        return null
-    }
-
     return (
         <NotificationsDropdown
             initialNotifications={initialNotifications}

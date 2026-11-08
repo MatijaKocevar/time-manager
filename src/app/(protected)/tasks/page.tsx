@@ -43,7 +43,7 @@ export default async function TasksPage() {
                 doneLabel={tTutorial("done")}
                 steps={[
                     {
-                        element: "#tasks-overview-new-task",
+                        element: "#tasks-list-new-task",
                         title: tTasks("newTask.title"),
                         description: tTasks("newTask.description"),
                         side: "bottom",

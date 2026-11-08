@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { useBreadcrumbContext } from "./breadcrumb-context"
 
 interface BreadcrumbSegment {
@@ -54,9 +53,50 @@ function generateBreadcrumbsFromPath(pathname: string): BreadcrumbSegment[] {
     return breadcrumbs
 }
 
+function HomeLink() {
+    return (
+        <Link
+            href="/tracker"
+            className="flex shrink-0 items-center hover:text-foreground transition-colors"
+        >
+            <Home className="h-4 w-4" />
+        </Link>
+    )
+}
+
+function CrumbMenu({ crumbs }: { crumbs: BreadcrumbSegment[] }) {
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-auto p-0 hover:bg-transparent">
+                    <MoreHorizontal className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+                {crumbs.map((crumb, index) => (
+                    <DropdownMenuItem key={index} asChild={!crumb.isLoading}>
+                        {crumb.isLoading ? (
+                            <Skeleton className="h-4 w-24" />
+                        ) : (
+                            <Link href={crumb.href}>{crumb.label}</Link>
+                        )}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    )
+}
+
+function CrumbSkeletonOrLabel({ crumb }: { crumb: BreadcrumbSegment }) {
+    if (crumb.isLoading) {
+        return <Skeleton className="h-4 w-24" />
+    }
+
+    return <span className="font-medium text-foreground truncate">{crumb.label}</span>
+}
+
 export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
     const pathname = usePathname()
-    const isMobile = useIsMobile()
     const { overrides: contextOverrides } = useBreadcrumbContext()
 
     const generated = generateBreadcrumbsFromPath(pathname)
@@ -76,141 +116,66 @@ export function Breadcrumbs({ overrides = {} }: BreadcrumbsProps) {
 
     if (breadcrumbs.length === 1) {
         return (
-            <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
-                <Link
-                    href="/tracker"
-                    className="flex items-center hover:text-foreground transition-colors"
-                >
-                    <Home className="h-4 w-4" />
-                </Link>
-                <ChevronRight className="h-4 w-4 mx-1" />
-                {breadcrumbs[0].isLoading ? (
-                    <Skeleton className="h-4 w-24" />
-                ) : (
-                    <span className="font-medium text-foreground">{breadcrumbs[0].label}</span>
-                )}
+            <nav className="flex min-w-0 items-center space-x-1 text-sm text-muted-foreground">
+                <HomeLink />
+                <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
+                <CrumbSkeletonOrLabel crumb={breadcrumbs[0]} />
             </nav>
         )
     }
 
-    if (breadcrumbs.length === 2 && !isMobile) {
-        return (
-            <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
-                <Link
-                    href="/tracker"
-                    className="flex items-center hover:text-foreground transition-colors"
-                >
-                    <Home className="h-4 w-4" />
-                </Link>
-                <ChevronRight className="h-4 w-4 mx-1" />
-                {breadcrumbs[0].isLoading ? (
-                    <Skeleton className="h-4 w-24" />
-                ) : (
-                    <Link
-                        href={breadcrumbs[0].href}
-                        className="hover:text-foreground transition-colors"
-                    >
-                        {breadcrumbs[0].label}
-                    </Link>
-                )}
-                <ChevronRight className="h-4 w-4 mx-1" />
-                {breadcrumbs[1].isLoading ? (
-                    <Skeleton className="h-4 w-24" />
-                ) : (
-                    <span className="font-medium text-foreground">{breadcrumbs[1].label}</span>
-                )}
-            </nav>
-        )
-    }
-
-    const middleCrumbs = isMobile ? breadcrumbs.slice(0, -1) : breadcrumbs.slice(0, -2)
     const lastCrumb = breadcrumbs[breadcrumbs.length - 1]
-
-    if (isMobile) {
-        return (
-            <nav className="flex items-center text-sm text-muted-foreground">
-                <Link
-                    href="/tracker"
-                    className="flex items-center hover:text-foreground transition-colors"
-                >
-                    <Home className="h-4 w-4" />
-                </Link>
-                <ChevronRight className="h-4 w-4 mx-1" />
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-auto p-0 hover:bg-transparent"
-                        >
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start">
-                        {middleCrumbs.map((crumb, index) => (
-                            <DropdownMenuItem key={index} asChild={!crumb.isLoading}>
-                                {crumb.isLoading ? (
-                                    <Skeleton className="h-4 w-24" />
-                                ) : (
-                                    <Link href={crumb.href}>{crumb.label}</Link>
-                                )}
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                <ChevronRight className="h-4 w-4 mx-1" />
-                {lastCrumb.isLoading ? (
-                    <Skeleton className="h-4 w-24" />
-                ) : (
-                    <span className="font-medium text-foreground">{lastCrumb.label}</span>
-                )}
-            </nav>
-        )
-    }
-
     const previousCrumb = breadcrumbs[breadcrumbs.length - 2]
+    const mobileMiddleCrumbs = breadcrumbs.slice(0, -1)
+    const desktopMiddleCrumbs = breadcrumbs.slice(0, -2)
 
     return (
-        <nav className="flex items-center space-x-1 text-sm text-muted-foreground">
-            <Link
-                href="/tracker"
-                className="flex items-center hover:text-foreground transition-colors"
-            >
-                <Home className="h-4 w-4" />
-            </Link>
-            <ChevronRight className="h-4 w-4 mx-1" />
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-auto p-0 hover:bg-transparent">
-                        <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                    {middleCrumbs.map((crumb, index) => (
-                        <DropdownMenuItem key={index} asChild={!crumb.isLoading}>
-                            {crumb.isLoading ? (
-                                <Skeleton className="h-4 w-24" />
-                            ) : (
-                                <Link href={crumb.href}>{crumb.label}</Link>
-                            )}
-                        </DropdownMenuItem>
-                    ))}
-                </DropdownMenuContent>
-            </DropdownMenu>
-            <ChevronRight className="h-4 w-4 mx-1" />
-            {previousCrumb.isLoading ? (
-                <Skeleton className="h-4 w-24" />
+        <>
+            <nav className="flex min-w-0 items-center text-sm text-muted-foreground md:hidden">
+                <HomeLink />
+                <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
+                <CrumbMenu crumbs={mobileMiddleCrumbs} />
+                <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
+                <CrumbSkeletonOrLabel crumb={lastCrumb} />
+            </nav>
+
+            {breadcrumbs.length === 2 ? (
+                <nav className="hidden min-w-0 items-center space-x-1 text-sm text-muted-foreground md:flex">
+                    <HomeLink />
+                    <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
+                    {breadcrumbs[0].isLoading ? (
+                        <Skeleton className="h-4 w-24" />
+                    ) : (
+                        <Link
+                            href={breadcrumbs[0].href}
+                            className="hover:text-foreground transition-colors truncate"
+                        >
+                            {breadcrumbs[0].label}
+                        </Link>
+                    )}
+                    <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
+                    <CrumbSkeletonOrLabel crumb={lastCrumb} />
+                </nav>
             ) : (
-                <Link href={previousCrumb.href} className="hover:text-foreground transition-colors">
-                    {previousCrumb.label}
-                </Link>
+                <nav className="hidden min-w-0 items-center space-x-1 text-sm text-muted-foreground md:flex">
+                    <HomeLink />
+                    <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
+                    <CrumbMenu crumbs={desktopMiddleCrumbs} />
+                    <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
+                    {previousCrumb.isLoading ? (
+                        <Skeleton className="h-4 w-24" />
+                    ) : (
+                        <Link
+                            href={previousCrumb.href}
+                            className="hover:text-foreground transition-colors truncate"
+                        >
+                            {previousCrumb.label}
+                        </Link>
+                    )}
+                    <ChevronRight className="h-4 w-4 mx-1 shrink-0" />
+                    <CrumbSkeletonOrLabel crumb={lastCrumb} />
+                </nav>
             )}
-            <ChevronRight className="h-4 w-4 mx-1" />
-            {lastCrumb.isLoading ? (
-                <Skeleton className="h-4 w-24" />
-            ) : (
-                <span className="font-medium text-foreground">{lastCrumb.label}</span>
-            )}
-        </nav>
+        </>
     )
 }

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next"
+import { cookies } from "next/headers"
 import { Geist, Geist_Mono } from "next/font/google"
 import { getServerSession } from "next-auth"
 import { getTranslations } from "next-intl/server"
@@ -8,6 +9,10 @@ import SessionWrapper from "@/providers/SessionWrapper"
 import { QueryProvider } from "@/providers/QueryProvider"
 import { ConditionalSidebar } from "@/features/sidebar"
 import { AppHeader } from "@/features/sidebar"
+import {
+    SIDEBAR_EXPANDED_ITEMS_COOKIE,
+    parseExpandedItemsCookie,
+} from "@/features/sidebar/lib/sidebar-expanded-items"
 import { getHasUrnikCredentials } from "@/features/sidebar/actions/sidebar-actions"
 import { authConfig } from "@/lib/auth"
 import { getLists } from "./(protected)/tasks/_actions/list-actions"
@@ -64,6 +69,10 @@ export default async function RootLayout({
 }>) {
     const session = await getServerSession(authConfig)
     const lists = session ? await getLists().catch(() => []) : []
+    const cookieStore = await cookies()
+    const initialExpandedItems = parseExpandedItemsCookie(
+        cookieStore.get(SIDEBAR_EXPANDED_ITEMS_COOKIE)?.value
+    )
 
     let pendingRequestsCount = 0
     if (session?.user?.role === "ADMIN") {
@@ -152,6 +161,7 @@ export default async function RootLayout({
                                         userName={session?.user?.name}
                                         userEmail={session?.user?.email}
                                         lists={lists}
+                                        initialExpandedItems={initialExpandedItems}
                                         pendingRequestsCount={pendingRequestsCount}
                                         hasUrnikCredentials={hasUrnikCredentials}
                                         settingsMenuTranslations={settingsMenuTranslations}

@@ -11,7 +11,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import { ArrivalDialog } from "@/components/arrival-dialog"
 import { useTrackerStore } from "../_stores/tracker-store"
 import { formatDuration } from "@/app/(protected)/tasks/_utils/time-helpers"
@@ -133,9 +132,9 @@ export function TrackerDisplay({
     }
 
     return (
-        <Card className="h-full">
+        <Card className="h-full py-3 sm:py-6">
             <CardContent className="pt-4 h-full overflow-auto xl:overflow-visible flex flex-col">
-                <div className="space-y-4 flex-1 min-h-0 flex flex-col">
+                <div className="space-y-3 sm:space-y-4 flex-1 min-h-0 flex flex-col">
                     <div className="grid grid-cols-1 xl:grid-cols-[200px_1fr_auto] gap-4 items-end">
                         <div>
                             <label className="text-sm font-medium mb-2 block">
@@ -234,23 +233,6 @@ export function TrackerDisplay({
                             <Clock className="mr-2 h-4 w-4" />
                             {translations.todayEntries} ({taskEntryCount})
                         </Button>
-                    </div>
-
-                    <div className="p-3 bg-muted rounded-lg flex items-center min-h-[44px]">
-                        {isTimerRunning && activeTimerData ? (
-                            <div className="flex items-center justify-between w-full">
-                                <Badge variant="secondary">
-                                    {getTypeLabel(activeTimerData.type)}
-                                </Badge>
-                                <span className="text-sm text-muted-foreground truncate ml-2">
-                                    {!activeTimerData.task.isSystemTask
-                                        ? activeTimerData.task.title
-                                        : ""}
-                                </span>
-                            </div>
-                        ) : (
-                            <div className="text-sm text-muted-foreground opacity-0">-</div>
-                        )}
                     </div>
 
                     <div className="flex flex-col items-center justify-center gap-4 flex-1 xl:min-h-0 py-4">

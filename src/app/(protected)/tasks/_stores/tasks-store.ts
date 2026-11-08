@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import type { TaskStatus } from "../_schemas"
 import { TASK_STATUS } from "../_constants/task-statuses"
+import { STATUS_SECTIONS_COOKIE, serializeStatusSections } from "../_utils/status-sections"
 
 interface ActiveTimer {
     taskId: string
@@ -61,31 +62,8 @@ const loadExpansionOverrides = (): Map<string, boolean> => {
 
 const saveExpandedStatusSections = (expandedSections: Map<string, Set<TaskStatus>>) => {
     if (typeof window === "undefined") return
-    try {
-        const serialized = Array.from(expandedSections.entries()).map(([listId, statuses]) => [
-            listId,
-            Array.from(statuses),
-        ])
-        localStorage.setItem("expandedStatusSections", JSON.stringify(serialized))
-    } catch {
-        return
-    }
-}
 
-const loadExpandedStatusSections = (): Map<string, Set<TaskStatus>> => {
-    if (typeof window === "undefined") {
-        return new Map()
-    }
-    try {
-        const stored = localStorage.getItem("expandedStatusSections")
-        if (stored) {
-            const parsed = JSON.parse(stored) as [string, TaskStatus[]][]
-            return new Map(parsed.map(([listId, statuses]) => [listId, new Set(statuses)]))
-        }
-    } catch {
-        return new Map()
-    }
-    return new Map()
+    document.cookie = `${STATUS_SECTIONS_COOKIE}=${serializeStatusSections(expandedSections)}; path=/; max-age=31536000; samesite=lax`
 }
 
 export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) => ({
@@ -123,7 +101,6 @@ export const useTasksStore = create<TasksStoreState & TasksStoreActions>((set) =
     hydrateExpansionState: () =>
         set(() => ({
             expansionOverrides: loadExpansionOverrides(),
-            expandedStatusSections: loadExpandedStatusSections(),
         })),
 
     activeTimer: null,

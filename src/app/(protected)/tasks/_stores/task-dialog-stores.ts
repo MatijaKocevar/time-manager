@@ -13,7 +13,8 @@ interface TaskDialogState {
     createDialog: {
         isOpen: boolean
         parentId: string | null
-        listId: string | null
+        listId: string | null | undefined
+        requireList: boolean
     }
     timeEntriesDialog: {
         isOpen: boolean
@@ -71,8 +72,9 @@ interface TaskDialogState {
 }
 
 interface TaskDialogActions {
-    openCreateDialog: (parentId?: string, listId?: string | null) => void
+    openCreateDialog: (parentId?: string, listId?: string | null, requireList?: boolean) => void
     closeCreateDialog: () => void
+    setCreateDialogListId: (listId: string | null) => void
     openTimeEntriesDialog: (taskId: string) => void
     closeTimeEntriesDialog: () => void
     openEditTimeEntryDialog: (entry: TaskTimeEntryDisplay) => void
@@ -132,6 +134,7 @@ export const useTaskDialogStore = create<TaskDialogState & TaskDialogActions>((s
         isOpen: false,
         parentId: null,
         listId: null,
+        requireList: false,
     },
     timeEntriesDialog: {
         isOpen: false,
@@ -182,9 +185,14 @@ export const useTaskDialogStore = create<TaskDialogState & TaskDialogActions>((s
         error: "",
     },
 
-    openCreateDialog: (parentId, listId) =>
+    openCreateDialog: (parentId, listId, requireList = false) =>
         set(() => ({
-            createDialog: { isOpen: true, parentId: parentId || null, listId: listId ?? null },
+            createDialog: {
+                isOpen: true,
+                parentId: parentId || null,
+                listId: requireList ? undefined : (listId ?? null),
+                requireList,
+            },
             createForm: {
                 data: initialFormData,
                 isLoading: false,
@@ -193,7 +201,11 @@ export const useTaskDialogStore = create<TaskDialogState & TaskDialogActions>((s
         })),
     closeCreateDialog: () =>
         set(() => ({
-            createDialog: { isOpen: false, parentId: null, listId: null },
+            createDialog: { isOpen: false, parentId: null, listId: null, requireList: false },
+        })),
+    setCreateDialogListId: (listId) =>
+        set((state) => ({
+            createDialog: { ...state.createDialog, listId },
         })),
 
     openTimeEntriesDialog: (taskId) =>

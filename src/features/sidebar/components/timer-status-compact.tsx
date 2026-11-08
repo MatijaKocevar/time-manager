@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Play, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ArrivalDialog } from "@/components/arrival-dialog"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { formatDuration } from "@/app/(protected)/tasks/_utils/time-helpers"
 import {
     useTimerState,
@@ -59,7 +58,6 @@ export function TimerStatusCompact({
     const [showArrivalDialog, setShowArrivalDialog] = useState(false)
     const [hasApprovedWFH, setHasApprovedWFH] = useState(false)
     const [wfhLocation, setWfhLocation] = useState<string | null>(null)
-    const isMobile = useIsMobile()
 
     useTrackerSSE()
     useTrackerPusher()
@@ -104,11 +102,9 @@ export function TimerStatusCompact({
                         aria-label={translations.startTracking}
                     >
                         <Play className="h-4 w-4 text-muted-foreground" />
-                        {!isMobile && (
-                            <span className="text-sm text-muted-foreground hidden md:inline">
-                                {translations.startTracking}
-                            </span>
-                        )}
+                        <span className="text-sm text-muted-foreground hidden md:inline">
+                            {translations.startTracking}
+                        </span>
                     </Button>
                 </TaskSelectorDropdown>
             </>
@@ -127,11 +123,9 @@ export function TimerStatusCompact({
                 >
                     <Square className="h-4 w-4 fill-current text-red-500" />
                 </Button>
-                {!isMobile && (
-                    <span className="text-sm font-medium tabular-nums hidden md:inline">
-                        {formatDuration(elapsedSeconds)}
-                    </span>
-                )}
+                <span className="text-sm font-medium tabular-nums hidden md:inline">
+                    {formatDuration(elapsedSeconds)}
+                </span>
             </div>
             <ArrivalDialog
                 open={showArrivalDialog}

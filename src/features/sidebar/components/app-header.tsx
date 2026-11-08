@@ -6,6 +6,7 @@ import { getNotifications } from "@/features/notifications/actions/notification-
 import { getActiveTimer } from "@/app/(protected)/shared/_actions/timer-actions"
 import { getTasks } from "@/app/(protected)/tasks/_actions/task-actions"
 import { TASK_STATUS } from "@/app/(protected)/tasks/_constants/task-statuses"
+import { NewTaskButton } from "./new-task-button"
 import { TimerStatusCompact } from "./timer-status-compact"
 
 interface AppHeaderProps {
@@ -67,6 +68,7 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
                 <Breadcrumbs overrides={breadcrumbTranslations} />
             </div>
             <div className="flex items-center gap-2">
+                <NewTaskButton />
                 <TimerStatusCompact
                     initialActiveTimer={activeTimer}
                     inProgressTasks={inProgressTasks}
