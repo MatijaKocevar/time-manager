@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { DateTimePicker } from "@/components/ui/datetime-picker"
-import { useIsMobile } from "@/hooks/use-mobile"
 import { MoveEntryPopover } from "@/app/(protected)/time-sheets/_components/move-entry-popover"
 import { formatDuration } from "../_utils/time-helpers"
 import { useTimeEntriesDialog } from "../_hooks/use-time-entries-dialog"
@@ -15,7 +14,6 @@ export function TimeEntriesDialog() {
     const t = useTranslations("tasks.form")
     const tCommon = useTranslations("common.actions")
     const tStatus = useTranslations("common.status")
-    const isMobileView = useIsMobile()
 
     const {
         timeEntriesDialog,
@@ -69,7 +67,7 @@ export function TimeEntriesDialog() {
                             </div>
                         ) : (
                             <div>
-                                {!isMobileView && (
+                                <div className="hidden md:block">
                                     <table className="w-full caption-bottom text-sm">
                                         <thead className="sticky top-0 bg-background z-10 [&_tr]:border-b">
                                             <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
@@ -306,19 +304,124 @@ export function TimeEntriesDialog() {
                                             })}
                                         </tbody>
                                     </table>
-                                )}
+                                </div>
 
-                                {isMobileView && (
-                                    <div className="space-y-3 p-3">
-                                        {isAddingEntry && (
-                                            <div className="rounded-lg border bg-muted/10 p-3 space-y-3">
+                                <div className="md:hidden space-y-3 p-3">
+                                    {isAddingEntry && (
+                                        <div className="rounded-lg border bg-muted/10 p-3 space-y-3">
+                                            <div className="space-y-2">
+                                                <div className="text-xs font-medium text-muted-foreground">
+                                                    {t("startedAt")}
+                                                </div>
+                                                <DateTimePicker
+                                                    value={newEntryStart}
+                                                    onChange={setNewEntryStart}
+                                                    modal={true}
+                                                    hideTime={false}
+                                                    timePicker={{
+                                                        hour: true,
+                                                        minute: true,
+                                                        second: false,
+                                                    }}
+                                                    timezone="Europe/Ljubljana"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="text-xs font-medium text-muted-foreground">
+                                                    {t("endedAt")}
+                                                </div>
+                                                <DateTimePicker
+                                                    value={newEntryEnd}
+                                                    onChange={setNewEntryEnd}
+                                                    modal={true}
+                                                    hideTime={false}
+                                                    timePicker={{
+                                                        hour: true,
+                                                        minute: true,
+                                                        second: false,
+                                                    }}
+                                                    timezone="Europe/Ljubljana"
+                                                />
+                                            </div>
+                                            <div className="flex items-center justify-between pt-2 border-t">
+                                                <div className="space-y-1">
+                                                    <div className="text-xs text-muted-foreground">
+                                                        {t("duration")}
+                                                    </div>
+                                                    <div className="text-sm font-mono font-semibold">
+                                                        {newEntryStart &&
+                                                        newEntryEnd &&
+                                                        newEntryEnd > newEntryStart
+                                                            ? formatDuration(
+                                                                  Math.floor(
+                                                                      (newEntryEnd.getTime() -
+                                                                          newEntryStart.getTime()) /
+                                                                          1000
+                                                                  )
+                                                              )
+                                                            : "—"}
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={cancelNewEntry}
+                                                    className="h-8 w-8 p-0"
+                                                    aria-label="Cancel"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {childAggregation && (
+                                        <div className="rounded-lg border bg-muted/30 p-3">
+                                            <div className="text-xs text-muted-foreground italic mb-1">
+                                                {t("childTimeAggregation")}
+                                            </div>
+                                            <div className="text-sm font-mono text-muted-foreground">
+                                                {formatDuration(
+                                                    childAggregation.aggregatedDuration
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {entries.map((entry) => {
+                                        const isActive = entry.endTime === null
+                                        const elapsed = isActive
+                                            ? Math.floor(
+                                                  (currentTime.getTime() -
+                                                      entry.startTime.getTime()) /
+                                                      1000
+                                              )
+                                            : null
+
+                                        const duration =
+                                            isActive && elapsed !== null
+                                                ? elapsed
+                                                : (entry.duration ?? 0)
+
+                                        return (
+                                            <div
+                                                key={entry.id}
+                                                className="rounded-lg border bg-card p-3 space-y-3"
+                                            >
                                                 <div className="space-y-2">
                                                     <div className="text-xs font-medium text-muted-foreground">
                                                         {t("startedAt")}
                                                     </div>
                                                     <DateTimePicker
-                                                        value={newEntryStart}
-                                                        onChange={setNewEntryStart}
+                                                        value={getEntryDate(entry, "startTime")}
+                                                        onChange={(date: Date | undefined) =>
+                                                            handleFieldChange(
+                                                                entry.id,
+                                                                "startTime",
+                                                                date
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            isSaving || deleteMutation.isPending
+                                                        }
                                                         modal={true}
                                                         hideTime={false}
                                                         timePicker={{
@@ -326,99 +429,24 @@ export function TimeEntriesDialog() {
                                                             minute: true,
                                                             second: false,
                                                         }}
-                                                        timezone="Europe/Ljubljana"
                                                     />
                                                 </div>
+
                                                 <div className="space-y-2">
                                                     <div className="text-xs font-medium text-muted-foreground">
                                                         {t("endedAt")}
                                                     </div>
-                                                    <DateTimePicker
-                                                        value={newEntryEnd}
-                                                        onChange={setNewEntryEnd}
-                                                        modal={true}
-                                                        hideTime={false}
-                                                        timePicker={{
-                                                            hour: true,
-                                                            minute: true,
-                                                            second: false,
-                                                        }}
-                                                        timezone="Europe/Ljubljana"
-                                                    />
-                                                </div>
-                                                <div className="flex items-center justify-between pt-2 border-t">
-                                                    <div className="space-y-1">
-                                                        <div className="text-xs text-muted-foreground">
-                                                            {t("duration")}
+                                                    {isActive ? (
+                                                        <div className="flex items-center h-9 px-3 text-xs text-muted-foreground border rounded-md">
+                                                            {t("now")}
                                                         </div>
-                                                        <div className="text-sm font-mono font-semibold">
-                                                            {newEntryStart &&
-                                                            newEntryEnd &&
-                                                            newEntryEnd > newEntryStart
-                                                                ? formatDuration(
-                                                                      Math.floor(
-                                                                          (newEntryEnd.getTime() -
-                                                                              newEntryStart.getTime()) /
-                                                                              1000
-                                                                      )
-                                                                  )
-                                                                : "—"}
-                                                        </div>
-                                                    </div>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={cancelNewEntry}
-                                                        className="h-8 w-8 p-0"
-                                                        aria-label="Cancel"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {childAggregation && (
-                                            <div className="rounded-lg border bg-muted/30 p-3">
-                                                <div className="text-xs text-muted-foreground italic mb-1">
-                                                    {t("childTimeAggregation")}
-                                                </div>
-                                                <div className="text-sm font-mono text-muted-foreground">
-                                                    {formatDuration(
-                                                        childAggregation.aggregatedDuration
-                                                    )}
-                                                </div>
-                                            </div>
-                                        )}
-                                        {entries.map((entry) => {
-                                            const isActive = entry.endTime === null
-                                            const elapsed = isActive
-                                                ? Math.floor(
-                                                      (currentTime.getTime() -
-                                                          entry.startTime.getTime()) /
-                                                          1000
-                                                  )
-                                                : null
-
-                                            const duration =
-                                                isActive && elapsed !== null
-                                                    ? elapsed
-                                                    : (entry.duration ?? 0)
-
-                                            return (
-                                                <div
-                                                    key={entry.id}
-                                                    className="rounded-lg border bg-card p-3 space-y-3"
-                                                >
-                                                    <div className="space-y-2">
-                                                        <div className="text-xs font-medium text-muted-foreground">
-                                                            {t("startedAt")}
-                                                        </div>
+                                                    ) : (
                                                         <DateTimePicker
-                                                            value={getEntryDate(entry, "startTime")}
+                                                            value={getEntryDate(entry, "endTime")}
                                                             onChange={(date: Date | undefined) =>
                                                                 handleFieldChange(
                                                                     entry.id,
-                                                                    "startTime",
+                                                                    "endTime",
                                                                     date
                                                                 )
                                                             }
@@ -433,113 +461,71 @@ export function TimeEntriesDialog() {
                                                                 second: false,
                                                             }}
                                                         />
-                                                    </div>
+                                                    )}
+                                                </div>
 
-                                                    <div className="space-y-2">
-                                                        <div className="text-xs font-medium text-muted-foreground">
-                                                            {t("endedAt")}
+                                                <div className="flex items-center justify-between pt-2 border-t">
+                                                    <div className="space-y-1">
+                                                        <div className="text-xs text-muted-foreground">
+                                                            {t("duration")}
                                                         </div>
+                                                        <div className="text-sm font-mono font-semibold">
+                                                            {formatDuration(duration)}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <MoveEntryPopover
+                                                            entryId={entry.id}
+                                                            currentTaskId={entry.taskId}
+                                                            translations={{
+                                                                moveEntry: t("moveEntry"),
+                                                                searchTasks: t("searchTasks"),
+                                                                noTasksFound: t("noTasksFound"),
+                                                                moveSuccess: t("moveSuccess"),
+                                                                moveError: t("moveError"),
+                                                            }}
+                                                        />
                                                         {isActive ? (
-                                                            <div className="flex items-center h-9 px-3 text-xs text-muted-foreground border rounded-md">
-                                                                {t("now")}
-                                                            </div>
+                                                            <Button
+                                                                variant="destructive"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    stopMutation.mutate({
+                                                                        id: entry.id,
+                                                                    })
+                                                                }}
+                                                                disabled={stopMutation.isPending}
+                                                                className="h-8 w-8 p-0"
+                                                                aria-label="Stop"
+                                                            >
+                                                                <Square className="h-4 w-4" />
+                                                            </Button>
                                                         ) : (
-                                                            <DateTimePicker
-                                                                value={getEntryDate(
-                                                                    entry,
-                                                                    "endTime"
-                                                                )}
-                                                                onChange={(
-                                                                    date: Date | undefined
-                                                                ) =>
-                                                                    handleFieldChange(
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() =>
+                                                                    handleDelete(
                                                                         entry.id,
-                                                                        "endTime",
-                                                                        date
+                                                                        t("deleteTimeEntryConfirm")
                                                                     )
                                                                 }
                                                                 disabled={
                                                                     isSaving ||
                                                                     deleteMutation.isPending
                                                                 }
-                                                                modal={true}
-                                                                hideTime={false}
-                                                                timePicker={{
-                                                                    hour: true,
-                                                                    minute: true,
-                                                                    second: false,
-                                                                }}
-                                                            />
+                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                                                aria-label="Delete"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
                                                         )}
                                                     </div>
-
-                                                    <div className="flex items-center justify-between pt-2 border-t">
-                                                        <div className="space-y-1">
-                                                            <div className="text-xs text-muted-foreground">
-                                                                {t("duration")}
-                                                            </div>
-                                                            <div className="text-sm font-mono font-semibold">
-                                                                {formatDuration(duration)}
-                                                            </div>
-                                                        </div>
-                                                        <div className="flex items-center gap-1">
-                                                            <MoveEntryPopover
-                                                                entryId={entry.id}
-                                                                currentTaskId={entry.taskId}
-                                                                translations={{
-                                                                    moveEntry: t("moveEntry"),
-                                                                    searchTasks: t("searchTasks"),
-                                                                    noTasksFound: t("noTasksFound"),
-                                                                    moveSuccess: t("moveSuccess"),
-                                                                    moveError: t("moveError"),
-                                                                }}
-                                                            />
-                                                            {isActive ? (
-                                                                <Button
-                                                                    variant="destructive"
-                                                                    size="sm"
-                                                                    onClick={() => {
-                                                                        stopMutation.mutate({
-                                                                            id: entry.id,
-                                                                        })
-                                                                    }}
-                                                                    disabled={
-                                                                        stopMutation.isPending
-                                                                    }
-                                                                    className="h-8 w-8 p-0"
-                                                                    aria-label="Stop"
-                                                                >
-                                                                    <Square className="h-4 w-4" />
-                                                                </Button>
-                                                            ) : (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        handleDelete(
-                                                                            entry.id,
-                                                                            t(
-                                                                                "deleteTimeEntryConfirm"
-                                                                            )
-                                                                        )
-                                                                    }
-                                                                    disabled={
-                                                                        isSaving ||
-                                                                        deleteMutation.isPending
-                                                                    }
-                                                                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                                                    aria-label="Delete"
-                                                                >
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                            )}
-                                                        </div>
-                                                    </div>
                                                 </div>
-                                            )
-                                        })}
-                                    </div>
-                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
 
                                 {hasNextPage && (
                                     <div className="flex justify-center py-3 border-t">

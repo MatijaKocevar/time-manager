@@ -7,7 +7,6 @@ import { buildTaskTree } from "../_utils/task-tree-helpers"
 import { TaskRow } from "./task-row"
 import { TaskCard } from "./task-card"
 import { useTasksStore } from "../_stores/tasks-store"
-import { useIsDesktop } from "../_hooks/use-is-desktop"
 import type { TaskDisplay } from "../_schemas"
 import type { ListDisplay } from "../_schemas/list-schemas"
 
@@ -19,7 +18,6 @@ interface TasksFlatTableProps {
 export function TasksFlatTable({ tasks, lists }: TasksFlatTableProps) {
     const t = useTranslations("tasks.table")
     const tCommon = useTranslations("common")
-    const isDesktop = useIsDesktop()
     const hydrateExpansionState = useTasksStore((state) => state.hydrateExpansionState)
     const taskTree = buildTaskTree(tasks)
 
@@ -35,14 +33,10 @@ export function TasksFlatTable({ tasks, lists }: TasksFlatTableProps) {
         )
     }
 
-    if (isDesktop === null) {
-        return null
-    }
-
     return (
-        <div className="rounded-md border overflow-x-auto">
-            {isDesktop ? (
-                <Table>
+        <>
+            <div className="hidden sm:block rounded-md border overflow-x-auto">
+                <Table className="table-fixed">
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-12"></TableHead>
@@ -61,13 +55,14 @@ export function TasksFlatTable({ tasks, lists }: TasksFlatTableProps) {
                         ))}
                     </TableBody>
                 </Table>
-            ) : (
-                <div className="space-y-3 p-3">
+            </div>
+            <div className="sm:hidden rounded-md border p-3">
+                <div className="space-y-3">
                     {taskTree.map((task) => (
                         <TaskCard key={task.id} task={task} lists={lists} />
                     ))}
                 </div>
-            )}
-        </div>
+            </div>
+        </>
     )
 }

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { ChevronDown, ChevronRight, Plus, Trash2, Folder, FolderOpen } from "lucide-react"
-import { Fragment } from "react"
+import { Fragment, type MouseEvent } from "react"
 import { TableCell, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import {
@@ -29,6 +29,9 @@ interface TaskRowProps {
     lists: ListDisplay[]
 }
 
+const INTERACTIVE_ELEMENTS =
+    "button, a, input, select, textarea, [role='combobox'], [contenteditable='true']"
+
 export function TaskRow({ task, lists }: TaskRowProps) {
     const queryClient = useQueryClient()
     const t = useTranslations("tasks.form")
@@ -36,6 +39,7 @@ export function TaskRow({ task, lists }: TaskRowProps) {
     const tActions = useTranslations("tasks.actions")
     const openDeleteDialog = useTaskDialogStore((state) => state.openDeleteDialog)
     const openCreateDialog = useTaskDialogStore((state) => state.openCreateDialog)
+    const openDescriptionDialog = useTaskDialogStore((state) => state.openDescriptionDialog)
     const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
     const isOperationLoading = useTasksStore(
         (state) => state.taskOperations.get(task.id)?.isLoading ?? false
@@ -43,6 +47,14 @@ export function TaskRow({ task, lists }: TaskRowProps) {
     const { isExpanded, toggleExpansion, expand } = useTaskExpansion(task)
 
     const hasSubtasks = task.subtasks && task.subtasks.length > 0
+
+    const handleRowDoubleClick = (event: MouseEvent<HTMLTableRowElement>) => {
+        if ((event.target as HTMLElement).closest(INTERACTIVE_ELEMENTS)) {
+            return
+        }
+
+        openDescriptionDialog(task.id, task.title)
+    }
 
     const handleAddSubtask = () => {
         expand()
@@ -76,7 +88,7 @@ export function TaskRow({ task, lists }: TaskRowProps) {
 
     return (
         <>
-            <TableRow className="hover:bg-muted/50">
+            <TableRow className="hover:bg-muted/50" onDoubleClick={handleRowDoubleClick}>
                 <TableCell>
                     {hasSubtasks ? (
                         <button onClick={toggleExpansion} className="p-1 hover:bg-muted rounded">
@@ -124,7 +136,7 @@ export function TaskRow({ task, lists }: TaskRowProps) {
                             onValueChange={handleListChange}
                             disabled={isOperationLoading}
                         >
-                            <SelectTrigger className="h-8 w-[180px]">
+                            <SelectTrigger className="h-8 w-full">
                                 <SelectValue>
                                     <div className="flex items-center gap-2">
                                         {task.listId ? (

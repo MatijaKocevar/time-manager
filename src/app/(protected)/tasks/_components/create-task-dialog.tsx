@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useTranslations } from "next-intl"
+import { Folder, FolderOpen } from "lucide-react"
 import {
     Dialog,
     DialogContent,
@@ -27,20 +28,29 @@ import { createTask } from "../_actions/task-actions"
 import { taskKeys } from "../_constants/query-keys"
 import { TASK_STATUSES } from "../_constants/task-statuses"
 import { getTaskStatusLabel } from "../_utils/task-status-labels"
+import type { ListDisplay } from "../_schemas/list-schemas"
 
-export function CreateTaskDialog() {
+interface CreateTaskDialogProps {
+    lists: ListDisplay[]
+}
+
+export function CreateTaskDialog({ lists }: CreateTaskDialogProps) {
     const queryClient = useQueryClient()
     const t = useTranslations("tasks.form")
     const tCommon = useTranslations("common")
     const tStatus = useTranslations("tasks.statuses")
+    const tList = useTranslations("tasks.list")
     const createDialog = useTaskDialogStore((state) => state.createDialog)
     const selectedListId = useTasksStore((state) => state.selectedListId)
     const createForm = useTaskDialogStore((state) => state.createForm)
     const closeCreateDialog = useTaskDialogStore((state) => state.closeCreateDialog)
+    const setCreateDialogListId = useTaskDialogStore((state) => state.setCreateDialogListId)
     const setCreateFormData = useTaskDialogStore((state) => state.setCreateFormData)
     const setCreateFormLoading = useTaskDialogStore((state) => state.setCreateLoading)
     const setCreateFormError = useTaskDialogStore((state) => state.setCreateError)
     const resetCreateForm = useTaskDialogStore((state) => state.resetCreateForm)
+
+    const needsListSelection = createDialog.requireList && createDialog.listId === undefined
 
     useEffect(() => {
         if (!createDialog.isOpen) {
@@ -50,6 +60,11 @@ export function CreateTaskDialog() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+
+        if (needsListSelection) {
+            setCreateFormError(t("listRequired"))
+            return
+        }
 
         if (!createForm.data.title.trim()) {
             setCreateFormError(t("titleRequired"))
@@ -65,7 +80,11 @@ export function CreateTaskDialog() {
                 description: createForm.data.description || undefined,
                 status: createForm.data.status,
                 parentId: createDialog.parentId || undefined,
-                listId: createDialog.parentId ? undefined : (createDialog.listId ?? selectedListId),
+                listId: createDialog.parentId
+                    ? undefined
+                    : createDialog.listId === undefined
+                      ? selectedListId
+                      : createDialog.listId,
             })
 
             if (result.success) {
@@ -97,6 +116,57 @@ export function CreateTaskDialog() {
                     </DialogHeader>
 
                     <div className="space-y-4 py-4">
+                        {createDialog.requireList && (
+                            <div className="space-y-2">
+                                <Label htmlFor="create-list">{tCommon("fields.list")} *</Label>
+                                <Select
+                                    value={
+                                        createDialog.listId === undefined
+                                            ? ""
+                                            : (createDialog.listId ?? "none")
+                                    }
+                                    onValueChange={(value) =>
+                                        setCreateDialogListId(value === "none" ? null : value)
+                                    }
+                                    disabled={createForm.isLoading}
+                                >
+                                    <SelectTrigger
+                                        id="create-list"
+                                        className="w-full"
+                                        autoFocus={needsListSelection}
+                                    >
+                                        <SelectValue placeholder={t("selectList")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">
+                                            <div className="flex items-center gap-2">
+                                                <Folder className="h-3 w-3 text-muted-foreground" />
+                                                <span className="text-sm">{tList("noList")}</span>
+                                            </div>
+                                        </SelectItem>
+                                        {lists.map((list) => (
+                                            <SelectItem key={list.id} value={list.id}>
+                                                <div className="flex items-center gap-2">
+                                                    <FolderOpen className="h-3 w-3" />
+                                                    <span className="text-sm flex items-center gap-1">
+                                                        {list.color && (
+                                                            <span
+                                                                className="h-2 w-2 rounded-full"
+                                                                style={{
+                                                                    backgroundColor: list.color,
+                                                                }}
+                                                            />
+                                                        )}
+                                                        {list.name}
+                                                    </span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <Label htmlFor="title">{tCommon("fields.title")} *</Label>
                             <Input
@@ -104,7 +174,7 @@ export function CreateTaskDialog() {
                                 value={createForm.data.title}
                                 onChange={(e) => setCreateFormData({ title: e.target.value })}
                                 placeholder={t("enterTaskTitle")}
-                                disabled={createForm.isLoading}
+                                disabled={createForm.isLoading || needsListSelection}
                                 autoFocus
                             />
                         </div>
@@ -116,7 +186,7 @@ export function CreateTaskDialog() {
                                 value={createForm.data.description}
                                 onChange={(e) => setCreateFormData({ description: e.target.value })}
                                 placeholder={t("enterTaskDescription")}
-                                disabled={createForm.isLoading}
+                                disabled={createForm.isLoading || needsListSelection}
                             />
                         </div>
 
@@ -129,7 +199,7 @@ export function CreateTaskDialog() {
                                         status: value as typeof createForm.data.status,
                                     })
                                 }
-                                disabled={createForm.isLoading}
+                                disabled={createForm.isLoading || needsListSelection}
                             >
                                 <SelectTrigger id="status" className="w-full">
                                     <SelectValue />
@@ -162,7 +232,7 @@ export function CreateTaskDialog() {
                         >
                             {tCommon("actions.cancel")}
                         </Button>
-                        <Button type="submit" disabled={createForm.isLoading}>
+                        <Button type="submit" disabled={createForm.isLoading || needsListSelection}>
                             {createForm.isLoading ? t("creating") : tCommon("actions.create")}
                         </Button>
                     </DialogFooter>

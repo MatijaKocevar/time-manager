@@ -10,12 +10,10 @@ import { getElapsedSeconds } from "../_utils/time-helpers"
 import { useTasksSSE } from "../_hooks/use-tasks-sse"
 import { useTasksPusher } from "../_hooks/use-tasks-pusher"
 import { TasksFlatTable } from "./tasks-flat-table"
-import { CreateTaskDialog } from "./create-task-dialog"
 import { DeleteTaskDialog } from "./delete-task-dialog"
 import { TimeEntriesDialog } from "./time-entries-dialog"
 import { CreateListDialog } from "./create-list-dialog"
 import { MoveTaskDialog } from "./move-task-dialog"
-import { OverviewNewTaskButton } from "./overview-new-task-button"
 import type { TaskDisplay } from "../_schemas"
 import type { ListDisplay } from "../_schemas/list-schemas"
 
@@ -102,14 +100,12 @@ export function TasksOverviewClient({ groups, lists: initialLists }: TasksOvervi
                                     {group.tasks.length === 1 ? "task" : "tasks"})
                                 </span>
                             </div>
-                            <OverviewNewTaskButton listId={group.listId} />
                         </div>
                         <TasksFlatTable tasks={group.tasks} lists={lists} />
                     </div>
                 )
             })}
 
-            <CreateTaskDialog />
             <DeleteTaskDialog />
             <TimeEntriesDialog />
             <CreateListDialog />

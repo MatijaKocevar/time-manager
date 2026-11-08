@@ -1,9 +1,15 @@
 import { getTranslations } from "next-intl/server"
+import { cookies } from "next/headers"
 import { getTasks } from "../_actions/task-actions"
 import { getLists } from "../_actions/list-actions"
 import { TasksTable } from "../_components/tasks-table"
 import { TasksViewClient } from "../_components/tasks-view-client"
 import { TaskDescriptionDialog } from "../_components/task-description-dialog"
+import {
+    DEFAULT_STATUS_SECTIONS,
+    STATUS_SECTIONS_COOKIE,
+    parseStatusSectionsCookie,
+} from "../_utils/status-sections"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
 
 interface ListPageProps {
@@ -16,13 +22,18 @@ export default async function ListPage({ params }: ListPageProps) {
     const { listId } = await params
     const actualListId = listId === "no-list" ? null : listId
 
-    const [tasks, lists, tutorialsSeen, tTutorial, tTasksList] = await Promise.all([
+    const [tasks, lists, tutorialsSeen, tTutorial, tTasksList, cookieStore] = await Promise.all([
         getTasks({ listId: actualListId }),
         getLists(),
         getTutorialsSeen(),
         getTranslations("tutorial"),
         getTranslations("tutorial.tasksList"),
+        cookies(),
     ])
+
+    const statusSections = parseStatusSectionsCookie(cookieStore.get(STATUS_SECTIONS_COOKIE)?.value)
+    const initialExpandedStatuses =
+        statusSections[actualListId ?? "no-list"] ?? DEFAULT_STATUS_SECTIONS
 
     return (
         <div className="flex flex-col h-full">
@@ -59,11 +70,15 @@ export default async function ListPage({ params }: ListPageProps) {
                     },
                 ]}
             />
-            <div className="flex-none space-y-4">
-                <TasksViewClient listId={actualListId} />
-            </div>
+            <TasksViewClient listId={actualListId} />
             <div className="flex-1 min-h-0 overflow-auto">
-                <TasksTable tasks={tasks} listId={actualListId} lists={lists} />
+                <TasksTable
+                    key={actualListId ?? "no-list"}
+                    tasks={tasks}
+                    listId={actualListId}
+                    lists={lists}
+                    initialExpandedStatuses={initialExpandedStatuses}
+                />
             </div>
             <TaskDescriptionDialog />
         </div>

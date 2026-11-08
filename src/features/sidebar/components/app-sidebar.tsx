@@ -43,6 +43,7 @@ interface AppSidebarProps {
     userName?: string | null
     userEmail?: string | null
     lists?: ListDisplay[]
+    initialExpandedItems?: string[]
     pendingRequestsCount?: number
     hasUrnikCredentials?: boolean
     settingsMenuTranslations?: {
@@ -60,6 +61,7 @@ export function AppSidebar({
     userName,
     userEmail,
     lists = [],
+    initialExpandedItems = [],
     pendingRequestsCount = 0,
     hasUrnikCredentials = false,
     settingsMenuTranslations,
@@ -71,7 +73,7 @@ export function AppSidebar({
     const openListDialog = useTaskDialogStore((state) => state.openListDialog)
     const deletingListId = useTasksStore((state) => state.deletingListId)
     const deleteList = useTasksStore((state) => state.deleteList)
-    const { toggleItem, isExpanded } = useSidebarExpandedItems()
+    const { toggleItem, isExpanded } = useSidebarExpandedItems(initialExpandedItems)
     const t = useTranslations()
     const tCommon = useTranslations("common")
     const tTasks = useTranslations("tasks")

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { useTranslations } from "next-intl"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Pencil } from "lucide-react"
@@ -18,6 +19,8 @@ interface EditableTaskTitleProps {
 export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
     const [isEditing, setIsEditing] = useState(false)
     const [value, setValue] = useState(task.title)
+    const [previousTitle, setPreviousTitle] = useState(task.title)
+    const t = useTranslations("tasks.description")
     const queryClient = useQueryClient()
     const inputRef = useRef<HTMLInputElement>(null)
     const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
@@ -26,9 +29,10 @@ export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
     )
     const openDescriptionDialog = useTaskDialogStore((state) => state.openDescriptionDialog)
 
-    useEffect(() => {
+    if (task.title !== previousTitle) {
+        setPreviousTitle(task.title)
         setValue(task.title)
-    }, [task.title])
+    }
 
     useEffect(() => {
         if (isEditing) {
@@ -99,12 +103,12 @@ export function EditableTaskTitle({ task }: EditableTaskTitleProps) {
             <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 flex-shrink-0"
+                className="h-8 w-8 p-0 opacity-100 md:h-6 md:w-6 md:opacity-0 md:group-hover:opacity-100 flex-shrink-0"
                 onClick={() => setIsEditing(true)}
-                aria-label="Edit title"
+                aria-label={t("editTitle")}
                 tabIndex={-1}
             >
-                <Pencil className="h-3 w-3" />
+                <Pencil className="h-4 w-4 md:h-3 md:w-3" />
             </Button>
         </div>
     )

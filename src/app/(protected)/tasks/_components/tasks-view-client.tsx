@@ -1,16 +1,11 @@
 "use client"
 
 import { useEffect } from "react"
-import { useTranslations } from "next-intl"
 import { useQuery } from "@tanstack/react-query"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
 import { getActiveTimer } from "@/app/(protected)/shared/_actions/timer-actions"
 import { getLists } from "../_actions/list-actions"
 import { useTasksStore } from "../_stores/tasks-store"
-import { useTaskDialogStore } from "../_stores/task-dialog-stores"
 import { taskKeys, listKeys } from "../_constants/query-keys"
-import { CreateTaskDialog } from "./create-task-dialog"
 import { DeleteTaskDialog } from "./delete-task-dialog"
 import { TimeEntriesDialog } from "./time-entries-dialog"
 import { CreateListDialog } from "./create-list-dialog"
@@ -24,10 +19,8 @@ interface TasksViewClientProps {
 }
 
 export function TasksViewClient({ listId }: TasksViewClientProps) {
-    const t = useTranslations("tasks.form")
     useTasksSSE()
     useTasksPusher()
-    const openCreateDialog = useTaskDialogStore((state) => state.openCreateDialog)
     const setSelectedListId = useTasksStore((state) => state.setSelectedListId)
     const activeTimer = useTasksStore((state) => state.activeTimer)
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
@@ -82,13 +75,6 @@ export function TasksViewClient({ listId }: TasksViewClientProps) {
 
     return (
         <>
-            <div className="flex items-center justify-end w-full">
-                <Button id="tasks-list-new-task" onClick={() => openCreateDialog()}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t("newTask")}
-                </Button>
-            </div>
-            <CreateTaskDialog />
             <DeleteTaskDialog />
             <TimeEntriesDialog />
             <CreateListDialog />

@@ -1,7 +1,7 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { ChevronDown, ChevronRight, Plus, Trash2, Folder, FolderOpen } from "lucide-react"
+import { ChevronDown, ChevronRight, Plus, Trash2, Folder, FolderOpen, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 function getColorByDepth(depth: number): string {
@@ -49,6 +49,7 @@ export function TaskCard({ task, lists, parentColor, parentTitle }: TaskCardProp
     const tCommon = useTranslations("common.fields")
     const openDeleteDialog = useTaskDialogStore((state) => state.openDeleteDialog)
     const openCreateDialog = useTaskDialogStore((state) => state.openCreateDialog)
+    const openDescriptionDialog = useTaskDialogStore((state) => state.openDescriptionDialog)
     const setTaskOperationLoading = useTasksStore((state) => state.setTaskOperationLoading)
     const isOperationLoading = useTasksStore(
         (state) => state.taskOperations.get(task.id)?.isLoading ?? false
@@ -126,7 +127,7 @@ export function TaskCard({ task, lists, parentColor, parentTitle }: TaskCardProp
                             )}
                             <EditableTaskTitle task={task} />
                             {task.description && (
-                                <div className="text-sm text-muted-foreground mt-1">
+                                <div className="text-sm text-muted-foreground mt-1 truncate">
                                     {task.description}
                                 </div>
                             )}
@@ -222,27 +223,38 @@ export function TaskCard({ task, lists, parentColor, parentTitle }: TaskCardProp
                     <TaskTimeTracker task={task} />
                 </div>
 
-                <div className="flex items-center justify-end gap-2 pt-2 border-t">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t">
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={handleAddSubtask}
-                        className="h-9 px-3"
+                        onClick={() => openDescriptionDialog(task.id, task.title)}
+                        className="h-9 px-2 text-xs gap-1"
                     >
-                        <Plus className="h-4 w-4 mr-1" />
-                        {tActions("addSubtask")}
+                        <FileText className="h-4 w-4" />
+                        {tActions("openTask")}
                     </Button>
-                    {!task.isSystemTask && (
+                    <div className="flex items-center gap-2 ml-auto">
                         <Button
                             variant="ghost"
                             size="sm"
-                            onClick={handleDelete}
-                            className="h-9 px-3 text-destructive"
+                            onClick={handleAddSubtask}
+                            className="h-9 px-2 text-xs gap-1"
                         >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            {tActions("delete")}
+                            <Plus className="h-4 w-4" />
+                            {tActions("addSubtask")}
                         </Button>
-                    )}
+                        {!task.isSystemTask && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleDelete}
+                                className="h-9 px-2 text-xs gap-1 text-destructive"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                {tActions("delete")}
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
 

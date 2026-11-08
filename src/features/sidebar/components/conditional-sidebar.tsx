@@ -4,6 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "./app-sidebar"
 import { UserRole } from "@/types"
 import type { ListDisplay } from "@/app/(protected)/tasks/_schemas/list-schemas"
+import { CreateTaskDialog } from "@/app/(protected)/tasks/_components/create-task-dialog"
 import { PullToRefreshContainer } from "@/features/pull-to-refresh"
 import { useSidebarOpen } from "../hooks/use-sidebar-open"
 
@@ -14,6 +15,7 @@ interface ConditionalSidebarProps {
     userName?: string | null
     userEmail?: string | null
     lists?: ListDisplay[]
+    initialExpandedItems?: string[]
     header?: React.ReactNode
     pendingRequestsCount?: number
     hasUrnikCredentials?: boolean
@@ -34,6 +36,7 @@ export function ConditionalSidebar({
     userName,
     userEmail,
     lists = [],
+    initialExpandedItems = [],
     header,
     pendingRequestsCount = 0,
     hasUrnikCredentials = false,
@@ -50,6 +53,7 @@ export function ConditionalSidebar({
                         userName={userName}
                         userEmail={userEmail}
                         lists={lists}
+                        initialExpandedItems={initialExpandedItems}
                         pendingRequestsCount={pendingRequestsCount}
                         hasUrnikCredentials={hasUrnikCredentials}
                         settingsMenuTranslations={settingsMenuTranslations}
@@ -59,6 +63,7 @@ export function ConditionalSidebar({
                         <PullToRefreshContainer>{children}</PullToRefreshContainer>
                     </main>
                 </div>
+                <CreateTaskDialog lists={lists} />
             </SidebarProvider>
         )
     }

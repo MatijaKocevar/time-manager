@@ -300,6 +300,7 @@
             "enterTaskTitle": "Enter task title",
             "enterTaskDescription": "Enter task description (optional)",
             "titleRequired": "Title is required",
+            "listRequired": "Select a list first",
             "creating": "Creating...",
             "updating": "Updating...",
             "moveTaskToList": "Move Task to List",
@@ -347,6 +348,7 @@
         "actions": {
             "startTimer": "Start timer",
             "stopTimer": "Stop timer",
+            "openTask": "Open task",
             "addSubtask": "Add subtask",
             "moveToList": "Move to list",
             "delete": "Delete"

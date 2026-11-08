@@ -300,6 +300,7 @@
             "enterTaskTitle": "Vnesite naslov naloge",
             "enterTaskDescription": "Vnesite opis naloge (neobvezno)",
             "titleRequired": "Naslov je obvezen",
+            "listRequired": "Najprej izberite seznam",
             "creating": "Ustvarjanje...",
             "updating": "Posodabljanje...",
             "moveTaskToList": "Premakni nalogo na seznam",
@@ -347,6 +348,7 @@
         "actions": {
             "startTimer": "Začni štoparico",
             "stopTimer": "Ustavi štoparico",
+            "openTask": "Odpri nalogo",
             "addSubtask": "Dodaj podnalogo",
             "moveToList": "Premakni na seznam",
             "delete": "Izbriši"
