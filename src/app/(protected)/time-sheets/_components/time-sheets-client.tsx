@@ -21,7 +21,7 @@ import { aggregateTimeEntriesByTaskAndDate } from "../_utils/aggregation-helpers
 import { exportTimeSheetData } from "../_actions/export-actions"
 import { ExportDialog, type ExportFormat } from "@/features/export"
 import { TimeSheetsTable } from "./time-sheets-table"
-import type { TimeEntryDisplay } from "../_schemas/time-sheet-schemas"
+import type { TimeEntryDisplay, TimeSheetTaskFilter } from "../_schemas/time-sheet-schemas"
 import { useTranslations } from "next-intl"
 import { useTimeSheetsSSE } from "../_hooks/use-time-sheets-sse"
 import { useTimeSheetsPusher } from "../_hooks/use-time-sheets-pusher"
@@ -38,7 +38,7 @@ interface TimeSheetsClientProps {
     initialData: TimeEntryDisplay[]
     initialViewMode: ViewMode
     initialSelectedDate: Date
-    initialTaskFilter: "work" | "private"
+    initialTaskFilter: TimeSheetTaskFilter
     initialHolidays?: Array<{ date: Date; name: string }>
     userWorkHoursPerDay: number
     initialBalance: number
@@ -49,6 +49,8 @@ interface TimeSheetsClientProps {
         viewLabel: string
         filterWork: string
         filterPrivate: string
+        filterOffHours: string
+        filterAll: string
         filterLabel: string
         task: string
         total: string
@@ -110,8 +112,8 @@ export function TimeSheetsClient({
         const params = new URLSearchParams()
         params.set("mode", viewMode)
         params.set("date", selectedDate.toISOString().split("T")[0])
-        if (taskFilter === "private") {
-            params.set("filter", "private")
+        if (taskFilter !== "all") {
+            params.set("filter", taskFilter)
         }
 
         router.replace(`?${params.toString()}`, { scroll: false })
@@ -261,13 +263,19 @@ export function TimeSheetsClient({
                                 <DropdownMenuLabel>{translations.filterLabel}</DropdownMenuLabel>
                                 <DropdownMenuRadioGroup
                                     value={taskFilter}
-                                    onValueChange={(v) => setTaskFilter(v as "work" | "private")}
+                                    onValueChange={(v) => setTaskFilter(v as TimeSheetTaskFilter)}
                                 >
+                                    <DropdownMenuRadioItem value="all">
+                                        {translations.filterAll}
+                                    </DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="work">
                                         {translations.filterWork}
                                     </DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="private">
                                         {translations.filterPrivate}
+                                    </DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="offhours">
+                                        {translations.filterOffHours}
                                     </DropdownMenuRadioItem>
                                 </DropdownMenuRadioGroup>
                                 <DropdownMenuSeparator />

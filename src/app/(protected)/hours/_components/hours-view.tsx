@@ -23,16 +23,27 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronLeft, ChevronRight, Plus, MoreVertical, Save, X, Download } from "lucide-react"
+import {
+    ChevronLeft,
+    ChevronRight,
+    Plus,
+    MoreVertical,
+    Save,
+    X,
+    Download,
+    MoonStar,
+} from "lucide-react"
 import { HoursTable } from "./hours-table"
 import { HoursSummary } from "./hours-summary"
 import { HourEntryForm } from "./bulk-hour-entry-form"
+import { OffHoursDialog } from "./off-hours-dialog"
 import { exportHoursData } from "../_actions/export-actions"
 import { ExportDialog, type ExportFormat } from "@/features/export"
 import type { HourEntryDisplay } from "../_schemas/hour-entry-schemas"
 import type { ViewMode } from "../_schemas/hour-filter-schemas"
 import { VIEW_MODE_VALUES } from "../_schemas/hour-filter-schemas"
 import { getViewTitle } from "../_utils/view-helpers"
+import { formatDateKey } from "../_utils/date-helpers"
 import { hourKeys } from "../_constants/query-keys"
 
 interface HoursViewProps {
@@ -68,6 +79,7 @@ export function HoursView({
     const queryClient = useQueryClient()
     const [isFormOpen, setIsFormOpen] = useState(false)
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
+    const [isOffHoursOpen, setIsOffHoursOpen] = useState(false)
 
     const {
         viewMode,
@@ -221,6 +233,13 @@ export function HoursView({
                                     <Download className="h-4 w-4 mr-2" />
                                     {tCommon("actions.export")}
                                 </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() => setIsOffHoursOpen(true)}
+                                    disabled={isDirty}
+                                >
+                                    <MoonStar className="h-4 w-4 mr-2" />
+                                    {t("offHours")}
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -266,6 +285,18 @@ export function HoursView({
                 onExport={handleExport}
                 filenamePrefix="hours"
             />
+
+            {isOffHoursOpen && (
+                <OffHoursDialog
+                    open
+                    initialDate={formatDateKey(currentDate)}
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setIsOffHoursOpen(false)
+                        }
+                    }}
+                />
+            )}
         </>
     )
 }

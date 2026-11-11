@@ -26,6 +26,8 @@ export function getSystemTaskTitleForHourType(hourType: HourType): string {
             return "System: PRIVATE"
         case "OVERTIME_USE":
             return "System: OVERTIME_USE"
+        case "OFF_HOURS":
+            return "System: OFF_HOURS"
     }
 }
 

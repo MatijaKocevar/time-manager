@@ -1,6 +1,15 @@
 "use client"
 
-import { MoreHorizontal, Edit, Trash, ChevronRight, ChevronDown, Lock } from "lucide-react"
+import {
+    MoreHorizontal,
+    Edit,
+    Trash,
+    ChevronRight,
+    ChevronDown,
+    Lock,
+    BarChart3,
+} from "lucide-react"
+import { useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTranslations } from "next-intl"
@@ -37,6 +46,7 @@ import { useTaskDialogStore } from "@/app/(protected)/tasks/_stores/task-dialog-
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useSidebarExpandedItems } from "../hooks/use-sidebar-expanded-items"
 import { SettingsMenu } from "./settings-menu"
+import { ListOverviewDialog } from "@/app/(protected)/tasks/_components/list-overview-dialog"
 
 interface AppSidebarProps {
     userRole?: UserRole
@@ -74,6 +84,7 @@ export function AppSidebar({
     const deletingListId = useTasksStore((state) => state.deletingListId)
     const deleteList = useTasksStore((state) => state.deleteList)
     const { toggleItem, isExpanded } = useSidebarExpandedItems(initialExpandedItems)
+    const [overviewListId, setOverviewListId] = useState<string | null>(null)
     const t = useTranslations()
     const tCommon = useTranslations("common")
     const tTasks = useTranslations("tasks")
@@ -241,6 +252,18 @@ export function AppSidebar({
                                                                     <DropdownMenuContent align="end">
                                                                         <DropdownMenuItem
                                                                             onClick={() =>
+                                                                                setOverviewListId(
+                                                                                    list.id
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <BarChart3 className="mr-2 h-3 w-3" />
+                                                                            {tTasks(
+                                                                                "list.overview"
+                                                                            )}
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem
+                                                                            onClick={() =>
                                                                                 handleEditList(
                                                                                     list.id
                                                                                 )
@@ -347,6 +370,17 @@ export function AppSidebar({
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>
+            <ListOverviewDialog
+                open={overviewListId !== null}
+                listId={overviewListId}
+                listName={lists.find((list) => list.id === overviewListId)?.name ?? ""}
+                listColor={lists.find((list) => list.id === overviewListId)?.color ?? null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setOverviewListId(null)
+                    }
+                }}
+            />
         </Sidebar>
     )
 }

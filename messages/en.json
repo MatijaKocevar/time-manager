@@ -175,7 +175,9 @@
         "taskFilter": {
             "label": "Filter",
             "work": "Work",
-            "private": "Personal"
+            "private": "Personal",
+            "all": "All",
+            "offHours": "Off-hours"
         },
         "table": {
             "task": "Task",
@@ -213,7 +215,8 @@
             "sickLeave": "Sick Leave",
             "break": "Break",
             "private": "Private",
-            "overtimeUse": "Overtime use"
+            "overtimeUse": "Overtime use",
+            "offHours": "Off-hours"
         },
         "labels": {
             "total": "TOTAL",
@@ -264,7 +267,8 @@
         },
         "actions": {
             "addNewEntry": "Add New Entry",
-            "saveWithCount": "Save ({count})"
+            "saveWithCount": "Save ({count})",
+            "offHours": "Reclassify off-hours"
         },
         "views": {
             "viewLabel": "View",
@@ -275,6 +279,29 @@
         "messages": {
             "discardChanges": "Discard all unsaved changes?",
             "allTypes": "All Types"
+        },
+        "offHours": {
+            "title": "Reclassify off-hours",
+            "description": "Move everything inside this window to off-hours. It still counts toward the project, but not toward your working hours.",
+            "date": "Date",
+            "from": "From",
+            "to": "To",
+            "includeManual": "Also include manual entries (whole entry only, no time of day)",
+            "applyToFuture": "Also apply to new timers until the window ends",
+            "preview": "Preview",
+            "willMove": "will move",
+            "nothing": "Nothing in this window is logged as working time.",
+            "willSplit": "will split",
+            "manualEntry": "Manual entry",
+            "noTimeOfDay": "no time of day recorded",
+            "timerRunning": "Stop the running timer before applying.",
+            "undo": "Undo",
+            "cancel": "Cancel",
+            "confirm": "Apply",
+            "previewAction": "Preview",
+            "done": "Done",
+            "applied": "{hours}h moved to off-hours ({updated} updated, {created} created)",
+            "undone": "Off-hours reclassification undone"
         }
     },
     "tasks": {
@@ -361,7 +388,8 @@
             "noList": "No List",
             "listOptions": "List options",
             "rename": "Rename",
-            "deleteConfirm": "Are you sure you want to delete this list? Tasks will be moved to No List."
+            "deleteConfirm": "Are you sure you want to delete this list? Tasks will be moved to No List.",
+            "overview": "Overview"
         },
         "tracker": {
             "selectTaskToTrack": "Select Task to Track",
@@ -398,6 +426,16 @@
             "updateError": "Failed to update time entry",
             "deleteError": "Failed to delete time entry",
             "deleteConfirm": "Are you sure you want to delete this time entry?"
+        },
+        "listOverview": {
+            "title": "{name} overview",
+            "description": "All time tracked on this list, split into work hours and off-hours.",
+            "total": "Total tracked",
+            "work": "Work hours",
+            "offHours": "Off-hours",
+            "running": "Timer running",
+            "taskCount": "{count} tasks",
+            "empty": "No time tracked yet"
         }
     },
     "requests": {
@@ -947,8 +985,12 @@
                 "maxReached": "Token limit reached. Revoke an unused token first.",
                 "createFailed": "Failed to create token",
                 "revokeFailed": "Failed to revoke token",
-                "notFound": "Token not found"
-            }
+                "notFound": "Token not found",
+                "updateFailed": "Could not update the token"
+            },
+            "defaultHourType": "Timers from this token",
+            "defaultHourTypeApp": "Same as the app (WORK)",
+            "defaultHourTypeHint": "Timers started by this token are logged with this hour type. Use Off-hours for AI agents that work outside working hours."
         },
         "autoCheckin": {
             "title": "Auto Check-In/Out",

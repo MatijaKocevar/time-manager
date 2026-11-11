@@ -258,15 +258,16 @@ export async function getTodayTimeSummary() {
                     entry.type === "WORK" ||
                     entry.type === "BREAK" ||
                     entry.type === "PRIVATE" ||
-                    entry.type === "OVERTIME_USE"
+                    entry.type === "OVERTIME_USE" ||
+                    entry.type === "OFF_HOURS"
                 ) {
                     const durationHours = entry.duration ? entry.duration / 3600 : 0
                     acc[entry.type] += durationHours
                 }
                 return acc
             },
-            { WORK: 0, BREAK: 0, PRIVATE: 0, OVERTIME_USE: 0 } as Record<
-                "WORK" | "BREAK" | "PRIVATE" | "OVERTIME_USE",
+            { WORK: 0, BREAK: 0, PRIVATE: 0, OVERTIME_USE: 0, OFF_HOURS: 0 } as Record<
+                "WORK" | "BREAK" | "PRIVATE" | "OVERTIME_USE" | "OFF_HOURS",
                 number
             >
         )

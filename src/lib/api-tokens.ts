@@ -25,6 +25,7 @@ export async function resolveApiTokenIdentity(bearerToken: string): Promise<Auth
             id: true,
             lastUsedAt: true,
             expiresAt: true,
+            defaultHourType: true,
             user: {
                 select: {
                     id: true,
@@ -65,5 +66,6 @@ export async function resolveApiTokenIdentity(bearerToken: string): Promise<Auth
         locale: apiToken.user.locale,
         email: apiToken.user.email,
         name: apiToken.user.name,
+        defaultHourType: apiToken.defaultHourType,
     }
 }

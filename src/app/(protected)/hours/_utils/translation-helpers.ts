@@ -9,6 +9,7 @@ export type HourTypeTranslationKey =
     | "break"
     | "private"
     | "overtimeUse"
+    | "offHours"
 
 const HOUR_TYPE_TO_TRANSLATION_KEY: Record<HourType, HourTypeTranslationKey> = {
     [HOUR_TYPE_VALUES.WORK]: "work",
@@ -18,6 +19,7 @@ const HOUR_TYPE_TO_TRANSLATION_KEY: Record<HourType, HourTypeTranslationKey> = {
     [HOUR_TYPE_VALUES.BREAK]: "break",
     [HOUR_TYPE_VALUES.PRIVATE]: "private",
     [HOUR_TYPE_VALUES.OVERTIME_USE]: "overtimeUse",
+    [HOUR_TYPE_VALUES.OFF_HOURS]: "offHours",
 }
 
 export function getHourTypeTranslationKey(type: string): HourTypeTranslationKey {
@@ -32,6 +34,7 @@ export const HOUR_TYPE_KEYS: Record<HourType, string> = {
     BREAK: "hours.types.break",
     PRIVATE: "hours.types.private",
     OVERTIME_USE: "hours.types.overtimeUse",
+    OFF_HOURS: "hours.types.offHours",
 }
 
 export function getHourTypeLabel(t: (key: string) => string, type: HourType): string {

@@ -4,9 +4,27 @@ import { KeyRound, Plus, Trash2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { useApiTokens } from "../_hooks/use-api-tokens"
 import { CreateApiTokenDialog } from "./create-api-token-dialog"
 import type { ApiTokenDisplay } from "../_schemas/api-token-schemas"
+
+const NONE_VALUE = "none"
+
+const TOKEN_HOUR_TYPE_OPTIONS = [
+    { value: "OFF_HOURS", labelKey: "offHours" },
+    { value: "WORK", labelKey: "work" },
+    { value: "WORK_FROM_HOME", labelKey: "workFromHome" },
+    { value: "BREAK", labelKey: "break" },
+    { value: "PRIVATE", labelKey: "private" },
+    { value: "OVERTIME_USE", labelKey: "overtimeUse" },
+] as const
 
 interface ApiTokensSectionProps {
     initialTokens: ApiTokenDisplay[]
@@ -15,11 +33,13 @@ interface ApiTokensSectionProps {
 
 export function ApiTokensSection({ initialTokens, isDemo }: ApiTokensSectionProps) {
     const t = useTranslations("profile.apiTokens")
+    const tTypes = useTranslations("hours.types")
     const {
         tokens,
         isDialogOpen,
         name,
         expiresInDays,
+        defaultHourType,
         isSubmitting,
         createdToken,
         error,
@@ -27,7 +47,9 @@ export function ApiTokensSection({ initialTokens, isDemo }: ApiTokensSectionProp
         closeDialog,
         setName,
         setExpiresInDays,
+        setDefaultHourType,
         submitToken,
+        updateHourType,
         revoke,
     } = useApiTokens(initialTokens)
 
@@ -63,6 +85,40 @@ export function ApiTokensSection({ initialTokens, isDemo }: ApiTokensSectionProp
                                             ? new Date(token.expiresAt).toLocaleDateString()
                                             : t("never")}
                                     </p>
+                                    <div className="flex items-center gap-2 pt-1">
+                                        <span className="text-xs text-muted-foreground">
+                                            {t("defaultHourType")}
+                                        </span>
+                                        <Select
+                                            value={token.defaultHourType ?? NONE_VALUE}
+                                            onValueChange={(value) =>
+                                                updateHourType(
+                                                    token.id,
+                                                    value === NONE_VALUE
+                                                        ? null
+                                                        : (value as ApiTokenDisplay["defaultHourType"])
+                                                )
+                                            }
+                                            disabled={isDemo}
+                                        >
+                                            <SelectTrigger className="h-7 w-[190px] text-xs">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value={NONE_VALUE}>
+                                                    {t("defaultHourTypeApp")}
+                                                </SelectItem>
+                                                {TOKEN_HOUR_TYPE_OPTIONS.map((option) => (
+                                                    <SelectItem
+                                                        key={option.value}
+                                                        value={option.value}
+                                                    >
+                                                        {tTypes(option.labelKey)}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                                 <Button
                                     variant="ghost"
@@ -87,12 +143,14 @@ export function ApiTokensSection({ initialTokens, isDemo }: ApiTokensSectionProp
                 open={isDialogOpen}
                 name={name}
                 expiresInDays={expiresInDays}
+                defaultHourType={defaultHourType}
                 isSubmitting={isSubmitting}
                 createdToken={createdToken}
                 error={error}
                 onOpenChange={(open) => (open ? openDialog() : closeDialog())}
                 onNameChange={setName}
                 onExpiresInDaysChange={setExpiresInDays}
+                onDefaultHourTypeChange={setDefaultHourType}
                 onSubmit={submitToken}
             />
         </Card>

@@ -1,12 +1,13 @@
 import { create } from "zustand"
 import type { ViewMode } from "../_utils/date-helpers"
+import type { TimeSheetTaskFilter } from "../_schemas/time-sheet-schemas"
 
 interface TimeSheetsState {
     viewMode: ViewMode
     selectedDate: Date
     isLoading: boolean
     error: string | null
-    taskFilter: "work" | "private"
+    taskFilter: TimeSheetTaskFilter
     dayEntriesDialog: {
         isOpen: boolean
         date: string | null
@@ -19,7 +20,7 @@ interface TimeSheetsActions {
     setSelectedDate: (date: Date) => void
     setLoading: (loading: boolean) => void
     setError: (error: string | null) => void
-    setTaskFilter: (filter: "work" | "private") => void
+    setTaskFilter: (filter: TimeSheetTaskFilter) => void
     goToPreviousPeriod: () => void
     goToNextPeriod: () => void
     goToToday: () => void
@@ -32,7 +33,7 @@ export const useTimeSheetsStore = create<TimeSheetsState & TimeSheetsActions>((s
     selectedDate: new Date(),
     isLoading: false,
     error: null,
-    taskFilter: "work",
+    taskFilter: "all",
     dayEntriesDialog: {
         isOpen: false,
         date: null,

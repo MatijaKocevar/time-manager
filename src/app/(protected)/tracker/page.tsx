@@ -73,6 +73,7 @@ export default async function TrackerPage() {
         break: tTypes("break"),
         private: tTypes("private"),
         overtimeUse: tTypes("overtimeUse"),
+        offHours: tTypes("offHours"),
         noTasksAvailable: t("noTasksAvailable"),
         generalWork: "General",
         dailySummaryTitle: t("dailySummaryTitle"),

@@ -32,6 +32,7 @@ export function generateCSV(monthlyDataArray: MonthlyHourExportData[]): string {
             "BREAK",
             "PRIVATE",
             "OVERTIME_USE",
+            "OFF_HOURS",
         ]
 
         monthSection.push("Hours by Type")

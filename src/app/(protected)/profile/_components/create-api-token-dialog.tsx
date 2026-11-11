@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import type { ApiTokenDisplay } from "../_schemas/api-token-schemas"
 import {
     Select,
     SelectContent,
@@ -26,28 +27,44 @@ interface CreateApiTokenDialogProps {
     open: boolean
     name: string
     expiresInDays: number | null
+    defaultHourType: ApiTokenDisplay["defaultHourType"]
     isSubmitting: boolean
     createdToken: string | null
     error: string | null
     onOpenChange: (open: boolean) => void
     onNameChange: (name: string) => void
     onExpiresInDaysChange: (days: number | null) => void
+    onDefaultHourTypeChange: (type: ApiTokenDisplay["defaultHourType"]) => void
     onSubmit: () => void
 }
+
+const NONE_VALUE = "none"
+
+const HOUR_TYPE_OPTIONS = [
+    { value: "OFF_HOURS", labelKey: "offHours" },
+    { value: "WORK", labelKey: "work" },
+    { value: "WORK_FROM_HOME", labelKey: "workFromHome" },
+    { value: "BREAK", labelKey: "break" },
+    { value: "PRIVATE", labelKey: "private" },
+    { value: "OVERTIME_USE", labelKey: "overtimeUse" },
+] as const
 
 export function CreateApiTokenDialog({
     open,
     name,
     expiresInDays,
+    defaultHourType,
     isSubmitting,
     createdToken,
     error,
     onOpenChange,
     onNameChange,
     onExpiresInDaysChange,
+    onDefaultHourTypeChange,
     onSubmit,
 }: CreateApiTokenDialogProps) {
     const t = useTranslations("profile.apiTokens")
+    const tTypes = useTranslations("hours.types")
     const [copied, setCopied] = useState(false)
 
     async function handleCopy() {
@@ -138,6 +155,37 @@ export function CreateApiTokenDialog({
                                         <SelectItem value="365">{t("expires365")}</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>{t("defaultHourType")}</Label>
+                                <Select
+                                    value={defaultHourType ?? NONE_VALUE}
+                                    onValueChange={(value) =>
+                                        onDefaultHourTypeChange(
+                                            value === NONE_VALUE
+                                                ? null
+                                                : (value as ApiTokenDisplay["defaultHourType"])
+                                        )
+                                    }
+                                    disabled={isSubmitting}
+                                >
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={NONE_VALUE}>
+                                            {t("defaultHourTypeApp")}
+                                        </SelectItem>
+                                        {HOUR_TYPE_OPTIONS.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {tTypes(option.labelKey)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">
+                                    {t("defaultHourTypeHint")}
+                                </p>
                             </div>
                             {error && <p className="text-sm text-destructive">{error}</p>}
                         </div>

@@ -13,7 +13,9 @@ const handler = createMcpHandler(registerTools, {
         "Time Manager is a team time-tracking app. Users own task lists (projects); tasks can be nested " +
         "as subtasks and have status TODO, IN_PROGRESS, DONE, ON_HOLD or CANCELED. Tracking a task creates " +
         "a time entry; only one timer runs per user, and starting a new timer stops the previous one. " +
-        "Entries have an hour type: WORK, WORK_FROM_HOME, BREAK, PRIVATE, VACATION, SICK_LEAVE or OVERTIME_USE. " +
+        "Entries have an hour type: WORK, WORK_FROM_HOME, BREAK, PRIVATE, VACATION, SICK_LEAVE, OVERTIME_USE or OFF_HOURS. " +
+        "OFF_HOURS requires a task and counts toward the project but not toward working hours; use preview_off_hours before " +
+        "reclassify_off_hours, which defaults to dryRun. " +
         "System tasks (break, private, overtime use, general work) are auto-created and cannot be deleted. " +
         "Timestamps are ISO 8601, durations are in seconds, dates use YYYY-MM-DD and months YYYY-MM. " +
         "Monthly hours include per-day totals by type, working days (weekends and holidays excluded), " +

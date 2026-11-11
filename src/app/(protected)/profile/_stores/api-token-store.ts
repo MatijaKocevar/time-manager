@@ -6,6 +6,7 @@ interface ApiTokenStoreState {
     isDialogOpen: boolean
     name: string
     expiresInDays: number | null
+    defaultHourType: ApiTokenDisplay["defaultHourType"]
     isSubmitting: boolean
     createdToken: string | null
     error: string | null
@@ -16,6 +17,7 @@ interface ApiTokenStoreActions {
     setDialogOpen: (isOpen: boolean) => void
     setName: (name: string) => void
     setExpiresInDays: (expiresInDays: number | null) => void
+    setDefaultHourType: (defaultHourType: ApiTokenDisplay["defaultHourType"]) => void
     setSubmitting: (isSubmitting: boolean) => void
     setCreatedToken: (createdToken: string | null) => void
     setError: (error: string | null) => void
@@ -27,6 +29,7 @@ export const useApiTokenStore = create<ApiTokenStoreState & ApiTokenStoreActions
     isDialogOpen: false,
     name: "",
     expiresInDays: null,
+    defaultHourType: null,
     isSubmitting: false,
     createdToken: null,
     error: null,
@@ -35,8 +38,16 @@ export const useApiTokenStore = create<ApiTokenStoreState & ApiTokenStoreActions
     setDialogOpen: (isDialogOpen) => set({ isDialogOpen }),
     setName: (name) => set({ name }),
     setExpiresInDays: (expiresInDays) => set({ expiresInDays }),
+    setDefaultHourType: (defaultHourType) => set({ defaultHourType }),
     setSubmitting: (isSubmitting) => set({ isSubmitting }),
     setCreatedToken: (createdToken) => set({ createdToken }),
     setError: (error) => set({ error }),
-    resetForm: () => set({ name: "", expiresInDays: null, createdToken: null, error: null }),
+    resetForm: () =>
+        set({
+            name: "",
+            expiresInDays: null,
+            defaultHourType: null,
+            createdToken: null,
+            error: null,
+        }),
 }))

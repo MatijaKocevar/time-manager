@@ -6,6 +6,7 @@ export type WorkType =
     | "BREAK"
     | "PRIVATE"
     | "OVERTIME_USE"
+    | "OFF_HOURS"
 
 export type WorkTypeVariant = "default" | "light" | "lighter" | "strong"
 
@@ -51,6 +52,12 @@ export const WORK_TYPE_COLORS: Record<WorkType, Record<WorkTypeVariant, string>>
         light: "bg-rose-50 text-rose-700 dark:bg-rose-900 dark:text-rose-300",
         lighter: "bg-rose-50 text-rose-600 dark:bg-rose-900/50 dark:text-rose-400",
         strong: "bg-rose-200 text-rose-900 dark:bg-rose-900 dark:text-rose-100",
+    },
+    OFF_HOURS: {
+        default: "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-200",
+        light: "bg-violet-50 text-violet-700 dark:bg-violet-900 dark:text-violet-300",
+        lighter: "bg-violet-50 text-violet-600 dark:bg-violet-900/50 dark:text-violet-400",
+        strong: "bg-violet-200 text-violet-900 dark:bg-violet-900 dark:text-violet-100",
     },
 }
 

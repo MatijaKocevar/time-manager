@@ -20,6 +20,7 @@ import {
     calculateExpectedHoursToDate,
     formatBalance as formatBalanceLib,
 } from "@/lib/balance-helpers"
+import { countsTowardWorkHours } from "@/lib/hour-types"
 import { getCurrentUser } from "@/app/(protected)/profile/_actions/profile-actions"
 
 interface HoursSummaryProps {
@@ -60,11 +61,15 @@ export function HoursSummary({
     const hoursPerDay = userDataProp?.workHoursPerDay || userData?.workHoursPerDay || 8
 
     const weeklyGrandTotal = weeklyEntries
-        .filter((entry) => entry.taskId === TASK_ID_VALUES.TOTAL)
+        .filter(
+            (entry) => entry.taskId === TASK_ID_VALUES.TOTAL && countsTowardWorkHours(entry.type)
+        )
         .reduce((sum, entry) => sum + entry.hours, 0)
 
     const monthlyGrandTotal = monthlyEntries
-        .filter((entry) => entry.taskId === TASK_ID_VALUES.TOTAL)
+        .filter(
+            (entry) => entry.taskId === TASK_ID_VALUES.TOTAL && countsTowardWorkHours(entry.type)
+        )
         .reduce((sum, entry) => sum + entry.hours, 0)
 
     const weeklyOvertimeUsed = weeklyEntries

@@ -88,16 +88,18 @@ model User {
   managedUsers              AdminUserAssignment[]      @relation("AdminAssignments")
   assignedAdmins            AdminUserAssignment[]      @relation("ManagedByAdmin")
   apiTokens                 ApiToken[]
+  offHoursWindows           OffHoursWindow[]
 }
 
 model ApiToken {
-  id         String    @id @default(cuid())
-  userId     String
-  name       String
-  tokenHash  String    @unique
-  lastUsedAt DateTime?
-  expiresAt  DateTime?
-  createdAt  DateTime  @default(now())
+  id              String    @id @default(cuid())
+  userId          String
+  name            String
+  tokenHash       String    @unique
+  lastUsedAt      DateTime?
+  expiresAt       DateTime?
+  defaultHourType HourType?
+  createdAt       DateTime  @default(now())
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
@@ -124,15 +126,18 @@ model HourEntry {
   type        HourType @default(WORK)
   description String?
   taskId      String?
+  offHoursWindowId String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   task        Task?    @relation(fields: [taskId], references: [id])
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offHoursWindow OffHoursWindow? @relation(fields: [offHoursWindowId], references: [id], onDelete: SetNull)
 
   @@unique([userId, date, type, taskId])
   @@index([userId])
   @@index([date])
   @@index([taskId])
+  @@index([offHoursWindowId])
 }
 
 // MATERIALIZED VIEW - Cannot DELETE/UPDATE directly
@@ -181,17 +186,19 @@ model Task {
 }
 
 model TaskTimeEntry {
-  id        String    @id @default(cuid())
-  taskId    String
-  userId    String
-  startTime DateTime
-  endTime   DateTime?
-  duration  Int?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  type      HourType  @default(WORK)
-  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String    @id @default(cuid())
+  taskId          String
+  userId          String
+  startTime       DateTime
+  endTime         DateTime?
+  duration        Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  type            HourType  @default(WORK)
+  offHoursWindowId String?
+  task            Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  offHoursWindow  OffHoursWindow? @relation(fields: [offHoursWindowId], references: [id], onDelete: SetNull)
 
   @@index([taskId])
   @@index([userId])
@@ -200,6 +207,24 @@ model TaskTimeEntry {
   @@index([userId, endTime])
   @@index([taskId, startTime])
   @@index([userId, startTime, type])
+  @@index([offHoursWindowId])
+}
+
+model OffHoursWindow {
+  id              String          @id @default(cuid())
+  userId          String
+  date            DateTime
+  startDateTime   DateTime
+  endDateTime     DateTime
+  type            HourType        @default(OFF_HOURS)
+  appliesToFuture Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeEntries     TaskTimeEntry[]
+  manualEntries   HourEntry[]
+
+  @@index([userId, date])
+  @@index([userId, startDateTime])
 }
 
 model Request {
@@ -410,6 +435,7 @@ enum HourType {
   BREAK
   PRIVATE
   OVERTIME_USE
+  OFF_HOURS
 }
 
 enum TaskStatus {

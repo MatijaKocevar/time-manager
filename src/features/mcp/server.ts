@@ -5,6 +5,7 @@ import { registerTimeEntryTools } from "./tools/time-entries"
 import { registerRequestTools } from "./tools/requests"
 import { registerUrnikTools } from "./tools/urnik"
 import { registerReportTools } from "./tools/reports"
+import { registerOffHoursTools } from "./tools/off-hours"
 
 export function registerTools(server: McpServer) {
     registerTaskTools(server)
@@ -13,4 +14,5 @@ export function registerTools(server: McpServer) {
     registerRequestTools(server)
     registerUrnikTools(server)
     registerReportTools(server)
+    registerOffHoursTools(server)
 }

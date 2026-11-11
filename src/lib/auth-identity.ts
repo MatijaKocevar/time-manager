@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks"
-import type { UserRole } from "@/../../prisma/generated/client"
+import type { HourType, UserRole } from "@/../../prisma/generated/client"
 
 export interface AuthIdentity {
     userId: string
@@ -8,6 +8,7 @@ export interface AuthIdentity {
     locale: string
     email: string
     name: string | null
+    defaultHourType?: HourType | null
 }
 
 const authIdentityStorage = new AsyncLocalStorage<AuthIdentity>()

@@ -9,6 +9,7 @@ import { getCurrentUser } from "@/app/(protected)/profile/_actions/profile-actio
 import { aggregateTimeEntriesByTaskAndDate } from "../_utils/aggregation-helpers"
 import { calculateExpectedHoursToDate, calculateBalance } from "@/lib/balance-helpers"
 import { getTutorialsSeen, PageTour } from "@/features/tutorial"
+import { TIME_SHEET_TASK_FILTERS, type TimeSheetTaskFilter } from "../_schemas/time-sheet-schemas"
 
 interface TimeSheetsViewProps {
     searchParams: { mode?: string; date?: string; filter?: string }
@@ -24,7 +25,11 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
 
     const viewMode = (searchParams.mode === "month" ? "month" : "week") as ViewMode
     const selectedDate = searchParams.date ? new Date(searchParams.date) : new Date()
-    const taskFilter = searchParams.filter === "private" ? "private" : "work"
+    const taskFilter = (TIME_SHEET_TASK_FILTERS as readonly string[]).includes(
+        searchParams.filter ?? ""
+    )
+        ? (searchParams.filter as TimeSheetTaskFilter)
+        : "all"
 
     const dateRange = getDateRangeForView(selectedDate, viewMode)
     const [result, currentUser, tutorialsSeen] = await Promise.all([
@@ -56,19 +61,19 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
         .reduce((sum, entry) => sum + (entry.duration ?? 0), 0)
 
     const expectedHours =
-        taskFilter === "private"
-            ? 0
-            : calculateExpectedHoursToDate(
+        taskFilter === "work"
+            ? calculateExpectedHoursToDate(
                   dateRange.startDate,
                   dateRange.endDate,
                   initialHolidays,
                   userWorkHoursPerDay
               )
+            : 0
 
     const balance =
-        taskFilter === "private"
-            ? 0
-            : calculateBalance(totalSeconds - overtimeUseSeconds, expectedHours)
+        taskFilter === "work"
+            ? calculateBalance(totalSeconds - overtimeUseSeconds, expectedHours)
+            : 0
 
     return (
         <>
@@ -120,6 +125,8 @@ export async function TimeSheetsView({ searchParams, initialHolidays = [] }: Tim
                     viewLabel: t("viewMode.label"),
                     filterWork: t("taskFilter.work"),
                     filterPrivate: t("taskFilter.private"),
+                    filterOffHours: t("taskFilter.offHours"),
+                    filterAll: t("taskFilter.all"),
                     filterLabel: t("taskFilter.label"),
                     task: t("table.task"),
                     total: tSummary("total"),
