@@ -23,11 +23,16 @@ interface UseTimerStateProps {
             isSystemTask: boolean
         }
     } | null
+    initialWorkStart?: Date | null
+    initialWorkEnd?: Date | null
 }
 
-export function useTimerState({ initialActiveTimer }: UseTimerStateProps) {
+export function useTimerState({
+    initialActiveTimer,
+    initialWorkStart = null,
+    initialWorkEnd = null,
+}: UseTimerStateProps) {
     const setActiveTimer = useTasksStore((state) => state.setActiveTimer)
-    const [elapsedSeconds, setElapsedSeconds] = useState(0)
 
     const { data: activeTimerData } = useQuery({
         queryKey: sharedKeys.activeTimer(),
@@ -38,28 +43,52 @@ export function useTimerState({ initialActiveTimer }: UseTimerStateProps) {
 
     const isTimerRunning = Boolean(activeTimerData)
 
+    const runningStartMs = activeTimerData ? new Date(activeTimerData.startTime).getTime() : null
+    const workStartMs = initialWorkStart ? new Date(initialWorkStart).getTime() : null
+    const workEndMs = initialWorkEnd ? new Date(initialWorkEnd).getTime() : null
+    const dayStartMs = workStartMs ?? runningStartMs
+
+    const finishedSeconds =
+        workStartMs !== null && workEndMs !== null
+            ? Math.max(0, Math.floor((workEndMs - workStartMs) / 1000))
+            : null
+
+    const [elapsedSeconds, setElapsedSeconds] = useState(() =>
+        dayStartMs !== null ? getElapsedSeconds(new Date(dayStartMs)) : 0
+    )
+
     useEffect(() => {
-        if (activeTimerData) {
-            const startTime = new Date(activeTimerData.startTime)
-            setActiveTimer(activeTimerData.taskId, activeTimerData.id, startTime)
-
-            const updateElapsed = () => {
-                setElapsedSeconds(getElapsedSeconds(startTime))
-            }
-
-            updateElapsed()
-
-            const interval = setInterval(updateElapsed, 1000)
-
-            return () => clearInterval(interval)
-        } else {
-            setElapsedSeconds(0)
+        if (!activeTimerData) {
+            return
         }
+
+        const startTime = new Date(activeTimerData.startTime)
+
+        setActiveTimer(activeTimerData.taskId, activeTimerData.id, startTime)
     }, [activeTimerData, setActiveTimer])
+
+    useEffect(() => {
+        if (dayStartMs === null || finishedSeconds !== null) {
+            return
+        }
+
+        const startTime = new Date(dayStartMs)
+
+        const updateElapsed = () => {
+            setElapsedSeconds(getElapsedSeconds(startTime))
+        }
+
+        updateElapsed()
+
+        const interval = setInterval(updateElapsed, 1000)
+
+        return () => clearInterval(interval)
+    }, [dayStartMs, finishedSeconds])
 
     return {
         activeTimerData,
-        elapsedSeconds,
+        elapsedSeconds: finishedSeconds ?? elapsedSeconds,
         isTimerRunning,
+        hasDayStarted: dayStartMs !== null,
     }
 }
