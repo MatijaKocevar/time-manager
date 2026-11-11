@@ -39,14 +39,14 @@ export function registerReportTools(server: McpServer) {
             title: "Get timesheet",
             description:
                 "Get tracked time entries between two dates (inclusive), with task, list, start, end, duration in seconds and hour type. " +
-                "taskFilter selects work entries (default) or private/break entries.",
+                "taskFilter selects all entries (default), work entries, private/break entries, or off-hours entries.",
             inputSchema: z.object({
                 startDate: dateSchema.describe("Start date (YYYY-MM-DD)"),
                 endDate: dateSchema.describe("End date (YYYY-MM-DD)"),
                 taskFilter: z
-                    .enum(["work", "private"])
+                    .enum(["all", "work", "private", "offhours"])
                     .optional()
-                    .describe("Which entries to return (default work)"),
+                    .describe("Which entries to return (default all)"),
             }),
         },
         async ({ startDate, endDate, taskFilter }, ctx) =>
@@ -54,7 +54,7 @@ export function registerReportTools(server: McpServer) {
                 const result = await getTimeSheetEntries({
                     startDate: `${startDate}T00:00:00.000Z`,
                     endDate: `${endDate}T00:00:00.000Z`,
-                    taskFilter: taskFilter ?? "work",
+                    taskFilter: taskFilter ?? "all",
                     fresh: true,
                 })
 
@@ -71,7 +71,7 @@ export function registerReportTools(server: McpServer) {
         {
             title: "Get today's summary",
             description:
-                "Get today's worked hours grouped by WORK, BREAK, PRIVATE and OVERTIME_USE, plus the currently active timer if any.",
+                "Get today's worked hours grouped by WORK, BREAK, PRIVATE, OVERTIME_USE and OFF_HOURS, plus the currently active timer if any.",
         },
         async (ctx) => runTool(ctx, async () => jsonResult(await getTodayTimeSummary()))
     )

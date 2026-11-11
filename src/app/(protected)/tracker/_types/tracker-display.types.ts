@@ -24,7 +24,7 @@ export interface TrackerDisplayProps {
     } | null
     initialTaskEntryCount: number
     initialDailySummary: {
-        totals: Record<"WORK" | "BREAK" | "PRIVATE" | "OVERTIME_USE", number>
+        totals: Record<"WORK" | "BREAK" | "PRIVATE" | "OVERTIME_USE" | "OFF_HOURS", number>
         activeTimer: {
             id: string
             startTime: Date
@@ -41,6 +41,7 @@ export interface TrackerDisplayProps {
         break: string
         private: string
         overtimeUse: string
+        offHours: string
         noTasksAvailable: string
         generalWork: string
         dailySummaryTitle: string

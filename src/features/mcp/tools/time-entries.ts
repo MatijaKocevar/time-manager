@@ -30,6 +30,7 @@ const hourTypeSchema = z.enum([
     "VACATION",
     "SICK_LEAVE",
     "OVERTIME_USE",
+    "OFF_HOURS",
 ])
 
 export function registerTimeEntryTools(server: McpServer) {
@@ -56,20 +57,13 @@ export function registerTimeEntryTools(server: McpServer) {
                     fresh: true,
                 }
 
-                const [workResult, privateResult] = await Promise.all([
-                    getTimeSheetEntries({ ...range, taskFilter: "work" }),
-                    getTimeSheetEntries({ ...range, taskFilter: "private" }),
-                ])
+                const allResult = await getTimeSheetEntries({ ...range, taskFilter: "all" })
 
-                if (workResult.error !== undefined) {
-                    return errorResult(workResult.error)
+                if (allResult.error !== undefined) {
+                    return errorResult(allResult.error)
                 }
 
-                if (privateResult.error !== undefined) {
-                    return errorResult(privateResult.error)
-                }
-
-                const entries = [...workResult.data, ...privateResult.data]
+                const entries = allResult.data
                     .filter((entry) => !taskId || entry.taskId === taskId)
                     .filter((entry) => !type || entry.type === type)
                     .sort((a, b) => a.startTime.getTime() - b.startTime.getTime())

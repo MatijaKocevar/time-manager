@@ -175,7 +175,9 @@
         "taskFilter": {
             "label": "Filter",
             "work": "Službenо",
-            "private": "Zasebno"
+            "private": "Zasebno",
+            "all": "Vse",
+            "offHours": "Izven delovnega časa"
         },
         "table": {
             "task": "Naloga",
@@ -213,7 +215,8 @@
             "sickLeave": "Bolniška",
             "break": "Odmor",
             "private": "Zasebno",
-            "overtimeUse": "Koriščenje prostih ur"
+            "overtimeUse": "Koriščenje prostih ur",
+            "offHours": "Izven delovnega časa"
         },
         "labels": {
             "total": "SKUPAJ",
@@ -264,7 +267,8 @@
         },
         "actions": {
             "addNewEntry": "Dodaj nov vnos",
-            "saveWithCount": "Shrani ({count})"
+            "saveWithCount": "Shrani ({count})",
+            "offHours": "Prekvalificiraj izven delovnega časa"
         },
         "views": {
             "viewLabel": "Pogled",
@@ -275,6 +279,29 @@
         "messages": {
             "discardChanges": "Zavrzi vse neshranjene spremembe?",
             "allTypes": "Vsi tipi"
+        },
+        "offHours": {
+            "title": "Prekvalificiraj izven delovnega časa",
+            "description": "Vse znotraj tega obdobja premakni med ure izven delovnega časa. Še vedno šteje v projekt, ne pa v delovne ure.",
+            "date": "Datum",
+            "from": "Od",
+            "to": "Do",
+            "includeManual": "Vključi tudi ročne vnose (samo cel vnos, brez ure dneva)",
+            "applyToFuture": "Uporabi tudi za nove merilnike do konca obdobja",
+            "preview": "Predogled",
+            "willMove": "se bo premaknilo",
+            "nothing": "V tem obdobju ni zabeleženega delovnega časa.",
+            "willSplit": "se bo razdelilo",
+            "manualEntry": "Ročni vnos",
+            "noTimeOfDay": "ura dneva ni zabeležena",
+            "timerRunning": "Ustavi tekoči merilnik pred potrditvijo.",
+            "undo": "Razveljavi",
+            "cancel": "Prekliči",
+            "confirm": "Uporabi",
+            "previewAction": "Predogled",
+            "done": "Končano",
+            "applied": "{hours} h premaknjenih izven delovnega časa ({updated} posodobljenih, {created} ustvarjenih)",
+            "undone": "Prekvalifikacija izven delovnega časa razveljavljena"
         }
     },
     "tasks": {
@@ -361,7 +388,8 @@
             "noList": "Brez seznama",
             "listOptions": "Možnosti seznama",
             "rename": "Preimenuj",
-            "deleteConfirm": "Ste prepričani, da želite izbrisati ta seznam? Naloge bodo premaknjene v Brez seznama."
+            "deleteConfirm": "Ste prepričani, da želite izbrisati ta seznam? Naloge bodo premaknjene v Brez seznama.",
+            "overview": "Pregled"
         },
         "tracker": {
             "selectTaskToTrack": "Izberite nalogo za sledenje",
@@ -398,6 +426,16 @@
             "updateError": "Posodobitev vnosa časa ni uspela",
             "deleteError": "Brisanje vnosa časa ni uspelo",
             "deleteConfirm": "Ali si prepričan, da želiš izbrisati ta vnos časa?"
+        },
+        "listOverview": {
+            "title": "Pregled: {name}",
+            "description": "Ves zabeležen čas na tem seznamu, razdeljen na delovne ure in ure izven delovnega časa.",
+            "total": "Skupaj zabeleženo",
+            "work": "Delovne ure",
+            "offHours": "Izven delovnega časa",
+            "running": "Merilnik teče",
+            "taskCount": "{count} nalog",
+            "empty": "Še ni zabeleženega časa"
         }
     },
     "requests": {
@@ -947,8 +985,12 @@
                 "maxReached": "Dosežena omejitev števila žetonov. Najprej prekličite neuporabljen žeton.",
                 "createFailed": "Žetona ni bilo mogoče ustvariti",
                 "revokeFailed": "Žetona ni bilo mogoče preklicati",
-                "notFound": "Žeton ni najden"
-            }
+                "notFound": "Žeton ni najden",
+                "updateFailed": "Žetona ni bilo mogoče posodobiti"
+            },
+            "defaultHourType": "Merilniki tega žetona",
+            "defaultHourTypeApp": "Kot v aplikaciji (WORK)",
+            "defaultHourTypeHint": "Merilniki, ki jih zažene ta žeton, se zabeležijo s to vrsto ure. Za AI agente, ki delajo izven delovnega časa, uporabi »Izven delovnega časa«."
         },
         "autoCheckin": {
             "title": "Samodejni prihod/odhod",

@@ -12,6 +12,7 @@ export const StartTimerSchema = z.object({
             "VACATION",
             "SICK_LEAVE",
             "OVERTIME_USE",
+            "OFF_HOURS",
         ])
         .optional(),
 })

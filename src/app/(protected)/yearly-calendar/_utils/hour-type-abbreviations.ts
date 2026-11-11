@@ -8,4 +8,5 @@ export const HOUR_TYPE_ABBREVIATIONS: Record<HourType, string> = {
     BREAK: "B",
     PRIVATE: "P",
     OVERTIME_USE: "OU",
+    OFF_HOURS: "OH",
 }

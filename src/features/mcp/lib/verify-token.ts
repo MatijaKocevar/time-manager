@@ -10,6 +10,19 @@ const authIdentitySchema = z.object({
     locale: z.string(),
     email: z.string(),
     name: z.string().nullable(),
+    defaultHourType: z
+        .enum([
+            "WORK",
+            "WORK_FROM_HOME",
+            "BREAK",
+            "PRIVATE",
+            "VACATION",
+            "SICK_LEAVE",
+            "OVERTIME_USE",
+            "OFF_HOURS",
+        ])
+        .nullable()
+        .optional(),
 })
 
 export async function verifyApiToken(

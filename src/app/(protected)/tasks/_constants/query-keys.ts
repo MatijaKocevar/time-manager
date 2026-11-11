@@ -10,6 +10,7 @@ export const taskKeys = {
     inProgressByLists: () => [...taskKeys.all, "in-progress-overview"] as const,
     recent: () => [...taskKeys.all, "recent"] as const,
     description: (taskId: string) => [...taskKeys.all, "description", taskId] as const,
+    listOverview: (listId: string) => [...taskKeys.all, "listOverview", listId] as const,
 }
 
 export const listKeys = {

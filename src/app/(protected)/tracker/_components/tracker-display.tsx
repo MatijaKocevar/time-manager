@@ -81,7 +81,8 @@ export function TrackerDisplay({
         selectedType === "PRIVATE" ||
         selectedType === "OVERTIME_USE" ||
         selectedType === "WORK" ||
-        selectedType === "WORK_FROM_HOME"
+        selectedType === "WORK_FROM_HOME" ||
+        (selectedType === "OFF_HOURS" && Boolean(selectedTaskId))
 
     const handlePlayStop = () => {
         if (isTrackingCurrentSelection && activeTimerData) {
@@ -90,7 +91,9 @@ export function TrackerDisplay({
             startMutation.mutate({
                 type: selectedType,
                 taskId:
-                    selectedType === "WORK" || selectedType === "WORK_FROM_HOME"
+                    selectedType === "WORK" ||
+                    selectedType === "WORK_FROM_HOME" ||
+                    selectedType === "OFF_HOURS"
                         ? (selectedTaskId ?? undefined)
                         : undefined,
             })
@@ -115,6 +118,8 @@ export function TrackerDisplay({
                 return translations.private
             case "OVERTIME_USE":
                 return translations.overtimeUse
+            case "OFF_HOURS":
+                return translations.offHours
             default:
                 return type
         }
@@ -162,6 +167,9 @@ export function TrackerDisplay({
                                     <SelectItem value="OVERTIME_USE">
                                         {translations.overtimeUse}
                                     </SelectItem>
+                                    <SelectItem value="OFF_HOURS">
+                                        {translations.offHours}
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -175,7 +183,8 @@ export function TrackerDisplay({
                                 onValueChange={handleTaskChange}
                                 disabled={
                                     (selectedType !== "WORK" &&
-                                        selectedType !== "WORK_FROM_HOME") ||
+                                        selectedType !== "WORK_FROM_HOME" &&
+                                        selectedType !== "OFF_HOURS") ||
                                     isLoading
                                 }
                             >
@@ -275,6 +284,7 @@ export function TrackerDisplay({
                                 break: translations.break,
                                 private: translations.private,
                                 overtimeUse: translations.overtimeUse,
+                                offHours: translations.offHours,
                             }}
                         />
                     </div>

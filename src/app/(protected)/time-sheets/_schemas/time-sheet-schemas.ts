@@ -1,11 +1,15 @@
 import { z } from "zod"
 
+export const TIME_SHEET_TASK_FILTERS = ["all", "work", "private", "offhours"] as const
+
 export const GetTimeSheetEntriesSchema = z.object({
     startDate: z.string().datetime(),
     endDate: z.string().datetime(),
-    taskFilter: z.enum(["work", "private"]).optional().default("work"),
+    taskFilter: z.enum(TIME_SHEET_TASK_FILTERS).optional().default("all"),
     fresh: z.boolean().optional(),
 })
+
+export type TimeSheetTaskFilter = (typeof TIME_SHEET_TASK_FILTERS)[number]
 
 export type GetTimeSheetEntriesInput = z.infer<typeof GetTimeSheetEntriesSchema>
 
@@ -20,6 +24,7 @@ export const GetDayEntriesSchema = z.object({
             "BREAK",
             "PRIVATE",
             "OVERTIME_USE",
+            "OFF_HOURS",
         ])
         .optional(),
 })
@@ -54,6 +59,7 @@ export const TimeEntryDisplaySchema = z.object({
         "BREAK",
         "PRIVATE",
         "OVERTIME_USE",
+        "OFF_HOURS",
     ]),
     createdAt: z.date(),
     updatedAt: z.date(),

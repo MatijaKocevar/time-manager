@@ -54,6 +54,10 @@ export async function determineHourType(
     isBreak: boolean,
     isPrivate: boolean
 ): Promise<HourType> {
+    if (baseType === "OFF_HOURS") {
+        return baseType
+    }
+
     if (isBreak) {
         return "BREAK"
     }
@@ -105,6 +109,31 @@ export async function determineHourType(
     }
 
     return baseType
+}
+
+export async function resolveOffHoursWindowType(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    baseType: HourType,
+    allowWindow: boolean
+): Promise<HourType> {
+    if (!allowWindow || baseType !== "WORK") {
+        return baseType
+    }
+
+    const now = new Date()
+
+    const window = await tx.offHoursWindow.findFirst({
+        where: {
+            userId,
+            appliesToFuture: true,
+            startDateTime: { lte: now },
+            endDateTime: { gte: now },
+        },
+        orderBy: { startDateTime: "desc" },
+    })
+
+    return window?.type ?? baseType
 }
 
 export async function revalidateTimerPaths() {

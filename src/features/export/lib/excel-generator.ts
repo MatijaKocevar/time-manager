@@ -14,6 +14,7 @@ export async function generateExcel(monthData: MonthlyHourExportData): Promise<B
         "BREAK",
         "PRIVATE",
         "OVERTIME_USE",
+        "OFF_HOURS",
     ]
     const numCols = hourTypes.length + 2
 
@@ -289,6 +290,7 @@ export async function generateMultiSheetExcel(
             "BREAK",
             "PRIVATE",
             "OVERTIME_USE",
+            "OFF_HOURS",
         ]
         const numCols = hourTypes.length + 2
 

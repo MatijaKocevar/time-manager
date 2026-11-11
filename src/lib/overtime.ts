@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { calculateExpectedHoursToDate } from "@/lib/balance-helpers"
 import { calculateOvertimeUseHours, type OvertimeRequestLike } from "@/lib/overtime-helpers"
+import { countsTowardWorkHours } from "@/lib/hour-types"
 import { toZonedTime } from "date-fns-tz"
 import { APP_TIMEZONE } from "@/lib/utils"
 import type { Prisma } from "../../prisma/generated/client"
@@ -84,7 +85,7 @@ export async function calculateOvertimeFund(userId: string, year: number): Promi
 
         const monthHours = monthSummaries.reduce(
             (sum, summary) =>
-                summary.type === "OVERTIME_USE" ? sum : sum + Number(summary.totalHours),
+                countsTowardWorkHours(summary.type) ? sum + Number(summary.totalHours) : sum,
             0
         )
 

@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
 import { useApiTokenStore } from "../_stores/api-token-store"
-import { createApiToken, revokeApiToken } from "../_actions/api-token-actions"
+import {
+    createApiToken,
+    revokeApiToken,
+    updateApiTokenHourType,
+} from "../_actions/api-token-actions"
 import type { ApiTokenDisplay } from "../_schemas/api-token-schemas"
 
 export function useApiTokens(initialTokens: ApiTokenDisplay[]) {
@@ -16,6 +20,7 @@ export function useApiTokens(initialTokens: ApiTokenDisplay[]) {
     const isDialogOpen = useApiTokenStore((state) => state.isDialogOpen)
     const name = useApiTokenStore((state) => state.name)
     const expiresInDays = useApiTokenStore((state) => state.expiresInDays)
+    const defaultHourType = useApiTokenStore((state) => state.defaultHourType)
     const isSubmitting = useApiTokenStore((state) => state.isSubmitting)
     const createdToken = useApiTokenStore((state) => state.createdToken)
     const error = useApiTokenStore((state) => state.error)
@@ -23,6 +28,7 @@ export function useApiTokens(initialTokens: ApiTokenDisplay[]) {
     const setDialogOpen = useApiTokenStore((state) => state.setDialogOpen)
     const setName = useApiTokenStore((state) => state.setName)
     const setExpiresInDays = useApiTokenStore((state) => state.setExpiresInDays)
+    const setDefaultHourType = useApiTokenStore((state) => state.setDefaultHourType)
     const setSubmitting = useApiTokenStore((state) => state.setSubmitting)
     const setCreatedToken = useApiTokenStore((state) => state.setCreatedToken)
     const setError = useApiTokenStore((state) => state.setError)
@@ -57,7 +63,11 @@ export function useApiTokens(initialTokens: ApiTokenDisplay[]) {
         setError(null)
 
         try {
-            const result = await createApiToken({ name: name.trim(), expiresInDays })
+            const result = await createApiToken({
+                name: name.trim(),
+                expiresInDays,
+                defaultHourType,
+            })
 
             if ("success" in result && result.success) {
                 setCreatedToken(result.token)
@@ -70,6 +80,26 @@ export function useApiTokens(initialTokens: ApiTokenDisplay[]) {
             setError(thrown instanceof Error ? thrown.message : t("errors.createFailed"))
         } finally {
             setSubmitting(false)
+        }
+    }
+
+    async function updateHourType(id: string, value: ApiTokenDisplay["defaultHourType"]) {
+        const previous = tokens
+
+        setTokens(
+            tokens.map((token) => (token.id === id ? { ...token, defaultHourType: value } : token))
+        )
+
+        try {
+            const result = await updateApiTokenHourType({ id, defaultHourType: value })
+
+            if ("error" in result) {
+                setTokens(previous)
+                toast.error(translateError(result.error ?? t("errors.updateFailed")))
+            }
+        } catch {
+            setTokens(previous)
+            toast.error(t("errors.updateFailed"))
         }
     }
 
@@ -98,6 +128,7 @@ export function useApiTokens(initialTokens: ApiTokenDisplay[]) {
         isDialogOpen,
         name,
         expiresInDays,
+        defaultHourType,
         isSubmitting,
         createdToken,
         error,
@@ -105,7 +136,9 @@ export function useApiTokens(initialTokens: ApiTokenDisplay[]) {
         closeDialog,
         setName,
         setExpiresInDays,
+        setDefaultHourType,
         submitToken,
+        updateHourType,
         revoke,
     }
 }

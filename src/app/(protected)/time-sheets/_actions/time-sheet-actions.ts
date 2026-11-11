@@ -7,18 +7,45 @@ import { prisma } from "@/lib/prisma"
 import {
     GetTimeSheetEntriesSchema,
     type GetTimeSheetEntriesInput,
+    type TimeSheetTaskFilter,
     GetDayEntriesSchema,
     type GetDayEntriesInput,
     MoveTimeEntrySchema,
     type MoveTimeEntryInput,
 } from "../_schemas/time-sheet-schemas"
 import { broadcastTimerEvent, refreshTimerData, type TimerBroadcastData } from "@/lib/timer-utils"
+import type { Prisma } from "../../../../../prisma/generated/client"
+
+function buildTaskFilterConditions(
+    taskFilter: TimeSheetTaskFilter
+): Prisma.TaskTimeEntryWhereInput[] {
+    if (taskFilter === "all") {
+        return []
+    }
+
+    if (taskFilter === "offhours") {
+        return [{ type: "OFF_HOURS" }]
+    }
+
+    const visibility: Prisma.TaskTimeEntryWhereInput[] =
+        taskFilter === "private"
+            ? [
+                  { task: { isSystemTask: true }, type: { in: ["PRIVATE", "BREAK"] } },
+                  { task: { list: { isPrivate: true } } },
+              ]
+            : [
+                  { task: { isSystemTask: true }, type: { notIn: ["PRIVATE", "BREAK"] } },
+                  { task: { OR: [{ list: { isPrivate: false } }, { listId: null }] } },
+              ]
+
+    return [{ type: { not: "OFF_HOURS" } }, { OR: visibility }]
+}
 
 async function fetchTimeSheetEntriesFromDb(
     userId: string,
     startDate: string,
     endDate: string,
-    taskFilter: "work" | "private"
+    taskFilter: TimeSheetTaskFilter
 ) {
     const startDateTime = new Date(startDate)
     const endDateTime = new Date(new Date(endDate).getTime() + 86400000)
@@ -30,22 +57,7 @@ async function fetchTimeSheetEntriesFromDb(
                 gte: startDateTime,
                 lt: endDateTime,
             },
-            AND: [
-                {
-                    OR: [
-                        {
-                            task: { isSystemTask: true },
-                            type:
-                                taskFilter === "private"
-                                    ? { in: ["PRIVATE", "BREAK"] }
-                                    : { notIn: ["PRIVATE", "BREAK"] },
-                        },
-                        taskFilter === "private"
-                            ? { task: { list: { isPrivate: true } } }
-                            : { task: { OR: [{ list: { isPrivate: false } }, { listId: null }] } },
-                    ],
-                },
-            ],
+            AND: buildTaskFilterConditions(taskFilter),
         },
         orderBy: { startTime: "asc" },
         select: {

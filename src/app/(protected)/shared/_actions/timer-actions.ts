@@ -7,6 +7,7 @@ import {
     broadcastTimerEvent,
     stopActiveTimer,
     determineHourType,
+    resolveOffHoursWindowType,
     refreshTimerData,
     type TimerBroadcastData,
 } from "@/lib/timer-utils"
@@ -71,6 +72,10 @@ export async function startTimer(input: StartTimerInput) {
             return { error: "Task should not be provided for this type" }
         }
 
+        if (type === "OFF_HOURS" && !taskId) {
+            return { error: "Off-hours tracking requires a task" }
+        }
+
         if (taskId) {
             const task = await prisma.task.findUnique({
                 where: { id: taskId },
@@ -84,23 +89,38 @@ export async function startTimer(input: StartTimerInput) {
         const newEntry = await prisma.$transaction(async (tx) => {
             await stopActiveTimer(tx, session.user.id)
 
+            const resolvedType = await resolveOffHoursWindowType(
+                tx,
+                session.user.id,
+                type,
+                validation.data.type === undefined
+            )
+
+            if (resolvedType === "OFF_HOURS" && !taskId) {
+                throw new Error("Off-hours tracking requires a task")
+            }
+
             let finalTaskId = taskId
 
-            if (type === "BREAK" || type === "PRIVATE" || type === "OVERTIME_USE") {
+            if (
+                resolvedType === "BREAK" ||
+                resolvedType === "PRIVATE" ||
+                resolvedType === "OVERTIME_USE"
+            ) {
                 const systemTask = await getOrCreateSystemTask(
                     tx,
                     session.user.id,
-                    type as SystemTaskType
+                    resolvedType as SystemTaskType
                 )
                 finalTaskId = systemTask.id
-            } else if (type === "WORK" && !taskId) {
+            } else if (resolvedType === "WORK" && !taskId) {
                 const generalWorkTask = await getOrCreateSystemTask(
                     tx,
                     session.user.id,
                     "GENERAL_WORK"
                 )
                 finalTaskId = generalWorkTask.id
-            } else if (type === "WORK_FROM_HOME" && !taskId) {
+            } else if (resolvedType === "WORK_FROM_HOME" && !taskId) {
                 const generalWorkTask = await getOrCreateSystemTask(
                     tx,
                     session.user.id,
@@ -113,9 +133,15 @@ export async function startTimer(input: StartTimerInput) {
                 throw new Error("Task ID is required")
             }
 
-            const isBreak = type === "BREAK"
-            const isPrivate = type === "PRIVATE"
-            const finalType = await determineHourType(tx, session.user.id, type, isBreak, isPrivate)
+            const isBreak = resolvedType === "BREAK"
+            const isPrivate = resolvedType === "PRIVATE"
+            const finalType = await determineHourType(
+                tx,
+                session.user.id,
+                resolvedType,
+                isBreak,
+                isPrivate
+            )
 
             const entry = await tx.taskTimeEntry.create({
                 data: {

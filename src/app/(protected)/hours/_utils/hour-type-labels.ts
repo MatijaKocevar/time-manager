@@ -8,6 +8,7 @@ export const HOUR_TYPE_KEYS: Record<HourType, string> = {
     BREAK: "hours.types.break",
     PRIVATE: "hours.types.private",
     OVERTIME_USE: "hours.types.overtimeUse",
+    OFF_HOURS: "hours.types.offHours",
 }
 
 export function getHourTypeLabel(t: (key: string) => string, type: HourType): string {

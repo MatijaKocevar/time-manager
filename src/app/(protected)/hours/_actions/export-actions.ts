@@ -19,6 +19,7 @@ import { computeAttendanceData } from "@/lib/attendance"
 import { formatDateKey } from "../_utils/date-helpers"
 import { calculateWorkingDaysSync, calculateOvertime } from "../_utils/calculation-helpers"
 import { HOUR_TYPES, HOUR_TYPE_VALUES } from "../_constants/hour-types"
+import { countsTowardWorkHours } from "@/lib/hour-types"
 
 export async function fetchMonthlyHourData(
     userId: string,
@@ -91,7 +92,9 @@ export async function fetchMonthlyHourData(
         for (const hourType of HOUR_TYPES) {
             const hours = dateData.get(hourType.value) || 0
             byType[hourType.value] = hours
-            grandTotal += hours
+            if (countsTowardWorkHours(hourType.value)) {
+                grandTotal += hours
+            }
         }
 
         dailyData.push({
