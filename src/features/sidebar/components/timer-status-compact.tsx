@@ -32,6 +32,8 @@ interface TimerStatusCompactProps {
             isSystemTask: boolean
         }
     } | null
+    initialWorkStart: Date | null
+    initialWorkEnd: Date | null
     inProgressTasks: TaskDisplay[]
     translations: {
         startTracking: string
@@ -52,6 +54,8 @@ interface TimerStatusCompactProps {
 
 export function TimerStatusCompact({
     initialActiveTimer,
+    initialWorkStart,
+    initialWorkEnd,
     inProgressTasks,
     translations,
 }: TimerStatusCompactProps) {
@@ -62,8 +66,10 @@ export function TimerStatusCompact({
     useTrackerSSE()
     useTrackerPusher()
 
-    const { activeTimerData, elapsedSeconds, isTimerRunning } = useTimerState({
+    const { activeTimerData, elapsedSeconds, isTimerRunning, hasDayStarted } = useTimerState({
         initialActiveTimer,
+        initialWorkStart,
+        initialWorkEnd,
     })
 
     const { startMutation, stopMutation, isLoading } = useTrackerMutations((hasWFH, location) => {
@@ -100,11 +106,18 @@ export function TimerStatusCompact({
                         className="gap-2"
                         disabled={isLoading}
                         aria-label={translations.startTracking}
+                        title={translations.startTracking}
                     >
                         <Play className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground hidden md:inline">
-                            {translations.startTracking}
-                        </span>
+                        {hasDayStarted ? (
+                            <span className="text-sm font-medium tabular-nums">
+                                {formatDuration(elapsedSeconds)}
+                            </span>
+                        ) : (
+                            <span className="text-sm text-muted-foreground hidden md:inline">
+                                {translations.startTracking}
+                            </span>
+                        )}
                     </Button>
                 </TaskSelectorDropdown>
             </>

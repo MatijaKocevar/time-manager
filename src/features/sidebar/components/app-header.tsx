@@ -4,6 +4,7 @@ import { Breadcrumbs } from "@/features/breadcrumbs"
 import { NotificationsDropdownClient } from "@/features/notifications/components/notifications-dropdown-client"
 import { getNotifications } from "@/features/notifications/actions/notification-actions"
 import { getActiveTimer } from "@/app/(protected)/shared/_actions/timer-actions"
+import { getTodayWorkWindow } from "@/app/(protected)/urnik-net-overview/_utils/clock-status"
 import { getTasks } from "@/app/(protected)/tasks/_actions/task-actions"
 import { TASK_STATUS } from "@/app/(protected)/tasks/_constants/task-statuses"
 import { NewTaskButton } from "./new-task-button"
@@ -19,9 +20,10 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
     const tCommon = await getTranslations("common.actions")
     const tClock = await getTranslations("clock.arrivalDialog")
 
-    const [notifications, activeTimer, inProgressTasks] = await Promise.all([
+    const [notifications, activeTimer, workWindow, inProgressTasks] = await Promise.all([
         getNotifications(),
         getActiveTimer(),
+        getTodayWorkWindow(),
         getTasks({ status: TASK_STATUS.IN_PROGRESS }),
     ])
 
@@ -71,6 +73,8 @@ export async function AppHeader({ breadcrumbTranslations }: AppHeaderProps) {
                 <NewTaskButton />
                 <TimerStatusCompact
                     initialActiveTimer={activeTimer}
+                    initialWorkStart={workWindow?.start ?? null}
+                    initialWorkEnd={workWindow?.end ?? null}
                     inProgressTasks={inProgressTasks}
                     translations={timerStatusTranslations}
                 />
