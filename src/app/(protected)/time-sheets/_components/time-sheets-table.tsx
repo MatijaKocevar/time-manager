@@ -158,7 +158,7 @@ export function TimeSheetsTable({
                         className="sticky top-0 z-30 bg-background"
                     >
                         <TableRow>
-                            <TableHead className="sticky left-0 z-40 bg-background border-r font-semibold min-w-[150px] max-w-[200px] py-2">
+                            <TableHead className="sticky left-0 z-40 bg-background border-r font-semibold min-w-[150px] max-w-[200px] py-2 overflow-hidden">
                                 {translations.task}
                             </TableHead>
                             {dates.map((dateStr) => {
@@ -264,15 +264,16 @@ export function TimeSheetsTable({
 
                                     return (
                                         <TableRow key={task.taskId} className="group">
-                                            <TableCell className="sticky left-0 z-10 bg-background border-r py-2 min-w-[150px] max-w-[200px]">
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <div className="flex items-start gap-2 min-w-0">
+                                            <TableCell className="sticky left-0 z-10 bg-background border-r py-2 min-w-[150px] max-w-[200px] overflow-hidden">
+                                                <div className="flex items-center justify-between gap-2 min-w-0">
+                                                    <div className="flex flex-1 items-start gap-2 min-w-0">
                                                         <div
                                                             className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`}
                                                         />
                                                         <div className="flex flex-col gap-0.5 min-w-0">
                                                             <button
                                                                 type="button"
+                                                                title={task.taskTitle}
                                                                 className="font-medium text-sm text-left hover:underline underline-offset-2 cursor-pointer truncate"
                                                                 onClick={() =>
                                                                     openDescriptionDialog(
@@ -283,9 +284,9 @@ export function TimeSheetsTable({
                                                             >
                                                                 {task.taskTitle}
                                                             </button>
-                                                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                            <div className="flex items-center gap-1 text-xs text-muted-foreground min-w-0">
                                                                 <div
-                                                                    className="inline-flex [&_button]:!h-auto [&_button]:!p-0 [&_button]:!m-0 [&_button]:!text-xs [&_button]:!font-normal [&_button]:!border-0 [&_button]:!shadow-none [&_button]:!bg-transparent [&_button]:hover:!bg-transparent [&_button]:hover:underline [&_button]:!text-muted-foreground [&_svg]:!hidden [&_button]:!w-auto [&_button]:!min-h-0 [&_button]:!gap-0 [&_div]:!border-0 [&_div]:!bg-transparent [&_div]:!p-0 [&_div]:!m-0 [&_div]:!text-xs [&_div]:!font-normal [&_div]:!h-auto [&_div]:!rounded-none [&_div]:!shadow-none [&_div]:!gap-0 [&_*]:!border-0 [&_*]:!bg-transparent [&_*]:!shadow-none"
+                                                                    className="inline-flex flex-shrink-0 [&_button]:!h-auto [&_button]:!p-0 [&_button]:!m-0 [&_button]:!text-xs [&_button]:!font-normal [&_button]:!border-0 [&_button]:!shadow-none [&_button]:!bg-transparent [&_button]:hover:!bg-transparent [&_button]:hover:underline [&_button]:!text-muted-foreground [&_svg]:!hidden [&_button]:!w-auto [&_button]:!min-h-0 [&_button]:!gap-0 [&_div]:!border-0 [&_div]:!bg-transparent [&_div]:!p-0 [&_div]:!m-0 [&_div]:!text-xs [&_div]:!font-normal [&_div]:!h-auto [&_div]:!rounded-none [&_div]:!shadow-none [&_div]:!gap-0 [&_*]:!border-0 [&_*]:!bg-transparent [&_*]:!shadow-none"
                                                                     onClick={(e) =>
                                                                         e.stopPropagation()
                                                                     }
@@ -315,8 +316,15 @@ export function TimeSheetsTable({
                                                                 {task.listName &&
                                                                     task.listName !== "No List" && (
                                                                         <>
-                                                                            <span>•</span>
-                                                                            <span>
+                                                                            <span className="flex-shrink-0">
+                                                                                •
+                                                                            </span>
+                                                                            <span
+                                                                                className="truncate"
+                                                                                title={
+                                                                                    task.listName
+                                                                                }
+                                                                            >
                                                                                 {task.listName}
                                                                             </span>
                                                                         </>
